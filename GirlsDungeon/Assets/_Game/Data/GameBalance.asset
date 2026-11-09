@@ -29,7 +29,7 @@ MonoBehaviour:
   wallHeight: 1.2
   cameraPitch: 52
   cameraStartYaw: 45
-  cameraYawStep: 90
+  cameraYawStep: 30
   cameraDistance: 17
   cameraFollowSharpness: 8
   cameraRotateSharpness: 10

@@ -32,7 +32,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private float wallHeight = 1.2f;
         [SerializeField] private float cameraPitch = 52f;
         [SerializeField] private float cameraStartYaw = 45f;
-        [SerializeField] private float cameraYawStep = 90f;
+        [SerializeField] private float cameraYawStep = 30f;
         [SerializeField] private float cameraDistance = 17f;
         [SerializeField] private float cameraFollowSharpness = 8f;
         [SerializeField] private float cameraRotateSharpness = 10f;

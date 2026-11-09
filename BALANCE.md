@@ -31,7 +31,7 @@
 | 3-1 | 벽 높이 | 1.2 | `wallHeight` |
 | 3-2 | 카메라 내려다보는 각도 | 52도 | `cameraPitch` |
 | 3-3 | 카메라 시작 방향 | 45도 | `cameraStartYaw` |
-| 3-4 | 카메라 회전 단위 | 90도 | `cameraYawStep` |
+| 3-4 | 카메라 회전 단위 | ~~90도~~ → 30도 (2026-11-10, 사용자) | `cameraYawStep` |
 | 3-5 | 카메라 거리 | 17 | `cameraDistance` |
 | 3-6 | 따라가기 · 회전 빠르기 | 8 · 10 | `cameraFollowSharpness` · `cameraRotateSharpness` |
 
