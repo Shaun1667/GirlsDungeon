@@ -7,11 +7,11 @@ namespace GirlsDungeon.Game
     [CreateAssetMenu(fileName = "GameBalance", menuName = "GirlsDungeon/Game Balance")]
     public sealed class GameBalance : ScriptableObject
     {
-        [Header("판")]
-        [Tooltip("0이면 판마다 새 시드를 뽑고, 0이 아니면 이 시드로 고정한다.")]
+        [Header("Run")]
+        [Tooltip("0 picks a new seed every run. Any other value fixes the seed.")]
         [SerializeField] private int fixedSeed;
 
-        [Header("맵 (BALANCE 1번)")]
+        [Header("Map (BALANCE 1)")]
         [SerializeField] private int mapWidth = 32;
         [SerializeField] private int mapHeight = 32;
         [SerializeField] private int minRooms = 6;
@@ -24,11 +24,11 @@ namespace GirlsDungeon.Game
         [SerializeField] private int corridorWallCost = 5;
         [SerializeField] private int extraConnections = 2;
 
-        [Header("이동 (BALANCE 2번)")]
+        [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
 
-        [Header("화면 (BALANCE 3번)")]
+        [Header("View (BALANCE 3)")]
         [SerializeField] private float wallHeight = 1.2f;
         [SerializeField] private float cameraPitch = 52f;
         [SerializeField] private float cameraStartYaw = 45f;

@@ -55,6 +55,7 @@ GirlsDungeon/Assets/_Game/
 ## 코딩 규칙
 - 네임스페이스는 `GirlsDungeon.Core` · `GirlsDungeon.Game` · `GirlsDungeon.EditorTools` · `GirlsDungeon.Tests`. `Core`는 `UnityEngine`을 쓰지 않는다.
 - 화면에 보이는 모든 글은 텍스트 표 한곳(`Resources/Text/text_table.csv`) — 코드 · 프리팹 · 데이터에 문장 금지, 코드는 `Text.Get(키)`, 문장을 이어 붙이지 않고 `{0}` 자리표시자. 키는 `분류.대상.용도`. 새 글 = 표 한 줄. 파싱은 `Core.Localization.TextTable`, 게임 쪽 조회는 `Game.Text` 한 곳. 씬의 고정 글은 `TextLabel`에 키만 넣는다.
+- Core · Game 코드의 문자열에는 한글을 쓰지 않는다 (인스펙터 머리글 · 툴팁 포함, 테스트로 검사). 주석과 에디터 도구는 한글 가능.
 - `GirlsDungeon.Game.Text`는 `UnityEngine.UI.Text`와 이름이 겹친다 → UI 컴포넌트는 항상 `UnityEngine.UI.Text`로 전체 이름을 쓴다.
 - 개발자 디버그 기능은 에디터 디버그 창(`GirlsDungeon/Debug/Debug Window`)에 섹션으로, 게임 쪽 진입점은 `GameRoot.DebugXxx`, 상태를 바꾸면 [상태 변경] 표시. 디버그를 쓴 판은 `GameRoot.DebugUsed`로 표시해 기록에서 뺀다. 디버그 글은 표에 넣지 않아도 된다.
 - 씬 연결은 `GameRoot` 한 곳. 씬은 Setup 메뉴(`GirlsDungeon/Setup/Build Game Scene`, `EditorTools.GameSceneSetup`)가 만들고 몇 번 실행해도 같다. 씬 구성을 바꾸면 이 메뉴를 고친다.
