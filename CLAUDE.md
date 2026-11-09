@@ -1,0 +1,86 @@
+# CLAUDE.md
+
+## 프로젝트 개요
+GirlsDungeon — 오리지널 소녀 캐릭터 한 명을 조종하는 3D 전술 던전 크롤러. 액스컴류의 엄폐 · 측면 · 명중 확률 전투를 로그라이크 던전과 합친다. 기획은 GDD.md, 작업 순서와 일지는 TASKS.md, 수치는 BALANCE.md(첫 수치가 생길 때 만든다).
+- **새 세션을 시작하면** 이 문서 → TASKS.md 맨 위 "진행 요약" 순서로 읽고 다음 항목을 확인한 뒤 시작한다. 다른 PC면 Docs/진행상황.md도. "다음 작업: 미정"이면 후보를 먼저 묻는다.
+- 수치는 BALANCE.md와 데이터 에셋 기준이며 코드에 임의로 넣지 않는다.
+
+## 참조 문서
+| 문서 | 역할 | 상태 |
+|---|---|---|
+| `GDD.md` | 기획 | 초안 (2026-11-09) |
+| `TASKS.md` | 진행 요약 · 작업 순서 · 일지 | 사용 중 |
+| `BALANCE.md` | 수치 | 첫 수치가 생길 때 작성 |
+| `Docs/Source/MY_DEV_GUIDE.md` | 작업 방식 원본 (고치지 않음) | 기준 |
+| `Docs/Source/ROGUELIKE_STRUCTURE.md` | 로그라이크 구조 원본 (고치지 않음) | 기준 |
+
+## 협업 방식
+- 한국어. 1인 개발. 쉬운 말로 설명하고, 오래 걸리는 작업 중에는 지금 하는 일을 한두 줄로 알린다.
+- 설계 결정은 선택지 + 추천안으로 묻고 `결정 (날짜, 사용자): … — 이유`로 TASKS에 남긴다. 사소한 것은 정하고 `정한 것 (Claude, 확인 필요)`로 보고한다.
+- 한 항목 = 작업 브랜치(`phaseN-…`) 커밋 + 보고. 지시 없이 main에 커밋 · 푸시하지 않는다. "main에 병합하고 푸시" = ff 병합 · 푸시 · 브랜치 삭제.
+- 보고: 한 일 · 정한 것 · 확인한 것 · 확인 못 한 것 · 확인 방법 · 커밋 상태.
+- 테스트 실행은 사용자가 지시할 때만 (결정 2026-11-09, 가이드 기본값) — Claude는 작성만, "테스트 작성, 실행 안 함". 컴파일 확인 · Setup 메뉴 · 플레이 모드 확인은 Claude가 한다. 몇 항목마다 "테스트 돌릴 때 됐다"고 알린다.
+
+## 작업 원칙
+- 한 번에 기능 하나 (TASKS 현재 항목만). 요청받지 않은 시스템을 미리 만들지 않는다 — 단 핵심 설계 규칙의 구조는 처음부터.
+- 구현 전 문서를 읽고 구현 후 문서를 고친다. 다르면 문서를 실제 기준으로 고치고 알린다.
+- 에디터 수작업은 목록으로 안내, 반복 생성은 멱등 Setup 메뉴로.
+- 완료 = 테스트 통과 + 확인 방법 + 사용자 플레이 확인. 구현만 = `— 플레이 확인 대기`.
+- 실패 · 생략 · 미확인은 그대로 보고. 직접 본 것만 됐다고 말한다. 겪은 문제는 TASKS "피드백"에.
+
+## 기술 스택
+| 항목 | 값 | 상태 |
+|---|---|---|
+| 엔진 | Unity 6.3 LTS (6000.3.28f1), 에디터 위치 `D:\Unity\Editor` | 확정 2026-11-09, 변경 금지 |
+| 렌더링 | URP 17.3 | 확정 2026-11-09, 변경 금지 |
+| 입력 | Input System 1.20 (새 방식만) | 확정 2026-11-09, 변경 금지 |
+| UI | uGUI | 확정 2026-11-09. 글꼴은 임시 (TASKS 0-2) |
+| 그래픽 | 3D, 그레이박스 → AI 생성 에셋 | 결정 2026-11-09, 사용자 |
+| 테스트 | Unity Test Framework 1.6 (EditMode) | 확정 2026-11-09 |
+| 저장소 | GitHub `Shaun1667/GirlsDungeon` | 확정 |
+
+## 폴더 구조
+저장소 루트에 문서, `GirlsDungeon/`가 Unity 프로젝트다.
+```
+GirlsDungeon/Assets/_Game/
+  Scripts/Core/    규칙 코드 — 엔진을 참조하지 않는다 (GirlsDungeon.Core)
+  Scripts/Game/    엔진 어댑터 · 컴포지션 루트 · 화면 (GirlsDungeon.Game)
+  Scripts/Editor/  에디터 도구 · 디버그 창 · Setup 메뉴 (GirlsDungeon.EditorTools)
+  Resources/Text/  텍스트 표 text_table.csv
+  Data/            데이터 에셋 (GameBalance.asset …)
+  Scenes/          Game.unity (Setup 메뉴가 만든다)
+  Tests/EditMode/  단위 테스트 (GirlsDungeon.Tests)
+```
+
+## 코딩 규칙
+- 네임스페이스는 `GirlsDungeon.Core` · `GirlsDungeon.Game` · `GirlsDungeon.EditorTools` · `GirlsDungeon.Tests`. `Core`는 `UnityEngine`을 쓰지 않는다.
+- 화면에 보이는 모든 글은 텍스트 표 한곳(`Resources/Text/text_table.csv`) — 코드 · 프리팹 · 데이터에 문장 금지, 코드는 `Text.Get(키)`, 문장을 이어 붙이지 않고 `{0}` 자리표시자. 키는 `분류.대상.용도`. 새 글 = 표 한 줄. 파싱은 `Core.Localization.TextTable`, 게임 쪽 조회는 `Game.Text` 한 곳. 씬의 고정 글은 `TextLabel`에 키만 넣는다.
+- `GirlsDungeon.Game.Text`는 `UnityEngine.UI.Text`와 이름이 겹친다 → UI 컴포넌트는 항상 `UnityEngine.UI.Text`로 전체 이름을 쓴다.
+- 개발자 디버그 기능은 에디터 디버그 창(`GirlsDungeon/Debug/Debug Window`)에 섹션으로, 게임 쪽 진입점은 `GameRoot.DebugXxx`, 상태를 바꾸면 [상태 변경] 표시. 디버그를 쓴 판은 `GameRoot.DebugUsed`로 표시해 기록에서 뺀다. 디버그 글은 표에 넣지 않아도 된다.
+- 씬 연결은 `GameRoot` 한 곳. 씬은 Setup 메뉴(`GirlsDungeon/Setup/Build Game Scene`, `EditorTools.GameSceneSetup`)가 만들고 몇 번 실행해도 같다. 씬 구성을 바꾸면 이 메뉴를 고친다.
+- 수치는 `Game.GameBalance`(`Data/GameBalance.asset`) 한 곳. 새 수치 = 필드 + BALANCE 표 + 검산 테스트.
+
+## 핵심 설계 규칙 (변경 금지)
+바꾸고 싶어지면 영향 범위를 표로 정리하고 사용자 결정을 받은 뒤에만.
+1. 규칙과 표현 분리 — 규칙은 엔진을 모른다.
+2. 고정 틱 하나 — 모든 지속시간은 틱, 처리 순서 고정. 탐험과 턴 전투는 시계만 다르다.
+3. 상태는 스냅샷 하나 (`World`) — AI · 시스템은 상태를 들지 않는다.
+4. 시드 난수 주입 · 용도별 분리 · 같은 시드 = 같은 결과 (명중 굴림 포함).
+5. 모든 엔티티 고유 ID.
+6. 명중 · 피해 미리보기와 실제 결과는 같은 계산을 쓴다.
+7. 표시 값 = 실제 값 — 특성 · 장비 · 유물 효과는 한 조회 지점에서 합산.
+8. 판 밖 데이터(메타 성장 · 기록)는 스냅샷에 넣지 않고 별도 파일.
+
+## 콘텐츠 규칙 (변경 금지)
+- 캐릭터 · 이름 · 세계관 · 그림 · 음악은 오리지널로 만든다. 특정 기존 게임의 것을 쓰거나 닮게 만들지 않는다 (결정 2026-11-09, 사용자). 게임 방식과 장르 규칙은 참고해도 된다.
+
+## 아트 · 그래픽 규칙
+- 그레이박스로 먼저 돌아가게 한다. 데이터는 비주얼을 ID로만 참조하고, 프리팹이 없으면 도형으로 그린다.
+- 에셋 목록 문서는 외부 · AI 에셋을 받기 전에 만든다 (`Docs/ART_ASSETS.md`).
+
+## Git · 환경
+- 커밋 메시지 `MM.DD/Phase-항목/PascalCase요약`, 수정은 `…Fix`. 한 항목 = 한 커밋.
+- 커밋 전 `git status` → 내 파일만 `git add` → `git diff --cached --stat`. 다른 세션 변경은 제외.
+- 줄바꿈은 `.gitattributes`로 고정. 빌드 출력은 `.gitignore`에 프로젝트 기준 경로로만 제외.
+- 저장 데이터 · 기록 파일을 테스트로 덮어쓰지 않는다. 삭제 전에 대상을 확인한다.
+- Unity MCP: 파일을 바꾼 직후 첫 호출은 실패하기 쉽다 → 콘솔 읽기로 깨우고 컴파일이 끝난 뒤 무거운 호출을 한다. 플레이 중에 스크립트를 고치지 않는다.
