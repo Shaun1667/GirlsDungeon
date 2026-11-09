@@ -13,3 +13,23 @@ MonoBehaviour:
   m_Name: GameBalance
   m_EditorClassIdentifier: GirlsDungeon.Game::GirlsDungeon.Game.GameBalance
   fixedSeed: 0
+  mapWidth: 32
+  mapHeight: 32
+  minRooms: 6
+  maxRooms: 8
+  minRoomSize: 7
+  maxRoomSize: 13
+  roomMargin: 1
+  roomAttempts: 300
+  layoutAttempts: 50
+  corridorWallCost: 5
+  extraConnections: 2
+  moveCostTicks: 1
+  stepSeconds: 0.14
+  wallHeight: 1.2
+  cameraPitch: 52
+  cameraStartYaw: 45
+  cameraYawStep: 90
+  cameraDistance: 17
+  cameraFollowSharpness: 8
+  cameraRotateSharpness: 10

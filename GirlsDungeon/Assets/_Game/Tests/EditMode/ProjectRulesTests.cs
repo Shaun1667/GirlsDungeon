@@ -62,6 +62,18 @@ namespace GirlsDungeon.Tests
             Assert.That(offenders, Is.Empty);
         }
 
+        [Test]
+        public void GameScene_HasNoEmptyGameRootReferences()
+        {
+            var scene = File.ReadAllText(GameRoot + "/Scenes/Game.unity");
+            var fields = new[] { "balance", "seedLabel", "floorView", "playerView", "cameraRig", "moveController", "viewCamera", "hoverMarker" };
+
+            foreach (var field in fields)
+            {
+                Assert.That(Regex.IsMatch(scene, field + @": \{fileID: [1-9-]"), Is.True, field + " is not connected");
+            }
+        }
+
         private static TextTable LoadTable() => TextTable.Parse(File.ReadAllText(TablePath));
 
         /// <summary>규칙 · 게임 코드만 검사한다. 에디터 도구와 디버그 글은 표에 넣지 않아도 된다.</summary>

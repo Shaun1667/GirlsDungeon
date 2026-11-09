@@ -3,7 +3,8 @@
     "rootNamespace": "GirlsDungeon.Game",
     "references": [
         "GirlsDungeon.Core",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],

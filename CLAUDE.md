@@ -10,7 +10,7 @@ GirlsDungeon — 오리지널 소녀 캐릭터 한 명을 조종하는 3D 전술
 |---|---|---|
 | `GDD.md` | 기획 | 초안 (2026-11-09) |
 | `TASKS.md` | 진행 요약 · 작업 순서 · 일지 | 사용 중 |
-| `BALANCE.md` | 수치 | 첫 수치가 생길 때 작성 |
+| `BALANCE.md` | 수치 | 사용 중 (재미 검증 전 출발값) |
 | `Docs/Source/MY_DEV_GUIDE.md` | 작업 방식 원본 (고치지 않음) | 기준 |
 | `Docs/Source/ROGUELIKE_STRUCTURE.md` | 로그라이크 구조 원본 (고치지 않음) | 기준 |
 
@@ -59,6 +59,12 @@ GirlsDungeon/Assets/_Game/
 - 개발자 디버그 기능은 에디터 디버그 창(`GirlsDungeon/Debug/Debug Window`)에 섹션으로, 게임 쪽 진입점은 `GameRoot.DebugXxx`, 상태를 바꾸면 [상태 변경] 표시. 디버그를 쓴 판은 `GameRoot.DebugUsed`로 표시해 기록에서 뺀다. 디버그 글은 표에 넣지 않아도 된다.
 - 씬 연결은 `GameRoot` 한 곳. 씬은 Setup 메뉴(`GirlsDungeon/Setup/Build Game Scene`, `EditorTools.GameSceneSetup`)가 만들고 몇 번 실행해도 같다. 씬 구성을 바꾸면 이 메뉴를 고친다.
 - 수치는 `Game.GameBalance`(`Data/GameBalance.asset`) 한 곳. 새 수치 = 필드 + BALANCE 표 + 검산 테스트.
+- 난수는 `Core.Random.RandomStreams` 한 곳, 용도마다 `RandomPurpose` 하나. 전역 난수(`System.Random`, `UnityEngine.Random`)를 규칙에 쓰지 않는다. 새 용도 = enum 끝에 추가.
+- 세계 상태는 `Core.Sim.World` 한 곳. 새 상태 = 필드 + `WorldSnapshot` 버전 증가 + 인코더 + 왕복 테스트.
+- 규칙 진행은 `Core.Sim.Simulation.Execute(커맨드)` 한 곳. 새 행동 = `ICommand` 하나. 틱 순서는 `Simulation` 설명의 ① ~ ⑦을 따른다. 규칙 → 화면은 `EventsPublished`의 `GameEvent`로만.
+- 새 판 만들기는 `Core.Sim.RunFactory` 한 곳. 맵 생성은 `Core.Map.DungeonGenerator`, 칸 이동 판정과 경로는 `Core.Map.GridNavigation` 한 곳.
+- 칸 ↔ 3D 위치 변환은 `Game.GridSpace` 한 곳. 지형 그리기 `FloorView`, 플레이어 그리기 `PlayerView`, 클릭 이동 `MoveController`, 카메라 `CameraRig`. 화면 쪽은 규칙을 바꾸지 않고 커맨드만 낸다.
+- Setup 메뉴는 에셋을 `NewScene` 뒤에 불러온다 — 앞에서 불러 두면 참조가 비어 저장된다 (TASKS 1-2 피드백).
 
 ## 핵심 설계 규칙 (변경 금지)
 바꾸고 싶어지면 영향 범위를 표로 정리하고 사용자 결정을 받은 뒤에만.

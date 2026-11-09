@@ -1,3 +1,4 @@
+using GirlsDungeon.Core.Grid;
 using GirlsDungeon.Game;
 using UnityEditor;
 using UnityEngine;
@@ -11,6 +12,8 @@ namespace GirlsDungeon.EditorTools
     public sealed class GirlsDungeonDebugWindow : EditorWindow
     {
         private Vector2 scroll;
+        private int seedInput;
+        private Vector2Int moveTarget;
 
         [MenuItem("GirlsDungeon/Debug/Debug Window")]
         private static void Open()
@@ -26,31 +29,63 @@ namespace GirlsDungeon.EditorTools
         private void OnGUI()
         {
             scroll = EditorGUILayout.BeginScrollView(scroll);
-            DrawRunSection();
-            EditorGUILayout.EndScrollView();
-        }
-
-        private static void DrawRunSection()
-        {
-            EditorGUILayout.LabelField("판", EditorStyles.boldLabel);
 
             if (!Application.isPlaying)
             {
                 EditorGUILayout.HelpBox("플레이 모드에서 쓸 수 있습니다. 씬: Assets/_Game/Scenes/Game.unity", MessageType.Info);
-                return;
             }
-
-            var root = FindAnyObjectByType<GameRoot>();
-            if (root == null)
+            else
             {
-                EditorGUILayout.HelpBox("지금 씬에 GameRoot가 없습니다.", MessageType.Warning);
-                return;
+                var root = FindAnyObjectByType<GameRoot>();
+                if (root == null)
+                {
+                    EditorGUILayout.HelpBox("지금 씬에 GameRoot가 없습니다.", MessageType.Warning);
+                }
+                else
+                {
+                    DrawRunSection(root);
+                    EditorGUILayout.Space();
+                    DrawMapSection(root);
+                    EditorGUILayout.Space();
+                    DrawMoveSection(root);
+                }
             }
 
-            EditorGUILayout.SelectableLabel($"시드: {root.Seed}", GUILayout.Height(EditorGUIUtility.singleLineHeight));
+            EditorGUILayout.EndScrollView();
+        }
+
+        private void DrawRunSection(GameRoot root)
+        {
+            EditorGUILayout.LabelField("판", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("상태", root.DebugStateSummary(), EditorStyles.wordWrappedLabel);
 
-            if (GUILayout.Button("재시작 [상태 변경]")) root.DebugRestart();
+            if (GUILayout.Button("새 시드로 재시작 [상태 변경]")) root.DebugRestart();
+
+            EditorGUILayout.BeginHorizontal();
+            seedInput = EditorGUILayout.IntField("시드", seedInput);
+            if (GUILayout.Button("이 시드로 재시작 [상태 변경]")) root.DebugRestartWithSeed(seedInput);
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private static void DrawMapSection(GameRoot root)
+        {
+            EditorGUILayout.LabelField("맵", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("요약", root.DebugMapSummary(), EditorStyles.wordWrappedLabel);
+        }
+
+        private void DrawMoveSection(GameRoot root)
+        {
+            EditorGUILayout.LabelField("이동", EditorStyles.boldLabel);
+
+            EditorGUILayout.BeginHorizontal();
+            moveTarget = EditorGUILayout.Vector2IntField("칸", moveTarget);
+            if (GUILayout.Button("이 칸으로 걷기 [상태 변경]")) root.DebugMoveTo(new GridPos(moveTarget.x, moveTarget.y));
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("카메라 왼쪽 [상태 변경]")) root.DebugRotateCamera(-1);
+            if (GUILayout.Button("카메라 오른쪽 [상태 변경]")) root.DebugRotateCamera(1);
+            EditorGUILayout.EndHorizontal();
         }
     }
 }
