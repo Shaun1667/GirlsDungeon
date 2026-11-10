@@ -20,6 +20,16 @@ ui.combat.log_hit,{0} → {1}: 피해 {2},{0} → {1}: {2} damage
 ui.combat.log_crit,{0} → {1}: 치명타! 피해 {2},{0} → {1}: Critical! {2} damage
 ui.combat.log_break,{0}의 안정지수 붕괴,{0}'s stability broke
 ui.combat.log_down,{0} 쓰러짐,{0} is down
+ui.skill.grenade,수류탄,Grenade
+ui.skill.grenade_cooldown,수류탄 ({0}),Grenade ({0})
+ui.skill.grenade_aiming,조준 취소,Cancel aim
+ui.combat.preview_area_header,범위 공격 · 대상 {0},Area attack · {0} targets
+ui.combat.preview_area_hit,{0}: 피해 {1} · 안정 −{2} · {3},{0}: {1} damage · Stability −{2} · {3}
+ui.combat.preview_area_self,나도 폭발 범위 안에 있음,You are inside the blast
+ui.combat.preview_area_not_ready,수류탄 재사용 대기 {0}라운드,Grenade ready in {0} rounds
+ui.combat.preview_area_out_of_range,던질 수 없는 칸 · 사거리 밖,Cannot throw · out of range
+ui.combat.preview_area_not_visible,던질 수 없는 칸 · 보이지 않음,Cannot throw · not visible
+ui.combat.log_area,{0}의 수류탄 폭발,{0}'s grenade exploded
 ui.cover.none,엄폐 없음,No cover
 ui.cover.half,낮은 엄폐,Low cover
 ui.cover.full,높은 엄폐,High cover

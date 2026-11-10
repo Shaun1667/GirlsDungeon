@@ -291,6 +291,11 @@ namespace GirlsDungeon.Tests
                 FullCoverReductionPercent = 35,
                 StabilityGuardPercent = 60,
                 MinDamage = 1,
+                GrenadeThrowRange = 6,
+                GrenadeRadius = 1,
+                GrenadeDamagePercent = 70,
+                GrenadeStabilityDamage = 2,
+                GrenadeCooldownRounds = 3,
             };
             settings.Units.Add(new UnitStats
             {

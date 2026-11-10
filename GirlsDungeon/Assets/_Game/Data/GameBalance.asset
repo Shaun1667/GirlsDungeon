@@ -65,6 +65,11 @@ MonoBehaviour:
   fullCoverReductionPercent: 35
   stabilityGuardPercent: 60
   minDamage: 1
+  grenadeThrowRange: 6
+  grenadeRadius: 1
+  grenadeDamagePercent: 70
+  grenadeStabilityDamage: 2
+  grenadeCooldownRounds: 3
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

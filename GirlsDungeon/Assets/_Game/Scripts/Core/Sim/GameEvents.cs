@@ -117,6 +117,23 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>범위 공격이 터졌다. 맞은 유닛마다 UnitAttacked가 뒤따른다.</summary>
+    public sealed class AreaExploded : GameEvent
+    {
+        public int AttackerId { get; }
+        public UnitKind AttackerKind { get; }
+        public GridPos Center { get; }
+        public IReadOnlyList<GridPos> Cells { get; }
+
+        public AreaExploded(int attackerId, UnitKind attackerKind, GridPos center, IReadOnlyList<GridPos> cells)
+        {
+            AttackerId = attackerId;
+            AttackerKind = attackerKind;
+            Center = center;
+            Cells = cells;
+        }
+    }
+
     /// <summary>플레이어가 쓰러졌다.</summary>
     public sealed class PlayerDefeated : GameEvent
     {

@@ -42,6 +42,8 @@ namespace GirlsDungeon.Game
             unitsView.Bind(simulation);
             hudView.Bind(simulation, combatSettings, balance);
             moveController.Bind(simulation, playerView, hudView, combatSettings, balance.MoveCostTicks);
+            hudView.GrenadeButtonPressed -= moveController.ToggleAim;
+            hudView.GrenadeButtonPressed += moveController.ToggleAim;
             cameraRig.Bind(balance, playerView.transform);
 
             if (seedLabel != null) seedLabel.text = Text.Get("ui.hud.seed", seed);
@@ -73,6 +75,19 @@ namespace GirlsDungeon.Game
         {
             DebugUsed = true;
             return moveController.RequestCombatAction(cell);
+        }
+
+        /// <summary>[상태 변경] 수류탄을 그 칸에 던진다. 못 던지면 false.</summary>
+        public bool DebugThrowGrenade(GridPos center)
+        {
+            DebugUsed = true;
+            return moveController.RequestAreaAttack(center);
+        }
+
+        /// <summary>수류탄 버튼과 같다 (조준 모드 켜기 · 끄기).</summary>
+        public void DebugToggleAim()
+        {
+            moveController.ToggleAim();
         }
 
         /// <summary>[상태 변경] 전투 중 첫 번째 적을 쏜다. 못 쏘면 false.</summary>
@@ -150,6 +165,7 @@ namespace GirlsDungeon.Game
             if (world == null) return "Run not started";
             var player = world.Player;
             return $"Mode={world.Mode}, Turn={world.Turn}, Round={world.Round}, Moved={world.PlayerMoved}, Acted={world.PlayerActed}, "
+                + $"GrenadeCooldown={world.GrenadeCooldown}, Aiming={moveController.IsAiming}, "
                 + $"Reachable={moveController.ReachableCount}, Combatants=[{string.Join(",", world.Combatants)}], "
                 + $"PlayerHp={player.Hp}/{player.MaxHp}, Stability={player.Stability}/{player.MaxStability}, VisibleEnemies={unitsView.VisibleCount}";
         }

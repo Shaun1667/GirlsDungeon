@@ -20,15 +20,59 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnityEngine.UI.Text logLabel;
         [SerializeField] private UnityEngine.UI.Text defeatLabel;
         [SerializeField] private Button endTurnButton;
+        [SerializeField] private Button grenadeButton;
         [SerializeField] private int logLines = 4;
 
         private readonly List<string> log = new List<string>();
         private Simulation simulation;
         private CombatSettings settings;
         private GameBalance balance;
+        private bool aiming;
 
         public string PreviewText => previewLabel.text;
         public string LogText => logLabel.text;
+        public string GrenadeButtonText => GrenadeLabel.text;
+
+        /// <summary>수류탄 버튼을 눌렀다. MoveController가 조준 모드를 켜고 끈다 (GameRoot가 잇는다).</summary>
+        public event System.Action GrenadeButtonPressed;
+
+        private UnityEngine.UI.Text GrenadeLabel => grenadeButton.GetComponentInChildren<UnityEngine.UI.Text>(true);
+
+        /// <summary>조준 모드 표시. 버튼 글이 "조준 중"으로 바뀐다.</summary>
+        public void SetAiming(bool value)
+        {
+            aiming = value;
+            Refresh();
+        }
+
+        public void ShowAreaPreview(AreaPreview preview)
+        {
+            var lines = new List<string>();
+            switch (preview.Block)
+            {
+                case AreaBlock.NotReady:
+                    lines.Add(Text.Get("ui.combat.preview_area_not_ready", simulation.World.GrenadeCooldown));
+                    break;
+                case AreaBlock.OutOfRange:
+                    lines.Add(Text.Get("ui.combat.preview_area_out_of_range"));
+                    break;
+                case AreaBlock.NotVisible:
+                    lines.Add(Text.Get("ui.combat.preview_area_not_visible"));
+                    break;
+                default:
+                    lines.Add(Text.Get("ui.combat.preview_area_header", preview.Hits.Count));
+                    foreach (var hit in preview.Hits)
+                    {
+                        string cover = CoverName(hit.Cover);
+                        if (hit.ReductionPercent > 0) cover = cover + " · " + Text.Get("ui.combat.reduction", hit.ReductionPercent);
+                        lines.Add(Text.Get("ui.combat.preview_area_hit", UnitName(hit.Target.Kind), hit.Damage, hit.StabilityDamage, cover));
+                    }
+                    if (preview.HitsPlayer) lines.Add(Text.Get("ui.combat.preview_area_self"));
+                    break;
+            }
+            previewLabel.text = string.Join("\n", lines);
+            previewLabel.gameObject.SetActive(true);
+        }
 
         public void Bind(Simulation newSimulation, CombatSettings newSettings, GameBalance newBalance)
         {
@@ -80,6 +124,7 @@ namespace GirlsDungeon.Game
         private void Awake()
         {
             if (endTurnButton != null) endTurnButton.onClick.AddListener(() => EndTurn());
+            if (grenadeButton != null) grenadeButton.onClick.AddListener(() => GrenadeButtonPressed?.Invoke());
         }
 
         private void OnDestroy()
@@ -106,6 +151,9 @@ namespace GirlsDungeon.Game
                             ? Text.Get("ui.combat.log_crit", attacker, target, attacked.Damage)
                             : Text.Get("ui.combat.log_hit", attacker, target, attacked.Damage));
                         if (attacked.StabilityBroken) AddLog(Text.Get("ui.combat.log_break", target));
+                        break;
+                    case AreaExploded exploded:
+                        AddLog(Text.Get("ui.combat.log_area", UnitName(exploded.AttackerKind)));
                         break;
                     case UnitDied died:
                         AddLog(Text.Get("ui.combat.log_down", UnitName(died.Kind)));
@@ -160,6 +208,13 @@ namespace GirlsDungeon.Game
             roundLabel.gameObject.SetActive(inCombat);
             turnLabel.gameObject.SetActive(inCombat);
             endTurnButton.gameObject.SetActive(playerTurn);
+            grenadeButton.gameObject.SetActive(playerTurn && !world.PlayerActed);
+            if (playerTurn)
+            {
+                GrenadeLabel.text = aiming ? Text.Get("ui.skill.grenade_aiming")
+                    : world.GrenadeCooldown > 0 ? Text.Get("ui.skill.grenade_cooldown", world.GrenadeCooldown)
+                    : Text.Get("ui.skill.grenade");
+            }
             if (!inCombat)
             {
                 ClearPreview();

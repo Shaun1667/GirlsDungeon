@@ -70,6 +70,11 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.StabilityGuardPercent, Is.EqualTo(expected.StabilityGuardPercent));
             Assert.That(combat.MinDamage, Is.EqualTo(expected.MinDamage));
             Assert.That(combat.EndTurnCostTicks, Is.EqualTo(expected.EndTurnCostTicks));
+            Assert.That(combat.GrenadeThrowRange, Is.EqualTo(expected.GrenadeThrowRange));
+            Assert.That(combat.GrenadeRadius, Is.EqualTo(expected.GrenadeRadius));
+            Assert.That(combat.GrenadeDamagePercent, Is.EqualTo(expected.GrenadeDamagePercent));
+            Assert.That(combat.GrenadeStabilityDamage, Is.EqualTo(expected.GrenadeStabilityDamage));
+            Assert.That(combat.GrenadeCooldownRounds, Is.EqualTo(expected.GrenadeCooldownRounds));
             foreach (var stats in expected.Units)
             {
                 var actual = combat.StatsFor(stats.Kind);

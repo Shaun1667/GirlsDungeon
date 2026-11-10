@@ -80,6 +80,13 @@ namespace GirlsDungeon.Game
         [SerializeField] private int stabilityGuardPercent = 60;
         [SerializeField] private int minDamage = 1;
 
+        [Header("Grenade skill (BALANCE 6)")]
+        [SerializeField] private int grenadeThrowRange = 6;
+        [SerializeField] private int grenadeRadius = 1;
+        [SerializeField] private int grenadeDamagePercent = 70;
+        [SerializeField] private int grenadeStabilityDamage = 2;
+        [SerializeField] private int grenadeCooldownRounds = 3;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
@@ -132,6 +139,11 @@ namespace GirlsDungeon.Game
                 FullCoverReductionPercent = fullCoverReductionPercent,
                 StabilityGuardPercent = stabilityGuardPercent,
                 MinDamage = minDamage,
+                GrenadeThrowRange = grenadeThrowRange,
+                GrenadeRadius = grenadeRadius,
+                GrenadeDamagePercent = grenadeDamagePercent,
+                GrenadeStabilityDamage = grenadeStabilityDamage,
+                GrenadeCooldownRounds = grenadeCooldownRounds,
             };
             foreach (var entry in units)
             {

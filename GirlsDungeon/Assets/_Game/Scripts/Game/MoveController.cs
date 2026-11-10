@@ -19,8 +19,11 @@ namespace GirlsDungeon.Game
         [SerializeField] private Transform hoverMarker;
         [SerializeField] private float hoverMarkerHeight = 0.02f;
         [SerializeField] private RangeView rangeView;
+        [Tooltip("Shows the blast cells while aiming the grenade.")]
+        [SerializeField] private RangeView areaView;
 
         private readonly Queue<GridPos> pendingSteps = new Queue<GridPos>();
+        private bool aiming;
         private Simulation simulation;
         private PlayerView playerView;
         private HudView hudView;
@@ -31,6 +34,32 @@ namespace GirlsDungeon.Game
 
         public int PendingStepCount => pendingSteps.Count;
         public int ReachableCount => reachable?.Count ?? 0;
+        public bool IsAiming => aiming;
+
+        /// <summary>수류탄 조준 모드를 켜고 끈다 (수류탄 버튼). 내 차례에 아직 행동하지 않았을 때만 켤 수 있다.</summary>
+        public void ToggleAim()
+        {
+            var world = simulation?.World;
+            bool canAim = world != null && TurnFlow.IsPlayerTurn(world) && !world.PlayerActed;
+            SetAiming(!aiming && canAim);
+        }
+
+        /// <summary>수류탄을 그 칸에 던진다. 못 던지면 false (조준 모드는 그대로).</summary>
+        public bool RequestAreaAttack(GridPos center)
+        {
+            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || playerView.IsMoving) return false;
+            if (!simulation.Execute(new AreaAttackCommand(center, settings))) return false;
+            SetAiming(false);
+            return true;
+        }
+
+        private void SetAiming(bool value)
+        {
+            aiming = value;
+            if (!aiming) areaView.Hide();
+            hudView.SetAiming(aiming);
+            reachableKey = null;
+        }
 
         public void Bind(Simulation newSimulation, PlayerView newPlayerView, HudView newHudView, CombatSettings newSettings, int newMoveCostTicks)
         {
@@ -43,6 +72,8 @@ namespace GirlsDungeon.Game
             reachable = null;
             reachableKey = null;
             rangeView.Hide();
+            aiming = false;
+            areaView.Hide();
         }
 
         /// <summary>탐험 중 목표 칸까지 걷기 시작한다. 걷는 중이면 지금 칸에서 새 경로로 바꾼다. 갈 수 없으면 false.</summary>
@@ -81,6 +112,7 @@ namespace GirlsDungeon.Game
 
             var mode = simulation.World.Mode;
             if (mode != WorldMode.Exploration) pendingSteps.Clear();
+            if (aiming && (!TurnFlow.IsPlayerTurn(simulation.World) || simulation.World.PlayerActed)) SetAiming(false);
 
             if (mode == WorldMode.Combat) HandleCombat();
             else
@@ -106,20 +138,31 @@ namespace GirlsDungeon.Game
         private void HandleCombat()
         {
             var world = simulation.World;
-            bool canMove = TurnFlow.IsPlayerTurn(world) && !world.PlayerMoved && !world.PlayerActed && !playerView.IsMoving;
+            bool canMove = TurnFlow.IsPlayerTurn(world) && !world.PlayerMoved && !world.PlayerActed && !playerView.IsMoving && !aiming;
             RefreshRange(canMove);
 
             var mouse = Mouse.current;
             var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !playerView.IsMoving ? PointerCell(mouse.position.ReadValue()) : null;
+            if (aiming && mouse != null && mouse.rightButton.wasPressedThisFrame) SetAiming(false);
             if (!cell.HasValue)
             {
                 SetHover(null);
+                areaView.Hide();
                 hudView.ClearPreview();
                 return;
             }
 
             var target = world.UnitAt(cell.Value);
             bool clicked = mouse.leftButton.wasPressedThisFrame && !IsPointerOverUi();
+            if (aiming)
+            {
+                var area = AreaAttack.Preview(world, settings, world.Player, cell.Value);
+                areaView.Show(area.Cells);
+                hudView.ShowAreaPreview(area);
+                SetHover(cell);
+                if (clicked) RequestAreaAttack(cell.Value);
+                return;
+            }
             if (target != null && !target.IsPlayer && world.Combatants.Contains(target.Id))
             {
                 var preview = CombatRules.Preview(world, settings, world.Player, world.Player.Position, target);

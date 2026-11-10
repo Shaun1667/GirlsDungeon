@@ -33,6 +33,7 @@ namespace GirlsDungeon.EditorTools
             var enemyMaterial = LoadOrCreateMaterial("GreyboxEnemy", new Color(0.85f, 0.25f, 0.2f));
             var fogMaterial = LoadOrCreateFogMaterial();
             var rangeMaterial = LoadOrCreateMaterial("GreyboxRange", new Color(0.3f, 0.6f, 0.95f));
+            var areaMaterial = LoadOrCreateMaterial("GreyboxArea", new Color(0.95f, 0.45f, 0.15f));
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -60,16 +61,22 @@ namespace GirlsDungeon.EditorTools
             defeatLabel.color = new Color(1f, 0.35f, 0.3f);
             var endTurnButton = CreateButton(canvas.transform, "EndTurnButton", font, "ui.combat.end_turn",
                 new Vector2(1f, 0f), new Vector2(-32f, 32f));
+            var grenadeButton = CreateButton(canvas.transform, "GrenadeButton", font, "ui.skill.grenade",
+                new Vector2(1f, 0f), new Vector2(-32f, 132f));
+            grenadeButton.GetComponent<RectTransform>().sizeDelta = new Vector2(420f, 84f);
             CreateEventSystem();
 
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
                 ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel),
-                ("endTurnButton", endTurnButton));
+                ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton));
 
             var rangeObject = new GameObject("RangeView");
             var rangeView = rangeObject.AddComponent<RangeView>();
             SetReferences(rangeView, ("rangeMaterial", rangeMaterial));
+            var areaObject = new GameObject("AreaView");
+            var areaView = areaObject.AddComponent<RangeView>();
+            SetReferences(areaView, ("rangeMaterial", areaMaterial));
 
             var unitsObject = new GameObject("UnitsView");
             var unitsView = unitsObject.AddComponent<UnitsView>();
@@ -99,7 +106,7 @@ namespace GirlsDungeon.EditorTools
             var rootObject = new GameObject("GameRoot");
             var moveController = rootObject.AddComponent<MoveController>();
             SetReferences(moveController, ("viewCamera", cameraObject.GetComponent<Camera>()), ("hoverMarker", hover.transform),
-                ("rangeView", rangeView));
+                ("rangeView", rangeView), ("areaView", areaView));
 
             var root = rootObject.AddComponent<GameRoot>();
             SetReferences(root,

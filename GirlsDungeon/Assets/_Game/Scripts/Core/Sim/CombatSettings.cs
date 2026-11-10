@@ -39,6 +39,13 @@ namespace GirlsDungeon.Core.Sim
 
         public int MinDamage;
 
+        // 범위 공격 — 수류탄 스킬 (BALANCE 6번)
+        public int GrenadeThrowRange;
+        public int GrenadeRadius;
+        public int GrenadeDamagePercent;
+        public int GrenadeStabilityDamage;
+        public int GrenadeCooldownRounds;
+
         public UnitStats StatsFor(UnitKind kind)
         {
             foreach (var stats in Units) if (stats.Kind == kind) return stats;
@@ -61,6 +68,8 @@ namespace GirlsDungeon.Core.Sim
                 || HalfCoverReductionPercent + StabilityGuardPercent > 100 || FullCoverReductionPercent + StabilityGuardPercent > 100
                 || MinDamage < 0)
                 throw new ArgumentException("Combat settings are invalid.");
+            if (GrenadeThrowRange < 1 || GrenadeRadius < 0 || GrenadeDamagePercent < 0 || GrenadeStabilityDamage < 0 || GrenadeCooldownRounds < 0)
+                throw new ArgumentException("Grenade settings are invalid.");
         }
     }
 }

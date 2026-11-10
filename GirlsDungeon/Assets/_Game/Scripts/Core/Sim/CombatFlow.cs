@@ -67,6 +67,7 @@ namespace GirlsDungeon.Core.Sim
             world.Round = 0;
             world.PlayerMoved = false;
             world.PlayerActed = false;
+            world.GrenadeCooldown = 0;
             if (player.Stability != player.MaxStability)
             {
                 player.Stability = player.MaxStability;
@@ -114,6 +115,7 @@ namespace GirlsDungeon.Core.Sim
             world.Turn = TurnSide.Player;
             world.PlayerMoved = false;
             world.PlayerActed = false;
+            if (world.GrenadeCooldown > 0) world.GrenadeCooldown--;
             events.Add(new TurnStarted(TurnSide.Player, world.Round));
         }
     }
