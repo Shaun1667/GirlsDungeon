@@ -36,8 +36,10 @@ namespace GirlsDungeon.Tests
                     Assert.That(System.Math.Max(System.Math.Abs(cell.X - map.StartCell.X), System.Math.Abs(cell.Y - map.StartCell.Y)),
                         Is.GreaterThanOrEqualTo(8), $"seed {seed} {cell}");
                     Assert.That(Sight.CanSee(map, map.StartCell, cell, 9), Is.False, $"seed {seed} {cell}");
-                    Assert.That(enemy.Hp, Is.EqualTo(10));
-                    Assert.That(enemy.Stability, Is.EqualTo(3));
+                    // 사격병 · 돌격병이 섞여 나온다 (2-8) — 각자 종류의 능력치로 가득 찬 채 시작한다.
+                    var stats = settings.StatsFor(enemy.Kind);
+                    Assert.That(enemy.Hp, Is.EqualTo(stats.MaxHp), $"seed {seed} {enemy.Kind}");
+                    Assert.That(enemy.Stability, Is.EqualTo(stats.MaxStability), $"seed {seed} {enemy.Kind}");
                 }
                 Assert.That(enemies.Select(e => e.Position).Distinct().Count(), Is.EqualTo(enemies.Count), $"seed {seed}");
             }
