@@ -15,9 +15,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>
         /// 2: 낮은 벽 (2026-11-10). 3: 체력 · 안정지수 · 시야 · 전투 상태 · 배치 난수 (2026-11-10). 4: 본 칸 기록 (2026-11-10).
         /// 5: 유닛 전투 능력치 · 이번 차례 이동 / 행동 여부 (2026-11-10). 6: 수류탄 재사용 대기 (2026-11-10).
-        /// 7: 유닛 경계 · 감시 (2026-11-10).
+        /// 7: 유닛 경계 · 감시 (2026-11-10). 8: 상자 · 낮은 벽 손상 (2026-11-10).
         /// </summary>
-        public const int Version = 7;
+        public const int Version = 8;
 
         public static byte[] Encode(World world)
         {
@@ -165,6 +165,17 @@ namespace GirlsDungeon.Core.Sim
                 }
             }
 
+            for (int y = 0; y < map.Height; y++)
+            {
+                for (int x = 0; x < map.Width; x++)
+                {
+                    var cell = new GridPos(x, y);
+                    writer.Write((byte)map.CrateDamage(cell));
+                    writer.Write((byte)map.LowWallEastDamage(cell));
+                    writer.Write((byte)map.LowWallNorthDamage(cell));
+                }
+            }
+
             writer.Write(map.Rooms.Count);
             foreach (var room in map.Rooms)
             {
@@ -194,6 +205,16 @@ namespace GirlsDungeon.Core.Sim
                 lowWallNorth[i] = (edges & 2) != 0;
             }
 
+            var crateDamage = new byte[tiles.Length];
+            var eastDamage = new byte[tiles.Length];
+            var northDamage = new byte[tiles.Length];
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                crateDamage[i] = reader.ReadByte();
+                eastDamage[i] = reader.ReadByte();
+                northDamage[i] = reader.ReadByte();
+            }
+
             int roomCount = reader.ReadInt32();
             var rooms = new List<RoomRect>(roomCount);
             for (int i = 0; i < roomCount; i++)
@@ -201,7 +222,15 @@ namespace GirlsDungeon.Core.Sim
 
             var start = ReadCell(reader);
             var stairs = ReadCell(reader);
-            return new FloorMap(width, height, tiles, lowWallEast, lowWallNorth, rooms, start, stairs);
+            var map = new FloorMap(width, height, tiles, lowWallEast, lowWallNorth, rooms, start, stairs);
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                var cell = new GridPos(i % width, i / width);
+                map.SetCrateDamage(cell, crateDamage[i]);
+                map.SetLowWallEastDamage(cell, eastDamage[i]);
+                map.SetLowWallNorthDamage(cell, northDamage[i]);
+            }
+            return map;
         }
 
         private static void WriteCell(BinaryWriter writer, GridPos cell)

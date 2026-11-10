@@ -77,6 +77,8 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.GrenadeCooldownRounds, Is.EqualTo(expected.GrenadeCooldownRounds));
             Assert.That(combat.GuardPercent, Is.EqualTo(expected.GuardPercent));
             Assert.That(combat.GuardRadius, Is.EqualTo(expected.GuardRadius));
+            Assert.That(combat.CrateDurability, Is.EqualTo(expected.CrateDurability));
+            Assert.That(combat.LowWallDurability, Is.EqualTo(expected.LowWallDurability));
             foreach (var stats in expected.Units)
             {
                 var actual = combat.StatsFor(stats.Kind);

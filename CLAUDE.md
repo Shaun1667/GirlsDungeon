@@ -69,6 +69,7 @@ GirlsDungeon/Assets/_Game/
 - 사격 · 피해는 `Core.Sim.CombatRules` 한 곳(`Preview` = 미리보기, `Resolve` = 실제, 같은 계산). 전투 이동 범위 · 경로는 `CombatMovement` 한 곳(범위 표시 · 이동 · 적 AI 공용). 차례 넘기기는 `TurnFlow`, 적 행동은 `EnemyTurn`. 전투 행동 = `CombatMoveCommand` · `AttackCommand` · `EndTurnCommand` — 화면은 이 커맨드만 낸다(`MoveController`).
 - 범위 공격(수류탄 스킬)은 `Core.Sim.AreaAttack` 한 곳(`Preview` · `Resolve`), 커맨드 `AreaAttackCommand`, 재사용 대기 `World.GrenadeCooldown`. 화면은 `MoveController` 조준 모드 + `HudView.ShowAreaPreview`.
 - 경계 상태 · 감시는 `Core.Sim.Alert` 한 곳(`CheckZones` · `Wake` · `InWatch` · `React`). 전투 중 걷기는 반드시 `CombatMovement.Walk(world, settings, …)`로 — 걸음마다 감시 반응을 확인한다. `Simulation`은 전투 수치를 받아야 경계 칸을 확인한다(게임에서는 항상 넘긴다). 위협 칸 화면은 `Game.ThreatView`.
+- 부서지는 엄폐물은 `Core.Sim.CoverBreak` 한 곳(`Facing` · `InArea` · `Hit`), 손상은 `FloorMap` 상자 · 낮은 벽 손상 값. 피해 계산 뒤에 깎는다. 부서지면 `CoverDestroyed` → `GameRoot`가 지형을 다시 그린다.
 - 유닛 이름은 에셋 `units[].nameKey`(텍스트 표 키), 화면에서는 `GameBalance.NameKey(kind)`.
 - 플레이어 시야는 `Core.Map.Vision.Compute` 한 곳(사선 + 서 있는 방 전체). 본 칸 기록은 `World.Explored`, 갱신은 `Core.Sim.VisionSystem`(커맨드마다). 전투 시작 · 적 표시 · 적 배치 · 클릭 가능 칸이 모두 이것을 쓴다.
 - 안개는 `Game.FogView`(전역 셰이더 값 `_GD_FogTex` · `_GD_FogRect` · `_GD_FogStrength`)와 `Shaders/FogOverlay.shader`. 새 지형 메시는 `FloorView.AddPart`로 만들어야 안개 재질이 덧붙는다.

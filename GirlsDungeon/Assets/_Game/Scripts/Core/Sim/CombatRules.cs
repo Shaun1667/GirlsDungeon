@@ -25,11 +25,15 @@ namespace GirlsDungeon.Core.Sim
         public readonly int CritPercent;
         public readonly int StabilityDamage;
 
+        /// <summary>이 사격으로 대상의 상자 · 낮은 벽이 부서진다.</summary>
+        public readonly bool BreaksCover;
+
         public bool CanAttack => Block == AttackBlock.None;
 
         public AttackPreview(AttackBlock block, CoverLevel cover, bool stabilityGuard, int reductionPercent,
-            int damage, int critDamage, int critPercent, int stabilityDamage)
+            int damage, int critDamage, int critPercent, int stabilityDamage, bool breaksCover)
         {
+            BreaksCover = breaksCover;
             Block = block;
             Cover = cover;
             StabilityGuard = stabilityGuard;
@@ -66,7 +70,9 @@ namespace GirlsDungeon.Core.Sim
 
             int damage = Damage(attacker.Attack, target.Defense, 100, reduction, settings.MinDamage);
             int critDamage = Damage(attacker.Attack, target.Defense, attacker.CritMultiplierPercent, reduction, settings.MinDamage);
-            return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, attacker.StabilityDamage);
+            bool breaksCover = cover != CoverLevel.None
+                && CoverBreak.AnyBreaksOnNextHit(map, settings, CoverBreak.Facing(map, target.Position, from));
+            return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, attacker.StabilityDamage, breaksCover);
         }
 
         /// <summary>정수 계산 · 반올림(0.5는 올림). 같은 입력이면 어디서나 같은 값.</summary>
@@ -97,6 +103,9 @@ namespace GirlsDungeon.Core.Sim
 
             events.Add(new UnitAttacked(attacker, target, damage, crit, preview.Cover, preview.StabilityGuard, stabilityBroken));
             events.Add(new UnitStatsChanged(target.Id));
+            // 피해는 이미 깎이기 전 엄폐로 계산했다. 이제 쏘는 쪽을 향한 상자 · 낮은 벽을 깎는다.
+            if (preview.Cover != CoverLevel.None)
+                CoverBreak.Hit(world, settings, CoverBreak.Facing(world.Map, target.Position, attacker.Position), events);
             Alert.Wake(world, target, events);
 
             if (target.Hp > 0) return true;

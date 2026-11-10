@@ -71,6 +71,7 @@ namespace GirlsDungeon.Game
                         if (hit.ReductionPercent > 0) cover = cover + " · " + Text.Get("ui.combat.reduction", hit.ReductionPercent);
                         lines.Add(Text.Get("ui.combat.preview_area_hit", UnitName(hit.Target.Kind), hit.Damage, hit.StabilityDamage, cover));
                     }
+                    if (preview.CoverBreaks > 0) lines.Add(Text.Get("ui.combat.preview_area_breaks_cover", preview.CoverBreaks));
                     if (preview.HitsPlayer) lines.Add(Text.Get("ui.combat.preview_area_self"));
                     break;
             }
@@ -109,6 +110,7 @@ namespace GirlsDungeon.Game
                 if (preview.ReductionPercent > 0) cover = cover + " · " + Text.Get("ui.combat.reduction", preview.ReductionPercent);
                 previewLabel.text = Text.Get("ui.combat.preview_attack", name, target.Hp, target.MaxHp, target.Stability, target.MaxStability,
                     preview.Damage, preview.CritPercent, preview.CritDamage, preview.StabilityDamage, cover);
+                if (preview.BreaksCover) previewLabel.text += "\n" + Text.Get("ui.combat.preview_breaks_cover");
             }
             previewLabel.gameObject.SetActive(true);
         }
@@ -165,6 +167,9 @@ namespace GirlsDungeon.Game
                         break;
                     case OverwatchTriggered reaction:
                         AddLog(Text.Get("ui.combat.log_reaction", UnitName(reaction.WatcherKind)));
+                        break;
+                    case CoverDestroyed broken:
+                        AddLog(Text.Get("ui.combat.log_cover_broken", broken.Cells.Count));
                         break;
                     case AreaExploded exploded:
                         AddLog(Text.Get("ui.combat.log_area", UnitName(exploded.AttackerKind)));

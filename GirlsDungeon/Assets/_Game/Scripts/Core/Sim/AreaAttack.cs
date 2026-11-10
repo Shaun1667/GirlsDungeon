@@ -42,10 +42,14 @@ namespace GirlsDungeon.Core.Sim
         public IReadOnlyList<AreaHit> Hits { get; }
         public bool HitsPlayer { get; }
 
+        /// <summary>이 폭발로 부서지는 상자 · 낮은 벽 수.</summary>
+        public int CoverBreaks { get; }
+
         public bool CanThrow => Block == AreaBlock.None;
 
-        public AreaPreview(AreaBlock block, GridPos center, IReadOnlyList<GridPos> cells, IReadOnlyList<AreaHit> hits, bool hitsPlayer)
+        public AreaPreview(AreaBlock block, GridPos center, IReadOnlyList<GridPos> cells, IReadOnlyList<AreaHit> hits, bool hitsPlayer, int coverBreaks)
         {
+            CoverBreaks = coverBreaks;
             Block = block;
             Center = center;
             Cells = cells;
@@ -97,7 +101,11 @@ namespace GirlsDungeon.Core.Sim
                 if (unit.IsPlayer) hitsPlayer = true;
             }
 
-            return new AreaPreview(block, center, cells, hits, hitsPlayer);
+            int coverBreaks = 0;
+            foreach (var piece in CoverBreak.InArea(map, cells))
+                if (CoverBreak.BreaksOnNextHit(map, settings, piece)) coverBreaks++;
+
+            return new AreaPreview(block, center, cells, hits, hitsPlayer, coverBreaks);
         }
 
         /// <summary>폭발을 처리한다. 던질 수 없으면 아무것도 바꾸지 않고 false.</summary>
@@ -119,6 +127,9 @@ namespace GirlsDungeon.Core.Sim
                 Alert.Wake(world, target, events);
                 if (target.Hp <= 0) downed.Add(target);
             }
+
+            // 피해는 이미 깎이기 전 엄폐로 계산했다. 폭발 칸에 걸린 상자 · 낮은 벽을 깎는다.
+            CoverBreak.Hit(world, settings, CoverBreak.InArea(world.Map, preview.Cells), events);
 
             foreach (var target in downed)
             {

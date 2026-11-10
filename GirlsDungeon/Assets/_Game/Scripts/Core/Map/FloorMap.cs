@@ -50,6 +50,9 @@ namespace GirlsDungeon.Core.Map
         private readonly TileType[] tiles;
         private readonly bool[] lowWallEast;
         private readonly bool[] lowWallNorth;
+        private readonly int[] crateDamage;
+        private readonly int[] lowWallEastDamage;
+        private readonly int[] lowWallNorthDamage;
         private readonly List<RoomRect> rooms;
 
         public int Width { get; }
@@ -79,6 +82,9 @@ namespace GirlsDungeon.Core.Map
             this.tiles = tiles;
             this.lowWallEast = lowWallEast;
             this.lowWallNorth = lowWallNorth;
+            crateDamage = new int[count];
+            lowWallEastDamage = new int[count];
+            lowWallNorthDamage = new int[count];
             this.rooms = new List<RoomRect>(rooms);
             StartCell = startCell;
             StairsCell = stairsCell;
@@ -88,7 +94,37 @@ namespace GirlsDungeon.Core.Map
 
         public TileType Get(GridPos cell) => tiles[Index(cell)];
 
-        public void SetTile(GridPos cell, TileType tile) => tiles[Index(cell)] = tile;
+        /// <summary>칸 종류를 바꾼다. 상자가 아니게 되면 그 칸의 상자 손상도 지운다.</summary>
+        public void SetTile(GridPos cell, TileType tile)
+        {
+            tiles[Index(cell)] = tile;
+            if (tile != TileType.Crate) crateDamage[Index(cell)] = 0;
+        }
+
+        /// <summary>상자가 받은 타격 수 (내구도와 비교해 부서짐을 정한다 — CoverBreak).</summary>
+        public int CrateDamage(GridPos cell) => InBounds(cell) ? crateDamage[Index(cell)] : 0;
+
+        public void SetCrateDamage(GridPos cell, int hits) => crateDamage[Index(cell)] = hits;
+
+        /// <summary>두 칸 사이 낮은 벽이 받은 타격 수.</summary>
+        public int LowWallDamage(GridPos a, GridPos b)
+        {
+            if (!TryEdge(a, b, out var owner, out bool isEast) || !InBounds(owner)) return 0;
+            return isEast ? lowWallEastDamage[Index(owner)] : lowWallNorthDamage[Index(owner)];
+        }
+
+        public void SetLowWallDamage(GridPos a, GridPos b, int hits)
+        {
+            if (!TryEdge(a, b, out var owner, out bool isEast) || !InBounds(owner)) return;
+            if (isEast) lowWallEastDamage[Index(owner)] = hits;
+            else lowWallNorthDamage[Index(owner)] = hits;
+        }
+
+        /// <summary>칸 (x, y)의 오른쪽 · 위쪽 낮은 벽 손상. 저장에서 쓴다.</summary>
+        public int LowWallEastDamage(GridPos cell) => InBounds(cell) ? lowWallEastDamage[Index(cell)] : 0;
+        public int LowWallNorthDamage(GridPos cell) => InBounds(cell) ? lowWallNorthDamage[Index(cell)] : 0;
+        public void SetLowWallEastDamage(GridPos cell, int hits) => lowWallEastDamage[Index(cell)] = hits;
+        public void SetLowWallNorthDamage(GridPos cell, int hits) => lowWallNorthDamage[Index(cell)] = hits;
 
         /// <summary>유닛이 설 수 있는 칸 (바닥 · 계단).</summary>
         public bool IsWalkable(GridPos cell)
@@ -119,6 +155,7 @@ namespace GirlsDungeon.Core.Map
             if (!TryEdge(a, b, out var owner, out bool isEast) || !InBounds(owner)) return false;
             if (isEast) lowWallEast[Index(owner)] = present;
             else lowWallNorth[Index(owner)] = present;
+            if (!present) SetLowWallDamage(a, b, 0);
             return true;
         }
 

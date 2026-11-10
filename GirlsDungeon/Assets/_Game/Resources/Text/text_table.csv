@@ -34,6 +34,9 @@ ui.skill.overwatch,감시,Overwatch
 ui.combat.log_alerted,{0} 경계 해제,{0} is alerted
 ui.combat.log_overwatch,{0} 감시,{0} is on overwatch
 ui.combat.log_reaction,{0}의 감시 사격!,{0} reacts with overwatch fire!
+ui.combat.preview_breaks_cover,이 공격으로 엄폐물이 부서짐,This attack breaks the cover
+ui.combat.preview_area_breaks_cover,부서지는 엄폐물 {0}개,Cover pieces broken: {0}
+ui.combat.log_cover_broken,엄폐물 {0}개가 부서졌다,{0} cover pieces broke
 ui.cover.none,엄폐 없음,No cover
 ui.cover.half,낮은 엄폐,Low cover
 ui.cover.full,높은 엄폐,High cover

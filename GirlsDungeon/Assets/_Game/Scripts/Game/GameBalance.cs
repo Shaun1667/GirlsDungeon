@@ -92,6 +92,12 @@ namespace GirlsDungeon.Game
         [SerializeField] private int guardPercent = 50;
         [SerializeField] private int guardRadius = 3;
 
+        [Header("Destructible cover (BALANCE 8)")]
+        [Tooltip("Hits a crate takes before it breaks.")]
+        [SerializeField] private int crateDurability = 2;
+        [Tooltip("Hits a low wall takes before it breaks.")]
+        [SerializeField] private int lowWallDurability = 3;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
@@ -151,6 +157,8 @@ namespace GirlsDungeon.Game
                 GrenadeCooldownRounds = grenadeCooldownRounds,
                 GuardPercent = guardPercent,
                 GuardRadius = guardRadius,
+                CrateDurability = crateDurability,
+                LowWallDurability = lowWallDurability,
             };
             foreach (var entry in units)
             {

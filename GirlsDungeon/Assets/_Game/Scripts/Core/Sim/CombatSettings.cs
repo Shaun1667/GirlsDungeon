@@ -50,6 +50,10 @@ namespace GirlsDungeon.Core.Sim
         public int GuardPercent;
         public int GuardRadius;
 
+        // 부서지는 엄폐물 (BALANCE 8번)
+        public int CrateDurability;
+        public int LowWallDurability;
+
         public UnitStats StatsFor(UnitKind kind)
         {
             foreach (var stats in Units) if (stats.Kind == kind) return stats;
@@ -76,6 +80,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Grenade settings are invalid.");
             if (GuardPercent < 0 || GuardPercent > 100 || GuardRadius < 0)
                 throw new ArgumentException("Guard settings are invalid.");
+            if (CrateDurability < 1 || LowWallDurability < 1)
+                throw new ArgumentException("Cover durability must be at least 1.");
         }
     }
 }

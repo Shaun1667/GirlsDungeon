@@ -175,6 +175,17 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>엄폐물이 부서져 빈 바닥이 됐다. 지형을 다시 그려야 한다.</summary>
+    public sealed class CoverDestroyed : GameEvent
+    {
+        public IReadOnlyList<GridPos> Cells { get; }
+
+        public CoverDestroyed(IReadOnlyList<GridPos> cells)
+        {
+            Cells = cells;
+        }
+    }
+
     /// <summary>플레이어가 쓰러졌다.</summary>
     public sealed class PlayerDefeated : GameEvent
     {

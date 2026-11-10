@@ -72,6 +72,8 @@ MonoBehaviour:
   grenadeCooldownRounds: 3
   guardPercent: 50
   guardRadius: 3
+  crateDurability: 2
+  lowWallDurability: 3
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

@@ -36,6 +36,7 @@ namespace GirlsDungeon.Game
         {
             var combatSettings = balance.CreateCombatSettings();
             simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings(), combatSettings), combatSettings);
+            simulation.EventsPublished += RebuildFloorWhenCoverBreaks;
 
             floorView.Build(simulation.World.Map, balance);
             fogView.Bind(simulation, balance);
@@ -51,6 +52,17 @@ namespace GirlsDungeon.Game
             cameraRig.Bind(balance, playerView.transform);
 
             if (seedLabel != null) seedLabel.text = Text.Get("ui.hud.seed", seed);
+        }
+
+        /// <summary>엄폐물이 부서지면 지형 메시를 다시 만든다 (부서진 칸은 빈 바닥).</summary>
+        private void RebuildFloorWhenCoverBreaks(System.Collections.Generic.IReadOnlyList<GameEvent> events)
+        {
+            foreach (var gameEvent in events)
+            {
+                if (!(gameEvent is CoverDestroyed)) continue;
+                floorView.Build(simulation.World.Map, balance);
+                return;
+            }
         }
 
         private void OnOverwatchButton()
