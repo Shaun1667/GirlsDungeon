@@ -31,6 +31,14 @@ namespace GirlsDungeon.Tests
             Assert.That(map.LayoutAttempts, Is.EqualTo(expected.LayoutAttempts));
             Assert.That(map.CorridorWallCost, Is.EqualTo(expected.CorridorWallCost));
             Assert.That(map.ExtraConnections, Is.EqualTo(expected.ExtraConnections));
+            Assert.That(map.MinCoverObjectsPerRoom, Is.EqualTo(expected.MinCoverObjectsPerRoom));
+            Assert.That(map.MaxCoverObjectsPerRoom, Is.EqualTo(expected.MaxCoverObjectsPerRoom));
+            Assert.That(map.PillarPercent, Is.EqualTo(expected.PillarPercent));
+            Assert.That(map.MinLowWallsPerRoom, Is.EqualTo(expected.MinLowWallsPerRoom));
+            Assert.That(map.MaxLowWallsPerRoom, Is.EqualTo(expected.MaxLowWallsPerRoom));
+            Assert.That(map.MinLowWallLength, Is.EqualTo(expected.MinLowWallLength));
+            Assert.That(map.MaxLowWallLength, Is.EqualTo(expected.MaxLowWallLength));
+            Assert.That(map.DecorAttempts, Is.EqualTo(expected.DecorAttempts));
         }
 
         [Test]

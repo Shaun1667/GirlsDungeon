@@ -55,6 +55,7 @@ namespace GirlsDungeon.Core.Sim
         {
             var world = new World(seed, new RandomStreams(seed));
             world.Map = DungeonGenerator.Generate(mapSettings, world.Random.Get(RandomPurpose.Map));
+            FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
             world.PlayerId = world.AddUnit(UnitKind.Player, world.Map.StartCell).Id;
             return world;
         }

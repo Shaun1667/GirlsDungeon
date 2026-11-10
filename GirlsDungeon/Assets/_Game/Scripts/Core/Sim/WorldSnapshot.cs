@@ -13,7 +13,8 @@ namespace GirlsDungeon.Core.Sim
     /// </summary>
     public static class WorldSnapshot
     {
-        public const int Version = 1;
+        /// <summary>2: 낮은 벽 추가 (2026-11-10).</summary>
+        public const int Version = 2;
 
         public static byte[] Encode(World world)
         {
@@ -90,6 +91,15 @@ namespace GirlsDungeon.Core.Sim
                 for (int x = 0; x < map.Width; x++)
                     writer.Write((byte)map.Get(new GridPos(x, y)));
 
+            for (int y = 0; y < map.Height; y++)
+            {
+                for (int x = 0; x < map.Width; x++)
+                {
+                    var cell = new GridPos(x, y);
+                    writer.Write((byte)((map.HasLowWallEast(cell) ? 1 : 0) | (map.HasLowWallNorth(cell) ? 2 : 0)));
+                }
+            }
+
             writer.Write(map.Rooms.Count);
             foreach (var room in map.Rooms)
             {
@@ -110,6 +120,15 @@ namespace GirlsDungeon.Core.Sim
             var tiles = new TileType[width * height];
             for (int i = 0; i < tiles.Length; i++) tiles[i] = (TileType)reader.ReadByte();
 
+            var lowWallEast = new bool[tiles.Length];
+            var lowWallNorth = new bool[tiles.Length];
+            for (int i = 0; i < tiles.Length; i++)
+            {
+                byte edges = reader.ReadByte();
+                lowWallEast[i] = (edges & 1) != 0;
+                lowWallNorth[i] = (edges & 2) != 0;
+            }
+
             int roomCount = reader.ReadInt32();
             var rooms = new List<RoomRect>(roomCount);
             for (int i = 0; i < roomCount; i++)
@@ -117,7 +136,7 @@ namespace GirlsDungeon.Core.Sim
 
             var start = ReadCell(reader);
             var stairs = ReadCell(reader);
-            return new FloorMap(width, height, tiles, rooms, start, stairs);
+            return new FloorMap(width, height, tiles, lowWallEast, lowWallNorth, rooms, start, stairs);
         }
 
         private static void WriteCell(BinaryWriter writer, GridPos cell)

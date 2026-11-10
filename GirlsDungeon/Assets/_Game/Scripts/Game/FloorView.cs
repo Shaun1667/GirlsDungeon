@@ -5,25 +5,27 @@ using UnityEngine;
 
 namespace GirlsDungeon.Game
 {
-    /// <summary>층 지형을 그레이박스 메시로 그린다. 규칙은 모르고 FloorMap만 읽는다.</summary>
+    /// <summary>층 지형과 엄폐물을 그레이박스 메시로 그린다. 규칙은 모르고 FloorMap만 읽는다.</summary>
     public sealed class FloorView : MonoBehaviour
     {
         [SerializeField] private Material floorMaterial;
         [SerializeField] private Material wallMaterial;
         [SerializeField] private Material stairsMaterial;
+        [SerializeField] private Material coverMaterial;
 
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly List<GameObject> parts = new List<GameObject>();
 
         public int WallCellCount { get; private set; }
 
-        public void Build(FloorMap map, float wallHeight)
+        public void Build(FloorMap map, GameBalance balance)
         {
             Clear();
 
             var floor = new MeshData();
             var walls = new MeshData();
             var stairs = new MeshData();
+            var cover = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -31,26 +33,38 @@ namespace GirlsDungeon.Game
                 for (int x = 0; x < map.Width; x++)
                 {
                     var cell = new GridPos(x, y);
+                    var position = GridSpace.ToWorld(cell);
                     switch (map.Get(cell))
                     {
                         case TileType.Floor:
-                            floor.AddTop(x, y, 0f);
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
                             break;
                         case TileType.Stairs:
-                            stairs.AddTop(x, y, 0f);
+                            stairs.AddTop(position, 0.5f, 0.5f, 0f);
+                            break;
+                        case TileType.Crate:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            cover.AddBox(position, balance.CrateSize * 0.5f, balance.CrateSize * 0.5f, balance.LowCoverHeight);
+                            break;
+                        case TileType.Pillar:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            walls.AddBox(position, balance.PillarSize * 0.5f, balance.PillarSize * 0.5f, balance.WallHeight);
                             break;
                         default:
-                            if (!TouchesWalkable(map, cell)) break;
-                            AddWall(walls, map, cell, wallHeight);
+                            if (!TouchesOpenCell(map, cell)) break;
+                            AddWall(walls, map, cell, balance.WallHeight);
                             WallCellCount++;
                             break;
                     }
+
+                    AddLowWalls(cover, map, cell, balance);
                 }
             }
 
             AddPart("Floor", floor, floorMaterial);
             AddPart("Walls", walls, wallMaterial);
             AddPart("Stairs", stairs, stairsMaterial);
+            AddPart("Cover", cover, coverMaterial);
         }
 
         private void OnDestroy()
@@ -78,53 +92,80 @@ namespace GirlsDungeon.Game
             parts.Add(part);
         }
 
-        private static bool TouchesWalkable(FloorMap map, GridPos cell)
+        /// <summary>벽이 아닌 칸(바닥 · 계단 · 엄폐물)이 주변에 있으면 그 벽을 그린다.</summary>
+        private static bool TouchesOpenCell(FloorMap map, GridPos cell)
         {
             for (int dy = -1; dy <= 1; dy++)
                 for (int dx = -1; dx <= 1; dx++)
-                    if (map.IsWalkable(new GridPos(cell.X + dx, cell.Y + dy))) return true;
+                    if (IsOpen(map, new GridPos(cell.X + dx, cell.Y + dy))) return true;
             return false;
         }
 
+        private static bool IsOpen(FloorMap map, GridPos cell) => map.InBounds(cell) && map.Get(cell) != TileType.Wall;
+
         private static void AddWall(MeshData walls, FloorMap map, GridPos cell, float height)
         {
-            walls.AddTop(cell.X, cell.Y, height);
-            if (map.IsWalkable(new GridPos(cell.X + 1, cell.Y))) walls.AddSide(cell.X, cell.Y, height, Vector3.right);
-            if (map.IsWalkable(new GridPos(cell.X - 1, cell.Y))) walls.AddSide(cell.X, cell.Y, height, Vector3.left);
-            if (map.IsWalkable(new GridPos(cell.X, cell.Y + 1))) walls.AddSide(cell.X, cell.Y, height, Vector3.forward);
-            if (map.IsWalkable(new GridPos(cell.X, cell.Y - 1))) walls.AddSide(cell.X, cell.Y, height, Vector3.back);
+            var position = GridSpace.ToWorld(cell);
+            walls.AddTop(position, 0.5f, 0.5f, height);
+            if (IsOpen(map, new GridPos(cell.X + 1, cell.Y))) walls.AddFace(position, Vector3.right, 0.5f, 0.5f, height);
+            if (IsOpen(map, new GridPos(cell.X - 1, cell.Y))) walls.AddFace(position, Vector3.left, 0.5f, 0.5f, height);
+            if (IsOpen(map, new GridPos(cell.X, cell.Y + 1))) walls.AddFace(position, Vector3.forward, 0.5f, 0.5f, height);
+            if (IsOpen(map, new GridPos(cell.X, cell.Y - 1))) walls.AddFace(position, Vector3.back, 0.5f, 0.5f, height);
+        }
+
+        /// <summary>칸의 오른쪽 · 위쪽 변에 놓인 낮은 벽을 얇은 상자로 그린다.</summary>
+        private static void AddLowWalls(MeshData cover, FloorMap map, GridPos cell, GameBalance balance)
+        {
+            float halfThickness = balance.LowWallThickness * 0.5f;
+            var position = GridSpace.ToWorld(cell);
+            if (map.HasLowWallEast(cell))
+                cover.AddBox(position + new Vector3(0.5f, 0f, 0f), halfThickness, 0.5f, balance.LowCoverHeight);
+            if (map.HasLowWallNorth(cell))
+                cover.AddBox(position + new Vector3(0f, 0f, 0.5f), 0.5f, halfThickness, balance.LowCoverHeight);
         }
 
         private sealed class MeshData
         {
-            private const float Half = 0.5f;
-
             private readonly List<Vector3> vertices = new List<Vector3>();
             private readonly List<Vector3> normals = new List<Vector3>();
             private readonly List<int> triangles = new List<int>();
 
-            public void AddTop(int x, int y, float height)
+            /// <summary>가운데가 center이고 반폭이 halfX · halfZ인 윗면.</summary>
+            public void AddTop(Vector3 center, float halfX, float halfZ, float height)
             {
                 AddQuad(
-                    new Vector3(x - Half, height, y - Half),
-                    new Vector3(x - Half, height, y + Half),
-                    new Vector3(x + Half, height, y + Half),
-                    new Vector3(x + Half, height, y - Half),
+                    new Vector3(center.x - halfX, height, center.z - halfZ),
+                    new Vector3(center.x - halfX, height, center.z + halfZ),
+                    new Vector3(center.x + halfX, height, center.z + halfZ),
+                    new Vector3(center.x + halfX, height, center.z - halfZ),
                     Vector3.up);
             }
 
-            public void AddSide(int x, int y, float height, Vector3 facing)
+            /// <summary>상자의 facing 쪽 옆면. halfX · halfZ는 상자 반폭.</summary>
+            public void AddFace(Vector3 center, Vector3 facing, float halfX, float halfZ, float height)
             {
-                var center = new Vector3(x, 0f, y) + facing * Half;
+                float halfDepth = Mathf.Abs(facing.x) > 0f ? halfX : halfZ;
+                float halfWidth = Mathf.Abs(facing.x) > 0f ? halfZ : halfX;
+                var faceCenter = new Vector3(center.x, 0f, center.z) + facing * halfDepth;
                 // 바깥에서 볼 때 시계 방향이어야 면이 그려진다.
-                var along = Vector3.Cross(facing, Vector3.up) * Half;
+                var along = Vector3.Cross(facing, Vector3.up) * halfWidth;
                 var up = Vector3.up * height;
-                AddQuad(center - along, center - along + up, center + along + up, center + along, facing);
+                AddQuad(faceCenter - along, faceCenter - along + up, faceCenter + along + up, faceCenter + along, facing);
+            }
+
+            public void AddBox(Vector3 center, float halfX, float halfZ, float height)
+            {
+                AddTop(center, halfX, halfZ, height);
+                AddFace(center, Vector3.right, halfX, halfZ, height);
+                AddFace(center, Vector3.left, halfX, halfZ, height);
+                AddFace(center, Vector3.forward, halfX, halfZ, height);
+                AddFace(center, Vector3.back, halfX, halfZ, height);
             }
 
             public Mesh ToMesh(string meshName)
             {
                 var mesh = new Mesh { name = meshName };
+                if (vertices.Count > 65000) mesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
                 mesh.SetVertices(vertices);
                 mesh.SetNormals(normals);
                 mesh.SetTriangles(triangles, 0);

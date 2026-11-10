@@ -113,16 +113,7 @@ namespace GirlsDungeon.Tests
 
     public class GridNavigationTests
     {
-        private static FloorMap Parse(params string[] rows)
-        {
-            int height = rows.Length;
-            int width = rows[0].Length;
-            var tiles = new TileType[width * height];
-            for (int y = 0; y < height; y++)
-                for (int x = 0; x < width; x++)
-                    tiles[x + y * width] = rows[y][x] == '#' ? TileType.Wall : TileType.Floor;
-            return new FloorMap(width, height, tiles, new RoomRect[0], new GridPos(0, 0), new GridPos(0, 0));
-        }
+        private static FloorMap Parse(params string[] rows) => TestData.Parse(rows);
 
         [Test]
         public void Diagonal_IsAllowedInTheOpen()
@@ -276,7 +267,35 @@ namespace GirlsDungeon.Tests
                 LayoutAttempts = 50,
                 CorridorWallCost = 5,
                 ExtraConnections = 2,
+                MinCoverObjectsPerRoom = 2,
+                MaxCoverObjectsPerRoom = 4,
+                PillarPercent = 30,
+                MinLowWallsPerRoom = 1,
+                MaxLowWallsPerRoom = 2,
+                MinLowWallLength = 2,
+                MaxLowWallLength = 3,
+                DecorAttempts = 30,
             };
+        }
+
+        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥. 첫 줄이 y = 0.</summary>
+        public static FloorMap Parse(params string[] rows)
+        {
+            int height = rows.Length;
+            int width = rows[0].Length;
+            var tiles = new TileType[width * height];
+            for (int y = 0; y < height; y++)
+            {
+                for (int x = 0; x < width; x++)
+                {
+                    char ch = rows[y][x];
+                    tiles[x + y * width] = ch == '#' ? TileType.Wall
+                        : ch == 'C' ? TileType.Crate
+                        : ch == 'P' ? TileType.Pillar
+                        : TileType.Floor;
+                }
+            }
+            return new FloorMap(width, height, tiles, new RoomRect[0], new GridPos(0, 0), new GridPos(0, 0));
         }
     }
 }

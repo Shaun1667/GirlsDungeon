@@ -24,9 +24,21 @@ MonoBehaviour:
   layoutAttempts: 50
   corridorWallCost: 5
   extraConnections: 2
+  minCoverObjectsPerRoom: 2
+  maxCoverObjectsPerRoom: 4
+  pillarPercent: 30
+  minLowWallsPerRoom: 1
+  maxLowWallsPerRoom: 2
+  minLowWallLength: 2
+  maxLowWallLength: 3
+  decorAttempts: 30
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2
+  lowCoverHeight: 0.55
+  crateSize: 0.8
+  pillarSize: 0.7
+  lowWallThickness: 0.14
   cameraPitch: 52
   cameraStartYaw: 45
   cameraYawStep: 30

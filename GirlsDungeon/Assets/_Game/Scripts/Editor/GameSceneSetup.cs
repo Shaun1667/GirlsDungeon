@@ -29,6 +29,7 @@ namespace GirlsDungeon.EditorTools
             var stairsMaterial = LoadOrCreateMaterial("GreyboxStairs", new Color(0.95f, 0.72f, 0.2f));
             var playerMaterial = LoadOrCreateMaterial("GreyboxPlayer", new Color(0.92f, 0.36f, 0.5f));
             var hoverMaterial = LoadOrCreateMaterial("GreyboxHover", new Color(0.35f, 0.85f, 0.95f));
+            var coverMaterial = LoadOrCreateMaterial("GreyboxCover", new Color(0.55f, 0.47f, 0.36f));
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -40,7 +41,7 @@ namespace GirlsDungeon.EditorTools
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial));
 
             var playerObject = new GameObject("PlayerView");
             var playerView = playerObject.AddComponent<PlayerView>();

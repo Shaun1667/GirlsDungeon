@@ -1,5 +1,6 @@
 using System;
 using GirlsDungeon.Core.Grid;
+using GirlsDungeon.Core.Map;
 using GirlsDungeon.Core.Sim;
 using UnityEngine;
 
@@ -31,7 +32,7 @@ namespace GirlsDungeon.Game
         {
             simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings()));
 
-            floorView.Build(simulation.World.Map, balance.WallHeight);
+            floorView.Build(simulation.World.Map, balance);
             playerView.Bind(simulation, balance.StepSeconds);
             moveController.Bind(simulation, playerView, balance.MoveCostTicks);
             cameraRig.Bind(balance, playerView.transform);
@@ -80,7 +81,18 @@ namespace GirlsDungeon.Game
             if (world == null) return "Run not started";
             var map = world.Map;
             return $"Size={map.Width}x{map.Height}, Rooms={map.Rooms.Count}, Walkable={map.CountWalkable()}, "
-                + $"Start={map.StartCell}, Stairs={map.StairsCell}";
+                + $"Start={map.StartCell}, Stairs={map.StairsCell}, Crates={map.CountTiles(TileType.Crate)}, "
+                + $"Pillars={map.CountTiles(TileType.Pillar)}, LowWalls={map.CountLowWalls()}";
+        }
+
+        /// <summary>칸이 네 방향으로 받는 엄폐. 예: "E:Half N:Full".</summary>
+        public string DebugCoverAt(GridPos cell)
+        {
+            var map = World?.Map;
+            if (map == null || !map.InBounds(cell)) return "Out of map";
+            return $"Tile={map.Get(cell)}, E:{Cover.InDirection(map, cell, new GridPos(1, 0))} "
+                + $"W:{Cover.InDirection(map, cell, new GridPos(-1, 0))} N:{Cover.InDirection(map, cell, new GridPos(0, 1))} "
+                + $"S:{Cover.InDirection(map, cell, new GridPos(0, -1))}";
         }
 
         private int PickSeed()

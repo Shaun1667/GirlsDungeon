@@ -18,6 +18,12 @@
 | 1-6 | 배치 다시 하기 | 50 | `layoutAttempts` | 재시도 상한 |
 | 1-7 | 복도가 벽을 뚫는 비용 | 5 (기존 길 1) | `corridorWallCost` | 기존 길 재활용 |
 | 1-8 | 추가 복도 (고리) | 2 | `extraConnections` | 돌아갈 길 |
+| 1-9 | 방마다 막는 엄폐물(상자 · 기둥) | 2~4 | `minCoverObjectsPerRoom` · `maxCoverObjectsPerRoom` | 방마다 숨을 곳 (2026-11-10, Claude 정함 · 확인 필요) |
+| 1-10 | 엄폐물 중 기둥 비율 | 30% | `pillarPercent` | 나머지는 상자 |
+| 1-11 | 방마다 낮은 벽 | 1~2개 | `minLowWallsPerRoom` · `maxLowWallsPerRoom` | |
+| 1-12 | 낮은 벽 길이 | 2~3칸 | `minLowWallLength` · `maxLowWallLength` | |
+| 1-13 | 꾸미기 시도 | 방마다 30 | `decorAttempts` | 재시도 상한 |
+| 1-14 | 엄폐물 위치 규칙 | 방 테두리 줄 제외, 다른 엄폐물 · 시작 · 계단과 8칸 이웃 금지, 놓을 때마다 연결 검사 | (코드) `FloorDecor` | 길이 막히지 않게 |
 
 ## 2. 이동
 | 번호 | 항목 | 값 | 필드 |
@@ -34,6 +40,9 @@
 | 3-4 | 카메라 회전 단위 | ~~90도~~ → 30도 (2026-11-10, 사용자) | `cameraYawStep` |
 | 3-5 | 카메라 거리 | 17 | `cameraDistance` |
 | 3-6 | 따라가기 · 회전 빠르기 | 8 · 10 | `cameraFollowSharpness` · `cameraRotateSharpness` |
+| 3-7 | 낮은 엄폐물 높이 (상자 · 낮은 벽) | 0.55 | `lowCoverHeight` |
+| 3-8 | 상자 · 기둥 크기 | 0.8 · 0.7 | `crateSize` · `pillarSize` |
+| 3-9 | 낮은 벽 두께 | 0.14 | `lowWallThickness` |
 
 ## 4. 검산
 - 코드: `BalanceTests`가 1번 · 2번을 에셋 값과 비교한다.

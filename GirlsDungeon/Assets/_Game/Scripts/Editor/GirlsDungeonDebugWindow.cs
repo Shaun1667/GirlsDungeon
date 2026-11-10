@@ -67,10 +67,11 @@ namespace GirlsDungeon.EditorTools
             EditorGUILayout.EndHorizontal();
         }
 
-        private static void DrawMapSection(GameRoot root)
+        private void DrawMapSection(GameRoot root)
         {
             EditorGUILayout.LabelField("맵", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("요약", root.DebugMapSummary(), EditorStyles.wordWrappedLabel);
+            EditorGUILayout.LabelField("칸 엄폐 (아래 '칸' 기준)", root.DebugCoverAt(new GridPos(moveTarget.x, moveTarget.y)), EditorStyles.wordWrappedLabel);
         }
 
         private void DrawMoveSection(GameRoot root)

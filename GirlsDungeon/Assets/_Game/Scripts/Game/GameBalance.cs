@@ -24,12 +24,26 @@ namespace GirlsDungeon.Game
         [SerializeField] private int corridorWallCost = 5;
         [SerializeField] private int extraConnections = 2;
 
+        [Header("Cover (BALANCE 1-9 ~ 1-16)")]
+        [SerializeField] private int minCoverObjectsPerRoom = 2;
+        [SerializeField] private int maxCoverObjectsPerRoom = 4;
+        [SerializeField] private int pillarPercent = 30;
+        [SerializeField] private int minLowWallsPerRoom = 1;
+        [SerializeField] private int maxLowWallsPerRoom = 2;
+        [SerializeField] private int minLowWallLength = 2;
+        [SerializeField] private int maxLowWallLength = 3;
+        [SerializeField] private int decorAttempts = 30;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
 
         [Header("View (BALANCE 3)")]
         [SerializeField] private float wallHeight = 1.2f;
+        [SerializeField] private float lowCoverHeight = 0.55f;
+        [SerializeField] private float crateSize = 0.8f;
+        [SerializeField] private float pillarSize = 0.7f;
+        [SerializeField] private float lowWallThickness = 0.14f;
         [SerializeField] private float cameraPitch = 52f;
         [SerializeField] private float cameraStartYaw = 45f;
         [SerializeField] private float cameraYawStep = 30f;
@@ -41,6 +55,10 @@ namespace GirlsDungeon.Game
         public int MoveCostTicks => moveCostTicks;
         public float StepSeconds => stepSeconds;
         public float WallHeight => wallHeight;
+        public float LowCoverHeight => lowCoverHeight;
+        public float CrateSize => crateSize;
+        public float PillarSize => pillarSize;
+        public float LowWallThickness => lowWallThickness;
         public float CameraPitch => cameraPitch;
         public float CameraStartYaw => cameraStartYaw;
         public float CameraYawStep => cameraYawStep;
@@ -63,6 +81,14 @@ namespace GirlsDungeon.Game
                 LayoutAttempts = layoutAttempts,
                 CorridorWallCost = corridorWallCost,
                 ExtraConnections = extraConnections,
+                MinCoverObjectsPerRoom = minCoverObjectsPerRoom,
+                MaxCoverObjectsPerRoom = maxCoverObjectsPerRoom,
+                PillarPercent = pillarPercent,
+                MinLowWallsPerRoom = minLowWallsPerRoom,
+                MaxLowWallsPerRoom = maxLowWallsPerRoom,
+                MinLowWallLength = minLowWallLength,
+                MaxLowWallLength = maxLowWallLength,
+                DecorAttempts = decorAttempts,
             };
         }
     }
