@@ -101,7 +101,7 @@ namespace GirlsDungeon.Core.Map
         /// <summary>
         /// 보급 상자를 놓는다 (결정 2026-11-10, 사용자: 층마다 2~3개, 시작 방 밖). 꾸미기가 끝난 뒤 따로 부른다 —
         /// 난수도 따로(아이템 난수) 받으므로 상자를 더해도 같은 시드의 지형 · 엄폐물은 그대로다.
-        /// 한 방에 하나, 시작 방 · 계단 방 제외, 방 테두리 줄 제외, 시작 · 계단 칸과 붙지 않게, 바로 옆에 설 칸이 있게, 놓을 때마다 연결 검사.
+        /// 한 방에 하나, 시작 방 · 계단 방 제외, 방 테두리 줄 제외, 시작 · 계단 칸과 붙지 않게, 낮은 벽이 붙은 칸 제외, 바로 옆에 설 칸이 있게, 놓을 때마다 연결 검사.
         /// </summary>
         public static void PlaceSupplyCrates(FloorMap map, MapSettings settings, IRandom random)
         {
@@ -127,7 +127,8 @@ namespace GirlsDungeon.Core.Map
                 var cell = new GridPos(
                     random.Range(room.X + 1, room.X + room.Width - 1),
                     random.Range(room.Y + 1, room.Y + room.Height - 1));
-                if (map.Get(cell) != TileType.Floor || !HasWalkableNeighbor(map, cell)) continue;
+                // 낮은 벽은 걸을 수 있는 두 칸 사이에만 선다 — 낮은 벽이 붙은 칸에는 놓지 않는다.
+                if (map.Get(cell) != TileType.Floor || !HasWalkableNeighbor(map, cell) || TouchesLowWall(map, cell)) continue;
                 bool nearKeyCell = false;
                 foreach (var step in Steps)
                 {
@@ -140,6 +141,13 @@ namespace GirlsDungeon.Core.Map
                 if (IsFullyConnected(map)) return true;
                 map.SetTile(cell, TileType.Floor);
             }
+            return false;
+        }
+
+        private static bool TouchesLowWall(FloorMap map, GridPos cell)
+        {
+            foreach (var step in CardinalSteps)
+                if (map.HasLowWallBetween(cell, new GridPos(cell.X + step.X, cell.Y + step.Y))) return true;
             return false;
         }
 
