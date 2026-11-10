@@ -192,7 +192,10 @@ namespace GirlsDungeon.Tests
 
     public class CombatTurnTests
     {
-        /// <summary>열린 방: 플레이어 (1,2), 사격병 (6,2), 사격병 오른쪽에 상자.</summary>
+        /// <summary>
+        /// 열린 방: 플레이어 (1,2) → 전투 시작 때 (2,2), 사격병 (6,2), 상자 (5,3).
+        /// 사격병이 한 걸음 옮긴 (6,3)에서는 상자가 플레이어 쪽 낮은 엄폐가 되고, 플레이어가 사거리(7칸) 안이다.
+        /// </summary>
         private static (Simulation simulation, World world, Unit enemy) StartCombat()
         {
             var world = new World(1, new GirlsDungeon.Core.Random.RandomStreams(1))
@@ -207,7 +210,7 @@ namespace GirlsDungeon.Tests
             var combat = TestData.Combat();
             world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(1, 2)).Id;
             var enemy = world.AddUnit(combat.StatsFor(UnitKind.Rifleman), new GridPos(6, 2));
-            world.Map.SetTile(new GridPos(9, 1), TileType.Crate);
+            world.Map.SetTile(new GridPos(5, 3), TileType.Crate);
             var simulation = new Simulation(world);
             Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(2, 2), 1)), Is.True);
             Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
@@ -251,6 +254,7 @@ namespace GirlsDungeon.Tests
 
             Assert.That(Cover.Against(world.Map, enemy.Position, world.Player.Position), Is.Not.EqualTo(CoverLevel.None),
                 $"rifleman stood at {enemy.Position}");
+            Assert.That(world.Player.Hp, Is.LessThan(world.Player.MaxHp), "rifleman shot after moving");
         }
 
         [Test]
