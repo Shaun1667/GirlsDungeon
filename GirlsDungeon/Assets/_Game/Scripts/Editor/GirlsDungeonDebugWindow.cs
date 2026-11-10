@@ -48,6 +48,8 @@ namespace GirlsDungeon.EditorTools
                     DrawMapSection(root);
                     EditorGUILayout.Space();
                     DrawMoveSection(root);
+                    EditorGUILayout.Space();
+                    DrawCombatSection(root);
                 }
             }
 
@@ -72,6 +74,20 @@ namespace GirlsDungeon.EditorTools
             EditorGUILayout.LabelField("맵", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("요약", root.DebugMapSummary(), EditorStyles.wordWrappedLabel);
             EditorGUILayout.LabelField("칸 엄폐 (아래 '칸' 기준)", root.DebugCoverAt(new GridPos(moveTarget.x, moveTarget.y)), EditorStyles.wordWrappedLabel);
+        }
+
+        private static void DrawCombatSection(GameRoot root)
+        {
+            EditorGUILayout.LabelField("전투", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("상태", root.DebugCombatSummary(), EditorStyles.wordWrappedLabel);
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("턴 종료 [상태 변경]")) root.DebugEndTurn();
+            if (GUILayout.Button("적 하나 처치 [상태 변경]")) root.DebugDefeatEnemy();
+            EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.LabelField("유닛", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField(root.DebugUnitsSummary(), EditorStyles.wordWrappedLabel);
         }
 
         private void DrawMoveSection(GameRoot root)

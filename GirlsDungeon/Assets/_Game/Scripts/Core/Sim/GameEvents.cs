@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using GirlsDungeon.Core.Grid;
 
 namespace GirlsDungeon.Core.Sim
@@ -26,6 +27,65 @@ namespace GirlsDungeon.Core.Sim
         public TickAdvanced(long tick)
         {
             Tick = tick;
+        }
+    }
+
+    /// <summary>탐험이 턴 전투로 바뀌었다. 처음 들어온 적 ID.</summary>
+    public sealed class CombatStarted : GameEvent
+    {
+        public IReadOnlyList<int> EnemyIds { get; }
+
+        public CombatStarted(IReadOnlyList<int> enemyIds)
+        {
+            EnemyIds = enemyIds;
+        }
+    }
+
+    /// <summary>전투 중 새로 보인 적이 합류했다.</summary>
+    public sealed class EnemiesJoinedCombat : GameEvent
+    {
+        public IReadOnlyList<int> EnemyIds { get; }
+
+        public EnemiesJoinedCombat(IReadOnlyList<int> enemyIds)
+        {
+            EnemyIds = enemyIds;
+        }
+    }
+
+    public sealed class CombatEnded : GameEvent { }
+
+    public sealed class TurnStarted : GameEvent
+    {
+        public TurnSide Side { get; }
+        public int Round { get; }
+
+        public TurnStarted(TurnSide side, int round)
+        {
+            Side = side;
+            Round = round;
+        }
+    }
+
+    /// <summary>체력 · 안정지수가 바뀌었다.</summary>
+    public sealed class UnitStatsChanged : GameEvent
+    {
+        public int UnitId { get; }
+
+        public UnitStatsChanged(int unitId)
+        {
+            UnitId = unitId;
+        }
+    }
+
+    public sealed class UnitDied : GameEvent
+    {
+        public int UnitId { get; }
+        public UnitKind Kind { get; }
+
+        public UnitDied(int unitId, UnitKind kind)
+        {
+            UnitId = unitId;
+            Kind = kind;
         }
     }
 }

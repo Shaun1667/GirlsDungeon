@@ -16,7 +16,7 @@ namespace GirlsDungeon.Tests
             for (int seed = 1; seed <= 50; seed++)
             {
                 var bare = DungeonGenerator.Generate(TestData.Map(), new RandomStreams(seed).Get(RandomPurpose.Map));
-                var decorated = RunFactory.NewRun(seed, TestData.Map()).Map;
+                var decorated = TestData.NewRun(seed).Map;
 
                 for (int y = 0; y < bare.Height; y++)
                     for (int x = 0; x < bare.Width; x++)
@@ -33,7 +33,7 @@ namespace GirlsDungeon.Tests
             var settings = TestData.Map();
             for (int seed = 1; seed <= SeedCount; seed++)
             {
-                var map = RunFactory.NewRun(seed, settings).Map;
+                var map = RunFactory.NewRun(seed, settings, TestData.Combat()).Map;
                 int objects = map.CountTiles(TileType.Crate) + map.CountTiles(TileType.Pillar);
                 Assert.That(objects, Is.LessThanOrEqualTo(map.Rooms.Count * settings.MaxCoverObjectsPerRoom), $"seed {seed}");
                 Assert.That(objects, Is.GreaterThan(0), $"seed {seed}");
@@ -60,7 +60,7 @@ namespace GirlsDungeon.Tests
         {
             for (int seed = 1; seed <= SeedCount; seed++)
             {
-                var map = RunFactory.NewRun(seed, TestData.Map()).Map;
+                var map = TestData.NewRun(seed).Map;
                 Assert.That(map.CountLowWalls(), Is.GreaterThan(0), $"seed {seed}");
 
                 for (int y = 0; y < map.Height; y++)
@@ -211,7 +211,7 @@ namespace GirlsDungeon.Tests
         [Test]
         public void RoundTrip_KeepsLowWalls()
         {
-            var world = RunFactory.NewRun(21, TestData.Map());
+            var world = TestData.NewRun(21);
             var restored = WorldSnapshot.Decode(WorldSnapshot.Encode(world));
             Assert.That(restored.Map.CountLowWalls(), Is.EqualTo(world.Map.CountLowWalls()));
             Assert.That(restored.Map.CountTiles(TileType.Pillar), Is.EqualTo(world.Map.CountTiles(TileType.Pillar)));

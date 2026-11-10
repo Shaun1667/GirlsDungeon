@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using GirlsDungeon.Core.Grid;
@@ -13,8 +12,8 @@ namespace GirlsDungeon.Core.Sim
     /// </summary>
     public static class WorldSnapshot
     {
-        /// <summary>2: 낮은 벽 추가 (2026-11-10).</summary>
-        public const int Version = 2;
+        /// <summary>2: 낮은 벽 (2026-11-10). 3: 체력 · 안정지수 · 시야 · 전투 상태 · 배치 난수 (2026-11-10).</summary>
+        public const int Version = 3;
 
         public static byte[] Encode(World world)
         {
@@ -28,7 +27,9 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write(world.NextEntityId);
                 writer.Write(world.PlayerId);
 
-                foreach (var state in world.Random.GetStates()) writer.Write(state);
+                var states = world.Random.GetStates();
+                writer.Write(states.Length);
+                foreach (var state in states) writer.Write(state);
 
                 WriteMap(writer, world.Map);
 
@@ -38,7 +39,18 @@ namespace GirlsDungeon.Core.Sim
                     writer.Write(unit.Id);
                     writer.Write((byte)unit.Kind);
                     WriteCell(writer, unit.Position);
+                    writer.Write(unit.MaxHp);
+                    writer.Write(unit.Hp);
+                    writer.Write(unit.MaxStability);
+                    writer.Write(unit.Stability);
+                    writer.Write(unit.VisionRange);
                 }
+
+                writer.Write((byte)world.Mode);
+                writer.Write((byte)world.Turn);
+                writer.Write(world.Round);
+                writer.Write(world.Combatants.Count);
+                foreach (var id in world.Combatants) writer.Write(id);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -60,7 +72,10 @@ namespace GirlsDungeon.Core.Sim
                 int nextEntityId = reader.ReadInt32();
                 int playerId = reader.ReadInt32();
 
-                var states = new ulong[RandomStreams.Count];
+                int stateCount = reader.ReadInt32();
+                if (stateCount != RandomStreams.Count)
+                    throw new InvalidDataException($"Snapshot has {stateCount} random streams, expected {RandomStreams.Count}.");
+                var states = new ulong[stateCount];
                 for (int i = 0; i < states.Length; i++) states[i] = reader.ReadUInt64();
 
                 var world = new World(seed, new RandomStreams(states))
@@ -77,8 +92,20 @@ namespace GirlsDungeon.Core.Sim
                 {
                     int id = reader.ReadInt32();
                     var kind = (UnitKind)reader.ReadByte();
-                    world.Units.Add(new Unit(id, kind, ReadCell(reader)));
+                    var position = ReadCell(reader);
+                    int maxHp = reader.ReadInt32();
+                    int hp = reader.ReadInt32();
+                    int maxStability = reader.ReadInt32();
+                    int stability = reader.ReadInt32();
+                    int visionRange = reader.ReadInt32();
+                    world.Units.Add(new Unit(id, kind, position, maxHp, hp, maxStability, stability, visionRange));
                 }
+
+                world.Mode = (WorldMode)reader.ReadByte();
+                world.Turn = (TurnSide)reader.ReadByte();
+                world.Round = reader.ReadInt32();
+                int combatantCount = reader.ReadInt32();
+                for (int i = 0; i < combatantCount; i++) world.Combatants.Add(reader.ReadInt32());
                 return world;
             }
         }

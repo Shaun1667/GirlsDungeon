@@ -4,7 +4,8 @@
     "references": [
         "GirlsDungeon.Core",
         "GirlsDungeon.Game",
-        "UnityEngine.UI"
+        "UnityEngine.UI",
+        "Unity.InputSystem"
     ],
     "includePlatforms": [
         "Editor"

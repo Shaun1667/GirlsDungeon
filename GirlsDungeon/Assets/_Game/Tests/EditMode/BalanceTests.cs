@@ -50,6 +50,26 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void Combat_MatchesBalanceTables4And5()
+        {
+            var combat = Load().CreateCombatSettings();
+            var expected = TestData.Combat();
+
+            foreach (var stats in expected.Units)
+            {
+                var actual = combat.StatsFor(stats.Kind);
+                Assert.That(actual.MaxHp, Is.EqualTo(stats.MaxHp), stats.Kind + " hp");
+                Assert.That(actual.MaxStability, Is.EqualTo(stats.MaxStability), stats.Kind + " stability");
+                Assert.That(actual.VisionRange, Is.EqualTo(stats.VisionRange), stats.Kind + " vision");
+            }
+            Assert.That(combat.MinEnemiesPerFloor, Is.EqualTo(4));
+            Assert.That(combat.MaxEnemiesPerFloor, Is.EqualTo(6));
+            Assert.That(combat.EnemyMinDistanceFromStart, Is.EqualTo(expected.EnemyMinDistanceFromStart));
+            Assert.That(combat.StabilityLossPerHit, Is.EqualTo(expected.StabilityLossPerHit));
+            Assert.That(combat.EndTurnCostTicks, Is.EqualTo(expected.EndTurnCostTicks));
+        }
+
+        [Test]
         public void FixedSeed_IsOff()
         {
             Assert.That(Load().FixedSeed, Is.EqualTo(0));

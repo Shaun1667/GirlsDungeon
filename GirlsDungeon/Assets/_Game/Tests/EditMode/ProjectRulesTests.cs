@@ -66,7 +66,8 @@ namespace GirlsDungeon.Tests
         public void GameScene_HasNoEmptyGameRootReferences()
         {
             var scene = File.ReadAllText(GameRoot + "/Scenes/Game.unity");
-            var fields = new[] { "balance", "seedLabel", "floorView", "playerView", "cameraRig", "moveController", "viewCamera", "hoverMarker" };
+            var fields = new[] { "balance", "seedLabel", "floorView", "playerView", "cameraRig", "moveController", "viewCamera", "hoverMarker",
+                "unitsView", "hudView", "enemyMaterial", "hpLabel", "stabilityLabel", "roundLabel", "turnLabel", "endTurnButton" };
 
             foreach (var field in fields)
             {

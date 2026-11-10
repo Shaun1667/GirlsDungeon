@@ -65,6 +65,8 @@ GirlsDungeon/Assets/_Game/
 - 규칙 진행은 `Core.Sim.Simulation.Execute(커맨드)` 한 곳. 새 행동 = `ICommand` 하나. 틱 순서는 `Simulation` 설명의 ① ~ ⑦을 따른다. 규칙 → 화면은 `EventsPublished`의 `GameEvent`로만.
 - 새 판 만들기는 `Core.Sim.RunFactory` 한 곳. 맵 생성은 `Core.Map.DungeonGenerator`, 칸 이동 판정과 경로는 `Core.Map.GridNavigation` 한 곳.
 - 엄폐물 배치는 `Core.Map.FloorDecor` 한 곳(꾸미기 난수, 맵 모양 뒤). 시야 · 사선은 `Core.Map.Sight`, 엄폐 판정은 `Core.Map.Cover` 한 곳 — 미리보기 · 실제 · AI가 같은 함수를 쓴다. 설 수 있는 칸은 `FloorMap.IsWalkable`, 시야를 막는 칸은 `FloorMap.BlocksSight`. 새 칸 종류 = `TileType` 끝에 추가 + 이 두 함수 + `FloorView`.
+- 유닛 능력치는 `Core.Sim.CombatSettings.Units` 표(에셋 `units` 배열) 한 곳. 새 적 = `UnitKind` 끝에 추가 + 표 한 줄. 적 배치는 `EnemySpawner`, 탐험 ↔ 전투 전환 · 사망은 `CombatFlow` 한 곳(커맨드마다 `Simulation`이 부름). 적 차례 행동은 `EnemyTurn.Run`.
+- 화면: 적 표시 `Game.UnitsView`(보이거나 전투 중인 적만), HUD · 턴 종료 버튼 `Game.HudView`. UI 입력은 EventSystem + `InputSystemUIInputModule`.
 - 칸 ↔ 3D 위치 변환은 `Game.GridSpace` 한 곳. 지형 그리기 `FloorView`, 플레이어 그리기 `PlayerView`, 클릭 이동 `MoveController`, 카메라 `CameraRig`. 화면 쪽은 규칙을 바꾸지 않고 커맨드만 낸다.
 - Setup 메뉴는 에셋을 `NewScene` 뒤에 불러온다 — 앞에서 불러 두면 참조가 비어 저장된다 (TASKS 1-2 피드백).
 

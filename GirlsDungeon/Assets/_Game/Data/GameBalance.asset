@@ -32,6 +32,20 @@ MonoBehaviour:
   minLowWallLength: 2
   maxLowWallLength: 3
   decorAttempts: 30
+  units:
+  - kind: 0
+    maxHp: 20
+    maxStability: 6
+    visionRange: 9
+  - kind: 1
+    maxHp: 10
+    maxStability: 3
+    visionRange: 9
+  minEnemiesPerFloor: 4
+  maxEnemiesPerFloor: 6
+  enemyMinDistanceFromStart: 8
+  stabilityLossPerHit: 1
+  endTurnCostTicks: 1
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

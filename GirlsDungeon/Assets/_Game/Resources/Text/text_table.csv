@@ -1,3 +1,9 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
 ui.hud.controls,클릭: 이동 · Q/E: 카메라 회전,Click: Move · Q/E: Rotate camera
+ui.hud.hp,체력 {0}/{1},HP {0}/{1}
+ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
+ui.combat.round,전투 · {0}라운드,Combat · Round {0}
+ui.combat.player_turn,내 차례,Your turn
+ui.combat.enemy_turn,적 차례,Enemy turn
+ui.combat.end_turn,턴 종료,End turn

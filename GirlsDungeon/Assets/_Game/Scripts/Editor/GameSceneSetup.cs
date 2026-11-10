@@ -30,14 +30,34 @@ namespace GirlsDungeon.EditorTools
             var playerMaterial = LoadOrCreateMaterial("GreyboxPlayer", new Color(0.92f, 0.36f, 0.5f));
             var hoverMaterial = LoadOrCreateMaterial("GreyboxHover", new Color(0.35f, 0.85f, 0.95f));
             var coverMaterial = LoadOrCreateMaterial("GreyboxCover", new Color(0.55f, 0.47f, 0.36f));
+            var enemyMaterial = LoadOrCreateMaterial("GreyboxEnemy", new Color(0.85f, 0.25f, 0.2f));
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
             var seedLabel = CreateLabel(canvas.transform, "SeedLabel", font, 28,
                 new Vector2(0f, 1f), new Vector2(24f, -20f), TextAnchor.UpperLeft);
+            var hpLabel = CreateLabel(canvas.transform, "HpLabel", font, 30,
+                new Vector2(0f, 1f), new Vector2(24f, -64f), TextAnchor.UpperLeft);
+            var stabilityLabel = CreateLabel(canvas.transform, "StabilityLabel", font, 30,
+                new Vector2(0f, 1f), new Vector2(24f, -104f), TextAnchor.UpperLeft);
+            var roundLabel = CreateLabel(canvas.transform, "RoundLabel", font, 34,
+                new Vector2(0.5f, 1f), new Vector2(0f, -20f), TextAnchor.UpperCenter);
+            var turnLabel = CreateLabel(canvas.transform, "TurnLabel", font, 30,
+                new Vector2(0.5f, 1f), new Vector2(0f, -64f), TextAnchor.UpperCenter);
             var controlsLabel = CreateLabel(canvas.transform, "ControlsLabel", font, 26,
                 new Vector2(0f, 0f), new Vector2(24f, 20f), TextAnchor.LowerLeft);
             controlsLabel.gameObject.AddComponent<TextLabel>().TextKey = "ui.hud.controls";
+            var endTurnButton = CreateButton(canvas.transform, "EndTurnButton", font, "ui.combat.end_turn",
+                new Vector2(1f, 0f), new Vector2(-32f, 32f));
+            CreateEventSystem();
+
+            var hudView = canvas.gameObject.AddComponent<HudView>();
+            SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
+                ("turnLabel", turnLabel), ("endTurnButton", endTurnButton));
+
+            var unitsObject = new GameObject("UnitsView");
+            var unitsView = unitsObject.AddComponent<UnitsView>();
+            SetReferences(unitsView, ("enemyMaterial", enemyMaterial));
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
@@ -66,13 +86,45 @@ namespace GirlsDungeon.EditorTools
                 ("floorView", floorView),
                 ("playerView", playerView),
                 ("cameraRig", cameraRig),
-                ("moveController", moveController));
+                ("moveController", moveController),
+                ("unitsView", unitsView),
+                ("hudView", hudView));
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
             Debug.Log($"Game scene built: {ScenePath}");
+        }
+
+        private static Button CreateButton(Transform parent, string objectName, Font font, string textKey, Vector2 corner, Vector2 offset)
+        {
+            var buttonObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            buttonObject.transform.SetParent(parent, false);
+
+            var rect = buttonObject.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = rect.pivot = corner;
+            rect.sizeDelta = new Vector2(260f, 84f);
+            rect.anchoredPosition = offset;
+
+            var image = buttonObject.GetComponent<Image>();
+            image.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+            image.type = Image.Type.Sliced;
+            image.color = new Color(0.16f, 0.18f, 0.24f, 0.95f);
+
+            var label = CreateLabel(buttonObject.transform, "Label", font, 32, new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
+            var labelRect = label.GetComponent<RectTransform>();
+            labelRect.anchorMin = Vector2.zero;
+            labelRect.anchorMax = Vector2.one;
+            labelRect.sizeDelta = Vector2.zero;
+            label.gameObject.AddComponent<TextLabel>().TextKey = textKey;
+            return buttonObject.GetComponent<Button>();
+        }
+
+        private static void CreateEventSystem()
+        {
+            new GameObject("EventSystem", typeof(UnityEngine.EventSystems.EventSystem),
+                typeof(UnityEngine.InputSystem.UI.InputSystemUIInputModule));
         }
 
         private static void SetReferences(Object target, params (string field, Object value)[] references)

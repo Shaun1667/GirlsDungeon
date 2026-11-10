@@ -41,13 +41,13 @@ namespace GirlsDungeon.Tests
     {
         private const int SeedCount = 300;
 
-        private static FloorMap Generate(int seed) => RunFactory.NewRun(seed, TestData.Map()).Map;
+        private static FloorMap Generate(int seed) => TestData.NewRun(seed).Map;
 
         [Test]
         public void SameSeed_GivesSameMap()
         {
-            Assert.That(WorldSnapshot.Encode(RunFactory.NewRun(5, TestData.Map())),
-                Is.EqualTo(WorldSnapshot.Encode(RunFactory.NewRun(5, TestData.Map()))));
+            Assert.That(WorldSnapshot.Encode(TestData.NewRun(5)),
+                Is.EqualTo(WorldSnapshot.Encode(TestData.NewRun(5))));
         }
 
         [Test]
@@ -169,7 +169,7 @@ namespace GirlsDungeon.Tests
         [Test]
         public void ValidMove_ChangesPositionAdvancesTickAndPublishesEvents()
         {
-            var world = RunFactory.NewRun(9, TestData.Map());
+            var world = TestData.NewRun(9);
             var simulation = new Simulation(world);
             var published = new List<GameEvent>();
             simulation.EventsPublished += events => published.AddRange(events);
@@ -187,7 +187,7 @@ namespace GirlsDungeon.Tests
         [Test]
         public void InvalidMove_ChangesNothing()
         {
-            var world = RunFactory.NewRun(9, TestData.Map());
+            var world = TestData.NewRun(9);
             var simulation = new Simulation(world);
             var before = WorldSnapshot.Encode(world);
             var published = 0;
@@ -219,7 +219,7 @@ namespace GirlsDungeon.Tests
         [Test]
         public void RoundTrip_GivesSameBytes()
         {
-            var world = RunFactory.NewRun(11, TestData.Map());
+            var world = TestData.NewRun(11);
             var simulation = new Simulation(world);
             var path = GridNavigation.FindPath(world.Map, world.Player.Position, world.Map.StairsCell);
             foreach (var step in path.Take(5)) Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, step, 1)), Is.True);
@@ -232,7 +232,7 @@ namespace GirlsDungeon.Tests
         [Test]
         public void RestoredRandom_ContinuesTheSameSequence()
         {
-            var world = RunFactory.NewRun(11, TestData.Map());
+            var world = TestData.NewRun(11);
             var restored = WorldSnapshot.Decode(WorldSnapshot.Encode(world));
 
             for (int i = 0; i < 100; i++)
@@ -243,7 +243,7 @@ namespace GirlsDungeon.Tests
         [Test]
         public void Decode_RejectsUnknownVersion()
         {
-            var bytes = WorldSnapshot.Encode(RunFactory.NewRun(1, TestData.Map()));
+            var bytes = WorldSnapshot.Encode(TestData.NewRun(1));
             bytes[0] = 0xFF;
             Assert.Throws<System.IO.InvalidDataException>(() => WorldSnapshot.Decode(bytes));
         }
@@ -277,6 +277,25 @@ namespace GirlsDungeon.Tests
                 DecorAttempts = 30,
             };
         }
+
+        /// <summary>BALANCE 4번 · 5번과 같은 값. enemies로 층당 적 수를 고정한다 (기본 0 = 적 없는 판).</summary>
+        public static CombatSettings Combat(int enemies = 0)
+        {
+            var settings = new CombatSettings
+            {
+                MinEnemiesPerFloor = enemies,
+                MaxEnemiesPerFloor = enemies,
+                EnemyMinDistanceFromStart = 8,
+                StabilityLossPerHit = 1,
+                EndTurnCostTicks = 1,
+            };
+            settings.Units.Add(new UnitStats { Kind = UnitKind.Player, MaxHp = 20, MaxStability = 6, VisionRange = 9 });
+            settings.Units.Add(new UnitStats { Kind = UnitKind.Rifleman, MaxHp = 10, MaxStability = 3, VisionRange = 9 });
+            return settings;
+        }
+
+        /// <summary>BALANCE 값으로 새 판을 만든다. 맵 · 이동 테스트는 적 없는 판을 쓴다.</summary>
+        public static World NewRun(int seed, int enemies = 0) => RunFactory.NewRun(seed, Map(), Combat(enemies));
 
         /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥. 첫 줄이 y = 0.</summary>
         public static FloorMap Parse(params string[] rows)

@@ -11,6 +11,7 @@ namespace GirlsDungeon.Core.Random
         Item = 3,
         EnemyKind = 4,
         Effects = 5,
+        Spawn = 6,
     }
 
     /// <summary>시드 하나에서 용도별 난수를 만든다. 상태는 세계 스냅샷에 저장된다.</summary>

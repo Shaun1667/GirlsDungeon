@@ -15,6 +15,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private PlayerView playerView;
         [SerializeField] private CameraRig cameraRig;
         [SerializeField] private MoveController moveController;
+        [SerializeField] private UnitsView unitsView;
+        [SerializeField] private HudView hudView;
 
         private Simulation simulation;
 
@@ -30,10 +32,13 @@ namespace GirlsDungeon.Game
 
         public void BeginRun(int seed)
         {
-            simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings()));
+            var combatSettings = balance.CreateCombatSettings();
+            simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings(), combatSettings));
 
             floorView.Build(simulation.World.Map, balance);
             playerView.Bind(simulation, balance.StepSeconds);
+            unitsView.Bind(simulation);
+            hudView.Bind(simulation, combatSettings.EndTurnCostTicks);
             moveController.Bind(simulation, playerView, balance.MoveCostTicks);
             cameraRig.Bind(balance, playerView.transform);
 
@@ -65,6 +70,57 @@ namespace GirlsDungeon.Game
         public void DebugRotateCamera(int direction)
         {
             cameraRig.Rotate(direction);
+        }
+
+        /// <summary>[상태 변경] 턴 종료 버튼과 같다. 지금 플레이어 차례가 아니면 false.</summary>
+        public bool DebugEndTurn()
+        {
+            DebugUsed = true;
+            return hudView.EndTurn();
+        }
+
+        /// <summary>[상태 변경] 전투 중인 적(없으면 가장 가까운 적) 하나를 쓰러뜨린다. 쓰러뜨린 적이 없으면 false.</summary>
+        public bool DebugDefeatEnemy()
+        {
+            var world = World;
+            if (world == null) return false;
+
+            Unit target = null;
+            if (world.Combatants.Count > 0) target = world.FindUnit(world.Combatants[0]);
+            else
+            {
+                int best = int.MaxValue;
+                foreach (var unit in world.Units)
+                {
+                    if (unit.IsPlayer) continue;
+                    int distance = Math.Max(Math.Abs(unit.Position.X - world.Player.Position.X), Math.Abs(unit.Position.Y - world.Player.Position.Y));
+                    if (distance >= best) continue;
+                    best = distance;
+                    target = unit;
+                }
+            }
+            if (target == null) return false;
+
+            DebugUsed = true;
+            return simulation.Execute(new DebugDefeatCommand(target.Id));
+        }
+
+        public string DebugCombatSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var player = world.Player;
+            return $"Mode={world.Mode}, Turn={world.Turn}, Round={world.Round}, Combatants=[{string.Join(",", world.Combatants)}], "
+                + $"PlayerHp={player.Hp}/{player.MaxHp}, Stability={player.Stability}/{player.MaxStability}, VisibleEnemies={unitsView.VisibleCount}";
+        }
+
+        public string DebugUnitsSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var parts = new System.Collections.Generic.List<string>();
+            foreach (var unit in world.Units) parts.Add($"#{unit.Id} {unit.Kind} {unit.Position} HP {unit.Hp}/{unit.MaxHp} ST {unit.Stability}/{unit.MaxStability}");
+            return string.Join("\n", parts);
         }
 
         public string DebugStateSummary()

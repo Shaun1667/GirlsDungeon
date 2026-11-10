@@ -1,8 +1,20 @@
+using System;
 using GirlsDungeon.Core.Map;
+using GirlsDungeon.Core.Sim;
 using UnityEngine;
 
 namespace GirlsDungeon.Game
 {
+    /// <summary>유닛 종류 하나의 능력치 (표 한 줄).</summary>
+    [Serializable]
+    public sealed class UnitStatsEntry
+    {
+        public UnitKind kind;
+        public int maxHp;
+        public int maxStability;
+        public int visionRange;
+    }
+
     /// <summary>게임 수치의 한 곳 (BALANCE.md와 함께 관리). 코드에 숫자를 직접 넣지 않는다.</summary>
     [CreateAssetMenu(fileName = "GameBalance", menuName = "GirlsDungeon/Game Balance")]
     public sealed class GameBalance : ScriptableObject
@@ -33,6 +45,20 @@ namespace GirlsDungeon.Game
         [SerializeField] private int minLowWallLength = 2;
         [SerializeField] private int maxLowWallLength = 3;
         [SerializeField] private int decorAttempts = 30;
+
+        [Header("Units (BALANCE 4)")]
+        [SerializeField] private UnitStatsEntry[] units =
+        {
+            new UnitStatsEntry { kind = UnitKind.Player, maxHp = 20, maxStability = 6, visionRange = 9 },
+            new UnitStatsEntry { kind = UnitKind.Rifleman, maxHp = 10, maxStability = 3, visionRange = 9 },
+        };
+
+        [Header("Combat (BALANCE 5)")]
+        [SerializeField] private int minEnemiesPerFloor = 4;
+        [SerializeField] private int maxEnemiesPerFloor = 6;
+        [SerializeField] private int enemyMinDistanceFromStart = 8;
+        [SerializeField] private int stabilityLossPerHit = 1;
+        [SerializeField] private int endTurnCostTicks = 1;
 
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
@@ -65,6 +91,29 @@ namespace GirlsDungeon.Game
         public float CameraDistance => cameraDistance;
         public float CameraFollowSharpness => cameraFollowSharpness;
         public float CameraRotateSharpness => cameraRotateSharpness;
+
+        public CombatSettings CreateCombatSettings()
+        {
+            var settings = new CombatSettings
+            {
+                MinEnemiesPerFloor = minEnemiesPerFloor,
+                MaxEnemiesPerFloor = maxEnemiesPerFloor,
+                EnemyMinDistanceFromStart = enemyMinDistanceFromStart,
+                StabilityLossPerHit = stabilityLossPerHit,
+                EndTurnCostTicks = endTurnCostTicks,
+            };
+            foreach (var entry in units)
+            {
+                settings.Units.Add(new UnitStats
+                {
+                    Kind = entry.kind,
+                    MaxHp = entry.maxHp,
+                    MaxStability = entry.maxStability,
+                    VisionRange = entry.visionRange,
+                });
+            }
+            return settings;
+        }
 
         public MapSettings CreateMapSettings()
         {
