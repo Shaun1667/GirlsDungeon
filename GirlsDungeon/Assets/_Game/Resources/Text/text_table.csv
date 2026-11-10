@@ -1,9 +1,27 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · Q/E: 카메라 회전,Click: Move · Q/E: Rotate camera
+ui.hud.controls,클릭: 이동 · 적 클릭: 사격 · Q/E: 카메라 회전,Click: Move · Click enemy: Shoot · Q/E: Rotate camera
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
 ui.combat.player_turn,내 차례,Your turn
 ui.combat.enemy_turn,적 차례,Enemy turn
 ui.combat.end_turn,턴 종료,End turn
+ui.combat.defeat,쓰러졌습니다,You have fallen
+ui.combat.preview_attack,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
+예상 피해 {5} (치명 {6}% 시 {7}) · 안정 −{8} · {9}","{0} · HP {1}/{2} · Stability {3}/{4}
+Damage {5} ({6}% crit: {7}) · Stability −{8} · {9}"
+ui.combat.preview_out_of_range,{0} · 사거리 밖,{0} · Out of range
+ui.combat.preview_no_line,{0} · 사선이 막혀 쏠 수 없음,{0} · Line of fire blocked
+ui.combat.preview_already_acted,이번 차례에는 이미 사격했습니다,Already shot this turn
+ui.combat.preview_move,이동 후 엄폐: {0},Cover after move: {0}
+ui.combat.reduction,피해 감소 {0}%,Damage −{0}%
+ui.combat.log_hit,{0} → {1}: 피해 {2},{0} → {1}: {2} damage
+ui.combat.log_crit,{0} → {1}: 치명타! 피해 {2},{0} → {1}: Critical! {2} damage
+ui.combat.log_break,{0}의 안정지수 붕괴,{0}'s stability broke
+ui.combat.log_down,{0} 쓰러짐,{0} is down
+ui.cover.none,엄폐 없음,No cover
+ui.cover.half,낮은 엄폐,Low cover
+ui.cover.full,높은 엄폐,High cover
+unit.player.name,나,You
+unit.rifleman.name,사격병,Rifleman

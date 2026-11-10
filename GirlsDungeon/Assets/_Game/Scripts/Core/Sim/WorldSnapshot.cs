@@ -12,8 +12,11 @@ namespace GirlsDungeon.Core.Sim
     /// </summary>
     public static class WorldSnapshot
     {
-        /// <summary>2: 낮은 벽 (2026-11-10). 3: 체력 · 안정지수 · 시야 · 전투 상태 · 배치 난수 (2026-11-10). 4: 본 칸 기록 (2026-11-10).</summary>
-        public const int Version = 4;
+        /// <summary>
+        /// 2: 낮은 벽 (2026-11-10). 3: 체력 · 안정지수 · 시야 · 전투 상태 · 배치 난수 (2026-11-10). 4: 본 칸 기록 (2026-11-10).
+        /// 5: 유닛 전투 능력치 · 이번 차례 이동 / 행동 여부 (2026-11-10).
+        /// </summary>
+        public const int Version = 5;
 
         public static byte[] Encode(World world)
         {
@@ -44,11 +47,20 @@ namespace GirlsDungeon.Core.Sim
                     writer.Write(unit.MaxStability);
                     writer.Write(unit.Stability);
                     writer.Write(unit.VisionRange);
+                    writer.Write(unit.Attack);
+                    writer.Write(unit.Defense);
+                    writer.Write(unit.MoveRange);
+                    writer.Write(unit.AttackRange);
+                    writer.Write(unit.StabilityDamage);
+                    writer.Write(unit.CritPercent);
+                    writer.Write(unit.CritMultiplierPercent);
                 }
 
                 writer.Write((byte)world.Mode);
                 writer.Write((byte)world.Turn);
                 writer.Write(world.Round);
+                writer.Write(world.PlayerMoved);
+                writer.Write(world.PlayerActed);
                 writer.Write(world.Combatants.Count);
                 foreach (var id in world.Combatants) writer.Write(id);
 
@@ -97,17 +109,28 @@ namespace GirlsDungeon.Core.Sim
                     int id = reader.ReadInt32();
                     var kind = (UnitKind)reader.ReadByte();
                     var position = ReadCell(reader);
-                    int maxHp = reader.ReadInt32();
-                    int hp = reader.ReadInt32();
-                    int maxStability = reader.ReadInt32();
-                    int stability = reader.ReadInt32();
-                    int visionRange = reader.ReadInt32();
-                    world.Units.Add(new Unit(id, kind, position, maxHp, hp, maxStability, stability, visionRange));
+                    world.Units.Add(new Unit(id, kind, position)
+                    {
+                        MaxHp = reader.ReadInt32(),
+                        Hp = reader.ReadInt32(),
+                        MaxStability = reader.ReadInt32(),
+                        Stability = reader.ReadInt32(),
+                        VisionRange = reader.ReadInt32(),
+                        Attack = reader.ReadInt32(),
+                        Defense = reader.ReadInt32(),
+                        MoveRange = reader.ReadInt32(),
+                        AttackRange = reader.ReadInt32(),
+                        StabilityDamage = reader.ReadInt32(),
+                        CritPercent = reader.ReadInt32(),
+                        CritMultiplierPercent = reader.ReadInt32(),
+                    });
                 }
 
                 world.Mode = (WorldMode)reader.ReadByte();
                 world.Turn = (TurnSide)reader.ReadByte();
                 world.Round = reader.ReadInt32();
+                world.PlayerMoved = reader.ReadBoolean();
+                world.PlayerActed = reader.ReadBoolean();
                 int combatantCount = reader.ReadInt32();
                 for (int i = 0; i < combatantCount; i++) world.Combatants.Add(reader.ReadInt32());
 

@@ -32,6 +32,7 @@ namespace GirlsDungeon.EditorTools
             var coverMaterial = LoadOrCreateMaterial("GreyboxCover", new Color(0.55f, 0.47f, 0.36f));
             var enemyMaterial = LoadOrCreateMaterial("GreyboxEnemy", new Color(0.85f, 0.25f, 0.2f));
             var fogMaterial = LoadOrCreateFogMaterial();
+            var rangeMaterial = LoadOrCreateMaterial("GreyboxRange", new Color(0.3f, 0.6f, 0.95f));
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -48,13 +49,27 @@ namespace GirlsDungeon.EditorTools
             var controlsLabel = CreateLabel(canvas.transform, "ControlsLabel", font, 26,
                 new Vector2(0f, 0f), new Vector2(24f, 20f), TextAnchor.LowerLeft);
             controlsLabel.gameObject.AddComponent<TextLabel>().TextKey = "ui.hud.controls";
+            var previewLabel = CreateLabel(canvas.transform, "PreviewLabel", font, 28,
+                new Vector2(0.5f, 0f), new Vector2(0f, 120f), TextAnchor.LowerCenter);
+            previewLabel.rectTransform.sizeDelta = new Vector2(1200f, 90f);
+            var logLabel = CreateLabel(canvas.transform, "LogLabel", font, 24,
+                new Vector2(0f, 0f), new Vector2(24f, 64f), TextAnchor.LowerLeft);
+            logLabel.rectTransform.sizeDelta = new Vector2(700f, 140f);
+            var defeatLabel = CreateLabel(canvas.transform, "DefeatLabel", font, 64,
+                new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
+            defeatLabel.color = new Color(1f, 0.35f, 0.3f);
             var endTurnButton = CreateButton(canvas.transform, "EndTurnButton", font, "ui.combat.end_turn",
                 new Vector2(1f, 0f), new Vector2(-32f, 32f));
             CreateEventSystem();
 
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
-                ("turnLabel", turnLabel), ("endTurnButton", endTurnButton));
+                ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel),
+                ("endTurnButton", endTurnButton));
+
+            var rangeObject = new GameObject("RangeView");
+            var rangeView = rangeObject.AddComponent<RangeView>();
+            SetReferences(rangeView, ("rangeMaterial", rangeMaterial));
 
             var unitsObject = new GameObject("UnitsView");
             var unitsView = unitsObject.AddComponent<UnitsView>();
@@ -83,7 +98,8 @@ namespace GirlsDungeon.EditorTools
 
             var rootObject = new GameObject("GameRoot");
             var moveController = rootObject.AddComponent<MoveController>();
-            SetReferences(moveController, ("viewCamera", cameraObject.GetComponent<Camera>()), ("hoverMarker", hover.transform));
+            SetReferences(moveController, ("viewCamera", cameraObject.GetComponent<Camera>()), ("hoverMarker", hover.transform),
+                ("rangeView", rangeView));
 
             var root = rootObject.AddComponent<GameRoot>();
             SetReferences(root,

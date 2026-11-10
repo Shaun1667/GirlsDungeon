@@ -143,7 +143,7 @@ namespace GirlsDungeon.Tests
             simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(2, 2), 1));
             events.Clear();
 
-            Assert.That(simulation.Execute(new EndTurnCommand(1)), Is.True);
+            Assert.That(simulation.Execute(new EndTurnCommand(TestData.Combat())), Is.True);
 
             Assert.That(world.Round, Is.EqualTo(2));
             Assert.That(world.Turn, Is.EqualTo(TurnSide.Player));
@@ -156,7 +156,7 @@ namespace GirlsDungeon.Tests
         {
             var (simulation, world, _, _) = OpenRoomWithEnemy(10);
             Assert.That(world.Mode, Is.EqualTo(WorldMode.Exploration));
-            Assert.That(simulation.Execute(new EndTurnCommand(1)), Is.False);
+            Assert.That(simulation.Execute(new EndTurnCommand(TestData.Combat())), Is.False);
         }
 
         [Test]
@@ -184,7 +184,7 @@ namespace GirlsDungeon.Tests
             Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
 
             var second = world.AddUnit(TestData.Combat().StatsFor(UnitKind.Rifleman), new GridPos(7, 1));
-            simulation.Execute(new EndTurnCommand(1));
+            simulation.Execute(new EndTurnCommand(TestData.Combat()));
 
             CollectionAssert.AreEqual(new[] { first.Id, second.Id }, world.Combatants);
             Assert.That(events.OfType<EnemiesJoinedCombat>().Single().EnemyIds, Is.EqualTo(new[] { second.Id }));
@@ -202,7 +202,7 @@ namespace GirlsDungeon.Tests
         {
             var (simulation, world, _, _) = OpenRoomWithEnemy(6);
             simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(2, 2), 1));
-            simulation.Execute(new EndTurnCommand(1));
+            simulation.Execute(new EndTurnCommand(TestData.Combat()));
             world.Player.Hp = 13;
             world.Player.Stability = 4;
 

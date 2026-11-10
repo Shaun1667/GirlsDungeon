@@ -34,18 +34,37 @@ MonoBehaviour:
   decorAttempts: 30
   units:
   - kind: 0
+    nameKey: unit.player.name
     maxHp: 20
     maxStability: 6
     visionRange: 9
+    attack: 10
+    defense: 4
+    moveRange: 6
+    attackRange: 8
+    stabilityDamage: 2
+    critPercent: 15
+    critMultiplierPercent: 150
   - kind: 1
+    nameKey: unit.rifleman.name
     maxHp: 10
     maxStability: 3
     visionRange: 9
+    attack: 6
+    defense: 2
+    moveRange: 6
+    attackRange: 7
+    stabilityDamage: 1
+    critPercent: 15
+    critMultiplierPercent: 150
   minEnemiesPerFloor: 4
   maxEnemiesPerFloor: 6
   enemyMinDistanceFromStart: 8
-  stabilityLossPerHit: 1
   endTurnCostTicks: 1
+  halfCoverReductionPercent: 25
+  fullCoverReductionPercent: 35
+  stabilityGuardPercent: 60
+  minDamage: 1
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

@@ -10,6 +10,13 @@ namespace GirlsDungeon.Core.Sim
         public int MaxHp;
         public int MaxStability;
         public int VisionRange;
+        public int Attack;
+        public int Defense;
+        public int MoveRange;
+        public int AttackRange;
+        public int StabilityDamage;
+        public int CritPercent;
+        public int CritMultiplierPercent;
     }
 
     /// <summary>전투 수치 (BALANCE 4번 · 5번).</summary>
@@ -19,8 +26,18 @@ namespace GirlsDungeon.Core.Sim
         public int MinEnemiesPerFloor;
         public int MaxEnemiesPerFloor;
         public int EnemyMinDistanceFromStart;
-        public int StabilityLossPerHit;
         public int EndTurnCostTicks;
+
+        /// <summary>엄폐물 감소 — 낮은 엄폐(상자 · 낮은 벽).</summary>
+        public int HalfCoverReductionPercent;
+
+        /// <summary>엄폐물 감소 — 높은 엄폐(벽 · 기둥).</summary>
+        public int FullCoverReductionPercent;
+
+        /// <summary>엄폐 중이고 안정지수가 남아 있으면 더하는 감소.</summary>
+        public int StabilityGuardPercent;
+
+        public int MinDamage;
 
         public UnitStats StatsFor(UnitKind kind)
         {
@@ -33,10 +50,16 @@ namespace GirlsDungeon.Core.Sim
             StatsFor(UnitKind.Player);
             StatsFor(UnitKind.Rifleman);
             foreach (var stats in Units)
-                if (stats.MaxHp < 1 || stats.MaxStability < 0 || stats.VisionRange < 1)
+            {
+                if (stats.MaxHp < 1 || stats.MaxStability < 0 || stats.VisionRange < 1 || stats.Attack < 1 || stats.Defense < 0
+                    || stats.MoveRange < 0 || stats.AttackRange < 1 || stats.StabilityDamage < 0
+                    || stats.CritPercent < 0 || stats.CritPercent > 100 || stats.CritMultiplierPercent < 100)
                     throw new ArgumentException($"Stats for {stats.Kind} are invalid.");
-            if (MinEnemiesPerFloor < 0 || MaxEnemiesPerFloor < MinEnemiesPerFloor || EnemyMinDistanceFromStart < 0
-                || StabilityLossPerHit < 0 || EndTurnCostTicks < 0)
+            }
+            if (MinEnemiesPerFloor < 0 || MaxEnemiesPerFloor < MinEnemiesPerFloor || EnemyMinDistanceFromStart < 0 || EndTurnCostTicks < 0
+                || HalfCoverReductionPercent < 0 || FullCoverReductionPercent < 0 || StabilityGuardPercent < 0
+                || HalfCoverReductionPercent + StabilityGuardPercent > 100 || FullCoverReductionPercent + StabilityGuardPercent > 100
+                || MinDamage < 0)
                 throw new ArgumentException("Combat settings are invalid.");
         }
     }

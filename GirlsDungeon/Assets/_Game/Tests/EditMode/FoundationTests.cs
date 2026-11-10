@@ -286,11 +286,22 @@ namespace GirlsDungeon.Tests
                 MinEnemiesPerFloor = enemies,
                 MaxEnemiesPerFloor = enemies,
                 EnemyMinDistanceFromStart = 8,
-                StabilityLossPerHit = 1,
                 EndTurnCostTicks = 1,
+                HalfCoverReductionPercent = 25,
+                FullCoverReductionPercent = 35,
+                StabilityGuardPercent = 60,
+                MinDamage = 1,
             };
-            settings.Units.Add(new UnitStats { Kind = UnitKind.Player, MaxHp = 20, MaxStability = 6, VisionRange = 9 });
-            settings.Units.Add(new UnitStats { Kind = UnitKind.Rifleman, MaxHp = 10, MaxStability = 3, VisionRange = 9 });
+            settings.Units.Add(new UnitStats
+            {
+                Kind = UnitKind.Player, MaxHp = 20, MaxStability = 6, VisionRange = 9,
+                Attack = 10, Defense = 4, MoveRange = 6, AttackRange = 8, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
+            });
+            settings.Units.Add(new UnitStats
+            {
+                Kind = UnitKind.Rifleman, MaxHp = 10, MaxStability = 3, VisionRange = 9,
+                Attack = 6, Defense = 2, MoveRange = 6, AttackRange = 7, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
+            });
             return settings;
         }
 

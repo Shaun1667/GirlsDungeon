@@ -10,9 +10,18 @@ namespace GirlsDungeon.Game
     public sealed class UnitStatsEntry
     {
         public UnitKind kind;
+        [Tooltip("Text table key for the unit name.")]
+        public string nameKey;
         public int maxHp;
         public int maxStability;
         public int visionRange;
+        public int attack;
+        public int defense;
+        public int moveRange;
+        public int attackRange;
+        public int stabilityDamage;
+        public int critPercent;
+        public int critMultiplierPercent;
     }
 
     /// <summary>게임 수치의 한 곳 (BALANCE.md와 함께 관리). 코드에 숫자를 직접 넣지 않는다.</summary>
@@ -49,16 +58,27 @@ namespace GirlsDungeon.Game
         [Header("Units (BALANCE 4)")]
         [SerializeField] private UnitStatsEntry[] units =
         {
-            new UnitStatsEntry { kind = UnitKind.Player, maxHp = 20, maxStability = 6, visionRange = 9 },
-            new UnitStatsEntry { kind = UnitKind.Rifleman, maxHp = 10, maxStability = 3, visionRange = 9 },
+            new UnitStatsEntry
+            {
+                kind = UnitKind.Player, nameKey = "unit.player.name", maxHp = 20, maxStability = 6, visionRange = 9,
+                attack = 10, defense = 4, moveRange = 6, attackRange = 8, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150,
+            },
+            new UnitStatsEntry
+            {
+                kind = UnitKind.Rifleman, nameKey = "unit.rifleman.name", maxHp = 10, maxStability = 3, visionRange = 9,
+                attack = 6, defense = 2, moveRange = 6, attackRange = 7, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150,
+            },
         };
 
         [Header("Combat (BALANCE 5)")]
         [SerializeField] private int minEnemiesPerFloor = 4;
         [SerializeField] private int maxEnemiesPerFloor = 6;
         [SerializeField] private int enemyMinDistanceFromStart = 8;
-        [SerializeField] private int stabilityLossPerHit = 1;
         [SerializeField] private int endTurnCostTicks = 1;
+        [SerializeField] private int halfCoverReductionPercent = 25;
+        [SerializeField] private int fullCoverReductionPercent = 35;
+        [SerializeField] private int stabilityGuardPercent = 60;
+        [SerializeField] private int minDamage = 1;
 
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
@@ -107,8 +127,11 @@ namespace GirlsDungeon.Game
                 MinEnemiesPerFloor = minEnemiesPerFloor,
                 MaxEnemiesPerFloor = maxEnemiesPerFloor,
                 EnemyMinDistanceFromStart = enemyMinDistanceFromStart,
-                StabilityLossPerHit = stabilityLossPerHit,
                 EndTurnCostTicks = endTurnCostTicks,
+                HalfCoverReductionPercent = halfCoverReductionPercent,
+                FullCoverReductionPercent = fullCoverReductionPercent,
+                StabilityGuardPercent = stabilityGuardPercent,
+                MinDamage = minDamage,
             };
             foreach (var entry in units)
             {
@@ -118,9 +141,28 @@ namespace GirlsDungeon.Game
                     MaxHp = entry.maxHp,
                     MaxStability = entry.maxStability,
                     VisionRange = entry.visionRange,
+                    Attack = entry.attack,
+                    Defense = entry.defense,
+                    MoveRange = entry.moveRange,
+                    AttackRange = entry.attackRange,
+                    StabilityDamage = entry.stabilityDamage,
+                    CritPercent = entry.critPercent,
+                    CritMultiplierPercent = entry.critMultiplierPercent,
                 });
             }
             return settings;
+        }
+
+        /// <summary>유닛 이름의 텍스트 표 키. 표에 없는 종류면 null.</summary>
+        public string NameKey(UnitKind kind)
+        {
+            foreach (var entry in units) if (entry.kind == kind) return entry.nameKey;
+            return null;
+        }
+
+        public System.Collections.Generic.IEnumerable<string> UnitNameKeys()
+        {
+            foreach (var entry in units) yield return entry.nameKey;
         }
 
         public MapSettings CreateMapSettings()

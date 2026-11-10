@@ -12,7 +12,7 @@ namespace GirlsDungeon.Core.Sim
         public static void AfterAction(World world, List<GameEvent> events)
         {
             var player = world.Player;
-            if (player == null) return;
+            if (player == null || world.Mode == WorldMode.Defeat) return;
 
             var visible = VisionSystem.Update(world, events);
             JoinVisibleEnemies(world, visible, events);
@@ -49,6 +49,8 @@ namespace GirlsDungeon.Core.Sim
                 world.Mode = WorldMode.Combat;
                 world.Turn = TurnSide.Player;
                 world.Round = 1;
+                world.PlayerMoved = false;
+                world.PlayerActed = false;
                 events.Add(new CombatStarted(joined));
                 events.Add(new TurnStarted(TurnSide.Player, world.Round));
             }
@@ -63,6 +65,8 @@ namespace GirlsDungeon.Core.Sim
             world.Mode = WorldMode.Exploration;
             world.Turn = TurnSide.Player;
             world.Round = 0;
+            world.PlayerMoved = false;
+            world.PlayerActed = false;
             if (player.Stability != player.MaxStability)
             {
                 player.Stability = player.MaxStability;
@@ -93,11 +97,89 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
-    /// <summary>적의 차례. 2-3에서 이동 · 사격 AI가 여기에 들어온다. 지금은 아무것도 하지 않는다.</summary>
+    /// <summary>차례 넘기기의 한 곳.</summary>
+    public static class TurnFlow
+    {
+        public static bool IsPlayerTurn(World world) => world.Mode == WorldMode.Combat && world.Turn == TurnSide.Player;
+
+        /// <summary>플레이어 차례 끝 → 적 차례 → (패배가 아니면) 다음 라운드 플레이어 차례.</summary>
+        public static void EndPlayerTurn(World world, CombatSettings settings, List<GameEvent> events)
+        {
+            world.Turn = TurnSide.Enemies;
+            events.Add(new TurnStarted(TurnSide.Enemies, world.Round));
+            EnemyTurn.Run(world, settings, events);
+            if (world.Mode != WorldMode.Combat) return;
+
+            world.Round++;
+            world.Turn = TurnSide.Player;
+            world.PlayerMoved = false;
+            world.PlayerActed = false;
+            events.Add(new TurnStarted(TurnSide.Player, world.Round));
+        }
+    }
+
+    /// <summary>
+    /// 적 차례 (전투에 들어온 적, ID 순서). 사격병: 이동 범위 안에서 플레이어를 쏠 수 있는 칸 중
+    /// 플레이어 쪽 엄폐가 가장 좋은 칸(같으면 가까운 칸)으로 간 뒤 사격한다. 쏠 수 있는 칸이 없으면 플레이어에게 가장 가까워지는 칸으로 간다.
+    /// 칸 고르기 · 사선 · 피해는 플레이어와 같은 규칙(CombatMovement · CombatRules · Cover)을 쓴다.
+    /// </summary>
     public static class EnemyTurn
     {
-        public static void Run(World world, List<GameEvent> events)
+        public static void Run(World world, CombatSettings settings, List<GameEvent> events)
         {
+            foreach (int id in world.Combatants.ToArray())
+            {
+                if (world.Mode != WorldMode.Combat) return;
+                var enemy = world.FindUnit(id);
+                var player = world.Player;
+                if (enemy == null || player == null) continue;
+
+                var destination = ChooseCell(world, settings, enemy, player);
+                if (destination != enemy.Position)
+                    CombatMovement.Walk(enemy, CombatMovement.Path(world, enemy, destination, enemy.MoveRange), events);
+
+                CombatRules.Resolve(world, settings, enemy, player, events);
+            }
+        }
+
+        private static Grid.GridPos ChooseCell(World world, CombatSettings settings, Unit enemy, Unit player)
+        {
+            var reachable = CombatMovement.Reachable(world, enemy, enemy.MoveRange);
+            var best = enemy.Position;
+            int bestScore = int.MinValue;
+
+            foreach (var pair in Ordered(reachable))
+            {
+                var cell = pair.Key;
+                int steps = pair.Value;
+                bool canShoot = CombatRules.Preview(world, settings, enemy, cell, player).CanAttack;
+                int score;
+                if (canShoot)
+                {
+                    var cover = Cover.Against(world.Map, cell, player.Position);
+                    score = 100000 + (int)cover * 1000 - steps;
+                }
+                else
+                {
+                    int dx = cell.X - player.Position.X;
+                    int dy = cell.Y - player.Position.Y;
+                    score = -(dx * dx + dy * dy) * 10 - steps;
+                }
+
+                if (score <= bestScore) continue;
+                bestScore = score;
+                best = cell;
+            }
+            return best;
+        }
+
+        /// <summary>사전 순회 순서에 기대지 않도록 걸음 수 → y → x 순으로 정렬한다.</summary>
+        private static List<KeyValuePair<Grid.GridPos, int>> Ordered(Dictionary<Grid.GridPos, int> cells)
+        {
+            var list = new List<KeyValuePair<Grid.GridPos, int>>(cells);
+            list.Sort((a, b) => a.Value != b.Value ? a.Value.CompareTo(b.Value)
+                : a.Key.Y != b.Key.Y ? a.Key.Y.CompareTo(b.Key.Y) : a.Key.X.CompareTo(b.Key.X));
+            return list;
         }
     }
 }

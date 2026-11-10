@@ -17,6 +17,8 @@ namespace GirlsDungeon.Core.Sim
     {
         Exploration = 0,
         Combat = 1,
+        /// <summary>플레이어가 쓰러졌다. 더 이상 행동할 수 없다.</summary>
+        Defeat = 2,
     }
 
     /// <summary>전투 중 지금 움직이는 쪽.</summary>
@@ -26,30 +28,35 @@ namespace GirlsDungeon.Core.Sim
         Enemies = 1,
     }
 
-    /// <summary>맵 위의 유닛. 다른 곳에서는 고유 ID로 참조한다.</summary>
+    /// <summary>
+    /// 맵 위의 유닛. 다른 곳에서는 고유 ID로 참조한다.
+    /// 능력치는 만들 때 CombatSettings 표에서 복사한다 — 판 안 성장으로 유닛마다 바뀔 수 있다 (예: 이동 범위).
+    /// </summary>
     public sealed class Unit
     {
         public int Id { get; }
         public UnitKind Kind { get; }
         public GridPos Position { get; set; }
-        public int MaxHp { get; }
+        public int MaxHp { get; set; }
         public int Hp { get; set; }
-        public int MaxStability { get; }
+        public int MaxStability { get; set; }
         public int Stability { get; set; }
-        public int VisionRange { get; }
+        public int VisionRange { get; set; }
+        public int Attack { get; set; }
+        public int Defense { get; set; }
+        public int MoveRange { get; set; }
+        public int AttackRange { get; set; }
+        public int StabilityDamage { get; set; }
+        public int CritPercent { get; set; }
+        public int CritMultiplierPercent { get; set; }
 
         public bool IsPlayer => Kind == UnitKind.Player;
 
-        public Unit(int id, UnitKind kind, GridPos position, int maxHp, int hp, int maxStability, int stability, int visionRange)
+        public Unit(int id, UnitKind kind, GridPos position)
         {
             Id = id;
             Kind = kind;
             Position = position;
-            MaxHp = maxHp;
-            Hp = hp;
-            MaxStability = maxStability;
-            Stability = stability;
-            VisionRange = visionRange;
         }
     }
 
@@ -73,6 +80,12 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>지금 전투에 들어와 있는 적 ID (오름차순).</summary>
         public List<int> Combatants { get; } = new List<int>();
+
+        /// <summary>이번 플레이어 차례에 이동을 썼다 (전투 중).</summary>
+        public bool PlayerMoved { get; set; }
+
+        /// <summary>이번 플레이어 차례에 행동(사격)을 썼다 (전투 중).</summary>
+        public bool PlayerActed { get; set; }
 
         /// <summary>한 번이라도 본 칸 (인덱스 = x + y * Width). 지금 보이는 칸은 저장하지 않고 Vision으로 다시 계산한다.</summary>
         public bool[] Explored { get; set; }
@@ -101,8 +114,21 @@ namespace GirlsDungeon.Core.Sim
 
         public Unit AddUnit(UnitStats stats, GridPos position)
         {
-            var unit = new Unit(NextEntityId++, stats.Kind, position, stats.MaxHp, stats.MaxHp,
-                stats.MaxStability, stats.MaxStability, stats.VisionRange);
+            var unit = new Unit(NextEntityId++, stats.Kind, position)
+            {
+                MaxHp = stats.MaxHp,
+                Hp = stats.MaxHp,
+                MaxStability = stats.MaxStability,
+                Stability = stats.MaxStability,
+                VisionRange = stats.VisionRange,
+                Attack = stats.Attack,
+                Defense = stats.Defense,
+                MoveRange = stats.MoveRange,
+                AttackRange = stats.AttackRange,
+                StabilityDamage = stats.StabilityDamage,
+                CritPercent = stats.CritPercent,
+                CritMultiplierPercent = stats.CritMultiplierPercent,
+            };
             Units.Add(unit);
             return unit;
         }

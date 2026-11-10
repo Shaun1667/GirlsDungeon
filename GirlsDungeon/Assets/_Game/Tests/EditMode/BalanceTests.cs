@@ -65,8 +65,30 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.MinEnemiesPerFloor, Is.EqualTo(4));
             Assert.That(combat.MaxEnemiesPerFloor, Is.EqualTo(6));
             Assert.That(combat.EnemyMinDistanceFromStart, Is.EqualTo(expected.EnemyMinDistanceFromStart));
-            Assert.That(combat.StabilityLossPerHit, Is.EqualTo(expected.StabilityLossPerHit));
+            Assert.That(combat.HalfCoverReductionPercent, Is.EqualTo(expected.HalfCoverReductionPercent));
+            Assert.That(combat.FullCoverReductionPercent, Is.EqualTo(expected.FullCoverReductionPercent));
+            Assert.That(combat.StabilityGuardPercent, Is.EqualTo(expected.StabilityGuardPercent));
+            Assert.That(combat.MinDamage, Is.EqualTo(expected.MinDamage));
             Assert.That(combat.EndTurnCostTicks, Is.EqualTo(expected.EndTurnCostTicks));
+            foreach (var stats in expected.Units)
+            {
+                var actual = combat.StatsFor(stats.Kind);
+                Assert.That(actual.Attack, Is.EqualTo(stats.Attack), stats.Kind + " attack");
+                Assert.That(actual.Defense, Is.EqualTo(stats.Defense), stats.Kind + " defense");
+                Assert.That(actual.MoveRange, Is.EqualTo(stats.MoveRange), stats.Kind + " move");
+                Assert.That(actual.AttackRange, Is.EqualTo(stats.AttackRange), stats.Kind + " range");
+                Assert.That(actual.StabilityDamage, Is.EqualTo(stats.StabilityDamage), stats.Kind + " stability damage");
+                Assert.That(actual.CritPercent, Is.EqualTo(stats.CritPercent), stats.Kind + " crit");
+                Assert.That(actual.CritMultiplierPercent, Is.EqualTo(stats.CritMultiplierPercent), stats.Kind + " crit multiplier");
+            }
+        }
+
+        [Test]
+        public void UnitNameKeys_ExistInTheTextTable()
+        {
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in Load().UnitNameKeys())
+                Assert.That(table.Contains(key), Is.True, key);
         }
 
         [Test]

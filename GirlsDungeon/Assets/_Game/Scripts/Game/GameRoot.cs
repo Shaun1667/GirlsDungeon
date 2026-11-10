@@ -40,8 +40,8 @@ namespace GirlsDungeon.Game
             fogView.Bind(simulation, balance);
             playerView.Bind(simulation, balance.StepSeconds);
             unitsView.Bind(simulation);
-            hudView.Bind(simulation, combatSettings.EndTurnCostTicks);
-            moveController.Bind(simulation, playerView, balance.MoveCostTicks);
+            hudView.Bind(simulation, combatSettings, balance);
+            moveController.Bind(simulation, playerView, hudView, combatSettings, balance.MoveCostTicks);
             cameraRig.Bind(balance, playerView.transform);
 
             if (seedLabel != null) seedLabel.text = Text.Get("ui.hud.seed", seed);
@@ -66,6 +66,21 @@ namespace GirlsDungeon.Game
         {
             DebugUsed = true;
             return moveController.RequestMove(cell);
+        }
+
+        /// <summary>[상태 변경] 전투 중 칸 클릭과 같다: 적이 있으면 사격, 아니면 이동. 못 하면 false.</summary>
+        public bool DebugCombatAction(GridPos cell)
+        {
+            DebugUsed = true;
+            return moveController.RequestCombatAction(cell);
+        }
+
+        /// <summary>[상태 변경] 전투 중 첫 번째 적을 쏜다. 못 쏘면 false.</summary>
+        public bool DebugShootFirstCombatant()
+        {
+            var world = World;
+            if (world == null || world.Combatants.Count == 0) return false;
+            return DebugCombatAction(world.FindUnit(world.Combatants[0]).Position);
         }
 
         /// <summary>[상태 변경] 카메라를 돌린다. Q/E와 같다.</summary>
@@ -134,7 +149,8 @@ namespace GirlsDungeon.Game
             var world = World;
             if (world == null) return "Run not started";
             var player = world.Player;
-            return $"Mode={world.Mode}, Turn={world.Turn}, Round={world.Round}, Combatants=[{string.Join(",", world.Combatants)}], "
+            return $"Mode={world.Mode}, Turn={world.Turn}, Round={world.Round}, Moved={world.PlayerMoved}, Acted={world.PlayerActed}, "
+                + $"Reachable={moveController.ReachableCount}, Combatants=[{string.Join(",", world.Combatants)}], "
                 + $"PlayerHp={player.Hp}/{player.MaxHp}, Stability={player.Stability}/{player.MaxStability}, VisibleEnemies={unitsView.VisibleCount}";
         }
 

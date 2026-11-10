@@ -1,35 +1,80 @@
 using System.Collections.Generic;
+using GirlsDungeon.Core.Map;
 using GirlsDungeon.Core.Sim;
 using UnityEngine;
 using UnityEngine.UI;
 
 namespace GirlsDungeon.Game
 {
-    /// <summary>체력 · 안정지수 · 전투 상태 표시와 턴 종료 버튼. 글은 모두 텍스트 표에서 가져온다.</summary>
+    /// <summary>
+    /// 체력 · 안정지수 · 전투 상태 · 사격 미리보기 · 전투 기록 · 턴 종료 버튼. 글은 모두 텍스트 표에서 가져온다.
+    /// 미리보기 숫자는 MoveController가 규칙(CombatRules.Preview)에서 받아 넘긴다 — 여기서는 글로 바꾸기만 한다.
+    /// </summary>
     public sealed class HudView : MonoBehaviour
     {
         [SerializeField] private UnityEngine.UI.Text hpLabel;
         [SerializeField] private UnityEngine.UI.Text stabilityLabel;
         [SerializeField] private UnityEngine.UI.Text roundLabel;
         [SerializeField] private UnityEngine.UI.Text turnLabel;
+        [SerializeField] private UnityEngine.UI.Text previewLabel;
+        [SerializeField] private UnityEngine.UI.Text logLabel;
+        [SerializeField] private UnityEngine.UI.Text defeatLabel;
         [SerializeField] private Button endTurnButton;
+        [SerializeField] private int logLines = 4;
 
+        private readonly List<string> log = new List<string>();
         private Simulation simulation;
-        private int endTurnCostTicks;
+        private CombatSettings settings;
+        private GameBalance balance;
 
-        public void Bind(Simulation newSimulation, int newEndTurnCostTicks)
+        public string PreviewText => previewLabel.text;
+        public string LogText => logLabel.text;
+
+        public void Bind(Simulation newSimulation, CombatSettings newSettings, GameBalance newBalance)
         {
             Unbind();
             simulation = newSimulation;
-            endTurnCostTicks = newEndTurnCostTicks;
+            settings = newSettings;
+            balance = newBalance;
+            log.Clear();
+            logLabel.text = string.Empty;
             simulation.EventsPublished += HandleEvents;
+            ClearPreview();
             Refresh();
         }
 
         /// <summary>턴 종료 버튼과 같다. 지금 플레이어 차례가 아니면 false.</summary>
         public bool EndTurn()
         {
-            return simulation != null && simulation.Execute(new EndTurnCommand(endTurnCostTicks));
+            return simulation != null && simulation.Execute(new EndTurnCommand(settings));
+        }
+
+        public void ShowAttackPreview(Unit target, AttackPreview preview, bool alreadyActed)
+        {
+            string name = UnitName(target.Kind);
+            if (alreadyActed) previewLabel.text = Text.Get("ui.combat.preview_already_acted");
+            else if (preview.Block == AttackBlock.OutOfRange) previewLabel.text = Text.Get("ui.combat.preview_out_of_range", name);
+            else if (preview.Block == AttackBlock.NoLineOfFire) previewLabel.text = Text.Get("ui.combat.preview_no_line", name);
+            else
+            {
+                string cover = CoverName(preview.Cover);
+                if (preview.ReductionPercent > 0) cover = cover + " · " + Text.Get("ui.combat.reduction", preview.ReductionPercent);
+                previewLabel.text = Text.Get("ui.combat.preview_attack", name, target.Hp, target.MaxHp, target.Stability, target.MaxStability,
+                    preview.Damage, preview.CritPercent, preview.CritDamage, preview.StabilityDamage, cover);
+            }
+            previewLabel.gameObject.SetActive(true);
+        }
+
+        public void ShowMovePreview(CoverLevel cover)
+        {
+            previewLabel.text = Text.Get("ui.combat.preview_move", CoverName(cover));
+            previewLabel.gameObject.SetActive(true);
+        }
+
+        public void ClearPreview()
+        {
+            previewLabel.text = string.Empty;
+            previewLabel.gameObject.SetActive(false);
         }
 
         private void Awake()
@@ -50,7 +95,50 @@ namespace GirlsDungeon.Game
 
         private void HandleEvents(IReadOnlyList<GameEvent> events)
         {
+            foreach (var gameEvent in events)
+            {
+                switch (gameEvent)
+                {
+                    case UnitAttacked attacked:
+                        string attacker = UnitName(attacked.AttackerKind);
+                        string target = UnitName(attacked.TargetKind);
+                        AddLog(attacked.IsCrit
+                            ? Text.Get("ui.combat.log_crit", attacker, target, attacked.Damage)
+                            : Text.Get("ui.combat.log_hit", attacker, target, attacked.Damage));
+                        if (attacked.StabilityBroken) AddLog(Text.Get("ui.combat.log_break", target));
+                        break;
+                    case UnitDied died:
+                        AddLog(Text.Get("ui.combat.log_down", UnitName(died.Kind)));
+                        break;
+                    case PlayerDefeated _:
+                        AddLog(Text.Get("ui.combat.log_down", UnitName(UnitKind.Player)));
+                        break;
+                }
+            }
             Refresh();
+        }
+
+        private void AddLog(string line)
+        {
+            log.Add(line);
+            while (log.Count > logLines) log.RemoveAt(0);
+            logLabel.text = string.Join("\n", log);
+        }
+
+        private string UnitName(UnitKind kind)
+        {
+            string key = balance.NameKey(kind);
+            return key != null ? Text.Get(key) : kind.ToString();
+        }
+
+        private static string CoverName(CoverLevel cover)
+        {
+            switch (cover)
+            {
+                case CoverLevel.Full: return Text.Get("ui.cover.full");
+                case CoverLevel.Half: return Text.Get("ui.cover.half");
+                default: return Text.Get("ui.cover.none");
+            }
         }
 
         private void Refresh()
@@ -63,12 +151,20 @@ namespace GirlsDungeon.Game
                 stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
             }
 
+            bool defeated = world.Mode == WorldMode.Defeat;
+            defeatLabel.gameObject.SetActive(defeated);
+            if (defeated) defeatLabel.text = Text.Get("ui.combat.defeat");
+
             bool inCombat = world.Mode == WorldMode.Combat;
-            bool playerTurn = inCombat && world.Turn == TurnSide.Player;
+            bool playerTurn = TurnFlow.IsPlayerTurn(world);
             roundLabel.gameObject.SetActive(inCombat);
             turnLabel.gameObject.SetActive(inCombat);
             endTurnButton.gameObject.SetActive(playerTurn);
-            if (!inCombat) return;
+            if (!inCombat)
+            {
+                ClearPreview();
+                return;
+            }
 
             roundLabel.text = Text.Get("ui.combat.round", world.Round);
             turnLabel.text = playerTurn ? Text.Get("ui.combat.player_turn") : Text.Get("ui.combat.enemy_turn");

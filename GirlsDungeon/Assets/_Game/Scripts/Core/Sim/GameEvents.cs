@@ -90,6 +90,44 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>사격이 맞았다 (항상 맞는다). 화면 기록 · 연출용 값.</summary>
+    public sealed class UnitAttacked : GameEvent
+    {
+        public int AttackerId { get; }
+        public UnitKind AttackerKind { get; }
+        public int TargetId { get; }
+        public UnitKind TargetKind { get; }
+        public int Damage { get; }
+        public bool IsCrit { get; }
+        public Map.CoverLevel Cover { get; }
+        public bool StabilityGuard { get; }
+        public bool StabilityBroken { get; }
+
+        public UnitAttacked(Unit attacker, Unit target, int damage, bool isCrit, Map.CoverLevel cover, bool stabilityGuard, bool stabilityBroken)
+        {
+            AttackerId = attacker.Id;
+            AttackerKind = attacker.Kind;
+            TargetId = target.Id;
+            TargetKind = target.Kind;
+            Damage = damage;
+            IsCrit = isCrit;
+            Cover = cover;
+            StabilityGuard = stabilityGuard;
+            StabilityBroken = stabilityBroken;
+        }
+    }
+
+    /// <summary>플레이어가 쓰러졌다.</summary>
+    public sealed class PlayerDefeated : GameEvent
+    {
+        public int KillerId { get; }
+
+        public PlayerDefeated(int killerId)
+        {
+            KillerId = killerId;
+        }
+    }
+
     public sealed class UnitDied : GameEvent
     {
         public int UnitId { get; }
