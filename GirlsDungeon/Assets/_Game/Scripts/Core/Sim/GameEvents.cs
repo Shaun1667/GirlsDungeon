@@ -172,6 +172,23 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>플레이어가 낭떠러지에 떨어졌다. 피해를 받고 살아 있으면 To 칸에서 다시 일어났다 (쓰러졌으면 To = From).</summary>
+    public sealed class PlayerFell : GameEvent
+    {
+        public int UnitId { get; }
+        public GridPos From { get; }
+        public GridPos To { get; }
+        public int Damage { get; }
+
+        public PlayerFell(int unitId, GridPos from, GridPos to, int damage)
+        {
+            UnitId = unitId;
+            From = from;
+            To = to;
+            Damage = damage;
+        }
+    }
+
     /// <summary>경계 중이던 적이 깨어났다.</summary>
     public sealed class EnemiesAlerted : GameEvent
     {

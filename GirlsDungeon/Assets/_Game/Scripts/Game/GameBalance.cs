@@ -22,6 +22,8 @@ namespace GirlsDungeon.Game
         public int stabilityDamage;
         public int critPercent;
         public int critMultiplierPercent;
+        [Tooltip("Cells a hit pushes the target away from the attacker (0 = no push).")]
+        public int pushOnHit;
     }
 
     /// <summary>게임 수치의 한 곳 (BALANCE.md와 함께 관리). 코드에 숫자를 직접 넣지 않는다.</summary>
@@ -76,6 +78,12 @@ namespace GirlsDungeon.Game
                 kind = UnitKind.Rifleman, nameKey = "unit.rifleman.name", maxHp = 10, maxStability = 3, visionRange = 9,
                 attack = 6, defense = 2, moveRange = 6, attackRange = 7, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150,
             },
+            new UnitStatsEntry
+            {
+                kind = UnitKind.Assault, nameKey = "unit.assault.name", maxHp = 8, maxStability = 2, visionRange = 9,
+                attack = 6, defense = 1, moveRange = 8, attackRange = 1, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150,
+                pushOnHit = 1,
+            },
         };
 
         [Header("Combat (BALANCE 5)")]
@@ -115,6 +123,12 @@ namespace GirlsDungeon.Game
         [Tooltip("Flat damage when a pushed unit hits a wall, cover or unit.")]
         [SerializeField] private int pushCollisionDamage = 3;
         [SerializeField] private int pushCooldownRounds = 2;
+
+        [Header("Assault and falling (BALANCE 10)")]
+        [Tooltip("Chance (%) that each spawned enemy is an assault unit instead of a rifleman.")]
+        [SerializeField] private int assaultPercent = 30;
+        [Tooltip("Damage (% of max HP) the player takes on falling into a chasm.")]
+        [SerializeField] private int fallDamagePercent = 50;
 
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
@@ -185,6 +199,8 @@ namespace GirlsDungeon.Game
                 PushDamagePercent = pushDamagePercent,
                 PushCollisionDamage = pushCollisionDamage,
                 PushCooldownRounds = pushCooldownRounds,
+                AssaultPercent = assaultPercent,
+                FallDamagePercent = fallDamagePercent,
             };
             foreach (var entry in units)
             {
@@ -201,6 +217,7 @@ namespace GirlsDungeon.Game
                     StabilityDamage = entry.stabilityDamage,
                     CritPercent = entry.critPercent,
                     CritMultiplierPercent = entry.critMultiplierPercent,
+                    PushOnHit = entry.pushOnHit,
                 });
             }
             return settings;

@@ -308,6 +308,8 @@ namespace GirlsDungeon.Tests
                 PushDamagePercent = 30,
                 PushCollisionDamage = 3,
                 PushCooldownRounds = 2,
+                AssaultPercent = 30,
+                FallDamagePercent = 50,
             };
             settings.Units.Add(new UnitStats
             {
@@ -318,6 +320,12 @@ namespace GirlsDungeon.Tests
             {
                 Kind = UnitKind.Rifleman, MaxHp = 10, MaxStability = 3, VisionRange = 9,
                 Attack = 6, Defense = 2, MoveRange = 6, AttackRange = 7, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
+            });
+            settings.Units.Add(new UnitStats
+            {
+                Kind = UnitKind.Assault, MaxHp = 8, MaxStability = 2, VisionRange = 9,
+                Attack = 6, Defense = 1, MoveRange = 8, AttackRange = 1, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
+                PushOnHit = 1,
             });
             return settings;
         }

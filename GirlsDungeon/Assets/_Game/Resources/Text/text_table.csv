@@ -56,3 +56,6 @@ ui.combat.push_result_slide,{0}칸 밀림,Pushed {0} cells
 ui.combat.log_push,{0}의 밀치기,{0} pushes
 ui.combat.log_fell,{0}이(가) 낭떠러지로 떨어짐,{0} fell into the chasm
 ui.combat.log_collide,{0} 충돌 피해 {1},{0} takes {1} collision damage
+unit.assault.name,돌격병,Assault
+ui.combat.log_player_recovered,낭떠러지로 떨어짐 · 피해 {0} · 근처에서 다시 일어남,Fell into the chasm · {0} damage · got back up nearby
+ui.combat.log_player_fell_down,낭떠러지로 떨어짐 · 피해 {0},Fell into the chasm · {0} damage

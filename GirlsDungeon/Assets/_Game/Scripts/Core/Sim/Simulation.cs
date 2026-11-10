@@ -73,7 +73,7 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>
-    /// 층에 적을 놓는 한 곳. 시작 칸에서 일정 거리 밖이고, 시작 칸에서 보이지 않는(Vision — 시작 방 전체 포함) 걸을 수 있는 칸에만 놓는다.
+    /// 층에 적을 놓는 한 곳. 적마다 AssaultPercent 확률로 돌격병, 나머지는 사격병. 시작 칸에서 일정 거리 밖이고, 시작 칸에서 보이지 않는(Vision — 시작 방 전체 포함) 걸을 수 있는 칸에만 놓는다.
     /// 후보 칸은 행 순서로 모은 뒤 배치 난수로 고르므로 같은 시드면 같은 자리가 나온다.
     /// </summary>
     public static class EnemySpawner
@@ -99,11 +99,13 @@ namespace GirlsDungeon.Core.Sim
             }
 
             int count = random.Range(settings.MinEnemiesPerFloor, settings.MaxEnemiesPerFloor + 1);
-            var riflemanStats = settings.StatsFor(UnitKind.Rifleman);
+            // 종류는 적 종류 난수로 따로 굴린다 — 종류 비율을 바꿔도 배치 자리 · 경계 굴림은 그대로.
+            var kindRandom = world.Random.Get(RandomPurpose.EnemyKind);
             for (int i = 0; i < count && candidates.Count > 0; i++)
             {
                 int index = random.Range(0, candidates.Count);
-                var enemy = world.AddUnit(riflemanStats, candidates[index]);
+                var kind = kindRandom.Range(0, 100) < settings.AssaultPercent ? UnitKind.Assault : UnitKind.Rifleman;
+                var enemy = world.AddUnit(settings.StatsFor(kind), candidates[index]);
                 enemy.Guarding = random.Range(0, 100) < settings.GuardPercent;
                 candidates.RemoveAt(index);
             }

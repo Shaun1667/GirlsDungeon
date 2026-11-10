@@ -129,7 +129,8 @@ namespace GirlsDungeon.Core.Sim
     /// 적 차례 (전투에 들어온 적, ID 순서). 경계 중인 적은 행동하지 않는다.
     /// 사격병: 이동 범위 안에서 플레이어를 쏠 수 있는 칸 중 플레이어 쪽 엄폐가 가장 좋은 칸(같으면 먼 칸)으로 간 뒤 사격한다.
     /// 쏠 수 있는 칸이 없으면 플레이어에게 가장 가까워지는 칸으로 가고 감시를 건다. 걷는 동안 플레이어의 감시에 맞을 수 있다.
-    /// 칸 고르기 · 사선 · 피해는 플레이어와 같은 규칙(CombatMovement · CombatRules · Cover · Alert)을 쓴다.
+    /// 돌격병(PushOnHit > 0): 바로 옆에서 칠 수 있는 칸 중 플레이어를 낭떠러지로 떨어뜨리는 칸 → 부딪히게 하는 칸 → 적은 걸음. 못 치면 다가가기만 한다.
+    /// 칸 고르기 · 사선 · 피해는 플레이어와 같은 규칙(CombatMovement · CombatRules · Cover · Alert · Push)을 쓴다.
     /// </summary>
     public static class EnemyTurn
     {
@@ -151,6 +152,8 @@ namespace GirlsDungeon.Core.Sim
                 }
 
                 if (CombatRules.Resolve(world, settings, enemy, player, events)) continue;
+                // 근접(밀기) 적은 감시를 걸지 않는다 — 반응으로 밀면 걷던 경로가 꼬인다.
+                if (enemy.PushOnHit > 0) continue;
                 enemy.Overwatching = true;
                 events.Add(new OverwatchSet(enemy.Id, enemy.Kind));
             }
@@ -168,7 +171,12 @@ namespace GirlsDungeon.Core.Sim
                 int steps = pair.Value;
                 bool canShoot = CombatRules.Preview(world, settings, enemy, cell, player).CanAttack;
                 int score;
-                if (canShoot)
+                if (canShoot && enemy.PushOnHit > 0)
+                {
+                    // 돌격병: 플레이어를 낭떠러지로 떨어뜨리는 칸 → 부딪히게 하는 칸 → 적은 걸음 (결정 2026-11-10, Claude 정함).
+                    score = 100000 + KnockbackScore(world, enemy, cell, player) - steps;
+                }
+                else if (canShoot)
                 {
                     // 엄폐가 가장 중요하고, 같으면 플레이어에게서 먼 칸 (결정 2026-11-10, 사용자 — 바로 옆까지 붙지 않게).
                     var cover = Cover.Against(world.Map, cell, player.Position);
@@ -188,6 +196,16 @@ namespace GirlsDungeon.Core.Sim
                 best = cell;
             }
             return best;
+        }
+
+        /// <summary>그 칸에서 때리면 플레이어가 어떻게 밀리는지: 떨어짐 2000, 부딪힘 1000, 그냥 밀림 0.</summary>
+        private static int KnockbackScore(World world, Unit enemy, Grid.GridPos cell, Unit player)
+        {
+            var direction = new Grid.GridPos(System.Math.Sign(player.Position.X - cell.X), System.Math.Sign(player.Position.Y - cell.Y));
+            var occupied = new HashSet<Grid.GridPos> { cell };
+            foreach (var unit in world.Units) if (unit != player && unit != enemy) occupied.Add(unit.Position);
+            var slide = Push.Slide(world.Map, occupied, player.Position, direction, enemy.PushOnHit);
+            return slide.Falls ? 2000 : slide.Collides ? 1000 : 0;
         }
 
         /// <summary>사전 순회 순서에 기대지 않도록 걸음 수 → y → x 순으로 정렬한다.</summary>

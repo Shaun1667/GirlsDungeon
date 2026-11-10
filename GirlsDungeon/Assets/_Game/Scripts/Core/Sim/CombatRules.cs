@@ -108,7 +108,12 @@ namespace GirlsDungeon.Core.Sim
                 CoverBreak.Hit(world, settings, CoverBreak.Facing(world.Map, target.Position, attacker.Position), events);
             Alert.Wake(world, target, events);
 
-            if (target.Hp > 0) return true;
+            if (target.Hp > 0)
+            {
+                // 밀기 능력이 있는 공격자(돌격병)는 맞은 상대를 민다 — 낭떠러지 · 충돌 처리는 Push 한 곳.
+                Push.Knockback(world, settings, attacker, target, events);
+                return true;
+            }
             if (target.IsPlayer)
             {
                 target.Hp = 0;

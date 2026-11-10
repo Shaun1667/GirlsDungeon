@@ -76,7 +76,7 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>
-    /// 밀치기의 한 곳 (BALANCE 9번, 결정 2026-11-10 사용자).
+    /// 밀치기의 한 곳 (BALANCE 9번 · 10번, 결정 2026-11-10 사용자). 플레이어 밀치기 스킬과 돌격병 근접 밀기(Knockback)가 같은 Slide · 낙하 처리를 쓴다.
     /// - 범위: 플레이어 앞 동서남북 한 방향으로 길이 PushLength × 너비 PushWidth. 너비의 옆 줄은 side(+1 / −1) 쪽.
     /// - 범위 안 유닛은 직접 피해(공격력 공식 × PushDamagePercent, 엄폐 · 치명 없음)를 받고, 범위 끝 바로 바깥 칸까지 밀린다.
     /// - 미는 중 낭떠러지에 들어가면 떨어진다 (적은 즉사). 벽 · 기둥 · 상자 · 낮은 벽 · 다른 유닛 · 맵 끝에 부딪히면 그 앞에서 멈추고 충돌 피해.
@@ -201,36 +201,110 @@ namespace GirlsDungeon.Core.Sim
                 events.Add(new UnitAttacked(attacker, target, hit.Damage, false, CoverLevel.None, false, false));
                 Alert.Wake(world, target, events);
 
-                var from = target.Position;
-                foreach (var cell in hit.Slide.Path)
-                {
-                    events.Add(new UnitMoved(target.Id, target.Position, cell));
-                    target.Position = cell;
-                }
-                if (hit.Slide.Path.Count > 0 || hit.Slide.Collides)
-                    events.Add(new UnitPushed(target.Id, target.Kind, from, hit.Slide.End, hit.Slide.Falls, hit.CollisionDamage));
-
-                target.Hp -= hit.CollisionDamage;
-                events.Add(new UnitStatsChanged(target.Id));
-                if (target.IsPlayer)
-                {
-                    // 플레이어가 밀려 떨어지는 경우는 2-8에서 다룬다 (근접 밀치기).
-                    if (target.Hp <= 0)
-                    {
-                        target.Hp = 0;
-                        world.Mode = WorldMode.Defeat;
-                        events.Add(new PlayerDefeated(attacker.Id));
-                    }
-                }
-                else if (hit.Slide.Falls || target.Hp <= 0)
-                {
-                    CombatFlow.Kill(world, target, events);
-                }
+                ApplySlide(world, settings, attacker, target, hit.Slide, hit.CollisionDamage, events);
             }
 
             world.PushCooldown = settings.PushCooldownRounds;
             return true;
         }
+
+        /// <summary>
+        /// 공격이 맞은 뒤 상대를 공격자 반대쪽으로 attacker.PushOnHit칸 민다 (돌격병 근접 공격 — CombatRules.Resolve가 부른다).
+        /// 상대가 이미 쓰러졌거나 밀기 능력이 없으면 아무것도 하지 않는다. 막히면 충돌 피해, 낭떠러지면 떨어진다.
+        /// </summary>
+        public static void Knockback(World world, CombatSettings settings, Unit attacker, Unit target, List<GameEvent> events)
+        {
+            if (attacker.PushOnHit <= 0 || target.Hp <= 0) return;
+            var direction = new GridPos(Math.Sign(target.Position.X - attacker.Position.X), Math.Sign(target.Position.Y - attacker.Position.Y));
+            if (direction.X == 0 && direction.Y == 0) return;
+
+            var occupied = new HashSet<GridPos>();
+            foreach (var unit in world.Units) if (unit != target) occupied.Add(unit.Position);
+            var slide = Slide(world.Map, occupied, target.Position, direction, attacker.PushOnHit);
+            ApplySlide(world, settings, attacker, target, slide, slide.Collides ? settings.PushCollisionDamage : 0, events);
+        }
+
+        /// <summary>
+        /// 밀린 결과를 세계에 적용한다: 칸마다 UnitMoved → UnitPushed → 충돌 피해 →
+        /// 떨어지면 적은 즉사, 플레이어는 최대 체력의 FallDamagePercent 피해 후 가장 가까운 빈 바닥에서 다시 일어난다 (결정 2026-11-10, 사용자).
+        /// </summary>
+        private static void ApplySlide(World world, CombatSettings settings, Unit attacker, Unit target, SlideResult slide, int collisionDamage, List<GameEvent> events)
+        {
+            var from = target.Position;
+            foreach (var cell in slide.Path)
+            {
+                events.Add(new UnitMoved(target.Id, target.Position, cell));
+                target.Position = cell;
+            }
+            if (slide.Path.Count > 0 || slide.Collides)
+                events.Add(new UnitPushed(target.Id, target.Kind, from, slide.End, slide.Falls, collisionDamage));
+
+            target.Hp -= collisionDamage;
+            events.Add(new UnitStatsChanged(target.Id));
+
+            if (target.IsPlayer)
+            {
+                if (slide.Falls && target.Hp > 0) RecoverFromFall(world, settings, target, slide.End, events);
+                if (target.Hp > 0) return;
+                target.Hp = 0;
+                world.Mode = WorldMode.Defeat;
+                events.Add(new PlayerDefeated(attacker.Id));
+            }
+            else if (slide.Falls || target.Hp <= 0)
+            {
+                CombatFlow.Kill(world, target, events);
+            }
+        }
+
+        /// <summary>떨어진 플레이어: 피해를 받고, 살아 있으면 떨어진 칸에서 가장 가까운 빈 바닥으로 옮긴다.</summary>
+        private static void RecoverFromFall(World world, CombatSettings settings, Unit player, GridPos fellAt, List<GameEvent> events)
+        {
+            int damage = FallDamage(player.MaxHp, settings.FallDamagePercent);
+            player.Hp -= damage;
+            events.Add(new UnitStatsChanged(player.Id));
+            if (player.Hp <= 0)
+            {
+                events.Add(new PlayerFell(player.Id, fellAt, fellAt, damage));
+                return;
+            }
+
+            var cell = NearestOpenFloor(world, fellAt);
+            player.Position = cell;
+            events.Add(new PlayerFell(player.Id, fellAt, cell, damage));
+        }
+
+        /// <summary>최대 체력 × 비율, 반올림 (0.5 올림).</summary>
+        public static int FallDamage(int maxHp, int percent) => (maxHp * percent * 2 + 100) / 200;
+
+        /// <summary>
+        /// from에서 8방향으로 넓혀 가며(벽 · 기둥 · 상자는 지나지 않음) 처음 만나는 설 수 있고 빈 칸.
+        /// 이웃 순서가 고정이라 같은 상태면 같은 칸이 나온다. 없으면 시작 칸.
+        /// </summary>
+        public static GridPos NearestOpenFloor(World world, GridPos from)
+        {
+            var map = world.Map;
+            var seen = new HashSet<GridPos> { from };
+            var frontier = new Queue<GridPos>();
+            frontier.Enqueue(from);
+            while (frontier.Count > 0)
+            {
+                var cell = frontier.Dequeue();
+                if (map.IsWalkable(cell) && !world.IsOccupied(cell)) return cell;
+                foreach (var step in NeighborSteps)
+                {
+                    var next = new GridPos(cell.X + step.X, cell.Y + step.Y);
+                    if (!map.InBounds(next) || (!map.IsWalkable(next) && !map.IsChasm(next)) || !seen.Add(next)) continue;
+                    frontier.Enqueue(next);
+                }
+            }
+            return map.StartCell;
+        }
+
+        private static readonly GridPos[] NeighborSteps =
+        {
+            new GridPos(1, 0), new GridPos(-1, 0), new GridPos(0, 1), new GridPos(0, -1),
+            new GridPos(1, 1), new GridPos(1, -1), new GridPos(-1, 1), new GridPos(-1, -1),
+        };
 
         private static int Depth(GridPos origin, GridPos cell, GridPos direction)
         {

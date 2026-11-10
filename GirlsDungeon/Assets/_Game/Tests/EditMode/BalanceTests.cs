@@ -87,6 +87,8 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.PushDamagePercent, Is.EqualTo(expected.PushDamagePercent));
             Assert.That(combat.PushCollisionDamage, Is.EqualTo(expected.PushCollisionDamage));
             Assert.That(combat.PushCooldownRounds, Is.EqualTo(expected.PushCooldownRounds));
+            Assert.That(combat.AssaultPercent, Is.EqualTo(expected.AssaultPercent));
+            Assert.That(combat.FallDamagePercent, Is.EqualTo(expected.FallDamagePercent));
             foreach (var stats in expected.Units)
             {
                 var actual = combat.StatsFor(stats.Kind);
@@ -97,6 +99,7 @@ namespace GirlsDungeon.Tests
                 Assert.That(actual.StabilityDamage, Is.EqualTo(stats.StabilityDamage), stats.Kind + " stability damage");
                 Assert.That(actual.CritPercent, Is.EqualTo(stats.CritPercent), stats.Kind + " crit");
                 Assert.That(actual.CritMultiplierPercent, Is.EqualTo(stats.CritMultiplierPercent), stats.Kind + " crit multiplier");
+                Assert.That(actual.PushOnHit, Is.EqualTo(stats.PushOnHit), stats.Kind + " push on hit");
             }
         }
 

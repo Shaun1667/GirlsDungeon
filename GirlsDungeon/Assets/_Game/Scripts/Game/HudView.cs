@@ -210,8 +210,14 @@ namespace GirlsDungeon.Game
                         AddLog(Text.Get("ui.combat.log_push", UnitName(pushed.AttackerKind)));
                         break;
                     case UnitPushed slid:
-                        if (slid.Fell) AddLog(Text.Get("ui.combat.log_fell", UnitName(slid.Kind)));
+                        // 플레이어가 떨어진 것은 PlayerFell 한 줄로 알린다.
+                        if (slid.Fell && slid.Kind != UnitKind.Player) AddLog(Text.Get("ui.combat.log_fell", UnitName(slid.Kind)));
                         else if (slid.CollisionDamage > 0) AddLog(Text.Get("ui.combat.log_collide", UnitName(slid.Kind), slid.CollisionDamage));
+                        break;
+                    case PlayerFell fell:
+                        AddLog(fell.To != fell.From
+                            ? Text.Get("ui.combat.log_player_recovered", fell.Damage)
+                            : Text.Get("ui.combat.log_player_fell_down", fell.Damage));
                         break;
                     case AreaExploded exploded:
                         AddLog(Text.Get("ui.combat.log_area", UnitName(exploded.AttackerKind)));

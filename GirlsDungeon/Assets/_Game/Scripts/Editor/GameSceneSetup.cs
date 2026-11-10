@@ -31,6 +31,7 @@ namespace GirlsDungeon.EditorTools
             var hoverMaterial = LoadOrCreateMaterial("GreyboxHover", new Color(0.35f, 0.85f, 0.95f));
             var coverMaterial = LoadOrCreateMaterial("GreyboxCover", new Color(0.55f, 0.47f, 0.36f));
             var enemyMaterial = LoadOrCreateMaterial("GreyboxEnemy", new Color(0.85f, 0.25f, 0.2f));
+            var assaultMaterial = LoadOrCreateMaterial("GreyboxAssault", new Color(0.95f, 0.6f, 0.1f));
             var fogMaterial = LoadOrCreateFogMaterial();
             var rangeMaterial = LoadOrCreateMaterial("GreyboxRange", new Color(0.3f, 0.6f, 0.95f));
             var areaMaterial = LoadOrCreateMaterial("GreyboxArea", new Color(0.95f, 0.45f, 0.15f));
@@ -106,7 +107,7 @@ namespace GirlsDungeon.EditorTools
 
             var unitsObject = new GameObject("UnitsView");
             var unitsView = unitsObject.AddComponent<UnitsView>();
-            SetReferences(unitsView, ("enemyMaterial", enemyMaterial));
+            SetReferences(unitsView, ("enemyMaterial", enemyMaterial), ("assaultMaterial", assaultMaterial));
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();

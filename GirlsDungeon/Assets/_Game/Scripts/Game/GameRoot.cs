@@ -21,6 +21,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private ThreatView threatView;
 
         private Simulation simulation;
+        private CombatSettings combatSettings;
 
         public World World => simulation?.World;
 
@@ -34,7 +35,7 @@ namespace GirlsDungeon.Game
 
         public void BeginRun(int seed)
         {
-            var combatSettings = balance.CreateCombatSettings();
+            combatSettings = balance.CreateCombatSettings();
             simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings(), combatSettings), combatSettings);
             simulation.EventsPublished += RebuildFloorWhenCoverBreaks;
 
@@ -154,6 +155,16 @@ namespace GirlsDungeon.Game
             if (unit == null || !world.Map.IsWalkable(cell) || world.IsOccupied(cell)) return false;
             DebugUsed = true;
             return simulation.Execute(new DebugPlaceCommand(unitId, cell));
+        }
+
+        /// <summary>[상태 변경] 그 빈 칸에 적을 하나 만든다 (돌격병 시험용). 만든 적 ID, 못 만들면 -1.</summary>
+        public int DebugSpawnEnemy(UnitKind kind, GridPos cell)
+        {
+            var world = World;
+            if (world == null) return -1;
+            DebugUsed = true;
+            int id = world.NextEntityId;
+            return simulation.Execute(new DebugSpawnCommand(kind, cell, combatSettings)) ? id : -1;
         }
 
         /// <summary>수류탄 버튼과 같다 (조준 모드 켜기 · 끄기).</summary>

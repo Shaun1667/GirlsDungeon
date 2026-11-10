@@ -11,6 +11,8 @@ namespace GirlsDungeon.Game
     public sealed class UnitsView : MonoBehaviour
     {
         [SerializeField] private Material enemyMaterial;
+        [Tooltip("Material for assault units (melee pushers).")]
+        [SerializeField] private Material assaultMaterial;
         [SerializeField] private float bodyHeight = 1f;
 
         private readonly Dictionary<int, GameObject> views = new Dictionary<int, GameObject>();
@@ -59,7 +61,7 @@ namespace GirlsDungeon.Game
             var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             body.name = $"Unit {unit.Id} {unit.Kind}";
             Destroy(body.GetComponent<Collider>());
-            body.GetComponent<MeshRenderer>().sharedMaterial = enemyMaterial;
+            body.GetComponent<MeshRenderer>().sharedMaterial = unit.Kind == UnitKind.Assault && assaultMaterial != null ? assaultMaterial : enemyMaterial;
             body.transform.SetParent(transform, false);
             body.transform.position = GridSpace.ToWorld(unit.Position) + Vector3.up * bodyHeight;
             views.Add(unit.Id, body);
@@ -89,6 +91,9 @@ namespace GirlsDungeon.Game
         private void RefreshVisibility()
         {
             var world = simulation.World;
+            // 판 중간에 생긴 유닛(디버그 소환 등)도 그린다.
+            foreach (var unit in world.Units)
+                if (!unit.IsPlayer && !views.ContainsKey(unit.Id)) CreateView(unit);
             foreach (var pair in views)
             {
                 var unit = world.FindUnit(pair.Key);

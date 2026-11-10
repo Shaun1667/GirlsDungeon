@@ -17,6 +17,8 @@ namespace GirlsDungeon.Core.Sim
         public int StabilityDamage;
         public int CritPercent;
         public int CritMultiplierPercent;
+        /// <summary>공격이 맞으면 상대를 미는 칸 수 (0 = 밀지 않음).</summary>
+        public int PushOnHit;
     }
 
     /// <summary>전투 수치 (BALANCE 4번 · 5번).</summary>
@@ -61,6 +63,12 @@ namespace GirlsDungeon.Core.Sim
         public int PushCollisionDamage;
         public int PushCooldownRounds;
 
+        // 돌격병 · 낙하 (BALANCE 10번)
+        /// <summary>적마다 돌격병으로 나올 확률 (나머지는 사격병).</summary>
+        public int AssaultPercent;
+        /// <summary>플레이어가 낭떠러지에 떨어지면 받는 피해 (최대 체력의 %).</summary>
+        public int FallDamagePercent;
+
         public UnitStats StatsFor(UnitKind kind)
         {
             foreach (var stats in Units) if (stats.Kind == kind) return stats;
@@ -71,11 +79,12 @@ namespace GirlsDungeon.Core.Sim
         {
             StatsFor(UnitKind.Player);
             StatsFor(UnitKind.Rifleman);
+            if (AssaultPercent > 0) StatsFor(UnitKind.Assault);
             foreach (var stats in Units)
             {
                 if (stats.MaxHp < 1 || stats.MaxStability < 0 || stats.VisionRange < 1 || stats.Attack < 1 || stats.Defense < 0
                     || stats.MoveRange < 0 || stats.AttackRange < 1 || stats.StabilityDamage < 0
-                    || stats.CritPercent < 0 || stats.CritPercent > 100 || stats.CritMultiplierPercent < 100)
+                    || stats.CritPercent < 0 || stats.CritPercent > 100 || stats.CritMultiplierPercent < 100 || stats.PushOnHit < 0)
                     throw new ArgumentException($"Stats for {stats.Kind} are invalid.");
             }
             if (MinEnemiesPerFloor < 0 || MaxEnemiesPerFloor < MinEnemiesPerFloor || EnemyMinDistanceFromStart < 0 || EndTurnCostTicks < 0
@@ -91,6 +100,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Cover durability must be at least 1.");
             if (PushLength < 1 || PushWidth < 1 || PushDamagePercent < 0 || PushCollisionDamage < 0 || PushCooldownRounds < 0)
                 throw new ArgumentException("Push settings are invalid.");
+            if (AssaultPercent < 0 || AssaultPercent > 100 || FallDamagePercent < 0)
+                throw new ArgumentException("Assault / fall settings are invalid.");
         }
     }
 }

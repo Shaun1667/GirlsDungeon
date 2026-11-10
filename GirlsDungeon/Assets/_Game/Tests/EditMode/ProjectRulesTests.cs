@@ -69,7 +69,7 @@ namespace GirlsDungeon.Tests
             var fields = new[] { "balance", "seedLabel", "floorView", "playerView", "cameraRig", "moveController", "viewCamera", "hoverMarker",
                 "unitsView", "hudView", "enemyMaterial", "hpLabel", "stabilityLabel", "roundLabel", "turnLabel", "endTurnButton", "fogView", "fogMaterial",
                 "previewLabel", "logLabel", "defeatLabel", "rangeView", "rangeMaterial", "grenadeButton", "areaView", "overwatchButton", "threatView", "guardView", "watchView",
-                "pushButton", "pushAreaView", "chasmMaterial" };
+                "pushButton", "pushAreaView", "chasmMaterial", "assaultMaterial" };
 
             foreach (var field in fields)
             {

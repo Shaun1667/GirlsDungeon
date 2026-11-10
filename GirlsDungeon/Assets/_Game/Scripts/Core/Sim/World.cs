@@ -10,6 +10,8 @@ namespace GirlsDungeon.Core.Sim
     {
         Player = 0,
         Rifleman = 1,
+        /// <summary>돌격병: 바로 옆에서 근접 공격하고 맞은 상대를 1칸 민다.</summary>
+        Assault = 2,
     }
 
     /// <summary>탐험과 턴 전투. 저장에 정수로 들어가므로 끝에만 추가한다.</summary>
@@ -49,6 +51,9 @@ namespace GirlsDungeon.Core.Sim
         public int StabilityDamage { get; set; }
         public int CritPercent { get; set; }
         public int CritMultiplierPercent { get; set; }
+
+        /// <summary>공격이 맞으면 상대를 공격자 반대쪽으로 미는 칸 수 (0 = 밀지 않음, 돌격병 1).</summary>
+        public int PushOnHit { get; set; }
 
         /// <summary>경계 상태 (적). 공격받거나 플레이어가 경계 칸에 들어오기 전까지 행동하지 않는다.</summary>
         public bool Guarding { get; set; }
@@ -140,6 +145,7 @@ namespace GirlsDungeon.Core.Sim
                 StabilityDamage = stats.StabilityDamage,
                 CritPercent = stats.CritPercent,
                 CritMultiplierPercent = stats.CritMultiplierPercent,
+                PushOnHit = stats.PushOnHit,
             };
             Units.Add(unit);
             return unit;

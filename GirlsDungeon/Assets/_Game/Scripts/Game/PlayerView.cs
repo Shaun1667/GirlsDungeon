@@ -52,15 +52,26 @@ namespace GirlsDungeon.Game
             {
                 if (gameEvent is UnitMoved moved && moved.UnitId == simulation.World.PlayerId)
                     pendingSteps.Enqueue(GridSpace.ToWorld(moved.To));
+                // 낭떠러지에 떨어졌다가 다시 일어남: 떨어진 칸까지 걸어간 뒤 일어난 칸으로 바로 옮긴다.
+                if (gameEvent is PlayerFell fell && fell.To != fell.From)
+                    pendingSteps.Enqueue(GridSpace.ToWorld(fell.To) + SnapMarker);
             }
             if (!isStepping) BeginNextStep();
         }
+
+        /// <summary>큐에서 "걷지 않고 바로 옮김"을 표시하는 높이 (칸 위치는 늘 y = 0).</summary>
+        private static readonly Vector3 SnapMarker = Vector3.up * 1000f;
 
         private void BeginNextStep()
         {
             if (pendingSteps.Count == 0) return;
             fromPosition = transform.position;
             toPosition = pendingSteps.Dequeue();
+            if (toPosition.y > SnapMarker.y * 0.5f)
+            {
+                toPosition -= SnapMarker;
+                fromPosition = toPosition;
+            }
             elapsed = 0f;
             isStepping = true;
         }

@@ -170,4 +170,28 @@ namespace GirlsDungeon.Core.Sim
             return true;
         }
     }
+
+    /// <summary>디버그 전용: 빈 칸에 적을 하나 만든다 (경계 상태 아님). 플레이어 종류는 만들 수 없다.</summary>
+    public sealed class DebugSpawnCommand : ICommand
+    {
+        private readonly UnitKind kind;
+        private readonly GridPos cell;
+        private readonly CombatSettings settings;
+
+        public int CostTicks => 0;
+
+        public DebugSpawnCommand(UnitKind kind, GridPos cell, CombatSettings settings)
+        {
+            this.kind = kind;
+            this.cell = cell;
+            this.settings = settings;
+        }
+
+        public bool TryApply(World world, List<GameEvent> events)
+        {
+            if (kind == UnitKind.Player || !world.Map.IsWalkable(cell) || world.IsOccupied(cell)) return false;
+            world.AddUnit(settings.StatsFor(kind), cell);
+            return true;
+        }
+    }
 }
