@@ -89,6 +89,11 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.PushCooldownRounds, Is.EqualTo(expected.PushCooldownRounds));
             Assert.That(combat.AssaultPercent, Is.EqualTo(expected.AssaultPercent));
             Assert.That(combat.FallDamagePercent, Is.EqualTo(expected.FallDamagePercent));
+            Assert.That(combat.FloorCount, Is.EqualTo(expected.FloorCount));
+            Assert.That(combat.EnemiesPerFloorStep, Is.EqualTo(expected.EnemiesPerFloorStep));
+            Assert.That(combat.AssaultPercentPerFloor, Is.EqualTo(expected.AssaultPercentPerFloor));
+            Assert.That(combat.GuardPercentDropPerFloor, Is.EqualTo(expected.GuardPercentDropPerFloor));
+            Assert.That(combat.EnemyStatPercentPerFloor, Is.EqualTo(expected.EnemyStatPercentPerFloor));
             foreach (var stats in expected.Units)
             {
                 var actual = combat.StatsFor(stats.Kind);

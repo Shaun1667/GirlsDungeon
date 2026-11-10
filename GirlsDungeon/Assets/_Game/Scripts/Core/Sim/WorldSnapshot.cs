@@ -15,9 +15,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>
         /// 2: 낮은 벽 (2026-11-10). 3: 체력 · 안정지수 · 시야 · 전투 상태 · 배치 난수 (2026-11-10). 4: 본 칸 기록 (2026-11-10).
         /// 5: 유닛 전투 능력치 · 이번 차례 이동 / 행동 여부 (2026-11-10). 6: 수류탄 재사용 대기 (2026-11-10).
-        /// 7: 유닛 경계 · 감시 (2026-11-10). 8: 상자 · 낮은 벽 손상 (2026-11-10). 9: 밀치기 재사용 대기 (2026-11-10, 낭떠러지 칸은 TileType 값만 추가). 10: 유닛 밀기 칸 수 (2026-11-10).
+        /// 7: 유닛 경계 · 감시 (2026-11-10). 8: 상자 · 낮은 벽 손상 (2026-11-10). 9: 밀치기 재사용 대기 (2026-11-10, 낭떠러지 칸은 TileType 값만 추가). 10: 유닛 밀기 칸 수 (2026-11-10). 11: 쓰러뜨린 적 수 (2026-11-10).
         /// </summary>
-        public const int Version = 10;
+        public const int Version = 11;
 
         public static byte[] Encode(World world)
         {
@@ -28,6 +28,7 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write(world.Seed);
                 writer.Write(world.Tick);
                 writer.Write(world.FloorIndex);
+                writer.Write(world.Kills);
                 writer.Write(world.NextEntityId);
                 writer.Write(world.PlayerId);
 
@@ -91,6 +92,7 @@ namespace GirlsDungeon.Core.Sim
                 int seed = reader.ReadInt32();
                 long tick = reader.ReadInt64();
                 int floorIndex = reader.ReadInt32();
+                int kills = reader.ReadInt32();
                 int nextEntityId = reader.ReadInt32();
                 int playerId = reader.ReadInt32();
 
@@ -104,6 +106,7 @@ namespace GirlsDungeon.Core.Sim
                 {
                     Tick = tick,
                     FloorIndex = floorIndex,
+                    Kills = kills,
                     NextEntityId = nextEntityId,
                     PlayerId = playerId,
                     Map = ReadMap(reader),

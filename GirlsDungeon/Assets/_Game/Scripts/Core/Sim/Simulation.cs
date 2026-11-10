@@ -15,6 +15,7 @@ namespace GirlsDungeon.Core.Sim
     {
         private readonly List<GameEvent> pending = new List<GameEvent>();
         private readonly CombatSettings settings;
+        private readonly MapSettings mapSettings;
 
         public World World { get; }
 
@@ -22,10 +23,12 @@ namespace GirlsDungeon.Core.Sim
         public event Action<IReadOnlyList<GameEvent>> EventsPublished;
 
         /// <param name="settings">전투 수치. 없으면 경계 칸 확인(Alert.CheckZones)을 건너뛴다 (맵 · 이동만 보는 테스트용).</param>
-        public Simulation(World world, CombatSettings settings = null)
+        /// <param name="mapSettings">맵 수치. 있으면(전투 수치도 있을 때) 계단을 밟을 때 다음 층으로 내려간다 (FloorFlow).</param>
+        public Simulation(World world, CombatSettings settings = null, MapSettings mapSettings = null)
         {
             World = world ?? throw new ArgumentNullException(nameof(world));
             this.settings = settings;
+            this.mapSettings = mapSettings;
         }
 
         /// <summary>커맨드를 적용한다. 규칙에 맞지 않으면 틱이 흐르지 않고 false.</summary>
@@ -35,6 +38,7 @@ namespace GirlsDungeon.Core.Sim
 
             for (int i = 0; i < command.CostTicks; i++) RunTick();
             CombatFlow.AfterAction(World, settings, pending);
+            if (settings != null && mapSettings != null) FloorFlow.CheckStairs(World, mapSettings, settings, pending);
             Publish();
             return true;
         }
@@ -61,14 +65,46 @@ namespace GirlsDungeon.Core.Sim
             combatSettings.Validate();
 
             var world = new World(seed, new RandomStreams(seed));
-            world.Map = DungeonGenerator.Generate(mapSettings, world.Random.Get(RandomPurpose.Map));
-            FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
-
+            BuildFloor(world, mapSettings);
             var playerStats = combatSettings.StatsFor(UnitKind.Player);
             world.PlayerId = world.AddUnit(playerStats, world.Map.StartCell).Id;
             EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
             VisionSystem.Update(world, null);
             return world;
+        }
+
+        /// <summary>
+        /// 다음 층으로 내려간다: 적을 모두 치우고 새 지형 · 새 적을 만든다. 플레이어는 같은 유닛(체력 · 능력치 그대로)으로 새 시작 칸에 선다.
+        /// 지형 · 배치 난수는 판의 난수를 이어 쓰므로 같은 시드 · 같은 진행이면 같은 층이 나온다.
+        /// </summary>
+        public static void NextFloor(World world, MapSettings mapSettings, CombatSettings combatSettings, List<GameEvent> events)
+        {
+            var player = world.Player;
+            world.Units.RemoveAll(unit => !unit.IsPlayer);
+            world.Combatants.Clear();
+            world.FloorIndex++;
+            BuildFloor(world, mapSettings);
+
+            player.Position = world.Map.StartCell;
+            player.Overwatching = false;
+            world.Mode = WorldMode.Exploration;
+            world.Turn = TurnSide.Player;
+            world.Round = 0;
+            world.PlayerMoved = false;
+            world.PlayerActed = false;
+            world.GrenadeCooldown = 0;
+            world.PushCooldown = 0;
+            world.Explored = null;
+
+            EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
+            events?.Add(new FloorChanged(world.FloorIndex, world.Map.StartCell));
+            VisionSystem.Update(world, events);
+        }
+
+        private static void BuildFloor(World world, MapSettings mapSettings)
+        {
+            world.Map = DungeonGenerator.Generate(mapSettings, world.Random.Get(RandomPurpose.Map));
+            FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
         }
     }
 
@@ -98,17 +134,33 @@ namespace GirlsDungeon.Core.Sim
                 }
             }
 
-            int count = random.Range(settings.MinEnemiesPerFloor, settings.MaxEnemiesPerFloor + 1);
+            // 층이 깊을수록 적이 많고, 돌격병이 늘고, 강해지고, 바로 덤빈다 (결정 2026-11-10, 사용자 · BALANCE 11번).
+            int floor = world.FloorIndex;
+            int extra = floor * settings.EnemiesPerFloorStep;
+            int assaultPercent = settings.AssaultPercent + floor * settings.AssaultPercentPerFloor;
+            int guardPercent = Math.Max(0, settings.GuardPercent - floor * settings.GuardPercentDropPerFloor);
+            int statPercent = 100 + floor * settings.EnemyStatPercentPerFloor;
+
+            int count = random.Range(settings.MinEnemiesPerFloor + extra, settings.MaxEnemiesPerFloor + extra + 1);
             // 종류는 적 종류 난수로 따로 굴린다 — 종류 비율을 바꿔도 배치 자리 · 경계 굴림은 그대로.
             var kindRandom = world.Random.Get(RandomPurpose.EnemyKind);
             for (int i = 0; i < count && candidates.Count > 0; i++)
             {
                 int index = random.Range(0, candidates.Count);
-                var kind = kindRandom.Range(0, 100) < settings.AssaultPercent ? UnitKind.Assault : UnitKind.Rifleman;
+                var kind = kindRandom.Range(0, 100) < assaultPercent ? UnitKind.Assault : UnitKind.Rifleman;
                 var enemy = world.AddUnit(settings.StatsFor(kind), candidates[index]);
-                enemy.Guarding = random.Range(0, 100) < settings.GuardPercent;
+                enemy.Guarding = random.Range(0, 100) < guardPercent;
+                if (statPercent != 100)
+                {
+                    enemy.MaxHp = Scale(enemy.MaxHp, statPercent);
+                    enemy.Hp = enemy.MaxHp;
+                    enemy.Attack = Scale(enemy.Attack, statPercent);
+                }
                 candidates.RemoveAt(index);
             }
         }
+
+        /// <summary>값 × 비율%, 반올림 (0.5 올림).</summary>
+        public static int Scale(int value, int percent) => (value * percent * 2 + 100) / 200;
     }
 }

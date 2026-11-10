@@ -34,6 +34,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private RangeView pushAreaView;
 
         private readonly Queue<GridPos> pendingSteps = new Queue<GridPos>();
+        private int pendingFloor;
         private AimMode aim;
         private Simulation simulation;
         private PlayerView playerView;
@@ -129,6 +130,7 @@ namespace GirlsDungeon.Game
 
             pendingSteps.Clear();
             foreach (var step in path) pendingSteps.Enqueue(step);
+            pendingFloor = world.FloorIndex;
             return true;
         }
 
@@ -285,6 +287,8 @@ namespace GirlsDungeon.Game
 
         private void AdvanceSteps()
         {
+            // 계단을 지나 층이 바뀌면 남은 걸음은 이전 층 것이라 버린다.
+            if (pendingSteps.Count > 0 && pendingFloor != simulation.World.FloorIndex) pendingSteps.Clear();
             if (pendingSteps.Count == 0 || playerView.IsMoving) return;
 
             var command = new MoveCommand(simulation.World.PlayerId, pendingSteps.Dequeue(), moveCostTicks);

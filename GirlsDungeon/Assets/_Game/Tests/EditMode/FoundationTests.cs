@@ -310,6 +310,11 @@ namespace GirlsDungeon.Tests
                 PushCooldownRounds = 2,
                 AssaultPercent = 30,
                 FallDamagePercent = 50,
+                FloorCount = 5,
+                EnemiesPerFloorStep = 1,
+                AssaultPercentPerFloor = 5,
+                GuardPercentDropPerFloor = 10,
+                EnemyStatPercentPerFloor = 10,
             };
             settings.Units.Add(new UnitStats
             {

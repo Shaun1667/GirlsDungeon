@@ -69,6 +69,18 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>플레이어가 낭떠러지에 떨어지면 받는 피해 (최대 체력의 %).</summary>
         public int FallDamagePercent;
 
+        // 층 진행 (BALANCE 11번)
+        /// <summary>판의 층 수. 마지막 층의 계단 = 승리.</summary>
+        public int FloorCount;
+        /// <summary>층이 하나 깊어질 때마다 더하는 적 수 (최소 · 최대 모두).</summary>
+        public int EnemiesPerFloorStep;
+        /// <summary>층마다 더하는 돌격병 확률 (%p).</summary>
+        public int AssaultPercentPerFloor;
+        /// <summary>층마다 빼는 경계 시작 확률 (%p, 0 아래로는 안 내려감).</summary>
+        public int GuardPercentDropPerFloor;
+        /// <summary>층마다 더하는 적 최대 체력 · 공격력 (%).</summary>
+        public int EnemyStatPercentPerFloor;
+
         public UnitStats StatsFor(UnitKind kind)
         {
             foreach (var stats in Units) if (stats.Kind == kind) return stats;
@@ -102,6 +114,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Push settings are invalid.");
             if (AssaultPercent < 0 || AssaultPercent > 100 || FallDamagePercent < 0)
                 throw new ArgumentException("Assault / fall settings are invalid.");
+            if (FloorCount < 1 || EnemiesPerFloorStep < 0 || AssaultPercentPerFloor < 0 || GuardPercentDropPerFloor < 0 || EnemyStatPercentPerFloor < 0)
+                throw new ArgumentException("Floor progression settings are invalid.");
         }
     }
 }

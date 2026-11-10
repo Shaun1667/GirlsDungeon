@@ -55,6 +55,9 @@ namespace GirlsDungeon.Game
                 // 낭떠러지에 떨어졌다가 다시 일어남: 떨어진 칸까지 걸어간 뒤 일어난 칸으로 바로 옮긴다.
                 if (gameEvent is PlayerFell fell && fell.To != fell.From)
                     pendingSteps.Enqueue(GridSpace.ToWorld(fell.To) + SnapMarker);
+                // 새 층: 계단까지 걸어간 뒤 새 시작 칸으로 바로 옮긴다.
+                if (gameEvent is FloorChanged floor)
+                    pendingSteps.Enqueue(GridSpace.ToWorld(floor.StartCell) + SnapMarker);
             }
             if (!isStepping) BeginNextStep();
         }

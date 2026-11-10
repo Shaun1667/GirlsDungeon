@@ -27,6 +27,7 @@ namespace GirlsDungeon.Core.Sim
         {
             world.Units.Remove(unit);
             world.Combatants.Remove(unit.Id);
+            if (!unit.IsPlayer) world.Kills++;
             events.Add(new UnitDied(unit.Id, unit.Kind));
         }
 

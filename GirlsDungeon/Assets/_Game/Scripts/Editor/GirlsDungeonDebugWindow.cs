@@ -67,6 +67,11 @@ namespace GirlsDungeon.EditorTools
             seedInput = EditorGUILayout.IntField("시드", seedInput);
             if (GUILayout.Button("이 시드로 재시작 [상태 변경]")) root.DebugRestartWithSeed(seedInput);
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("계단으로 걷기 [상태 변경]")) root.DebugWalkToStairs();
+            if (GUILayout.Button("바로 다음 층 [상태 변경]")) root.DebugDescend();
+            EditorGUILayout.EndHorizontal();
         }
 
         private void DrawMapSection(GameRoot root)

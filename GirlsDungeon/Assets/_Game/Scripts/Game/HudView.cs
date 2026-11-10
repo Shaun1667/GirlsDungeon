@@ -18,7 +18,11 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnityEngine.UI.Text turnLabel;
         [SerializeField] private UnityEngine.UI.Text previewLabel;
         [SerializeField] private UnityEngine.UI.Text logLabel;
+        [Tooltip("Result title: defeat or victory.")]
         [SerializeField] private UnityEngine.UI.Text defeatLabel;
+        [SerializeField] private UnityEngine.UI.Text resultLabel;
+        [SerializeField] private Button newRunButton;
+        [SerializeField] private UnityEngine.UI.Text floorLabel;
         [SerializeField] private Button endTurnButton;
         [SerializeField] private Button grenadeButton;
         [SerializeField] private Button pushButton;
@@ -41,6 +45,13 @@ namespace GirlsDungeon.Game
 
         /// <summary>수류탄 버튼을 눌렀다. MoveController가 조준 모드를 켜고 끈다 (GameRoot가 잇는다).</summary>
         public event System.Action GrenadeButtonPressed;
+
+        /// <summary>결과 화면의 "새 판" 버튼을 눌렀다 (GameRoot가 새 시드로 판을 다시 시작한다).</summary>
+        public event System.Action NewRunPressed;
+
+        public string ResultText => resultLabel.text;
+
+        private UnitKind? killerKind;
 
         /// <summary>감시 버튼을 눌렀다 (GameRoot가 MoveController.RequestOverwatch로 잇는다).</summary>
         public event System.Action OverwatchButtonPressed;
@@ -121,6 +132,7 @@ namespace GirlsDungeon.Game
             balance = newBalance;
             log.Clear();
             logLabel.text = string.Empty;
+            killerKind = null;
             simulation.EventsPublished += HandleEvents;
             ClearPreview();
             Refresh();
@@ -167,6 +179,7 @@ namespace GirlsDungeon.Game
             if (grenadeButton != null) grenadeButton.onClick.AddListener(() => GrenadeButtonPressed?.Invoke());
             if (pushButton != null) pushButton.onClick.AddListener(() => PushButtonPressed?.Invoke());
             if (overwatchButton != null) overwatchButton.onClick.AddListener(() => OverwatchButtonPressed?.Invoke());
+            if (newRunButton != null) newRunButton.onClick.AddListener(() => NewRunPressed?.Invoke());
         }
 
         private void OnDestroy()
@@ -225,7 +238,12 @@ namespace GirlsDungeon.Game
                     case UnitDied died:
                         AddLog(Text.Get("ui.combat.log_down", UnitName(died.Kind)));
                         break;
-                    case PlayerDefeated _:
+                    case FloorChanged floor:
+                        AddLog(Text.Get("ui.combat.log_floor", floor.FloorIndex + 1));
+                        break;
+                    case PlayerDefeated defeated:
+                        // 결과 화면에 쓰러뜨린 상대를 보여 준다 (자기 수류탄이면 나).
+                        killerKind = simulation.World.FindUnit(defeated.KillerId)?.Kind;
                         AddLog(Text.Get("ui.combat.log_down", UnitName(UnitKind.Player)));
                         break;
                 }
@@ -266,9 +284,21 @@ namespace GirlsDungeon.Game
                 stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
             }
 
+            floorLabel.text = Text.Get("ui.hud.floor", world.FloorIndex + 1, settings.FloorCount);
+
+            // 결과 화면: 패배 · 승리 제목, 도달한 층 · 쓰러뜨린 적 · 시드, 쓰러뜨린 상대, "새 판" 버튼.
             bool defeated = world.Mode == WorldMode.Defeat;
-            defeatLabel.gameObject.SetActive(defeated);
-            if (defeated) defeatLabel.text = Text.Get("ui.combat.defeat");
+            bool won = world.Mode == WorldMode.Victory;
+            defeatLabel.gameObject.SetActive(defeated || won);
+            resultLabel.gameObject.SetActive(defeated || won);
+            newRunButton.gameObject.SetActive(defeated || won);
+            if (defeated || won)
+            {
+                defeatLabel.text = won ? Text.Get("ui.result.victory") : Text.Get("ui.combat.defeat");
+                string detail = Text.Get("ui.result.detail", world.FloorIndex + 1, settings.FloorCount, world.Kills, world.Seed);
+                if (defeated && killerKind.HasValue) detail += "\n" + Text.Get("ui.result.killer", UnitName(killerKind.Value));
+                resultLabel.text = detail;
+            }
 
             bool inCombat = world.Mode == WorldMode.Combat;
             bool playerTurn = TurnFlow.IsPlayerTurn(world);

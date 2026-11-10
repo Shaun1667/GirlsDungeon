@@ -130,6 +130,16 @@ namespace GirlsDungeon.Game
         [Tooltip("Damage (% of max HP) the player takes on falling into a chasm.")]
         [SerializeField] private int fallDamagePercent = 50;
 
+        [Header("Floor progression (BALANCE 11)")]
+        [Tooltip("Floors in a run. Taking the stairs on the last floor wins the run.")]
+        [SerializeField] private int floorCount = 5;
+        [Tooltip("Enemies added per floor deeper (both min and max).")]
+        [SerializeField] private int enemiesPerFloorStep = 1;
+        [SerializeField] private int assaultPercentPerFloor = 5;
+        [SerializeField] private int guardPercentDropPerFloor = 10;
+        [Tooltip("Enemy max HP and attack added per floor deeper (%).")]
+        [SerializeField] private int enemyStatPercentPerFloor = 10;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
@@ -201,6 +211,11 @@ namespace GirlsDungeon.Game
                 PushCooldownRounds = pushCooldownRounds,
                 AssaultPercent = assaultPercent,
                 FallDamagePercent = fallDamagePercent,
+                FloorCount = floorCount,
+                EnemiesPerFloorStep = enemiesPerFloorStep,
+                AssaultPercentPerFloor = assaultPercentPerFloor,
+                GuardPercentDropPerFloor = guardPercentDropPerFloor,
+                EnemyStatPercentPerFloor = enemyStatPercentPerFloor,
             };
             foreach (var entry in units)
             {

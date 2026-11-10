@@ -99,6 +99,11 @@ MonoBehaviour:
   pushCooldownRounds: 2
   assaultPercent: 30
   fallDamagePercent: 50
+  floorCount: 5
+  enemiesPerFloorStep: 1
+  assaultPercentPerFloor: 5
+  guardPercentDropPerFloor: 10
+  enemyStatPercentPerFloor: 10
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

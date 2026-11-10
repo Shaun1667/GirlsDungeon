@@ -21,6 +21,8 @@ namespace GirlsDungeon.Core.Sim
         Combat = 1,
         /// <summary>플레이어가 쓰러졌다. 더 이상 행동할 수 없다.</summary>
         Defeat = 2,
+        /// <summary>마지막 층의 계단을 밟았다 — 판 승리. 더 이상 행동할 수 없다.</summary>
+        Victory = 3,
     }
 
     /// <summary>전투 중 지금 움직이는 쪽.</summary>
@@ -77,7 +79,11 @@ namespace GirlsDungeon.Core.Sim
         public int Seed { get; }
         public RandomStreams Random { get; }
         public FloorMap Map { get; set; }
+        /// <summary>지금 층 (0 = 1층).</summary>
         public int FloorIndex { get; set; }
+
+        /// <summary>이번 판에 쓰러뜨린 적 수 (결과 화면).</summary>
+        public int Kills { get; set; }
         public long Tick { get; set; }
         public int NextEntityId { get; set; }
         public int PlayerId { get; set; }

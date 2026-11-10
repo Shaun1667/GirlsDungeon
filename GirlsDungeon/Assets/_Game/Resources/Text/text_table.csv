@@ -59,3 +59,9 @@ ui.combat.log_collide,{0} 충돌 피해 {1},{0} takes {1} collision damage
 unit.assault.name,돌격병,Assault
 ui.combat.log_player_recovered,낭떠러지로 떨어짐 · 피해 {0} · 근처에서 다시 일어남,Fell into the chasm · {0} damage · got back up nearby
 ui.combat.log_player_fell_down,낭떠러지로 떨어짐 · 피해 {0},Fell into the chasm · {0} damage
+ui.hud.floor,{0}층 / {1},Floor {0} / {1}
+ui.combat.log_floor,{0}층으로 내려옴,Went down to floor {0}
+ui.result.victory,탈출 성공,You escaped
+ui.result.detail,도달 {0}층 / {1} · 쓰러뜨린 적 {2} · 시드 {3},Reached floor {0} / {1} · Enemies defeated {2} · Seed {3}
+ui.result.killer,쓰러뜨린 상대: {0},Defeated by: {0}
+ui.result.new_run,새 판,New run

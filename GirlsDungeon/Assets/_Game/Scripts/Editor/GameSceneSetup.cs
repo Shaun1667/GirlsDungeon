@@ -64,6 +64,15 @@ namespace GirlsDungeon.EditorTools
             var defeatLabel = CreateLabel(canvas.transform, "DefeatLabel", font, 64,
                 new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
             defeatLabel.color = new Color(1f, 0.35f, 0.3f);
+            // 글자 64가 기본 높이 60을 넘으면 uGUI가 글을 통째로 숨긴다 (3-1에서 발견).
+            defeatLabel.rectTransform.sizeDelta = new Vector2(1400f, 110f);
+            var resultLabel = CreateLabel(canvas.transform, "ResultLabel", font, 32,
+                new Vector2(0.5f, 0.5f), new Vector2(0f, -80f), TextAnchor.UpperCenter);
+            resultLabel.rectTransform.sizeDelta = new Vector2(1400f, 120f);
+            var newRunButton = CreateButton(canvas.transform, "NewRunButton", font, "ui.result.new_run",
+                new Vector2(0.5f, 0.5f), new Vector2(0f, -220f));
+            var floorLabel = CreateLabel(canvas.transform, "FloorLabel", font, 30,
+                new Vector2(1f, 1f), new Vector2(-24f, -20f), TextAnchor.UpperRight);
             var endTurnButton = CreateButton(canvas.transform, "EndTurnButton", font, "ui.combat.end_turn",
                 new Vector2(1f, 0f), new Vector2(-32f, 32f));
             var grenadeButton = CreateButton(canvas.transform, "GrenadeButton", font, "ui.skill.grenade",
@@ -78,7 +87,7 @@ namespace GirlsDungeon.EditorTools
 
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
-                ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel),
+                ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel), ("resultLabel", resultLabel), ("newRunButton", newRunButton), ("floorLabel", floorLabel),
                 ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton), ("pushButton", pushButton), ("overwatchButton", overwatchButton));
 
             var rangeObject = new GameObject("RangeView");

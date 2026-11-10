@@ -22,6 +22,7 @@ namespace GirlsDungeon.Game
 
         private Simulation simulation;
         private CombatSettings combatSettings;
+        private MapSettings mapSettings;
 
         public World World => simulation?.World;
 
@@ -36,7 +37,8 @@ namespace GirlsDungeon.Game
         public void BeginRun(int seed)
         {
             combatSettings = balance.CreateCombatSettings();
-            simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings(), combatSettings), combatSettings);
+            mapSettings = balance.CreateMapSettings();
+            simulation = new Simulation(RunFactory.NewRun(seed, mapSettings, combatSettings), combatSettings, mapSettings);
             simulation.EventsPublished += RebuildFloorWhenCoverBreaks;
 
             floorView.Build(simulation.World.Map, balance);
@@ -49,6 +51,8 @@ namespace GirlsDungeon.Game
             hudView.GrenadeButtonPressed += moveController.ToggleAim;
             hudView.PushButtonPressed -= moveController.TogglePushAim;
             hudView.PushButtonPressed += moveController.TogglePushAim;
+            hudView.NewRunPressed -= OnNewRunButton;
+            hudView.NewRunPressed += OnNewRunButton;
             hudView.OverwatchButtonPressed -= OnOverwatchButton;
             hudView.OverwatchButtonPressed += OnOverwatchButton;
             threatView.Bind(simulation, combatSettings);
@@ -57,15 +61,44 @@ namespace GirlsDungeon.Game
             if (seedLabel != null) seedLabel.text = Text.Get("ui.hud.seed", seed);
         }
 
-        /// <summary>엄폐물이 부서지면 지형 메시를 다시 만든다 (부서진 칸은 빈 바닥).</summary>
+        /// <summary>엄폐물이 부서지거나 새 층에 내려오면 지형 메시를 다시 만든다.</summary>
         private void RebuildFloorWhenCoverBreaks(System.Collections.Generic.IReadOnlyList<GameEvent> events)
         {
             foreach (var gameEvent in events)
             {
-                if (!(gameEvent is CoverDestroyed)) continue;
+                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged)) continue;
                 floorView.Build(simulation.World.Map, balance);
                 return;
             }
+        }
+
+        /// <summary>결과 화면의 "새 판": 새 시드로 다시 시작한다. 디버그 표시는 새 판에 넘기지 않는다.</summary>
+        private void OnNewRunButton()
+        {
+            DebugUsed = false;
+            BeginRun(PickSeed());
+        }
+
+        /// <summary>결과 화면의 "새 판" 버튼과 같다.</summary>
+        public void DebugPressNewRun()
+        {
+            OnNewRunButton();
+        }
+
+        /// <summary>[상태 변경] 바로 계단을 내려간다 (마지막 층이면 승리). 못 하면 false.</summary>
+        public bool DebugDescend()
+        {
+            if (simulation == null) return false;
+            DebugUsed = true;
+            return simulation.Execute(new DebugDescendCommand(mapSettings, combatSettings));
+        }
+
+        /// <summary>[상태 변경] 계단까지 걸어가기 시작한다 (본 칸이 아니면 못 감 — 그때는 false).</summary>
+        public bool DebugWalkToStairs()
+        {
+            if (World == null) return false;
+            DebugUsed = true;
+            return moveController.RequestMove(World.Map.StairsCell);
         }
 
         private void OnOverwatchButton()
@@ -266,7 +299,7 @@ namespace GirlsDungeon.Game
         {
             var world = World;
             if (world == null) return "Run not started";
-            return $"Seed={world.Seed}, Tick={world.Tick}, Floor={world.FloorIndex}, Player={world.Player.Position}, "
+            return $"Seed={world.Seed}, Tick={world.Tick}, Floor={world.FloorIndex + 1}/{combatSettings.FloorCount}, Kills={world.Kills}, Mode={world.Mode}, Player={world.Player.Position}, "
                 + $"Pending={moveController.PendingStepCount}, DebugUsed={DebugUsed}, Language={Text.Language}";
         }
 

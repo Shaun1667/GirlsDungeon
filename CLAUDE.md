@@ -63,7 +63,7 @@ GirlsDungeon/Assets/_Game/
 - 난수는 `Core.Random.RandomStreams` 한 곳, 용도마다 `RandomPurpose` 하나. 전역 난수(`System.Random`, `UnityEngine.Random`)를 규칙에 쓰지 않는다. 새 용도 = enum 끝에 추가.
 - 세계 상태는 `Core.Sim.World` 한 곳. 새 상태 = 필드 + `WorldSnapshot` 버전 증가 + 인코더 + 왕복 테스트.
 - 규칙 진행은 `Core.Sim.Simulation.Execute(커맨드)` 한 곳. 새 행동 = `ICommand` 하나. 틱 순서는 `Simulation` 설명의 ① ~ ⑦을 따른다. 규칙 → 화면은 `EventsPublished`의 `GameEvent`로만.
-- 새 판 만들기는 `Core.Sim.RunFactory` 한 곳. 맵 생성은 `Core.Map.DungeonGenerator`, 칸 이동 판정과 경로는 `Core.Map.GridNavigation` 한 곳.
+- 새 판 만들기 · 다음 층은 `Core.Sim.RunFactory` 한 곳(`NewRun` · `NextFloor`), 계단 · 승리 판정은 `Core.Sim.FloorFlow`(커맨드마다 `Simulation`이 부름 — 맵 수치를 받아야 동작). 층별 적 강화는 `EnemySpawner`(`world.FloorIndex`). 결과 화면 · 새 판 버튼은 `HudView` → `GameRoot`. 맵 생성은 `Core.Map.DungeonGenerator`, 칸 이동 판정과 경로는 `Core.Map.GridNavigation` 한 곳.
 - 엄폐물 배치는 `Core.Map.FloorDecor` 한 곳(꾸미기 난수, 맵 모양 뒤). 시야 · 사선은 `Core.Map.Sight`, 엄폐 판정은 `Core.Map.Cover` 한 곳 — 미리보기 · 실제 · AI가 같은 함수를 쓴다. 설 수 있는 칸은 `FloorMap.IsWalkable`, 시야를 막는 칸은 `FloorMap.BlocksSight`. 새 칸 종류 = `TileType` 끝에 추가 + 이 두 함수 + `FloorView`.
 - 유닛 능력치는 `Core.Sim.CombatSettings.Units` 표(에셋 `units` 배열) 한 곳. 새 적 = `UnitKind` 끝에 추가 + 표 한 줄. 적 배치는 `EnemySpawner`, 탐험 ↔ 전투 전환 · 사망은 `CombatFlow` 한 곳(커맨드마다 `Simulation`이 부름). 적 차례 행동은 `EnemyTurn.Run`.
 - 사격 · 피해는 `Core.Sim.CombatRules` 한 곳(`Preview` = 미리보기, `Resolve` = 실제, 같은 계산). 전투 이동 범위 · 경로는 `CombatMovement` 한 곳(범위 표시 · 이동 · 적 AI 공용). 차례 넘기기는 `TurnFlow`, 적 행동은 `EnemyTurn`. 전투 행동 = `CombatMoveCommand` · `AttackCommand` · `EndTurnCommand` — 화면은 이 커맨드만 낸다(`MoveController`).

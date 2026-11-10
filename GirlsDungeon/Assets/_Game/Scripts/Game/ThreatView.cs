@@ -51,7 +51,7 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             var player = world.Player;
             var map = world.Map;
-            if (player == null || world.Mode == WorldMode.Defeat)
+            if (player == null || world.Mode == WorldMode.Defeat || world.Mode == WorldMode.Victory)
             {
                 guardView.Hide();
                 watchView.Hide();

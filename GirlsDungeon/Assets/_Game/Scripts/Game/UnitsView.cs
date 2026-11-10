@@ -83,6 +83,11 @@ namespace GirlsDungeon.Game
                     case VisibilityChanged changed:
                         visible = changed.Visible;
                         break;
+                    case FloorChanged _:
+                        // 새 층: 이전 층의 적 모습을 모두 지운다. 새 적은 아래 RefreshVisibility가 만든다.
+                        foreach (var oldView in views.Values) if (oldView != null) Destroy(oldView);
+                        views.Clear();
+                        break;
                 }
             }
             RefreshVisibility();
