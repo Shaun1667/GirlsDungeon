@@ -16,12 +16,85 @@ namespace GirlsDungeon.Core.Map
             new GridPos(1, 1), new GridPos(1, -1), new GridPos(-1, 1), new GridPos(-1, -1),
         };
 
+        private static readonly GridPos[] CardinalSteps =
+        {
+            new GridPos(1, 0), new GridPos(-1, 0), new GridPos(0, 1), new GridPos(0, -1),
+        };
+
         public static void Apply(FloorMap map, MapSettings settings, IRandom random)
         {
+            PlaceChasms(map, settings, random);
             foreach (var room in map.Rooms)
             {
                 PlaceCoverObjects(map, settings, room, random);
                 PlaceLowWalls(map, settings, room, random);
+            }
+        }
+
+        /// <summary>
+        /// 전체 방의 ChasmRoomPercent만큼(반올림) 방을 골라 낭떠러지를 만든다 (결정 2026-11-10, 사용자).
+        /// 시작 방 · 계단 방은 고르지 않는다. 방 테두리 줄은 비워 복도 입구가 막히지 않게 하고,
+        /// 한 칸씩 붙여 덩어리로 키우며 놓을 때마다 연결을 검사한다.
+        /// </summary>
+        private static void PlaceChasms(FloorMap map, MapSettings settings, IRandom random)
+        {
+            var candidates = new List<RoomRect>();
+            foreach (var room in map.Rooms)
+                if (!room.Contains(map.StartCell) && !room.Contains(map.StairsCell)) candidates.Add(room);
+
+            int roomCount = (map.Rooms.Count * settings.ChasmRoomPercent + 50) / 100;
+            for (int i = 0; i < roomCount && candidates.Count > 0; i++)
+            {
+                int pick = random.Range(0, candidates.Count);
+                var room = candidates[pick];
+                candidates.RemoveAt(pick);
+                int percent = random.Range(settings.MinChasmPercent, settings.MaxChasmPercent + 1);
+                GrowChasm(map, room, room.Width * room.Height * percent / 100, random);
+            }
+        }
+
+        private static void GrowChasm(FloorMap map, RoomRect room, int target, IRandom random)
+        {
+            var open = new List<GridPos>();
+            for (int y = room.Y + 1; y < room.Y + room.Height - 1; y++)
+                for (int x = room.X + 1; x < room.X + room.Width - 1; x++)
+                {
+                    var cell = new GridPos(x, y);
+                    if (map.Get(cell) == TileType.Floor) open.Add(cell);
+                }
+
+            var edge = new List<GridPos>();
+            int placed = 0;
+            while (placed < target && open.Count > 0)
+            {
+                // 이미 놓인 낭떠러지 옆 칸을 먼저 — 덩어리가 되게. 없으면 새 덩어리를 시작한다.
+                GridPos cell;
+                if (edge.Count > 0)
+                {
+                    int e = random.Range(0, edge.Count);
+                    cell = edge[e];
+                    edge.RemoveAt(e);
+                    if (!open.Remove(cell)) continue;
+                }
+                else
+                {
+                    int o = random.Range(0, open.Count);
+                    cell = open[o];
+                    open.RemoveAt(o);
+                }
+
+                map.SetTile(cell, TileType.Chasm);
+                if (!IsFullyConnected(map))
+                {
+                    map.SetTile(cell, TileType.Floor);
+                    continue;
+                }
+                placed++;
+                foreach (var step in CardinalSteps)
+                {
+                    var near = new GridPos(cell.X + step.X, cell.Y + step.Y);
+                    if (open.Contains(near) && !edge.Contains(near)) edge.Add(near);
+                }
             }
         }
 

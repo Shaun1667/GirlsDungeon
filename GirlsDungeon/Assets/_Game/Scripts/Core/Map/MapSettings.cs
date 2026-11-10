@@ -27,6 +27,13 @@ namespace GirlsDungeon.Core.Map
         public int MaxLowWallLength;
         public int DecorAttempts;
 
+        // 낭떠러지 (BALANCE 1-15 ~ 1-17)
+        /// <summary>낭떠러지가 있는 방의 비율 (전체 방 수 기준, 시작 · 계단 방 제외하고 고른다).</summary>
+        public int ChasmRoomPercent;
+        /// <summary>낭떠러지 방에서 낭떠러지가 차지하는 방 넓이의 비율.</summary>
+        public int MinChasmPercent;
+        public int MaxChasmPercent;
+
         public void Validate()
         {
             if (Width < MaxRoomSize + 2 || Height < MaxRoomSize + 2)
@@ -42,6 +49,8 @@ namespace GirlsDungeon.Core.Map
                 || MinLowWallsPerRoom < 0 || MaxLowWallsPerRoom < MinLowWallsPerRoom
                 || MinLowWallLength < 1 || MaxLowWallLength < MinLowWallLength || DecorAttempts < 1)
                 throw new ArgumentException("Cover settings are invalid.");
+            if (ChasmRoomPercent < 0 || ChasmRoomPercent > 100 || MinChasmPercent < 0 || MaxChasmPercent < MinChasmPercent || MaxChasmPercent > 100)
+                throw new ArgumentException("Chasm settings are invalid.");
         }
     }
 }

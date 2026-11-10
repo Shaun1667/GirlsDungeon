@@ -32,6 +32,9 @@ MonoBehaviour:
   minLowWallLength: 2
   maxLowWallLength: 3
   decorAttempts: 30
+  chasmRoomPercent: 50
+  minChasmPercent: 30
+  maxChasmPercent: 50
   units:
   - kind: 0
     nameKey: unit.player.name
@@ -74,6 +77,11 @@ MonoBehaviour:
   guardRadius: 3
   crateDurability: 2
   lowWallDurability: 3
+  pushLength: 3
+  pushWidth: 2
+  pushDamagePercent: 30
+  pushCollisionDamage: 3
+  pushCooldownRounds: 2
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2
@@ -81,6 +89,7 @@ MonoBehaviour:
   crateSize: 0.8
   pillarSize: 0.7
   lowWallThickness: 0.14
+  chasmDepth: 2.5
   exploredFogDarkness: 0.6
   fogTexelsPerCell: 4
   fogSoftCells: 2

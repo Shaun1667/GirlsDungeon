@@ -14,6 +14,8 @@ namespace GirlsDungeon.Core.Map
         Crate = 3,
         /// <summary>높은 엄폐물. 칸을 막고, 옆 칸에 완전엄폐를 주며, 시야를 막는다.</summary>
         Pillar = 4,
+        /// <summary>낭떠러지. 걸어서 들어갈 수 없고, 시야 · 사선을 막지 않으며 엄폐도 없다. 밀려 들어가면 떨어진다 (Push).</summary>
+        Chasm = 5,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -134,7 +136,10 @@ namespace GirlsDungeon.Core.Map
             return tile == TileType.Floor || tile == TileType.Stairs;
         }
 
-        /// <summary>시야와 사선을 막는 칸 (벽 · 기둥 · 맵 밖).</summary>
+        /// <summary>낭떠러지 칸.</summary>
+        public bool IsChasm(GridPos cell) => InBounds(cell) && Get(cell) == TileType.Chasm;
+
+        /// <summary>시야와 사선을 막는 칸 (벽 · 기둥 · 맵 밖). 낭떠러지는 막지 않는다.</summary>
         public bool BlocksSight(GridPos cell)
         {
             if (!InBounds(cell)) return true;

@@ -36,6 +36,8 @@ namespace GirlsDungeon.EditorTools
             var areaMaterial = LoadOrCreateMaterial("GreyboxArea", new Color(0.95f, 0.45f, 0.15f));
             var guardMaterial = LoadOrCreateMaterial("GreyboxGuard", new Color(0.95f, 0.85f, 0.2f));
             var watchMaterial = LoadOrCreateMaterial("GreyboxWatch", new Color(0.85f, 0.15f, 0.2f));
+            var chasmMaterial = LoadOrCreateMaterial("GreyboxChasm", new Color(0.05f, 0.05f, 0.08f));
+            var pushMaterial = LoadOrCreateMaterial("GreyboxPush", new Color(0.7f, 0.35f, 0.95f));
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -66,14 +68,17 @@ namespace GirlsDungeon.EditorTools
             var grenadeButton = CreateButton(canvas.transform, "GrenadeButton", font, "ui.skill.grenade",
                 new Vector2(1f, 0f), new Vector2(-32f, 132f));
             grenadeButton.GetComponent<RectTransform>().sizeDelta = new Vector2(420f, 84f);
-            var overwatchButton = CreateButton(canvas.transform, "OverwatchButton", font, "ui.skill.overwatch",
+            var pushButton = CreateButton(canvas.transform, "PushButton", font, "ui.skill.push",
                 new Vector2(1f, 0f), new Vector2(-32f, 232f));
+            pushButton.GetComponent<RectTransform>().sizeDelta = new Vector2(420f, 84f);
+            var overwatchButton = CreateButton(canvas.transform, "OverwatchButton", font, "ui.skill.overwatch",
+                new Vector2(1f, 0f), new Vector2(-32f, 332f));
             CreateEventSystem();
 
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
                 ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel),
-                ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton), ("overwatchButton", overwatchButton));
+                ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton), ("pushButton", pushButton), ("overwatchButton", overwatchButton));
 
             var rangeObject = new GameObject("RangeView");
             var rangeView = rangeObject.AddComponent<RangeView>();
@@ -81,6 +86,8 @@ namespace GirlsDungeon.EditorTools
             var areaObject = new GameObject("AreaView");
             var areaView = areaObject.AddComponent<RangeView>();
             SetReferences(areaView, ("rangeMaterial", areaMaterial));
+            var pushAreaView = new GameObject("PushAreaView").AddComponent<RangeView>();
+            SetReferences(pushAreaView, ("rangeMaterial", pushMaterial));
 
             var threatObject = new GameObject("ThreatView");
             var guardView = new GameObject("GuardCells").AddComponent<RangeView>();
@@ -93,6 +100,7 @@ namespace GirlsDungeon.EditorTools
             SetReferences(watchView, ("rangeMaterial", watchMaterial));
             SetFloat(watchView, "height", 0.011f);
             SetFloat(areaView, "height", 0.02f);
+            SetFloat(pushAreaView, "height", 0.02f);
             var threatView = threatObject.AddComponent<ThreatView>();
             SetReferences(threatView, ("guardView", guardView), ("watchView", watchView));
 
@@ -102,7 +110,7 @@ namespace GirlsDungeon.EditorTools
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");
@@ -124,7 +132,7 @@ namespace GirlsDungeon.EditorTools
             var rootObject = new GameObject("GameRoot");
             var moveController = rootObject.AddComponent<MoveController>();
             SetReferences(moveController, ("viewCamera", cameraObject.GetComponent<Camera>()), ("hoverMarker", hover.transform),
-                ("rangeView", rangeView), ("areaView", areaView));
+                ("rangeView", rangeView), ("areaView", areaView), ("pushAreaView", pushAreaView));
 
             var root = rootObject.AddComponent<GameRoot>();
             SetReferences(root,

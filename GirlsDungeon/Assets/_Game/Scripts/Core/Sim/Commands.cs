@@ -145,4 +145,29 @@ namespace GirlsDungeon.Core.Sim
             return true;
         }
     }
+
+    /// <summary>디버그 전용: 유닛을 빈 칸으로 바로 옮긴다 (감시 반응 없음). 플레이어에는 쓸 수 없다.</summary>
+    public sealed class DebugPlaceCommand : ICommand
+    {
+        private readonly int unitId;
+        private readonly GridPos cell;
+
+        public int CostTicks => 0;
+
+        public DebugPlaceCommand(int unitId, GridPos cell)
+        {
+            this.unitId = unitId;
+            this.cell = cell;
+        }
+
+        public bool TryApply(World world, List<GameEvent> events)
+        {
+            var unit = world.FindUnit(unitId);
+            if (unit == null || unit.IsPlayer || !world.Map.IsWalkable(cell) || world.IsOccupied(cell)) return false;
+            var from = unit.Position;
+            unit.Position = cell;
+            events.Add(new UnitMoved(unit.Id, from, cell));
+            return true;
+        }
+    }
 }

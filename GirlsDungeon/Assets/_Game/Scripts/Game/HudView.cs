@@ -21,6 +21,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnityEngine.UI.Text defeatLabel;
         [SerializeField] private Button endTurnButton;
         [SerializeField] private Button grenadeButton;
+        [SerializeField] private Button pushButton;
         [SerializeField] private Button overwatchButton;
         [SerializeField] private int logLines = 4;
 
@@ -28,11 +29,15 @@ namespace GirlsDungeon.Game
         private Simulation simulation;
         private CombatSettings settings;
         private GameBalance balance;
-        private bool aiming;
+        private AimMode aim;
 
         public string PreviewText => previewLabel.text;
         public string LogText => logLabel.text;
         public string GrenadeButtonText => GrenadeLabel.text;
+        public string PushButtonText => PushLabel.text;
+
+        /// <summary>밀치기 버튼을 눌렀다. MoveController가 밀치기 조준 모드를 켜고 끈다 (GameRoot가 잇는다).</summary>
+        public event System.Action PushButtonPressed;
 
         /// <summary>수류탄 버튼을 눌렀다. MoveController가 조준 모드를 켜고 끈다 (GameRoot가 잇는다).</summary>
         public event System.Action GrenadeButtonPressed;
@@ -41,12 +46,41 @@ namespace GirlsDungeon.Game
         public event System.Action OverwatchButtonPressed;
 
         private UnityEngine.UI.Text GrenadeLabel => grenadeButton.GetComponentInChildren<UnityEngine.UI.Text>(true);
+        private UnityEngine.UI.Text PushLabel => pushButton.GetComponentInChildren<UnityEngine.UI.Text>(true);
 
-        /// <summary>조준 모드 표시. 버튼 글이 "조준 중"으로 바뀐다.</summary>
-        public void SetAiming(bool value)
+        /// <summary>조준 모드 표시. 그 스킬 버튼 글이 "조준 취소"로 바뀐다.</summary>
+        public void SetAiming(AimMode value)
         {
-            aiming = value;
+            aim = value;
             Refresh();
+        }
+
+        public void ShowPushPreview(PushPreview preview)
+        {
+            var lines = new List<string>();
+            switch (preview.Block)
+            {
+                case PushBlock.NotReady:
+                    lines.Add(Text.Get("ui.combat.preview_push_not_ready", simulation.World.PushCooldown));
+                    break;
+                case PushBlock.NoTarget:
+                    lines.Add(Text.Get("ui.combat.preview_push_no_target"));
+                    break;
+                default:
+                    lines.Add(Text.Get("ui.combat.preview_push_header", preview.Hits.Count));
+                    foreach (var hit in preview.Hits)
+                    {
+                        string name = UnitName(hit.Target.Kind);
+                        string result = hit.DiesFromHit ? Text.Get("ui.combat.push_result_down")
+                            : hit.Slide.Falls ? Text.Get("ui.combat.push_result_fall")
+                            : hit.Slide.Collides ? Text.Get("ui.combat.push_result_collide", hit.CollisionDamage, hit.Slide.Path.Count)
+                            : Text.Get("ui.combat.push_result_slide", hit.Slide.Path.Count);
+                        lines.Add(Text.Get("ui.combat.preview_push_hit", name, hit.Damage, result));
+                    }
+                    break;
+            }
+            previewLabel.text = string.Join("\n", lines);
+            previewLabel.gameObject.SetActive(true);
         }
 
         public void ShowAreaPreview(AreaPreview preview)
@@ -131,6 +165,7 @@ namespace GirlsDungeon.Game
         {
             if (endTurnButton != null) endTurnButton.onClick.AddListener(() => EndTurn());
             if (grenadeButton != null) grenadeButton.onClick.AddListener(() => GrenadeButtonPressed?.Invoke());
+            if (pushButton != null) pushButton.onClick.AddListener(() => PushButtonPressed?.Invoke());
             if (overwatchButton != null) overwatchButton.onClick.AddListener(() => OverwatchButtonPressed?.Invoke());
         }
 
@@ -170,6 +205,13 @@ namespace GirlsDungeon.Game
                         break;
                     case CoverDestroyed broken:
                         AddLog(Text.Get("ui.combat.log_cover_broken", broken.Cells.Count));
+                        break;
+                    case PushUsed pushed:
+                        AddLog(Text.Get("ui.combat.log_push", UnitName(pushed.AttackerKind)));
+                        break;
+                    case UnitPushed slid:
+                        if (slid.Fell) AddLog(Text.Get("ui.combat.log_fell", UnitName(slid.Kind)));
+                        else if (slid.CollisionDamage > 0) AddLog(Text.Get("ui.combat.log_collide", UnitName(slid.Kind), slid.CollisionDamage));
                         break;
                     case AreaExploded exploded:
                         AddLog(Text.Get("ui.combat.log_area", UnitName(exploded.AttackerKind)));
@@ -227,13 +269,17 @@ namespace GirlsDungeon.Game
             roundLabel.gameObject.SetActive(inCombat);
             turnLabel.gameObject.SetActive(inCombat);
             endTurnButton.gameObject.SetActive(playerTurn);
-            grenadeButton.gameObject.SetActive(playerTurn && !world.PlayerActed);
-            overwatchButton.gameObject.SetActive(playerTurn && !world.PlayerActed && !aiming);
+            grenadeButton.gameObject.SetActive(playerTurn && !world.PlayerActed && aim != AimMode.Push);
+            pushButton.gameObject.SetActive(playerTurn && !world.PlayerActed && aim != AimMode.Grenade);
+            overwatchButton.gameObject.SetActive(playerTurn && !world.PlayerActed && aim == AimMode.None);
             if (playerTurn)
             {
-                GrenadeLabel.text = aiming ? Text.Get("ui.skill.grenade_aiming")
+                GrenadeLabel.text = aim == AimMode.Grenade ? Text.Get("ui.skill.grenade_aiming")
                     : world.GrenadeCooldown > 0 ? Text.Get("ui.skill.grenade_cooldown", world.GrenadeCooldown)
                     : Text.Get("ui.skill.grenade");
+                PushLabel.text = aim == AimMode.Push ? Text.Get("ui.skill.push_aiming")
+                    : world.PushCooldown > 0 ? Text.Get("ui.skill.push_cooldown", world.PushCooldown)
+                    : Text.Get("ui.skill.push");
             }
             if (!inCombat)
             {

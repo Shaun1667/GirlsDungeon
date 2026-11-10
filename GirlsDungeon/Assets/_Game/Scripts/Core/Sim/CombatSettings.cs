@@ -54,6 +54,13 @@ namespace GirlsDungeon.Core.Sim
         public int CrateDurability;
         public int LowWallDurability;
 
+        // 밀치기 스킬 (BALANCE 9번)
+        public int PushLength;
+        public int PushWidth;
+        public int PushDamagePercent;
+        public int PushCollisionDamage;
+        public int PushCooldownRounds;
+
         public UnitStats StatsFor(UnitKind kind)
         {
             foreach (var stats in Units) if (stats.Kind == kind) return stats;
@@ -82,6 +89,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Guard settings are invalid.");
             if (CrateDurability < 1 || LowWallDurability < 1)
                 throw new ArgumentException("Cover durability must be at least 1.");
+            if (PushLength < 1 || PushWidth < 1 || PushDamagePercent < 0 || PushCollisionDamage < 0 || PushCooldownRounds < 0)
+                throw new ArgumentException("Push settings are invalid.");
         }
     }
 }

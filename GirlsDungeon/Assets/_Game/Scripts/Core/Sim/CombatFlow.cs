@@ -69,6 +69,7 @@ namespace GirlsDungeon.Core.Sim
             world.PlayerMoved = false;
             world.PlayerActed = false;
             world.GrenadeCooldown = 0;
+            world.PushCooldown = 0;
             player.Overwatching = false;
             if (player.Stability != player.MaxStability)
             {
@@ -118,6 +119,7 @@ namespace GirlsDungeon.Core.Sim
             world.PlayerMoved = false;
             world.PlayerActed = false;
             if (world.GrenadeCooldown > 0) world.GrenadeCooldown--;
+            if (world.PushCooldown > 0) world.PushCooldown--;
             world.Player.Overwatching = false;
             events.Add(new TurnStarted(TurnSide.Player, world.Round));
         }

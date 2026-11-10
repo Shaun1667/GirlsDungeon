@@ -12,6 +12,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material wallMaterial;
         [SerializeField] private Material stairsMaterial;
         [SerializeField] private Material coverMaterial;
+        [Tooltip("Dark pit drawn for chasm cells.")]
+        [SerializeField] private Material chasmMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -28,6 +30,7 @@ namespace GirlsDungeon.Game
             var walls = new MeshData();
             var stairs = new MeshData();
             var cover = new MeshData();
+            var chasm = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -52,6 +55,9 @@ namespace GirlsDungeon.Game
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             walls.AddBox(position, balance.PillarSize * 0.5f, balance.PillarSize * 0.5f, balance.WallHeight);
                             break;
+                        case TileType.Chasm:
+                            AddPit(chasm, map, cell, balance.ChasmDepth);
+                            break;
                         default:
                             if (!TouchesOpenCell(map, cell)) break;
                             AddWall(walls, map, cell, balance.WallHeight);
@@ -67,6 +73,19 @@ namespace GirlsDungeon.Game
             AddPart("Walls", walls, wallMaterial);
             AddPart("Stairs", stairs, stairsMaterial);
             AddPart("Cover", cover, coverMaterial);
+            AddPart("Chasm", chasm, chasmMaterial != null ? chasmMaterial : wallMaterial);
+        }
+
+        /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>
+        private static void AddPit(MeshData chasm, FloorMap map, GridPos cell, float depth)
+        {
+            var position = GridSpace.ToWorld(cell);
+            chasm.AddTop(position, 0.5f, 0.5f, -depth);
+            var below = position + Vector3.down * depth;
+            if (!map.IsChasm(new GridPos(cell.X + 1, cell.Y))) chasm.AddFace(below, Vector3.left, -0.5f, 0.5f, depth);
+            if (!map.IsChasm(new GridPos(cell.X - 1, cell.Y))) chasm.AddFace(below, Vector3.right, -0.5f, 0.5f, depth);
+            if (!map.IsChasm(new GridPos(cell.X, cell.Y + 1))) chasm.AddFace(below, Vector3.back, 0.5f, -0.5f, depth);
+            if (!map.IsChasm(new GridPos(cell.X, cell.Y - 1))) chasm.AddFace(below, Vector3.forward, 0.5f, -0.5f, depth);
         }
 
         private void OnDestroy()
@@ -149,9 +168,9 @@ namespace GirlsDungeon.Game
             {
                 float halfDepth = Mathf.Abs(facing.x) > 0f ? halfX : halfZ;
                 float halfWidth = Mathf.Abs(facing.x) > 0f ? halfZ : halfX;
-                var faceCenter = new Vector3(center.x, 0f, center.z) + facing * halfDepth;
+                var faceCenter = new Vector3(center.x, center.y, center.z) + facing * halfDepth;
                 // 바깥에서 볼 때 시계 방향이어야 면이 그려진다.
-                var along = Vector3.Cross(facing, Vector3.up) * halfWidth;
+                var along = Vector3.Cross(facing, Vector3.up) * Mathf.Abs(halfWidth);
                 var up = Vector3.up * height;
                 AddQuad(faceCenter - along, faceCenter - along + up, faceCenter + along + up, faceCenter + along, facing);
             }

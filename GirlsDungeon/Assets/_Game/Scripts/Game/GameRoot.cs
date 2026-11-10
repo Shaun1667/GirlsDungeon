@@ -46,6 +46,8 @@ namespace GirlsDungeon.Game
             moveController.Bind(simulation, playerView, hudView, combatSettings, balance.MoveCostTicks);
             hudView.GrenadeButtonPressed -= moveController.ToggleAim;
             hudView.GrenadeButtonPressed += moveController.ToggleAim;
+            hudView.PushButtonPressed -= moveController.TogglePushAim;
+            hudView.PushButtonPressed += moveController.TogglePushAim;
             hudView.OverwatchButtonPressed -= OnOverwatchButton;
             hudView.OverwatchButtonPressed += OnOverwatchButton;
             threatView.Bind(simulation, combatSettings);
@@ -120,6 +122,38 @@ namespace GirlsDungeon.Game
         {
             DebugUsed = true;
             return moveController.RequestAreaAttack(center);
+        }
+
+        /// <summary>[상태 변경] 그 칸 쪽으로 밀치기를 쓴다 (마우스를 그 칸에 두고 클릭한 것과 같다). 못 쓰면 false.</summary>
+        public bool DebugPush(GridPos pointer)
+        {
+            DebugUsed = true;
+            return moveController.RequestPush(pointer);
+        }
+
+        /// <summary>밀치기 버튼과 같다 (조준 모드 켜기 · 끄기).</summary>
+        public void DebugTogglePushAim()
+        {
+            moveController.TogglePushAim();
+        }
+
+        /// <summary>[상태 변경] 칸 종류를 바꾸고 지형을 다시 그린다 (낭떠러지 시험용).</summary>
+        public void DebugSetTile(GridPos cell, TileType tile)
+        {
+            if (World == null || !World.Map.InBounds(cell)) return;
+            DebugUsed = true;
+            World.Map.SetTile(cell, tile);
+            floorView.Build(World.Map, balance);
+        }
+
+        /// <summary>[상태 변경] 유닛을 그 칸으로 옮긴다 (밀치기 시험용). 설 수 없거나 차 있으면 false.</summary>
+        public bool DebugPlaceUnit(int unitId, GridPos cell)
+        {
+            var world = World;
+            var unit = world?.FindUnit(unitId);
+            if (unit == null || !world.Map.IsWalkable(cell) || world.IsOccupied(cell)) return false;
+            DebugUsed = true;
+            return simulation.Execute(new DebugPlaceCommand(unitId, cell));
         }
 
         /// <summary>수류탄 버튼과 같다 (조준 모드 켜기 · 끄기).</summary>
@@ -203,7 +237,7 @@ namespace GirlsDungeon.Game
             if (world == null) return "Run not started";
             var player = world.Player;
             return $"Mode={world.Mode}, Turn={world.Turn}, Round={world.Round}, Moved={world.PlayerMoved}, Acted={world.PlayerActed}, "
-                + $"GrenadeCooldown={world.GrenadeCooldown}, Aiming={moveController.IsAiming}, "
+                + $"GrenadeCooldown={world.GrenadeCooldown}, PushCooldown={world.PushCooldown}, Aim={moveController.Aim}, "
                 + $"Reachable={moveController.ReachableCount}, Combatants=[{string.Join(",", world.Combatants)}], "
                 + $"PlayerHp={player.Hp}/{player.MaxHp}, Stability={player.Stability}/{player.MaxStability}, VisibleEnemies={unitsView.VisibleCount}";
         }
@@ -232,7 +266,7 @@ namespace GirlsDungeon.Game
             var map = world.Map;
             return $"Size={map.Width}x{map.Height}, Rooms={map.Rooms.Count}, Walkable={map.CountWalkable()}, "
                 + $"Start={map.StartCell}, Stairs={map.StairsCell}, Crates={map.CountTiles(TileType.Crate)}, "
-                + $"Pillars={map.CountTiles(TileType.Pillar)}, LowWalls={map.CountLowWalls()}";
+                + $"Pillars={map.CountTiles(TileType.Pillar)}, LowWalls={map.CountLowWalls()}, Chasm={map.CountTiles(TileType.Chasm)}";
         }
 
         /// <summary>칸이 네 방향으로 받는 엄폐. 예: "E:Half N:Full".</summary>

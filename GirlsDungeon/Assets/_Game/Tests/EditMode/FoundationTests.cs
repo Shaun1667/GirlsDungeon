@@ -275,6 +275,9 @@ namespace GirlsDungeon.Tests
                 MinLowWallLength = 2,
                 MaxLowWallLength = 3,
                 DecorAttempts = 30,
+                ChasmRoomPercent = 50,
+                MinChasmPercent = 30,
+                MaxChasmPercent = 50,
             };
         }
 
@@ -300,6 +303,11 @@ namespace GirlsDungeon.Tests
                 GuardRadius = 3,
                 CrateDurability = 2,
                 LowWallDurability = 3,
+                PushLength = 3,
+                PushWidth = 2,
+                PushDamagePercent = 30,
+                PushCollisionDamage = 3,
+                PushCooldownRounds = 2,
             };
             settings.Units.Add(new UnitStats
             {
@@ -317,7 +325,7 @@ namespace GirlsDungeon.Tests
         /// <summary>BALANCE 값으로 새 판을 만든다. 맵 · 이동 테스트는 적 없는 판을 쓴다.</summary>
         public static World NewRun(int seed, int enemies = 0) => RunFactory.NewRun(seed, Map(), Combat(enemies));
 
-        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥. 첫 줄이 y = 0.</summary>
+        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥, X 낭떠러지. 첫 줄이 y = 0.</summary>
         public static FloorMap Parse(params string[] rows) => ParseWithRooms(new RoomRect[0], rows);
 
         /// <summary>Parse와 같고, 방 목록을 함께 넣는다 (방 시야 테스트용).</summary>
@@ -334,6 +342,7 @@ namespace GirlsDungeon.Tests
                     tiles[x + y * width] = ch == '#' ? TileType.Wall
                         : ch == 'C' ? TileType.Crate
                         : ch == 'P' ? TileType.Pillar
+                        : ch == 'X' ? TileType.Chasm
                         : TileType.Floor;
                 }
             }

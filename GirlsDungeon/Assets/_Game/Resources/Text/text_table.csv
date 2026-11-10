@@ -42,3 +42,17 @@ ui.cover.half,낮은 엄폐,Low cover
 ui.cover.full,높은 엄폐,High cover
 unit.player.name,나,You
 unit.rifleman.name,사격병,Rifleman
+ui.skill.push,밀치기,Push
+ui.skill.push_cooldown,밀치기 ({0}),Push ({0})
+ui.skill.push_aiming,조준 취소,Cancel aim
+ui.combat.preview_push_header,밀치기 · 대상 {0},Push · {0} targets
+ui.combat.preview_push_hit,{0}: 피해 {1} · {2},{0}: {1} damage · {2}
+ui.combat.preview_push_not_ready,밀치기 재사용 대기 {0}라운드,Push ready in {0} rounds
+ui.combat.preview_push_no_target,범위 안에 대상 없음,No target in the area
+ui.combat.push_result_down,쓰러짐,Down
+ui.combat.push_result_fall,낭떠러지로 떨어짐,Falls into the chasm
+ui.combat.push_result_collide,{1}칸 밀린 뒤 충돌 피해 {0},Pushed {1} then hits for {0}
+ui.combat.push_result_slide,{0}칸 밀림,Pushed {0} cells
+ui.combat.log_push,{0}의 밀치기,{0} pushes
+ui.combat.log_fell,{0}이(가) 낭떠러지로 떨어짐,{0} fell into the chasm
+ui.combat.log_collide,{0} 충돌 피해 {1},{0} takes {1} collision damage

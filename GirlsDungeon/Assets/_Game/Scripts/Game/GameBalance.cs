@@ -55,6 +55,14 @@ namespace GirlsDungeon.Game
         [SerializeField] private int maxLowWallLength = 3;
         [SerializeField] private int decorAttempts = 30;
 
+        [Header("Chasm (BALANCE 1-15 ~ 1-17)")]
+        [Tooltip("Share (%) of all rooms that get chasm cells. Start and stairs rooms are never picked.")]
+        [SerializeField] private int chasmRoomPercent = 50;
+        [Tooltip("Chasm area (%) of a chasm room, lower bound.")]
+        [SerializeField] private int minChasmPercent = 30;
+        [Tooltip("Chasm area (%) of a chasm room, upper bound.")]
+        [SerializeField] private int maxChasmPercent = 50;
+
         [Header("Units (BALANCE 4)")]
         [SerializeField] private UnitStatsEntry[] units =
         {
@@ -98,6 +106,16 @@ namespace GirlsDungeon.Game
         [Tooltip("Hits a low wall takes before it breaks.")]
         [SerializeField] private int lowWallDurability = 3;
 
+        [Header("Push skill (BALANCE 9)")]
+        [Tooltip("Cells the push area reaches in front of the player.")]
+        [SerializeField] private int pushLength = 3;
+        [Tooltip("Lanes the push area covers (the player's lane plus the aimed side).")]
+        [SerializeField] private int pushWidth = 2;
+        [SerializeField] private int pushDamagePercent = 30;
+        [Tooltip("Flat damage when a pushed unit hits a wall, cover or unit.")]
+        [SerializeField] private int pushCollisionDamage = 3;
+        [SerializeField] private int pushCooldownRounds = 2;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
@@ -108,6 +126,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private float crateSize = 0.8f;
         [SerializeField] private float pillarSize = 0.7f;
         [SerializeField] private float lowWallThickness = 0.14f;
+        [Tooltip("How deep the chasm pit is drawn (view only).")]
+        [SerializeField] private float chasmDepth = 2.5f;
         [Tooltip("Darkness of cells seen before but not in sight now (0 clear - 1 black).")]
         [SerializeField] private float exploredFogDarkness = 0.6f;
         [SerializeField] private int fogTexelsPerCell = 4;
@@ -128,6 +148,7 @@ namespace GirlsDungeon.Game
         public float CrateSize => crateSize;
         public float PillarSize => pillarSize;
         public float LowWallThickness => lowWallThickness;
+        public float ChasmDepth => chasmDepth;
         public float ExploredFogDarkness => exploredFogDarkness;
         public int FogTexelsPerCell => fogTexelsPerCell;
         public float FogSoftCells => fogSoftCells;
@@ -159,6 +180,11 @@ namespace GirlsDungeon.Game
                 GuardRadius = guardRadius,
                 CrateDurability = crateDurability,
                 LowWallDurability = lowWallDurability,
+                PushLength = pushLength,
+                PushWidth = pushWidth,
+                PushDamagePercent = pushDamagePercent,
+                PushCollisionDamage = pushCollisionDamage,
+                PushCooldownRounds = pushCooldownRounds,
             };
             foreach (var entry in units)
             {
@@ -215,6 +241,9 @@ namespace GirlsDungeon.Game
                 MinLowWallLength = minLowWallLength,
                 MaxLowWallLength = maxLowWallLength,
                 DecorAttempts = decorAttempts,
+                ChasmRoomPercent = chasmRoomPercent,
+                MinChasmPercent = minChasmPercent,
+                MaxChasmPercent = maxChasmPercent,
             };
         }
     }

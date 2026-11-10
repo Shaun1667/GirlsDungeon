@@ -39,6 +39,9 @@ namespace GirlsDungeon.Tests
             Assert.That(map.MinLowWallLength, Is.EqualTo(expected.MinLowWallLength));
             Assert.That(map.MaxLowWallLength, Is.EqualTo(expected.MaxLowWallLength));
             Assert.That(map.DecorAttempts, Is.EqualTo(expected.DecorAttempts));
+            Assert.That(map.ChasmRoomPercent, Is.EqualTo(expected.ChasmRoomPercent));
+            Assert.That(map.MinChasmPercent, Is.EqualTo(expected.MinChasmPercent));
+            Assert.That(map.MaxChasmPercent, Is.EqualTo(expected.MaxChasmPercent));
         }
 
         [Test]
@@ -79,6 +82,11 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.GuardRadius, Is.EqualTo(expected.GuardRadius));
             Assert.That(combat.CrateDurability, Is.EqualTo(expected.CrateDurability));
             Assert.That(combat.LowWallDurability, Is.EqualTo(expected.LowWallDurability));
+            Assert.That(combat.PushLength, Is.EqualTo(expected.PushLength));
+            Assert.That(combat.PushWidth, Is.EqualTo(expected.PushWidth));
+            Assert.That(combat.PushDamagePercent, Is.EqualTo(expected.PushDamagePercent));
+            Assert.That(combat.PushCollisionDamage, Is.EqualTo(expected.PushCollisionDamage));
+            Assert.That(combat.PushCooldownRounds, Is.EqualTo(expected.PushCooldownRounds));
             foreach (var stats in expected.Units)
             {
                 var actual = combat.StatsFor(stats.Kind);

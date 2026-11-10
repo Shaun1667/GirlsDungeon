@@ -134,6 +134,44 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>밀치기를 썼다. 맞은 유닛마다 UnitAttacked · (밀리면) UnitMoved들 · UnitPushed가 뒤따른다.</summary>
+    public sealed class PushUsed : GameEvent
+    {
+        public int AttackerId { get; }
+        public UnitKind AttackerKind { get; }
+        public GridPos Direction { get; }
+        public IReadOnlyList<GridPos> Cells { get; }
+
+        public PushUsed(int attackerId, UnitKind attackerKind, GridPos direction, IReadOnlyList<GridPos> cells)
+        {
+            AttackerId = attackerId;
+            AttackerKind = attackerKind;
+            Direction = direction;
+            Cells = cells;
+        }
+    }
+
+    /// <summary>유닛이 밀렸다. 떨어졌으면 Fell, 부딪혔으면 CollisionDamage > 0.</summary>
+    public sealed class UnitPushed : GameEvent
+    {
+        public int UnitId { get; }
+        public UnitKind Kind { get; }
+        public GridPos From { get; }
+        public GridPos To { get; }
+        public bool Fell { get; }
+        public int CollisionDamage { get; }
+
+        public UnitPushed(int unitId, UnitKind kind, GridPos from, GridPos to, bool fell, int collisionDamage)
+        {
+            UnitId = unitId;
+            Kind = kind;
+            From = from;
+            To = to;
+            Fell = fell;
+            CollisionDamage = collisionDamage;
+        }
+    }
+
     /// <summary>경계 중이던 적이 깨어났다.</summary>
     public sealed class EnemiesAlerted : GameEvent
     {
