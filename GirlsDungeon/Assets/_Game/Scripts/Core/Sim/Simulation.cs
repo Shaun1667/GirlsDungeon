@@ -64,12 +64,13 @@ namespace GirlsDungeon.Core.Sim
             var playerStats = combatSettings.StatsFor(UnitKind.Player);
             world.PlayerId = world.AddUnit(playerStats, world.Map.StartCell).Id;
             EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
+            VisionSystem.Update(world, null);
             return world;
         }
     }
 
     /// <summary>
-    /// 층에 적을 놓는 한 곳. 시작 칸에서 일정 거리 밖이고, 시작 칸에서 보이지 않는 걸을 수 있는 칸에만 놓는다.
+    /// 층에 적을 놓는 한 곳. 시작 칸에서 일정 거리 밖이고, 시작 칸에서 보이지 않는(Vision — 시작 방 전체 포함) 걸을 수 있는 칸에만 놓는다.
     /// 후보 칸은 행 순서로 모은 뒤 배치 난수로 고르므로 같은 시드면 같은 자리가 나온다.
     /// </summary>
     public static class EnemySpawner
@@ -79,6 +80,7 @@ namespace GirlsDungeon.Core.Sim
             var map = world.Map;
             var start = map.StartCell;
             int playerVision = settings.StatsFor(UnitKind.Player).VisionRange;
+            var visibleFromStart = Vision.Compute(map, start, playerVision);
 
             var candidates = new List<GridPos>();
             for (int y = 0; y < map.Height; y++)
@@ -88,7 +90,7 @@ namespace GirlsDungeon.Core.Sim
                     var cell = new GridPos(x, y);
                     if (!map.IsWalkable(cell) || cell == map.StairsCell || world.IsOccupied(cell)) continue;
                     if (Math.Max(Math.Abs(cell.X - start.X), Math.Abs(cell.Y - start.Y)) < settings.EnemyMinDistanceFromStart) continue;
-                    if (Sight.CanSee(map, start, cell, playerVision)) continue;
+                    if (Vision.IsSet(visibleFromStart, map, cell)) continue;
                     candidates.Add(cell);
                 }
             }

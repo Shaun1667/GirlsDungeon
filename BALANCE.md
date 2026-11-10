@@ -43,6 +43,9 @@
 | 3-7 | 낮은 엄폐물 높이 (상자 · 낮은 벽) | 0.55 | `lowCoverHeight` |
 | 3-8 | 상자 · 기둥 크기 | 0.8 · 0.7 | `crateSize` · `pillarSize` |
 | 3-9 | 낮은 벽 두께 | 0.14 | `lowWallThickness` |
+| 3-10 | 본 칸(지금 안 보임) 어둡기 | 0.6 (안 본 칸 1 = 검정) | `exploredFogDarkness` |
+| 3-11 | 안개 텍스처 칸당 텍셀 | 4 | `fogTexelsPerCell` |
+| 3-12 | 안개 경계 번짐 폭 | 2칸 | `fogSoftCells` |
 
 ## 4. 유닛 능력치 (결정 2026-11-10, 사용자 — 출발값)
 | 번호 | 유닛 | 체력 | 안정지수 | 시야 | 필드 |

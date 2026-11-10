@@ -298,7 +298,10 @@ namespace GirlsDungeon.Tests
         public static World NewRun(int seed, int enemies = 0) => RunFactory.NewRun(seed, Map(), Combat(enemies));
 
         /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥. 첫 줄이 y = 0.</summary>
-        public static FloorMap Parse(params string[] rows)
+        public static FloorMap Parse(params string[] rows) => ParseWithRooms(new RoomRect[0], rows);
+
+        /// <summary>Parse와 같고, 방 목록을 함께 넣는다 (방 시야 테스트용).</summary>
+        public static FloorMap ParseWithRooms(RoomRect[] rooms, params string[] rows)
         {
             int height = rows.Length;
             int width = rows[0].Length;
@@ -314,7 +317,7 @@ namespace GirlsDungeon.Tests
                         : TileType.Floor;
                 }
             }
-            return new FloorMap(width, height, tiles, new RoomRect[0], new GridPos(0, 0), new GridPos(0, 0));
+            return new FloorMap(width, height, tiles, rooms, new GridPos(0, 0), new GridPos(0, 0));
         }
     }
 }

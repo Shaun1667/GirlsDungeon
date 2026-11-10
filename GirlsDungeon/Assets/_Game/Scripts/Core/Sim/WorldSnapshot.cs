@@ -12,8 +12,8 @@ namespace GirlsDungeon.Core.Sim
     /// </summary>
     public static class WorldSnapshot
     {
-        /// <summary>2: 낮은 벽 (2026-11-10). 3: 체력 · 안정지수 · 시야 · 전투 상태 · 배치 난수 (2026-11-10).</summary>
-        public const int Version = 3;
+        /// <summary>2: 낮은 벽 (2026-11-10). 3: 체력 · 안정지수 · 시야 · 전투 상태 · 배치 난수 (2026-11-10). 4: 본 칸 기록 (2026-11-10).</summary>
+        public const int Version = 4;
 
         public static byte[] Encode(World world)
         {
@@ -51,6 +51,10 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write(world.Round);
                 writer.Write(world.Combatants.Count);
                 foreach (var id in world.Combatants) writer.Write(id);
+
+                int cellCount = world.Map.Width * world.Map.Height;
+                for (int i = 0; i < cellCount; i++)
+                    writer.Write(world.Explored != null && i < world.Explored.Length && world.Explored[i]);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -106,6 +110,10 @@ namespace GirlsDungeon.Core.Sim
                 world.Round = reader.ReadInt32();
                 int combatantCount = reader.ReadInt32();
                 for (int i = 0; i < combatantCount; i++) world.Combatants.Add(reader.ReadInt32());
+
+                var explored = new bool[world.Map.Width * world.Map.Height];
+                for (int i = 0; i < explored.Length; i++) explored[i] = reader.ReadBoolean();
+                world.Explored = explored;
                 return world;
             }
         }

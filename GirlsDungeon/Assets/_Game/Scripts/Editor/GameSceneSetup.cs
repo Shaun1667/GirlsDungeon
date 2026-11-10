@@ -31,6 +31,7 @@ namespace GirlsDungeon.EditorTools
             var hoverMaterial = LoadOrCreateMaterial("GreyboxHover", new Color(0.35f, 0.85f, 0.95f));
             var coverMaterial = LoadOrCreateMaterial("GreyboxCover", new Color(0.55f, 0.47f, 0.36f));
             var enemyMaterial = LoadOrCreateMaterial("GreyboxEnemy", new Color(0.85f, 0.25f, 0.2f));
+            var fogMaterial = LoadOrCreateFogMaterial();
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -61,7 +62,8 @@ namespace GirlsDungeon.EditorTools
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("fogMaterial", fogMaterial));
+            var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");
             var playerView = playerObject.AddComponent<PlayerView>();
@@ -73,6 +75,10 @@ namespace GirlsDungeon.EditorTools
             hover.SetActive(false);
 
             var cameraObject = Camera.main.gameObject;
+            // 안 본 칸(검정)과 맵 밖이 이어지게 배경을 검정으로.
+            var viewCameraComponent = cameraObject.GetComponent<Camera>();
+            viewCameraComponent.clearFlags = CameraClearFlags.SolidColor;
+            viewCameraComponent.backgroundColor = Color.black;
             var cameraRig = cameraObject.AddComponent<CameraRig>();
 
             var rootObject = new GameObject("GameRoot");
@@ -88,7 +94,8 @@ namespace GirlsDungeon.EditorTools
                 ("cameraRig", cameraRig),
                 ("moveController", moveController),
                 ("unitsView", unitsView),
-                ("hudView", hudView));
+                ("hudView", hudView),
+                ("fogView", fogView));
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -164,6 +171,18 @@ namespace GirlsDungeon.EditorTools
             material.SetColor("_BaseColor", color);
             material.SetFloat("_Smoothness", 0.1f);
             EditorUtility.SetDirty(material);
+            return material;
+        }
+
+        private static Material LoadOrCreateFogMaterial()
+        {
+            var path = $"{MaterialFolder}/FogOverlay.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material != null) return material;
+
+            EnsureFolder(MaterialFolder);
+            material = new Material(Shader.Find("GirlsDungeon/FogOverlay"));
+            AssetDatabase.CreateAsset(material, path);
             return material;
         }
 

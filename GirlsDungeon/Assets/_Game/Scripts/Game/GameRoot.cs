@@ -17,6 +17,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private MoveController moveController;
         [SerializeField] private UnitsView unitsView;
         [SerializeField] private HudView hudView;
+        [SerializeField] private FogView fogView;
 
         private Simulation simulation;
 
@@ -36,6 +37,7 @@ namespace GirlsDungeon.Game
             simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings(), combatSettings));
 
             floorView.Build(simulation.World.Map, balance);
+            fogView.Bind(simulation, balance);
             playerView.Bind(simulation, balance.StepSeconds);
             unitsView.Bind(simulation);
             hudView.Bind(simulation, combatSettings.EndTurnCostTicks);
@@ -70,6 +72,28 @@ namespace GirlsDungeon.Game
         public void DebugRotateCamera(int direction)
         {
             cameraRig.Rotate(direction);
+        }
+
+        /// <summary>안개를 숨겨 맵 전체를 밝힌다. 표시만 바꾸며 본 칸 기록 · 규칙은 그대로다.</summary>
+        public bool DebugRevealAll
+        {
+            get => fogView.RevealAll;
+            set => fogView.RevealAll = value;
+        }
+
+        public string DebugVisionSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var player = world.Player;
+            var visible = Vision.Compute(world.Map, player.Position, player.VisionRange);
+            int seen = 0, explored = 0;
+            foreach (var cell in visible) if (cell) seen++;
+            foreach (var cell in world.Explored) if (cell) explored++;
+            string room = "corridor";
+            for (int i = 0; i < world.Map.Rooms.Count; i++)
+                if (world.Map.Rooms[i].Contains(player.Position)) room = "room " + i;
+            return $"Visible={seen}, Explored={explored}/{visible.Length}, Player in {room}";
         }
 
         /// <summary>[상태 변경] 턴 종료 버튼과 같다. 지금 플레이어 차례가 아니면 false.</summary>

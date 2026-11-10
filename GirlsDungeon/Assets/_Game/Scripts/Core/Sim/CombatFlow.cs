@@ -4,7 +4,8 @@ using GirlsDungeon.Core.Map;
 namespace GirlsDungeon.Core.Sim
 {
     /// <summary>
-    /// 탐험 ↔ 턴 전투 전환과 유닛 사망의 한 곳. 커맨드가 끝날 때마다 Simulation이 AfterAction을 부른다 (틱 순서 ⑥).
+    /// 커맨드가 끝날 때마다 Simulation이 부르는 마무리 단계 (틱 순서 ⑥):
+    /// 시야 갱신(VisionSystem) → 보이는 적 전투 합류 → 전투 종료 판정.
     /// </summary>
     public static class CombatFlow
     {
@@ -13,7 +14,8 @@ namespace GirlsDungeon.Core.Sim
             var player = world.Player;
             if (player == null) return;
 
-            JoinVisibleEnemies(world, player, events);
+            var visible = VisionSystem.Update(world, events);
+            JoinVisibleEnemies(world, visible, events);
 
             if (world.Mode == WorldMode.Combat && world.Combatants.Count == 0)
                 EndCombat(world, player, events);
@@ -27,13 +29,13 @@ namespace GirlsDungeon.Core.Sim
             events.Add(new UnitDied(unit.Id, unit.Kind));
         }
 
-        private static void JoinVisibleEnemies(World world, Unit player, List<GameEvent> events)
+        private static void JoinVisibleEnemies(World world, bool[] visible, List<GameEvent> events)
         {
             List<int> joined = null;
             foreach (var unit in world.Units)
             {
                 if (unit.IsPlayer || world.Combatants.Contains(unit.Id)) continue;
-                if (!Sight.CanSee(world.Map, player.Position, unit.Position, player.VisionRange)) continue;
+                if (!Vision.IsSet(visible, world.Map, unit.Position)) continue;
 
                 if (joined == null) joined = new List<int>();
                 joined.Add(unit.Id);
@@ -67,6 +69,27 @@ namespace GirlsDungeon.Core.Sim
                 events.Add(new UnitStatsChanged(player.Id));
             }
             events.Add(new CombatEnded());
+        }
+    }
+
+    /// <summary>플레이어 시야를 다시 계산해 본 칸 기록(World.Explored)에 더하고 VisibilityChanged를 낸다.</summary>
+    public static class VisionSystem
+    {
+        /// <summary>지금 보이는 칸을 돌려준다. 플레이어가 없으면 빈 배열.</summary>
+        public static bool[] Update(World world, List<GameEvent> events)
+        {
+            var map = world.Map;
+            var player = world.Player;
+            if (world.Explored == null || world.Explored.Length != map.Width * map.Height)
+                world.Explored = new bool[map.Width * map.Height];
+            if (player == null) return new bool[map.Width * map.Height];
+
+            var visible = Vision.Compute(map, player.Position, player.VisionRange);
+            for (int i = 0; i < visible.Length; i++)
+                if (visible[i]) world.Explored[i] = true;
+
+            events?.Add(new VisibilityChanged((bool[])visible.Clone(), (bool[])world.Explored.Clone()));
+            return visible;
         }
     }
 

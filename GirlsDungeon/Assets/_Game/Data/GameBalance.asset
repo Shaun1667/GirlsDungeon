@@ -53,6 +53,9 @@ MonoBehaviour:
   crateSize: 0.8
   pillarSize: 0.7
   lowWallThickness: 0.14
+  exploredFogDarkness: 0.6
+  fogTexelsPerCell: 4
+  fogSoftCells: 2
   cameraPitch: 52
   cameraStartYaw: 45
   cameraYawStep: 30

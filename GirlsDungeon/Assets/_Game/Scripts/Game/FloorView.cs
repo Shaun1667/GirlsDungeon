@@ -12,6 +12,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material wallMaterial;
         [SerializeField] private Material stairsMaterial;
         [SerializeField] private Material coverMaterial;
+        [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
+        [SerializeField] private Material fogMaterial;
 
         private readonly List<Mesh> meshes = new List<Mesh>();
         private readonly List<GameObject> parts = new List<GameObject>();
@@ -88,7 +90,8 @@ namespace GirlsDungeon.Game
             var part = new GameObject(partName, typeof(MeshFilter), typeof(MeshRenderer));
             part.transform.SetParent(transform, false);
             part.GetComponent<MeshFilter>().sharedMesh = mesh;
-            part.GetComponent<MeshRenderer>().sharedMaterial = material;
+            // 재질 두 개 = 같은 메시를 두 번 그린다: 지형 재질 → 안개 덧그리기.
+            part.GetComponent<MeshRenderer>().sharedMaterials = fogMaterial != null ? new[] { material, fogMaterial } : new[] { material };
             parts.Add(part);
         }
 

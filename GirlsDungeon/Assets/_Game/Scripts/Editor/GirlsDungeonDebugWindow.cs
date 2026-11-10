@@ -73,6 +73,8 @@ namespace GirlsDungeon.EditorTools
         {
             EditorGUILayout.LabelField("맵", EditorStyles.boldLabel);
             EditorGUILayout.LabelField("요약", root.DebugMapSummary(), EditorStyles.wordWrappedLabel);
+            EditorGUILayout.LabelField("시야", root.DebugVisionSummary(), EditorStyles.wordWrappedLabel);
+            root.DebugRevealAll = EditorGUILayout.Toggle("맵 전체 밝히기 (표시만)", root.DebugRevealAll);
             EditorGUILayout.LabelField("칸 엄폐 (아래 '칸' 기준)", root.DebugCoverAt(new GridPos(moveTarget.x, moveTarget.y)), EditorStyles.wordWrappedLabel);
         }
 

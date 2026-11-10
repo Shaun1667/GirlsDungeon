@@ -77,6 +77,19 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>플레이어 시야를 다시 계산했다. 배열은 복사본 (인덱스 = x + y * Width).</summary>
+    public sealed class VisibilityChanged : GameEvent
+    {
+        public bool[] Visible { get; }
+        public bool[] Explored { get; }
+
+        public VisibilityChanged(bool[] visible, bool[] explored)
+        {
+            Visible = visible;
+            Explored = explored;
+        }
+    }
+
     public sealed class UnitDied : GameEvent
     {
         public int UnitId { get; }

@@ -70,6 +70,11 @@ namespace GirlsDungeon.Game
         [SerializeField] private float crateSize = 0.8f;
         [SerializeField] private float pillarSize = 0.7f;
         [SerializeField] private float lowWallThickness = 0.14f;
+        [Tooltip("Darkness of cells seen before but not in sight now (0 clear - 1 black).")]
+        [SerializeField] private float exploredFogDarkness = 0.6f;
+        [SerializeField] private int fogTexelsPerCell = 4;
+        [Tooltip("How many cells the fog edge fades over.")]
+        [SerializeField] private float fogSoftCells = 2f;
         [SerializeField] private float cameraPitch = 52f;
         [SerializeField] private float cameraStartYaw = 45f;
         [SerializeField] private float cameraYawStep = 30f;
@@ -85,6 +90,9 @@ namespace GirlsDungeon.Game
         public float CrateSize => crateSize;
         public float PillarSize => pillarSize;
         public float LowWallThickness => lowWallThickness;
+        public float ExploredFogDarkness => exploredFogDarkness;
+        public int FogTexelsPerCell => fogTexelsPerCell;
+        public float FogSoftCells => fogSoftCells;
         public float CameraPitch => cameraPitch;
         public float CameraStartYaw => cameraStartYaw;
         public float CameraYawStep => cameraYawStep;

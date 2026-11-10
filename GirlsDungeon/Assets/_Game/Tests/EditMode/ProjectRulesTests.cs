@@ -67,7 +67,7 @@ namespace GirlsDungeon.Tests
         {
             var scene = File.ReadAllText(GameRoot + "/Scenes/Game.unity");
             var fields = new[] { "balance", "seedLabel", "floorView", "playerView", "cameraRig", "moveController", "viewCamera", "hoverMarker",
-                "unitsView", "hudView", "enemyMaterial", "hpLabel", "stabilityLabel", "roundLabel", "turnLabel", "endTurnButton" };
+                "unitsView", "hudView", "enemyMaterial", "hpLabel", "stabilityLabel", "roundLabel", "turnLabel", "endTurnButton", "fogView", "fogMaterial" };
 
             foreach (var field in fields)
             {

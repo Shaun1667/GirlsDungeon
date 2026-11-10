@@ -6,8 +6,7 @@ using UnityEngine;
 namespace GirlsDungeon.Game
 {
     /// <summary>
-    /// 플레이어가 아닌 유닛을 그린다. 지금 보이거나 전투에 들어온 적만 화면에 나타난다.
-    /// 시야 판정은 규칙의 Sight를 그대로 쓴다.
+    /// 플레이어가 아닌 유닛을 그린다. 지금 보이는 칸(Vision)에 있거나 전투에 들어온 적만 화면에 나타난다.
     /// </summary>
     public sealed class UnitsView : MonoBehaviour
     {
@@ -16,6 +15,7 @@ namespace GirlsDungeon.Game
 
         private readonly Dictionary<int, GameObject> views = new Dictionary<int, GameObject>();
         private Simulation simulation;
+        private bool[] visible;
 
         public int VisibleCount
         {
@@ -33,7 +33,10 @@ namespace GirlsDungeon.Game
             simulation = newSimulation;
             simulation.EventsPublished += HandleEvents;
 
-            foreach (var unit in simulation.World.Units)
+            var world = simulation.World;
+            var player = world.Player;
+            visible = player != null ? Vision.Compute(world.Map, player.Position, player.VisionRange) : new bool[world.Map.Width * world.Map.Height];
+            foreach (var unit in world.Units)
                 if (!unit.IsPlayer) CreateView(unit);
             RefreshVisibility();
         }
@@ -75,6 +78,9 @@ namespace GirlsDungeon.Game
                         Destroy(deadView);
                         views.Remove(died.UnitId);
                         break;
+                    case VisibilityChanged changed:
+                        visible = changed.Visible;
+                        break;
                 }
             }
             RefreshVisibility();
@@ -83,13 +89,11 @@ namespace GirlsDungeon.Game
         private void RefreshVisibility()
         {
             var world = simulation.World;
-            var player = world.Player;
             foreach (var pair in views)
             {
                 var unit = world.FindUnit(pair.Key);
-                bool visible = unit != null && player != null
-                    && (world.Combatants.Contains(unit.Id) || Sight.CanSee(world.Map, player.Position, unit.Position, player.VisionRange));
-                pair.Value.SetActive(visible);
+                bool shown = unit != null && (world.Combatants.Contains(unit.Id) || Vision.IsSet(visible, world.Map, unit.Position));
+                pair.Value.SetActive(shown);
             }
         }
     }

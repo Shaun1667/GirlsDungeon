@@ -36,8 +36,11 @@ namespace GirlsDungeon.Game
 
             var world = simulation.World;
             var player = world.Player;
+            if (!IsKnown(target)) return false;
+
+            // 본 적 없는 칸은 지나가지 않는다 — 경로로 안 본 지형이 드러나지 않게.
             var path = GridNavigation.FindPath(world.Map, player.Position, target,
-                cell => cell != player.Position && world.IsOccupied(cell));
+                cell => cell != player.Position && (world.IsOccupied(cell) || !IsKnown(cell)));
             if (path.Count == 0) return false;
 
             pendingSteps.Clear();
@@ -63,10 +66,17 @@ namespace GirlsDungeon.Game
             }
 
             var cell = PointerCell(mouse.position.ReadValue());
-            bool isWalkable = cell.HasValue && simulation.World.Map.IsWalkable(cell.Value);
+            bool isWalkable = cell.HasValue && simulation.World.Map.IsWalkable(cell.Value) && IsKnown(cell.Value);
             SetHover(isWalkable ? cell : null);
 
             if (isWalkable && mouse.leftButton.wasPressedThisFrame) RequestMove(cell.Value);
+        }
+
+        /// <summary>한 번이라도 본 칸인지 (World.Explored).</summary>
+        private bool IsKnown(GridPos cell)
+        {
+            var world = simulation.World;
+            return world.Explored != null && Vision.IsSet(world.Explored, world.Map, cell);
         }
 
         private void AdvanceSteps()

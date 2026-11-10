@@ -74,6 +74,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>지금 전투에 들어와 있는 적 ID (오름차순).</summary>
         public List<int> Combatants { get; } = new List<int>();
 
+        /// <summary>한 번이라도 본 칸 (인덱스 = x + y * Width). 지금 보이는 칸은 저장하지 않고 Vision으로 다시 계산한다.</summary>
+        public bool[] Explored { get; set; }
+
         public World(int seed, RandomStreams random)
         {
             Seed = seed;
