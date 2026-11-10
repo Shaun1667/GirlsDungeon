@@ -53,6 +53,14 @@ namespace GirlsDungeon.Game
             return true;
         }
 
+        /// <summary>감시 버튼: 사격 대신 감시를 걸고 차례를 끝낸다. 못 하면 false.</summary>
+        public bool RequestOverwatch()
+        {
+            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || playerView.IsMoving) return false;
+            SetAiming(false);
+            return simulation.Execute(new OverwatchCommand(settings));
+        }
+
         private void SetAiming(bool value)
         {
             aiming = value;
@@ -103,7 +111,7 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             var target = world.UnitAt(cell);
             if (target != null && !target.IsPlayer) return simulation.Execute(new AttackCommand(target.Id, settings));
-            return simulation.Execute(new CombatMoveCommand(cell));
+            return simulation.Execute(new CombatMoveCommand(cell, settings));
         }
 
         private void Update()

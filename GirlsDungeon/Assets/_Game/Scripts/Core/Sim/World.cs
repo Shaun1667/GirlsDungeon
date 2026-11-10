@@ -50,6 +50,12 @@ namespace GirlsDungeon.Core.Sim
         public int CritPercent { get; set; }
         public int CritMultiplierPercent { get; set; }
 
+        /// <summary>경계 상태 (적). 공격받거나 플레이어가 경계 칸에 들어오기 전까지 행동하지 않는다.</summary>
+        public bool Guarding { get; set; }
+
+        /// <summary>감시 중. 상대가 사거리 · 사선 안에서 움직이면 한 번 반응 사격한다.</summary>
+        public bool Overwatching { get; set; }
+
         public bool IsPlayer => Kind == UnitKind.Player;
 
         public Unit(int id, UnitKind kind, GridPos position)

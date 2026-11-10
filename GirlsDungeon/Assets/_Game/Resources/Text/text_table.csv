@@ -30,6 +30,10 @@ ui.combat.preview_area_not_ready,수류탄 재사용 대기 {0}라운드,Grenade
 ui.combat.preview_area_out_of_range,던질 수 없는 칸 · 사거리 밖,Cannot throw · out of range
 ui.combat.preview_area_not_visible,던질 수 없는 칸 · 보이지 않음,Cannot throw · not visible
 ui.combat.log_area,{0}의 수류탄 폭발,{0}'s grenade exploded
+ui.skill.overwatch,감시,Overwatch
+ui.combat.log_alerted,{0} 경계 해제,{0} is alerted
+ui.combat.log_overwatch,{0} 감시,{0} is on overwatch
+ui.combat.log_reaction,{0}의 감시 사격!,{0} reacts with overwatch fire!
 ui.cover.none,엄폐 없음,No cover
 ui.cover.half,낮은 엄폐,Low cover
 ui.cover.full,높은 엄폐,High cover

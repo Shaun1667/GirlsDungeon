@@ -18,6 +18,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnitsView unitsView;
         [SerializeField] private HudView hudView;
         [SerializeField] private FogView fogView;
+        [SerializeField] private ThreatView threatView;
 
         private Simulation simulation;
 
@@ -34,7 +35,7 @@ namespace GirlsDungeon.Game
         public void BeginRun(int seed)
         {
             var combatSettings = balance.CreateCombatSettings();
-            simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings(), combatSettings));
+            simulation = new Simulation(RunFactory.NewRun(seed, balance.CreateMapSettings(), combatSettings), combatSettings);
 
             floorView.Build(simulation.World.Map, balance);
             fogView.Bind(simulation, balance);
@@ -44,9 +45,34 @@ namespace GirlsDungeon.Game
             moveController.Bind(simulation, playerView, hudView, combatSettings, balance.MoveCostTicks);
             hudView.GrenadeButtonPressed -= moveController.ToggleAim;
             hudView.GrenadeButtonPressed += moveController.ToggleAim;
+            hudView.OverwatchButtonPressed -= OnOverwatchButton;
+            hudView.OverwatchButtonPressed += OnOverwatchButton;
+            threatView.Bind(simulation, combatSettings);
             cameraRig.Bind(balance, playerView.transform);
 
             if (seedLabel != null) seedLabel.text = Text.Get("ui.hud.seed", seed);
+        }
+
+        private void OnOverwatchButton()
+        {
+            moveController.RequestOverwatch();
+        }
+
+        /// <summary>[상태 변경] 감시 버튼과 같다. 못 하면 false.</summary>
+        public bool DebugOverwatch()
+        {
+            DebugUsed = true;
+            return moveController.RequestOverwatch();
+        }
+
+        public string DebugThreatSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var parts = new System.Collections.Generic.List<string>();
+            foreach (var unit in world.Units)
+                if (unit.Guarding || unit.Overwatching) parts.Add($"#{unit.Id}{(unit.Guarding ? " guard" : "")}{(unit.Overwatching ? " watch" : "")}");
+            return $"[{string.Join(", ", parts)}] GuardCells={threatView.GuardCellCount}, WatchCells={threatView.WatchCellCount}";
         }
 
         /// <summary>[상태 변경] 새 시드로 판을 다시 시작한다.</summary>

@@ -21,6 +21,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnityEngine.UI.Text defeatLabel;
         [SerializeField] private Button endTurnButton;
         [SerializeField] private Button grenadeButton;
+        [SerializeField] private Button overwatchButton;
         [SerializeField] private int logLines = 4;
 
         private readonly List<string> log = new List<string>();
@@ -35,6 +36,9 @@ namespace GirlsDungeon.Game
 
         /// <summary>수류탄 버튼을 눌렀다. MoveController가 조준 모드를 켜고 끈다 (GameRoot가 잇는다).</summary>
         public event System.Action GrenadeButtonPressed;
+
+        /// <summary>감시 버튼을 눌렀다 (GameRoot가 MoveController.RequestOverwatch로 잇는다).</summary>
+        public event System.Action OverwatchButtonPressed;
 
         private UnityEngine.UI.Text GrenadeLabel => grenadeButton.GetComponentInChildren<UnityEngine.UI.Text>(true);
 
@@ -125,6 +129,7 @@ namespace GirlsDungeon.Game
         {
             if (endTurnButton != null) endTurnButton.onClick.AddListener(() => EndTurn());
             if (grenadeButton != null) grenadeButton.onClick.AddListener(() => GrenadeButtonPressed?.Invoke());
+            if (overwatchButton != null) overwatchButton.onClick.AddListener(() => OverwatchButtonPressed?.Invoke());
         }
 
         private void OnDestroy()
@@ -151,6 +156,15 @@ namespace GirlsDungeon.Game
                             ? Text.Get("ui.combat.log_crit", attacker, target, attacked.Damage)
                             : Text.Get("ui.combat.log_hit", attacker, target, attacked.Damage));
                         if (attacked.StabilityBroken) AddLog(Text.Get("ui.combat.log_break", target));
+                        break;
+                    case EnemiesAlerted alerted:
+                        foreach (var kind in alerted.Kinds) AddLog(Text.Get("ui.combat.log_alerted", UnitName(kind)));
+                        break;
+                    case OverwatchSet overwatch:
+                        AddLog(Text.Get("ui.combat.log_overwatch", UnitName(overwatch.Kind)));
+                        break;
+                    case OverwatchTriggered reaction:
+                        AddLog(Text.Get("ui.combat.log_reaction", UnitName(reaction.WatcherKind)));
                         break;
                     case AreaExploded exploded:
                         AddLog(Text.Get("ui.combat.log_area", UnitName(exploded.AttackerKind)));
@@ -209,6 +223,7 @@ namespace GirlsDungeon.Game
             turnLabel.gameObject.SetActive(inCombat);
             endTurnButton.gameObject.SetActive(playerTurn);
             grenadeButton.gameObject.SetActive(playerTurn && !world.PlayerActed);
+            overwatchButton.gameObject.SetActive(playerTurn && !world.PlayerActed && !aiming);
             if (playerTurn)
             {
                 GrenadeLabel.text = aiming ? Text.Get("ui.skill.grenade_aiming")

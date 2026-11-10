@@ -5,17 +5,18 @@ namespace GirlsDungeon.Core.Sim
 {
     /// <summary>
     /// 커맨드가 끝날 때마다 Simulation이 부르는 마무리 단계 (틱 순서 ⑥):
-    /// 시야 갱신(VisionSystem) → 보이는 적 전투 합류 → 전투 종료 판정.
+    /// 시야 갱신(VisionSystem) → 보이는 적 전투 합류 → 경계 칸 확인(Alert) → 전투 종료 판정.
     /// </summary>
     public static class CombatFlow
     {
-        public static void AfterAction(World world, List<GameEvent> events)
+        public static void AfterAction(World world, CombatSettings settings, List<GameEvent> events)
         {
             var player = world.Player;
             if (player == null || world.Mode == WorldMode.Defeat) return;
 
             var visible = VisionSystem.Update(world, events);
             JoinVisibleEnemies(world, visible, events);
+            Alert.CheckZones(world, settings, events);
 
             if (world.Mode == WorldMode.Combat && world.Combatants.Count == 0)
                 EndCombat(world, player, events);
@@ -68,6 +69,7 @@ namespace GirlsDungeon.Core.Sim
             world.PlayerMoved = false;
             world.PlayerActed = false;
             world.GrenadeCooldown = 0;
+            player.Overwatching = false;
             if (player.Stability != player.MaxStability)
             {
                 player.Stability = player.MaxStability;
@@ -116,14 +118,16 @@ namespace GirlsDungeon.Core.Sim
             world.PlayerMoved = false;
             world.PlayerActed = false;
             if (world.GrenadeCooldown > 0) world.GrenadeCooldown--;
+            world.Player.Overwatching = false;
             events.Add(new TurnStarted(TurnSide.Player, world.Round));
         }
     }
 
     /// <summary>
-    /// 적 차례 (전투에 들어온 적, ID 순서). 사격병: 이동 범위 안에서 플레이어를 쏠 수 있는 칸 중
-    /// 플레이어 쪽 엄폐가 가장 좋은 칸(같으면 가까운 칸)으로 간 뒤 사격한다. 쏠 수 있는 칸이 없으면 플레이어에게 가장 가까워지는 칸으로 간다.
-    /// 칸 고르기 · 사선 · 피해는 플레이어와 같은 규칙(CombatMovement · CombatRules · Cover)을 쓴다.
+    /// 적 차례 (전투에 들어온 적, ID 순서). 경계 중인 적은 행동하지 않는다.
+    /// 사격병: 이동 범위 안에서 플레이어를 쏠 수 있는 칸 중 플레이어 쪽 엄폐가 가장 좋은 칸(같으면 먼 칸)으로 간 뒤 사격한다.
+    /// 쏠 수 있는 칸이 없으면 플레이어에게 가장 가까워지는 칸으로 가고 감시를 건다. 걷는 동안 플레이어의 감시에 맞을 수 있다.
+    /// 칸 고르기 · 사선 · 피해는 플레이어와 같은 규칙(CombatMovement · CombatRules · Cover · Alert)을 쓴다.
     /// </summary>
     public static class EnemyTurn
     {
@@ -134,13 +138,19 @@ namespace GirlsDungeon.Core.Sim
                 if (world.Mode != WorldMode.Combat) return;
                 var enemy = world.FindUnit(id);
                 var player = world.Player;
-                if (enemy == null || player == null) continue;
+                if (enemy == null || player == null || enemy.Guarding) continue;
 
+                enemy.Overwatching = false;
                 var destination = ChooseCell(world, settings, enemy, player);
                 if (destination != enemy.Position)
-                    CombatMovement.Walk(enemy, CombatMovement.Path(world, enemy, destination, enemy.MoveRange), events);
+                {
+                    var path = CombatMovement.Path(world, enemy, destination, enemy.MoveRange);
+                    if (!CombatMovement.Walk(world, settings, enemy, path, events)) continue;
+                }
 
-                CombatRules.Resolve(world, settings, enemy, player, events);
+                if (CombatRules.Resolve(world, settings, enemy, player, events)) continue;
+                enemy.Overwatching = true;
+                events.Add(new OverwatchSet(enemy.Id, enemy.Kind));
             }
         }
 
@@ -158,8 +168,11 @@ namespace GirlsDungeon.Core.Sim
                 int score;
                 if (canShoot)
                 {
+                    // 엄폐가 가장 중요하고, 같으면 플레이어에게서 먼 칸 (결정 2026-11-10, 사용자 — 바로 옆까지 붙지 않게).
                     var cover = Cover.Against(world.Map, cell, player.Position);
-                    score = 100000 + (int)cover * 1000 - steps;
+                    int dx = cell.X - player.Position.X;
+                    int dy = cell.Y - player.Position.Y;
+                    score = 100000 + (int)cover * 1000 + (dx * dx + dy * dy) * 2 - steps;
                 }
                 else
                 {

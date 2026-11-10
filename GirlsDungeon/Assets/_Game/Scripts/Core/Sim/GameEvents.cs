@@ -134,6 +134,47 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>경계 중이던 적이 깨어났다.</summary>
+    public sealed class EnemiesAlerted : GameEvent
+    {
+        public IReadOnlyList<int> UnitIds { get; }
+        public IReadOnlyList<UnitKind> Kinds { get; }
+
+        public EnemiesAlerted(IReadOnlyList<int> unitIds, IReadOnlyList<UnitKind> kinds)
+        {
+            UnitIds = unitIds;
+            Kinds = kinds;
+        }
+    }
+
+    /// <summary>유닛이 감시를 걸었다.</summary>
+    public sealed class OverwatchSet : GameEvent
+    {
+        public int UnitId { get; }
+        public UnitKind Kind { get; }
+
+        public OverwatchSet(int unitId, UnitKind kind)
+        {
+            UnitId = unitId;
+            Kind = kind;
+        }
+    }
+
+    /// <summary>감시가 발동했다. 바로 뒤에 UnitAttacked가 온다.</summary>
+    public sealed class OverwatchTriggered : GameEvent
+    {
+        public int WatcherId { get; }
+        public UnitKind WatcherKind { get; }
+        public int TargetId { get; }
+
+        public OverwatchTriggered(Unit watcher, Unit target)
+        {
+            WatcherId = watcher.Id;
+            WatcherKind = watcher.Kind;
+            TargetId = target.Id;
+        }
+    }
+
     /// <summary>플레이어가 쓰러졌다.</summary>
     public sealed class PlayerDefeated : GameEvent
     {

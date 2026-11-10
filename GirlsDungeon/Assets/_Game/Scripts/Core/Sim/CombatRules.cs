@@ -97,6 +97,7 @@ namespace GirlsDungeon.Core.Sim
 
             events.Add(new UnitAttacked(attacker, target, damage, crit, preview.Cover, preview.StabilityGuard, stabilityBroken));
             events.Add(new UnitStatsChanged(target.Id));
+            Alert.Wake(world, target, events);
 
             if (target.Hp > 0) return true;
             if (target.IsPlayer)
@@ -184,15 +185,20 @@ namespace GirlsDungeon.Core.Sim
             return path;
         }
 
-        /// <summary>유닛을 걸음마다 옮기며 UnitMoved를 낸다 (화면이 칸 사이를 차례로 그린다).</summary>
-        public static void Walk(Unit unit, List<GridPos> path, List<GameEvent> events)
+        /// <summary>
+        /// 유닛을 걸음마다 옮기며 UnitMoved를 낸다 (화면이 칸 사이를 차례로 그린다).
+        /// settings가 있으면 걸음마다 상대 감시(Alert.React)를 확인하고, 쓰러지면 멈추고 false.
+        /// </summary>
+        public static bool Walk(World world, CombatSettings settings, Unit unit, List<GridPos> path, List<GameEvent> events)
         {
             foreach (var cell in path)
             {
                 var from = unit.Position;
                 unit.Position = cell;
                 events.Add(new UnitMoved(unit.Id, from, cell));
+                if (settings != null && !Alert.React(world, settings, unit, events)) return false;
             }
+            return true;
         }
     }
 }

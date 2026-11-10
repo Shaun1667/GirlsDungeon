@@ -50,12 +50,15 @@ namespace GirlsDungeon.Core.Sim
     public sealed class CombatMoveCommand : ICommand
     {
         private readonly GridPos destination;
+        private readonly CombatSettings settings;
 
         public int CostTicks => 0;
 
-        public CombatMoveCommand(GridPos destination)
+        /// <param name="settings">있으면 걸음마다 적 감시에 반응 사격을 받는다 (게임에서는 항상 넘긴다).</param>
+        public CombatMoveCommand(GridPos destination, CombatSettings settings = null)
         {
             this.destination = destination;
+            this.settings = settings;
         }
 
         public bool TryApply(World world, List<GameEvent> events)
@@ -66,8 +69,8 @@ namespace GirlsDungeon.Core.Sim
             var path = CombatMovement.Path(world, player, destination, player.MoveRange, world.Explored);
             if (path.Count == 0) return false;
 
-            CombatMovement.Walk(player, path, events);
             world.PlayerMoved = true;
+            CombatMovement.Walk(world, settings, player, path, events);
             return true;
         }
     }

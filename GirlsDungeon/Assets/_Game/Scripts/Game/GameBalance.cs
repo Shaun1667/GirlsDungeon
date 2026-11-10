@@ -87,6 +87,11 @@ namespace GirlsDungeon.Game
         [SerializeField] private int grenadeStabilityDamage = 2;
         [SerializeField] private int grenadeCooldownRounds = 3;
 
+        [Header("Guard (BALANCE 7)")]
+        [Tooltip("Chance (%) that each spawned enemy starts guarding.")]
+        [SerializeField] private int guardPercent = 50;
+        [SerializeField] private int guardRadius = 3;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
@@ -144,6 +149,8 @@ namespace GirlsDungeon.Game
                 GrenadeDamagePercent = grenadeDamagePercent,
                 GrenadeStabilityDamage = grenadeStabilityDamage,
                 GrenadeCooldownRounds = grenadeCooldownRounds,
+                GuardPercent = guardPercent,
+                GuardRadius = guardRadius,
             };
             foreach (var entry in units)
             {

@@ -34,6 +34,8 @@ namespace GirlsDungeon.EditorTools
             var fogMaterial = LoadOrCreateFogMaterial();
             var rangeMaterial = LoadOrCreateMaterial("GreyboxRange", new Color(0.3f, 0.6f, 0.95f));
             var areaMaterial = LoadOrCreateMaterial("GreyboxArea", new Color(0.95f, 0.45f, 0.15f));
+            var guardMaterial = LoadOrCreateMaterial("GreyboxGuard", new Color(0.95f, 0.85f, 0.2f));
+            var watchMaterial = LoadOrCreateMaterial("GreyboxWatch", new Color(0.85f, 0.15f, 0.2f));
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -64,12 +66,14 @@ namespace GirlsDungeon.EditorTools
             var grenadeButton = CreateButton(canvas.transform, "GrenadeButton", font, "ui.skill.grenade",
                 new Vector2(1f, 0f), new Vector2(-32f, 132f));
             grenadeButton.GetComponent<RectTransform>().sizeDelta = new Vector2(420f, 84f);
+            var overwatchButton = CreateButton(canvas.transform, "OverwatchButton", font, "ui.skill.overwatch",
+                new Vector2(1f, 0f), new Vector2(-32f, 232f));
             CreateEventSystem();
 
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
                 ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel),
-                ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton));
+                ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton), ("overwatchButton", overwatchButton));
 
             var rangeObject = new GameObject("RangeView");
             var rangeView = rangeObject.AddComponent<RangeView>();
@@ -77,6 +81,20 @@ namespace GirlsDungeon.EditorTools
             var areaObject = new GameObject("AreaView");
             var areaView = areaObject.AddComponent<RangeView>();
             SetReferences(areaView, ("rangeMaterial", areaMaterial));
+
+            var threatObject = new GameObject("ThreatView");
+            var guardView = new GameObject("GuardCells").AddComponent<RangeView>();
+            guardView.transform.SetParent(threatObject.transform, false);
+            SetReferences(guardView, ("rangeMaterial", guardMaterial));
+            // 위협 칸은 이동 범위 칸(0.015)보다 아래에 깔아 겹쳐도 깜빡이지 않게 한다.
+            SetFloat(guardView, "height", 0.008f);
+            var watchView = new GameObject("WatchCells").AddComponent<RangeView>();
+            watchView.transform.SetParent(threatObject.transform, false);
+            SetReferences(watchView, ("rangeMaterial", watchMaterial));
+            SetFloat(watchView, "height", 0.011f);
+            SetFloat(areaView, "height", 0.02f);
+            var threatView = threatObject.AddComponent<ThreatView>();
+            SetReferences(threatView, ("guardView", guardView), ("watchView", watchView));
 
             var unitsObject = new GameObject("UnitsView");
             var unitsView = unitsObject.AddComponent<UnitsView>();
@@ -118,7 +136,8 @@ namespace GirlsDungeon.EditorTools
                 ("moveController", moveController),
                 ("unitsView", unitsView),
                 ("hudView", hudView),
-                ("fogView", fogView));
+                ("fogView", fogView),
+                ("threatView", threatView));
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -155,6 +174,13 @@ namespace GirlsDungeon.EditorTools
         {
             new GameObject("EventSystem", typeof(UnityEngine.EventSystems.EventSystem),
                 typeof(UnityEngine.InputSystem.UI.InputSystemUIInputModule));
+        }
+
+        private static void SetFloat(Object target, string field, float value)
+        {
+            var serialized = new SerializedObject(target);
+            serialized.FindProperty(field).floatValue = value;
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static void SetReferences(Object target, params (string field, Object value)[] references)

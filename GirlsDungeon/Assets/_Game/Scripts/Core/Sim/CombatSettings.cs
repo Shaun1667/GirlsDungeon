@@ -46,6 +46,10 @@ namespace GirlsDungeon.Core.Sim
         public int GrenadeStabilityDamage;
         public int GrenadeCooldownRounds;
 
+        // 경계 상태 (BALANCE 7번)
+        public int GuardPercent;
+        public int GuardRadius;
+
         public UnitStats StatsFor(UnitKind kind)
         {
             foreach (var stats in Units) if (stats.Kind == kind) return stats;
@@ -70,6 +74,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Combat settings are invalid.");
             if (GrenadeThrowRange < 1 || GrenadeRadius < 0 || GrenadeDamagePercent < 0 || GrenadeStabilityDamage < 0 || GrenadeCooldownRounds < 0)
                 throw new ArgumentException("Grenade settings are invalid.");
+            if (GuardPercent < 0 || GuardPercent > 100 || GuardRadius < 0)
+                throw new ArgumentException("Guard settings are invalid.");
         }
     }
 }

@@ -116,6 +116,7 @@ namespace GirlsDungeon.Core.Sim
                 target.Stability = Math.Max(0, target.Stability - hit.StabilityDamage);
                 events.Add(new UnitAttacked(attacker, target, hit.Damage, false, hit.Cover, false, stabilityBefore > 0 && target.Stability == 0));
                 events.Add(new UnitStatsChanged(target.Id));
+                Alert.Wake(world, target, events);
                 if (target.Hp <= 0) downed.Add(target);
             }
 

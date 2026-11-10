@@ -90,6 +90,8 @@ namespace GirlsDungeon.EditorTools
             EditorGUILayout.EndHorizontal();
             if (GUILayout.Button("위 '칸'으로 전투 이동 · 사격 [상태 변경]")) root.DebugCombatAction(new GridPos(moveTarget.x, moveTarget.y));
             if (GUILayout.Button("위 '칸'에 수류탄 [상태 변경]")) root.DebugThrowGrenade(new GridPos(moveTarget.x, moveTarget.y));
+            if (GUILayout.Button("감시 걸기 [상태 변경]")) root.DebugOverwatch();
+            EditorGUILayout.LabelField("경계 · 감시", root.DebugThreatSummary(), EditorStyles.wordWrappedLabel);
 
             EditorGUILayout.LabelField("유닛", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(root.DebugUnitsSummary(), EditorStyles.wordWrappedLabel);

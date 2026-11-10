@@ -14,15 +14,18 @@ namespace GirlsDungeon.Core.Sim
     public sealed class Simulation
     {
         private readonly List<GameEvent> pending = new List<GameEvent>();
+        private readonly CombatSettings settings;
 
         public World World { get; }
 
         /// <summary>한 커맨드가 끝날 때 쌓인 사건을 내보낸다.</summary>
         public event Action<IReadOnlyList<GameEvent>> EventsPublished;
 
-        public Simulation(World world)
+        /// <param name="settings">전투 수치. 없으면 경계 칸 확인(Alert.CheckZones)을 건너뛴다 (맵 · 이동만 보는 테스트용).</param>
+        public Simulation(World world, CombatSettings settings = null)
         {
             World = world ?? throw new ArgumentNullException(nameof(world));
+            this.settings = settings;
         }
 
         /// <summary>커맨드를 적용한다. 규칙에 맞지 않으면 틱이 흐르지 않고 false.</summary>
@@ -31,7 +34,7 @@ namespace GirlsDungeon.Core.Sim
             if (!command.TryApply(World, pending)) return false;
 
             for (int i = 0; i < command.CostTicks; i++) RunTick();
-            CombatFlow.AfterAction(World, pending);
+            CombatFlow.AfterAction(World, settings, pending);
             Publish();
             return true;
         }
@@ -100,7 +103,8 @@ namespace GirlsDungeon.Core.Sim
             for (int i = 0; i < count && candidates.Count > 0; i++)
             {
                 int index = random.Range(0, candidates.Count);
-                world.AddUnit(riflemanStats, candidates[index]);
+                var enemy = world.AddUnit(riflemanStats, candidates[index]);
+                enemy.Guarding = random.Range(0, 100) < settings.GuardPercent;
                 candidates.RemoveAt(index);
             }
         }

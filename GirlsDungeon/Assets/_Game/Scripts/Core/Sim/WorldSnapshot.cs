@@ -15,8 +15,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>
         /// 2: 낮은 벽 (2026-11-10). 3: 체력 · 안정지수 · 시야 · 전투 상태 · 배치 난수 (2026-11-10). 4: 본 칸 기록 (2026-11-10).
         /// 5: 유닛 전투 능력치 · 이번 차례 이동 / 행동 여부 (2026-11-10). 6: 수류탄 재사용 대기 (2026-11-10).
+        /// 7: 유닛 경계 · 감시 (2026-11-10).
         /// </summary>
-        public const int Version = 6;
+        public const int Version = 7;
 
         public static byte[] Encode(World world)
         {
@@ -54,6 +55,8 @@ namespace GirlsDungeon.Core.Sim
                     writer.Write(unit.StabilityDamage);
                     writer.Write(unit.CritPercent);
                     writer.Write(unit.CritMultiplierPercent);
+                    writer.Write(unit.Guarding);
+                    writer.Write(unit.Overwatching);
                 }
 
                 writer.Write((byte)world.Mode);
@@ -124,6 +127,8 @@ namespace GirlsDungeon.Core.Sim
                         StabilityDamage = reader.ReadInt32(),
                         CritPercent = reader.ReadInt32(),
                         CritMultiplierPercent = reader.ReadInt32(),
+                        Guarding = reader.ReadBoolean(),
+                        Overwatching = reader.ReadBoolean(),
                     });
                 }
 
