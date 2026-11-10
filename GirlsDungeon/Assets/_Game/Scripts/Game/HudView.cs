@@ -27,6 +27,12 @@ namespace GirlsDungeon.Game
         [SerializeField] private Button grenadeButton;
         [SerializeField] private Button pushButton;
         [SerializeField] private Button overwatchButton;
+        [SerializeField] private UnityEngine.UI.Text weaponLabel;
+        [Tooltip("Weapon compare window shown when the player steps on a weapon.")]
+        [SerializeField] private GameObject weaponPanel;
+        [SerializeField] private UnityEngine.UI.Text weaponPanelLabel;
+        [SerializeField] private Button swapButton;
+        [SerializeField] private Button keepButton;
         [SerializeField] private int logLines = 4;
 
         private readonly List<string> log = new List<string>();
@@ -50,6 +56,16 @@ namespace GirlsDungeon.Game
         public event System.Action NewRunPressed;
 
         public string ResultText => resultLabel.text;
+
+        /// <summary>비교 창의 "바꾸기"를 눌렀다 (발밑 무기 ID). GameRoot가 SwapWeaponCommand를 낸다.</summary>
+        public event System.Action<int> SwapPressed;
+
+        /// <summary>비교 창이 떠 있으면 그 무기 ID, 아니면 -1.</summary>
+        public int OfferedItemId { get; private set; } = -1;
+
+        public bool IsWeaponOfferOpen => OfferedItemId >= 0;
+        public string WeaponText => weaponLabel.text;
+        public string WeaponPanelText => weaponPanelLabel.text;
 
         private UnitKind? killerKind;
 
@@ -134,8 +150,46 @@ namespace GirlsDungeon.Game
             logLabel.text = string.Empty;
             killerKind = null;
             simulation.EventsPublished += HandleEvents;
+            CloseWeaponOffer();
             ClearPreview();
             Refresh();
+        }
+
+        /// <summary>비교 창의 "바꾸기"와 같다. 창이 없으면 false.</summary>
+        public bool PressSwap()
+        {
+            if (!IsWeaponOfferOpen) return false;
+            int id = OfferedItemId;
+            CloseWeaponOffer();
+            SwapPressed?.Invoke(id);
+            return true;
+        }
+
+        /// <summary>비교 창의 "두기"와 같다 — 무기는 바닥에 그대로 남는다.</summary>
+        public void CloseWeaponOffer()
+        {
+            OfferedItemId = -1;
+            if (weaponPanel != null) weaponPanel.SetActive(false);
+        }
+
+        private void OpenWeaponOffer(int itemId, WeaponKind found)
+        {
+            var current = settings.WeaponFor(simulation.World.PlayerWeapon);
+            var next = settings.WeaponFor(found);
+            weaponPanelLabel.text = Text.Get("ui.weapon.compare",
+                WeaponName(current.Kind), WeaponName(next.Kind),
+                current.Attack, next.Attack, current.AttackRange, next.AttackRange,
+                current.StabilityDamage, next.StabilityDamage, current.CritPercent, next.CritPercent,
+                WeaponRule(next.Kind));
+            OfferedItemId = itemId;
+            weaponPanel.SetActive(true);
+        }
+
+        /// <summary>전투 중 보급 상자에 마우스를 올렸을 때.</summary>
+        public void ShowCratePreview(bool canOpen)
+        {
+            previewLabel.text = canOpen ? Text.Get("ui.crate.preview_open") : Text.Get("ui.crate.preview_too_far");
+            previewLabel.gameObject.SetActive(true);
         }
 
         /// <summary>턴 종료 버튼과 같다. 지금 플레이어 차례가 아니면 false.</summary>
@@ -150,10 +204,12 @@ namespace GirlsDungeon.Game
             if (alreadyActed) previewLabel.text = Text.Get("ui.combat.preview_already_acted");
             else if (preview.Block == AttackBlock.OutOfRange) previewLabel.text = Text.Get("ui.combat.preview_out_of_range", name);
             else if (preview.Block == AttackBlock.NoLineOfFire) previewLabel.text = Text.Get("ui.combat.preview_no_line", name);
+            else if (preview.Block == AttackBlock.MovedThisTurn) previewLabel.text = Text.Get("ui.combat.preview_moved", name);
             else
             {
                 string cover = CoverName(preview.Cover);
                 if (preview.ReductionPercent > 0) cover = cover + " · " + Text.Get("ui.combat.reduction", preview.ReductionPercent);
+                if (preview.FalloffPercent > 0) cover = cover + " · " + Text.Get("ui.combat.falloff", preview.FalloffPercent);
                 previewLabel.text = Text.Get("ui.combat.preview_attack", name, target.Hp, target.MaxHp, target.Stability, target.MaxStability,
                     preview.Damage, preview.CritPercent, preview.CritDamage, preview.StabilityDamage, cover);
                 if (preview.BreaksCover) previewLabel.text += "\n" + Text.Get("ui.combat.preview_breaks_cover");
@@ -180,6 +236,8 @@ namespace GirlsDungeon.Game
             if (pushButton != null) pushButton.onClick.AddListener(() => PushButtonPressed?.Invoke());
             if (overwatchButton != null) overwatchButton.onClick.AddListener(() => OverwatchButtonPressed?.Invoke());
             if (newRunButton != null) newRunButton.onClick.AddListener(() => NewRunPressed?.Invoke());
+            if (swapButton != null) swapButton.onClick.AddListener(() => PressSwap());
+            if (keepButton != null) keepButton.onClick.AddListener(CloseWeaponOffer);
         }
 
         private void OnDestroy()
@@ -239,7 +297,29 @@ namespace GirlsDungeon.Game
                         AddLog(Text.Get("ui.combat.log_down", UnitName(died.Kind)));
                         break;
                     case FloorChanged floor:
+                        CloseWeaponOffer();
                         AddLog(Text.Get("ui.combat.log_floor", floor.FloorIndex + 1));
+                        break;
+                    case UnitMoved moved when moved.UnitId == simulation.World.PlayerId:
+                        // 발밑을 떠나면 비교 창을 닫는다 (무기는 바닥에 남는다).
+                        CloseWeaponOffer();
+                        break;
+                    case SupplyCrateOpened _:
+                        AddLog(Text.Get("ui.crate.log_open"));
+                        break;
+                    case ItemDropped dropped when dropped.Source == DropSource.Combat || dropped.Source == DropSource.SupplyCrate:
+                        AddLog(dropped.Kind == ItemKind.Weapon
+                            ? Text.Get("ui.loot.log_weapon_dropped", WeaponName(dropped.Weapon))
+                            : Text.Get("ui.loot.log_medkit_dropped"));
+                        break;
+                    case MedkitUsed medkit:
+                        AddLog(Text.Get("ui.loot.log_medkit_used", medkit.Healed));
+                        break;
+                    case WeaponFound found:
+                        OpenWeaponOffer(found.ItemId, found.Weapon);
+                        break;
+                    case WeaponSwapped swapped:
+                        AddLog(Text.Get("ui.loot.log_swapped", WeaponName(swapped.To)));
                         break;
                     case PlayerDefeated defeated:
                         // 결과 화면에 쓰러뜨린 상대를 보여 준다 (자기 수류탄이면 나).
@@ -264,6 +344,18 @@ namespace GirlsDungeon.Game
             return key != null ? Text.Get(key) : kind.ToString();
         }
 
+        private string WeaponName(WeaponKind kind)
+        {
+            string key = balance.WeaponNameKey(kind);
+            return key != null ? Text.Get(key) : kind.ToString();
+        }
+
+        private string WeaponRule(WeaponKind kind)
+        {
+            string key = balance.WeaponRuleKey(kind);
+            return key != null ? Text.Get(key) : string.Empty;
+        }
+
         private static string CoverName(CoverLevel cover)
         {
             switch (cover)
@@ -282,6 +374,8 @@ namespace GirlsDungeon.Game
             {
                 hpLabel.text = Text.Get("ui.hud.hp", player.Hp, player.MaxHp);
                 stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
+                // 표시 값 = 실제 값: 무기 표가 아니라 유닛에 적용된 값(Loadout.Apply 결과)을 읽는다.
+                weaponLabel.text = Text.Get("ui.hud.weapon", WeaponName(world.PlayerWeapon), player.Attack, player.AttackRange);
             }
 
             floorLabel.text = Text.Get("ui.hud.floor", world.FloorIndex + 1, settings.FloorCount);

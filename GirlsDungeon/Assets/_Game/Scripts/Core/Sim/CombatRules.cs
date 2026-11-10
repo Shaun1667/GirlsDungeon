@@ -11,6 +11,8 @@ namespace GirlsDungeon.Core.Sim
         None = 0,
         OutOfRange = 1,
         NoLineOfFire = 2,
+        /// <summary>든 무기가 이동한 차례에는 쏠 수 없다 (저격총).</summary>
+        MovedThisTurn = 3,
     }
 
     /// <summary>사격 미리보기. 실제 사격도 같은 값을 쓴다 (설계 규칙 6).</summary>
@@ -28,12 +30,16 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>이 사격으로 대상의 상자 · 낮은 벽이 부서진다.</summary>
         public readonly bool BreaksCover;
 
+        /// <summary>거리 때문에 줄어든 피해 (%, 산탄총). 0이면 줄지 않음.</summary>
+        public readonly int FalloffPercent;
+
         public bool CanAttack => Block == AttackBlock.None;
 
         public AttackPreview(AttackBlock block, CoverLevel cover, bool stabilityGuard, int reductionPercent,
-            int damage, int critDamage, int critPercent, int stabilityDamage, bool breaksCover)
+            int damage, int critDamage, int critPercent, int stabilityDamage, bool breaksCover, int falloffPercent)
         {
             BreaksCover = breaksCover;
+            FalloffPercent = falloffPercent;
             Block = block;
             Cover = cover;
             StabilityGuard = stabilityGuard;
@@ -59,8 +65,10 @@ namespace GirlsDungeon.Core.Sim
             var block = AttackBlock.None;
             int dx = target.Position.X - from.X;
             int dy = target.Position.Y - from.Y;
+            var weapon = Loadout.WeaponOf(world, settings, attacker);
             if (dx * dx + dy * dy > attacker.AttackRange * attacker.AttackRange) block = AttackBlock.OutOfRange;
             else if (!Sight.HasLine(map, from, target.Position)) block = AttackBlock.NoLineOfFire;
+            else if (weapon != null && weapon.NoShotAfterMove && MovesThisTurn(world, attacker, from)) block = AttackBlock.MovedThisTurn;
 
             var cover = Cover.Against(map, target.Position, from);
             bool guard = cover != CoverLevel.None && target.Stability > 0;
@@ -68,18 +76,30 @@ namespace GirlsDungeon.Core.Sim
                 : cover == CoverLevel.Half ? settings.HalfCoverReductionPercent : 0;
             if (guard) reduction += settings.StabilityGuardPercent;
 
-            int damage = Damage(attacker.Attack, target.Defense, 100, reduction, settings.MinDamage);
-            int critDamage = Damage(attacker.Attack, target.Defense, attacker.CritMultiplierPercent, reduction, settings.MinDamage);
+            // 산탄총: 멀수록 피해가 준다 (엄폐 감소와 곱한다).
+            int falloff = Loadout.FalloffPercent(weapon, from, target.Position);
+            int damage = Damage(attacker.Attack, target.Defense, 100, reduction, settings.MinDamage, 100 - falloff);
+            int critDamage = Damage(attacker.Attack, target.Defense, attacker.CritMultiplierPercent, reduction, settings.MinDamage, 100 - falloff);
             bool breaksCover = cover != CoverLevel.None
                 && CoverBreak.AnyBreaksOnNextHit(map, settings, CoverBreak.Facing(map, target.Position, from));
-            return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, attacker.StabilityDamage, breaksCover);
+            return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, attacker.StabilityDamage, breaksCover, falloff);
         }
 
-        /// <summary>정수 계산 · 반올림(0.5는 올림). 같은 입력이면 어디서나 같은 값.</summary>
-        public static int Damage(int attack, int defense, int multiplierPercent, int reductionPercent, int minDamage)
+        /// <summary>
+        /// 저격총 규칙의 "이동한 차례": 전투 중 플레이어 차례이고, 이미 이동했거나 다른 칸에서 쏘는 것을 미리 보는 중.
+        /// 적 차례의 감시 사격은 해당하지 않는다.
+        /// </summary>
+        private static bool MovesThisTurn(World world, Unit attacker, GridPos from)
         {
-            long numerator = (long)attack * attack * multiplierPercent * (100 - reductionPercent);
-            long denominator = (long)(attack + defense) * 100 * 100;
+            if (world.Mode != WorldMode.Combat || world.Turn != TurnSide.Player) return false;
+            return world.PlayerMoved || from != attacker.Position;
+        }
+
+        /// <summary>정수 계산 · 반올림(0.5는 올림). 같은 입력이면 어디서나 같은 값. rangePercent = 거리 감소 뒤 남는 비율 (산탄총).</summary>
+        public static int Damage(int attack, int defense, int multiplierPercent, int reductionPercent, int minDamage, int rangePercent = 100)
+        {
+            long numerator = (long)attack * attack * multiplierPercent * (100 - reductionPercent) * rangePercent;
+            long denominator = (long)(attack + defense) * 100 * 100 * 100;
             int value = (int)((2 * numerator + denominator) / (2 * denominator));
             return value < minDamage ? minDamage : value;
         }

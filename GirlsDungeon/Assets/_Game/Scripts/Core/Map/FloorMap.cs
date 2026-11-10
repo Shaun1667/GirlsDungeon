@@ -16,6 +16,10 @@ namespace GirlsDungeon.Core.Map
         Pillar = 4,
         /// <summary>낭떠러지. 걸어서 들어갈 수 없고, 시야 · 사선을 막지 않으며 엄폐도 없다. 밀려 들어가면 떨어진다 (Push).</summary>
         Chasm = 5,
+        /// <summary>닫힌 보급 상자. 칸을 막고, 옆 칸에 반엄폐를 주며, 시야는 막지 않는다. 바로 옆에서 열면 SupplyCrateOpened가 된다. 부서지지 않는다.</summary>
+        SupplyCrate = 6,
+        /// <summary>연 보급 상자. 닫힌 상자와 같지만 다시 열리지 않는다.</summary>
+        SupplyCrateOpened = 7,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -138,6 +142,14 @@ namespace GirlsDungeon.Core.Map
 
         /// <summary>낭떠러지 칸.</summary>
         public bool IsChasm(GridPos cell) => InBounds(cell) && Get(cell) == TileType.Chasm;
+
+        /// <summary>보급 상자 칸 (닫힘 · 열림 모두).</summary>
+        public bool IsSupplyCrate(GridPos cell)
+        {
+            if (!InBounds(cell)) return false;
+            var tile = Get(cell);
+            return tile == TileType.SupplyCrate || tile == TileType.SupplyCrateOpened;
+        }
 
         /// <summary>시야와 사선을 막는 칸 (벽 · 기둥 · 맵 밖). 낭떠러지는 막지 않는다.</summary>
         public bool BlocksSight(GridPos cell)

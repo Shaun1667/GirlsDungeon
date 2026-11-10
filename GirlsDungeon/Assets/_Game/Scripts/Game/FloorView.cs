@@ -14,6 +14,10 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material coverMaterial;
         [Tooltip("Dark pit drawn for chasm cells.")]
         [SerializeField] private Material chasmMaterial;
+        [Tooltip("Closed supply crates.")]
+        [SerializeField] private Material supplyMaterial;
+        [Tooltip("Opened supply crates (drawn lower and darker so they do not look like breakable crates).")]
+        [SerializeField] private Material supplyOpenedMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -31,6 +35,8 @@ namespace GirlsDungeon.Game
             var stairs = new MeshData();
             var cover = new MeshData();
             var chasm = new MeshData();
+            var supply = new MeshData();
+            var supplyOpened = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -58,6 +64,14 @@ namespace GirlsDungeon.Game
                         case TileType.Chasm:
                             AddPit(chasm, map, cell, balance.ChasmDepth);
                             break;
+                        case TileType.SupplyCrate:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            supply.AddBox(position, balance.CrateSize * 0.5f, balance.CrateSize * 0.35f, balance.LowCoverHeight);
+                            break;
+                        case TileType.SupplyCrateOpened:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            supplyOpened.AddBox(position, balance.CrateSize * 0.5f, balance.CrateSize * 0.35f, balance.LowCoverHeight * 0.6f);
+                            break;
                         default:
                             if (!TouchesOpenCell(map, cell)) break;
                             AddWall(walls, map, cell, balance.WallHeight);
@@ -74,6 +88,8 @@ namespace GirlsDungeon.Game
             AddPart("Stairs", stairs, stairsMaterial);
             AddPart("Cover", cover, coverMaterial);
             AddPart("Chasm", chasm, chasmMaterial != null ? chasmMaterial : wallMaterial);
+            AddPart("Supply", supply, supplyMaterial != null ? supplyMaterial : coverMaterial);
+            AddPart("SupplyOpened", supplyOpened, supplyOpenedMaterial != null ? supplyOpenedMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>

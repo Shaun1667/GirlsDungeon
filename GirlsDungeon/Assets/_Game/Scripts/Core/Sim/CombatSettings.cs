@@ -81,6 +81,32 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>층마다 더하는 적 최대 체력 · 공격력 (%).</summary>
         public int EnemyStatPercentPerFloor;
 
+        // 무기 · 보상 (BALANCE 12번)
+        public List<WeaponStats> Weapons = new List<WeaponStats>();
+        /// <summary>판을 시작할 때 드는 무기.</summary>
+        public WeaponKind StartWeapon;
+        /// <summary>전투에서 이기면 무기가 떨어질 확률 (%).</summary>
+        public int CombatDropWeaponPercent;
+        /// <summary>전투에서 이기면 구급상자가 떨어질 확률 (%). 나머지는 아무것도 없음.</summary>
+        public int CombatDropMedkitPercent;
+        /// <summary>보급 상자에서 무기가 나올 확률 (%). 나머지는 구급상자 (강화는 3-4에서).</summary>
+        public int CrateWeaponPercent;
+        /// <summary>구급상자 회복량 (최대 체력의 %).</summary>
+        public int MedkitHealPercent;
+
+        public WeaponStats WeaponFor(WeaponKind kind)
+        {
+            var weapon = TryWeapon(kind);
+            if (weapon == null) throw new ArgumentException($"No stats for weapon {kind}.");
+            return weapon;
+        }
+
+        public WeaponStats TryWeapon(WeaponKind kind)
+        {
+            foreach (var weapon in Weapons) if (weapon.Kind == kind) return weapon;
+            return null;
+        }
+
         public UnitStats StatsFor(UnitKind kind)
         {
             foreach (var stats in Units) if (stats.Kind == kind) return stats;
@@ -116,6 +142,16 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Assault / fall settings are invalid.");
             if (FloorCount < 1 || EnemiesPerFloorStep < 0 || AssaultPercentPerFloor < 0 || GuardPercentDropPerFloor < 0 || EnemyStatPercentPerFloor < 0)
                 throw new ArgumentException("Floor progression settings are invalid.");
+            WeaponFor(StartWeapon);
+            foreach (var weapon in Weapons)
+            {
+                if (weapon.Attack < 1 || weapon.AttackRange < 1 || weapon.StabilityDamage < 0 || weapon.CritPercent < 0 || weapon.CritPercent > 100
+                    || weapon.CritMultiplierPercent < 100 || weapon.FalloffStartCells < 0 || weapon.FalloffPercentPerCell < 0)
+                    throw new ArgumentException($"Stats for weapon {weapon.Kind} are invalid.");
+            }
+            if (CombatDropWeaponPercent < 0 || CombatDropMedkitPercent < 0 || CombatDropWeaponPercent + CombatDropMedkitPercent > 100
+                || CrateWeaponPercent < 0 || CrateWeaponPercent > 100 || MedkitHealPercent < 0)
+                throw new ArgumentException("Loot settings are invalid.");
         }
     }
 }

@@ -45,7 +45,7 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>
-    /// 전투 중 플레이어 이동 한 번. 차례마다 한 번, 사격 전에만, 이동 범위 안의 본 칸으로.
+    /// 전투 중 플레이어 이동 한 번. 차례마다 한 번, 사격 전에만(권총은 쏜 뒤에도 — 그때는 이동 뒤 차례가 끝난다), 이동 범위 안의 본 칸으로.
     /// </summary>
     public sealed class CombatMoveCommand : ICommand
     {
@@ -63,7 +63,7 @@ namespace GirlsDungeon.Core.Sim
 
         public bool TryApply(World world, List<GameEvent> events)
         {
-            if (!TurnFlow.IsPlayerTurn(world) || world.PlayerMoved || world.PlayerActed) return false;
+            if (!Loadout.CanCombatMove(world, settings)) return false;
 
             var player = world.Player;
             var path = CombatMovement.Path(world, player, destination, player.MoveRange, world.Explored);
@@ -71,11 +71,17 @@ namespace GirlsDungeon.Core.Sim
 
             world.PlayerMoved = true;
             CombatMovement.Walk(world, settings, player, path, events);
+            // 권총: 쏜 뒤 남은 이동까지 썼으면 차례가 끝난다.
+            if (world.PlayerActed && settings != null && TurnFlow.IsPlayerTurn(world) && world.Combatants.Count > 0)
+                TurnFlow.EndPlayerTurn(world, settings, events);
             return true;
         }
     }
 
-    /// <summary>플레이어 사격. 사격하면 차례가 끝나고 적 차례가 이어진다 (전투가 끝났으면 바로 탐험).</summary>
+    /// <summary>
+    /// 플레이어 사격. 사격하면 차례가 끝나고 적 차례가 이어진다 (전투가 끝났으면 바로 탐험).
+    /// 권총으로 아직 이동하지 않고 쐈으면 차례가 이어진다 — 남은 이동을 쓰거나 턴 종료.
+    /// </summary>
     public sealed class AttackCommand : ICommand
     {
         private readonly int targetId;
@@ -99,7 +105,9 @@ namespace GirlsDungeon.Core.Sim
             if (!CombatRules.Resolve(world, settings, world.Player, target, events)) return false;
 
             world.PlayerActed = true;
-            if (world.Combatants.Count > 0) TurnFlow.EndPlayerTurn(world, settings, events);
+            var weapon = Loadout.WeaponOf(world, settings, world.Player);
+            bool keepsTurn = weapon != null && weapon.MoveAfterShot && !world.PlayerMoved && world.Mode == WorldMode.Combat;
+            if (world.Combatants.Count > 0 && !keepsTurn) TurnFlow.EndPlayerTurn(world, settings, events);
             return true;
         }
     }

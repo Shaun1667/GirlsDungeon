@@ -34,6 +34,11 @@ namespace GirlsDungeon.Core.Map
         public int MinChasmPercent;
         public int MaxChasmPercent;
 
+        // 보급 상자 (BALANCE 1-18)
+        /// <summary>층마다 놓는 보급 상자 수 (한 방에 하나, 시작 · 계단 방 제외).</summary>
+        public int MinSupplyCrates;
+        public int MaxSupplyCrates;
+
         public void Validate()
         {
             if (Width < MaxRoomSize + 2 || Height < MaxRoomSize + 2)
@@ -51,6 +56,8 @@ namespace GirlsDungeon.Core.Map
                 throw new ArgumentException("Cover settings are invalid.");
             if (ChasmRoomPercent < 0 || ChasmRoomPercent > 100 || MinChasmPercent < 0 || MaxChasmPercent < MinChasmPercent || MaxChasmPercent > 100)
                 throw new ArgumentException("Chasm settings are invalid.");
+            if (MinSupplyCrates < 0 || MaxSupplyCrates < MinSupplyCrates)
+                throw new ArgumentException("Supply crate settings are invalid.");
         }
     }
 }

@@ -42,6 +42,49 @@ namespace GirlsDungeon.Tests
             Assert.That(map.ChasmRoomPercent, Is.EqualTo(expected.ChasmRoomPercent));
             Assert.That(map.MinChasmPercent, Is.EqualTo(expected.MinChasmPercent));
             Assert.That(map.MaxChasmPercent, Is.EqualTo(expected.MaxChasmPercent));
+            Assert.That(map.MinSupplyCrates, Is.EqualTo(expected.MinSupplyCrates));
+            Assert.That(map.MaxSupplyCrates, Is.EqualTo(expected.MaxSupplyCrates));
+        }
+
+        [Test]
+        public void Weapons_MatchBalanceTable12()
+        {
+            var combat = Load().CreateCombatSettings();
+            var expected = TestData.Combat();
+
+            Assert.That(combat.StartWeapon, Is.EqualTo(expected.StartWeapon));
+            Assert.That(combat.CombatDropWeaponPercent, Is.EqualTo(expected.CombatDropWeaponPercent));
+            Assert.That(combat.CombatDropMedkitPercent, Is.EqualTo(expected.CombatDropMedkitPercent));
+            Assert.That(combat.CrateWeaponPercent, Is.EqualTo(expected.CrateWeaponPercent));
+            Assert.That(combat.MedkitHealPercent, Is.EqualTo(expected.MedkitHealPercent));
+            Assert.That(combat.Weapons.Count, Is.EqualTo(expected.Weapons.Count));
+            foreach (var weapon in expected.Weapons)
+            {
+                var actual = combat.WeaponFor(weapon.Kind);
+                Assert.That(actual.Attack, Is.EqualTo(weapon.Attack), weapon.Kind + " attack");
+                Assert.That(actual.AttackRange, Is.EqualTo(weapon.AttackRange), weapon.Kind + " range");
+                Assert.That(actual.StabilityDamage, Is.EqualTo(weapon.StabilityDamage), weapon.Kind + " stability damage");
+                Assert.That(actual.CritPercent, Is.EqualTo(weapon.CritPercent), weapon.Kind + " crit");
+                Assert.That(actual.CritMultiplierPercent, Is.EqualTo(weapon.CritMultiplierPercent), weapon.Kind + " crit multiplier");
+                Assert.That(actual.MoveAfterShot, Is.EqualTo(weapon.MoveAfterShot), weapon.Kind + " move after shot");
+                Assert.That(actual.NoShotAfterMove, Is.EqualTo(weapon.NoShotAfterMove), weapon.Kind + " no shot after move");
+                Assert.That(actual.FalloffStartCells, Is.EqualTo(weapon.FalloffStartCells), weapon.Kind + " falloff start");
+                Assert.That(actual.FalloffPercentPerCell, Is.EqualTo(weapon.FalloffPercentPerCell), weapon.Kind + " falloff");
+            }
+
+            // 처음 무기 = 지금까지의 플레이어 능력치 (4번 표) — 무기를 넣어도 첫 전투 검산(5-10)이 그대로다.
+            var rifle = combat.WeaponFor(combat.StartWeapon);
+            var player = combat.StatsFor(GirlsDungeon.Core.Sim.UnitKind.Player);
+            Assert.That(new[] { rifle.Attack, rifle.AttackRange, rifle.StabilityDamage, rifle.CritPercent, rifle.CritMultiplierPercent },
+                Is.EqualTo(new[] { player.Attack, player.AttackRange, player.StabilityDamage, player.CritPercent, player.CritMultiplierPercent }));
+        }
+
+        [Test]
+        public void WeaponTextKeys_ExistInTheTextTable()
+        {
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in Load().WeaponTextKeys())
+                Assert.That(table.Contains(key), Is.True, key);
         }
 
         [Test]

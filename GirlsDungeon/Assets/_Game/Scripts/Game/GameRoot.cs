@@ -19,6 +19,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private HudView hudView;
         [SerializeField] private FogView fogView;
         [SerializeField] private ThreatView threatView;
+        [SerializeField] private ItemsView itemsView;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -45,6 +46,7 @@ namespace GirlsDungeon.Game
             fogView.Bind(simulation, balance);
             playerView.Bind(simulation, balance.StepSeconds);
             unitsView.Bind(simulation);
+            itemsView.Bind(simulation);
             hudView.Bind(simulation, combatSettings, balance);
             moveController.Bind(simulation, playerView, hudView, combatSettings, balance.MoveCostTicks);
             hudView.GrenadeButtonPressed -= moveController.ToggleAim;
@@ -55,18 +57,20 @@ namespace GirlsDungeon.Game
             hudView.NewRunPressed += OnNewRunButton;
             hudView.OverwatchButtonPressed -= OnOverwatchButton;
             hudView.OverwatchButtonPressed += OnOverwatchButton;
+            hudView.SwapPressed -= OnSwapPressed;
+            hudView.SwapPressed += OnSwapPressed;
             threatView.Bind(simulation, combatSettings);
             cameraRig.Bind(balance, playerView.transform);
 
             if (seedLabel != null) seedLabel.text = Text.Get("ui.hud.seed", seed);
         }
 
-        /// <summary>엄폐물이 부서지거나 새 층에 내려오면 지형 메시를 다시 만든다.</summary>
+        /// <summary>엄폐물이 부서지거나, 보급 상자가 열리거나, 새 층에 내려오면 지형 메시를 다시 만든다.</summary>
         private void RebuildFloorWhenCoverBreaks(System.Collections.Generic.IReadOnlyList<GameEvent> events)
         {
             foreach (var gameEvent in events)
             {
-                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged)) continue;
+                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened)) continue;
                 floorView.Build(simulation.World.Map, balance);
                 return;
             }
@@ -104,6 +108,75 @@ namespace GirlsDungeon.Game
         private void OnOverwatchButton()
         {
             moveController.RequestOverwatch();
+        }
+
+        /// <summary>비교 창의 "바꾸기": 발밑 무기로 바꾼다.</summary>
+        private void OnSwapPressed(int itemId)
+        {
+            simulation.Execute(new SwapWeaponCommand(itemId, combatSettings));
+        }
+
+        /// <summary>[상태 변경] 보급 상자를 클릭한 것과 같다 (멀면 걸어가서 연다). 가장 가까운 닫힌 상자, 없거나 못 가면 false.</summary>
+        public bool DebugOpenNearestCrate()
+        {
+            var world = World;
+            if (world == null) return false;
+            GridPos? best = null;
+            int bestDistance = int.MaxValue;
+            var map = world.Map;
+            for (int y = 0; y < map.Height; y++)
+            {
+                for (int x = 0; x < map.Width; x++)
+                {
+                    var cell = new GridPos(x, y);
+                    if (map.Get(cell) != TileType.SupplyCrate) continue;
+                    int distance = Loadout.CellDistance(cell, world.Player.Position);
+                    if (distance >= bestDistance) continue;
+                    bestDistance = distance;
+                    best = cell;
+                }
+            }
+            if (!best.HasValue) return false;
+            DebugUsed = true;
+            return moveController.RequestOpenCrate(best.Value);
+        }
+
+        /// <summary>[상태 변경] 플레이어 옆 빈 칸에 무기(또는 구급상자)를 놓는다. 놓은 칸, 못 놓으면 null.</summary>
+        public GridPos? DebugDropItem(ItemKind kind, WeaponKind weapon)
+        {
+            var world = World;
+            if (world == null) return null;
+            var player = world.Player.Position;
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    var cell = new GridPos(player.X + dx, player.Y + dy);
+                    if ((dx == 0 && dy == 0) || !world.Map.IsWalkable(cell) || world.IsOccupied(cell) || world.ItemAt(cell) != null) continue;
+                    DebugUsed = true;
+                    return simulation.Execute(new DebugDropItemCommand(kind, weapon, cell)) ? cell : (GridPos?)null;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>[상태 변경] 비교 창의 "바꾸기"와 같다. 창이 없으면 false.</summary>
+        public bool DebugPressSwap()
+        {
+            DebugUsed = true;
+            return hudView.PressSwap();
+        }
+
+        public string DebugLootSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var parts = new System.Collections.Generic.List<string>();
+            foreach (var item in world.Items) parts.Add($"#{item.Id} {item.Kind}{(item.Kind == ItemKind.Weapon ? " " + item.Weapon : "")} {item.Position}");
+            var player = world.Player;
+            return $"Weapon={world.PlayerWeapon} (Atk {player.Attack}, Range {player.AttackRange}, Stab {player.StabilityDamage}, Crit {player.CritPercent}%), "
+                + $"Crates={world.Map.CountTiles(TileType.SupplyCrate)} closed / {world.Map.CountTiles(TileType.SupplyCrateOpened)} open, "
+                + $"Offer={hudView.OfferedItemId}, Items=[{string.Join(", ", parts)}], ItemViews={itemsView.VisibleCount}";
         }
 
         /// <summary>[상태 변경] 감시 버튼과 같다. 못 하면 false.</summary>
@@ -310,7 +383,8 @@ namespace GirlsDungeon.Game
             var map = world.Map;
             return $"Size={map.Width}x{map.Height}, Rooms={map.Rooms.Count}, Walkable={map.CountWalkable()}, "
                 + $"Start={map.StartCell}, Stairs={map.StairsCell}, Crates={map.CountTiles(TileType.Crate)}, "
-                + $"Pillars={map.CountTiles(TileType.Pillar)}, LowWalls={map.CountLowWalls()}, Chasm={map.CountTiles(TileType.Chasm)}";
+                + $"Pillars={map.CountTiles(TileType.Pillar)}, LowWalls={map.CountLowWalls()}, Chasm={map.CountTiles(TileType.Chasm)}, "
+                + $"SupplyCrates={map.CountTiles(TileType.SupplyCrate) + map.CountTiles(TileType.SupplyCrateOpened)}";
         }
 
         /// <summary>칸이 네 방향으로 받는 엄폐. 예: "E:Half N:Full".</summary>

@@ -73,6 +73,33 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>바닥 물건 종류. 저장에 정수로 들어가므로 끝에만 추가한다.</summary>
+    public enum ItemKind : byte
+    {
+        /// <summary>무기. 밟으면 비교 창 → 바꾸기 / 두기.</summary>
+        Weapon = 0,
+        /// <summary>구급상자. 밟으면 바로 회복 (체력이 가득이면 그대로 남는다).</summary>
+        Medkit = 1,
+    }
+
+    /// <summary>바닥에 놓인 물건. 다른 곳에서는 고유 ID로 참조한다.</summary>
+    public sealed class FloorItem
+    {
+        public int Id { get; }
+        public ItemKind Kind { get; }
+        /// <summary>무기일 때 무기 종류.</summary>
+        public WeaponKind Weapon { get; }
+        public GridPos Position { get; }
+
+        public FloorItem(int id, ItemKind kind, WeaponKind weapon, GridPos position)
+        {
+            Id = id;
+            Kind = kind;
+            Weapon = weapon;
+            Position = position;
+        }
+    }
+
     /// <summary>판의 모든 상태. 저장 · 복원은 이것 하나로 끝나고, 시스템은 상태를 들지 않는다.</summary>
     public sealed class World
     {
@@ -113,6 +140,12 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>한 번이라도 본 칸 (인덱스 = x + y * Width). 지금 보이는 칸은 저장하지 않고 Vision으로 다시 계산한다.</summary>
         public bool[] Explored { get; set; }
 
+        /// <summary>플레이어가 든 무기 (하나만 든다). 능력치는 Loadout.Apply가 유닛에 맞춘다.</summary>
+        public WeaponKind PlayerWeapon { get; set; }
+
+        /// <summary>이 층 바닥에 놓인 물건. ID 오름차순 (추가는 언제나 끝에). 층을 내려가면 비운다.</summary>
+        public List<FloorItem> Items { get; } = new List<FloorItem>();
+
         public World(int seed, RandomStreams random)
         {
             Seed = seed;
@@ -134,6 +167,26 @@ namespace GirlsDungeon.Core.Sim
         }
 
         public bool IsOccupied(GridPos cell) => UnitAt(cell) != null;
+
+        public FloorItem FindItem(int id)
+        {
+            foreach (var item in Items) if (item.Id == id) return item;
+            return null;
+        }
+
+        /// <summary>그 칸에 놓인 첫 물건 (ID가 가장 작은 것). 없으면 null.</summary>
+        public FloorItem ItemAt(GridPos cell)
+        {
+            foreach (var item in Items) if (item.Position == cell) return item;
+            return null;
+        }
+
+        public FloorItem AddItem(ItemKind kind, WeaponKind weapon, GridPos position)
+        {
+            var item = new FloorItem(NextEntityId++, kind, weapon, position);
+            Items.Add(item);
+            return item;
+        }
 
         public Unit AddUnit(UnitStats stats, GridPos position)
         {

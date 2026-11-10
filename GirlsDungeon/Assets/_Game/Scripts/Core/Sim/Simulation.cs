@@ -38,6 +38,7 @@ namespace GirlsDungeon.Core.Sim
 
             for (int i = 0; i < command.CostTicks; i++) RunTick();
             CombatFlow.AfterAction(World, settings, pending);
+            if (settings != null) Loot.CheckPickup(World, settings, pending);
             if (settings != null && mapSettings != null) FloorFlow.CheckStairs(World, mapSettings, settings, pending);
             Publish();
             return true;
@@ -68,13 +69,15 @@ namespace GirlsDungeon.Core.Sim
             BuildFloor(world, mapSettings);
             var playerStats = combatSettings.StatsFor(UnitKind.Player);
             world.PlayerId = world.AddUnit(playerStats, world.Map.StartCell).Id;
+            world.PlayerWeapon = combatSettings.StartWeapon;
+            Loadout.Apply(world, combatSettings);
             EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
             VisionSystem.Update(world, null);
             return world;
         }
 
         /// <summary>
-        /// 다음 층으로 내려간다: 적을 모두 치우고 새 지형 · 새 적을 만든다. 플레이어는 같은 유닛(체력 · 능력치 그대로)으로 새 시작 칸에 선다.
+        /// 다음 층으로 내려간다: 적 · 바닥 물건을 모두 치우고 새 지형 · 새 적을 만든다. 플레이어는 같은 유닛(체력 · 능력치 · 무기 그대로)으로 새 시작 칸에 선다.
         /// 지형 · 배치 난수는 판의 난수를 이어 쓰므로 같은 시드 · 같은 진행이면 같은 층이 나온다.
         /// </summary>
         public static void NextFloor(World world, MapSettings mapSettings, CombatSettings combatSettings, List<GameEvent> events)
@@ -82,6 +85,7 @@ namespace GirlsDungeon.Core.Sim
             var player = world.Player;
             world.Units.RemoveAll(unit => !unit.IsPlayer);
             world.Combatants.Clear();
+            world.Items.Clear();
             world.FloorIndex++;
             BuildFloor(world, mapSettings);
 
@@ -105,6 +109,8 @@ namespace GirlsDungeon.Core.Sim
         {
             world.Map = DungeonGenerator.Generate(mapSettings, world.Random.Get(RandomPurpose.Map));
             FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
+            // 보급 상자는 아이템 난수로 따로 — 지형 · 엄폐물 굴림에 영향을 주지 않는다.
+            FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, world.Random.Get(RandomPurpose.Item));
         }
     }
 

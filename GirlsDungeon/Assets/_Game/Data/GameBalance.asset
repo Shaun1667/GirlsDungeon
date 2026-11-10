@@ -35,6 +35,8 @@ MonoBehaviour:
   chasmRoomPercent: 50
   minChasmPercent: 30
   maxChasmPercent: 50
+  minSupplyCrates: 2
+  maxSupplyCrates: 3
   units:
   - kind: 0
     nameKey: unit.player.name
@@ -104,6 +106,60 @@ MonoBehaviour:
   assaultPercentPerFloor: 5
   guardPercentDropPerFloor: 10
   enemyStatPercentPerFloor: 10
+  startWeapon: 0
+  weapons:
+  - kind: 0
+    nameKey: weapon.assault_rifle.name
+    ruleKey: weapon.assault_rifle.rule
+    attack: 10
+    attackRange: 8
+    stabilityDamage: 2
+    critPercent: 15
+    critMultiplierPercent: 150
+    moveAfterShot: 0
+    noShotAfterMove: 0
+    falloffStartCells: 0
+    falloffPercentPerCell: 0
+  - kind: 1
+    nameKey: weapon.pistol.name
+    ruleKey: weapon.pistol.rule
+    attack: 7
+    attackRange: 6
+    stabilityDamage: 1
+    critPercent: 15
+    critMultiplierPercent: 150
+    moveAfterShot: 1
+    noShotAfterMove: 0
+    falloffStartCells: 0
+    falloffPercentPerCell: 0
+  - kind: 2
+    nameKey: weapon.shotgun.name
+    ruleKey: weapon.shotgun.rule
+    attack: 14
+    attackRange: 4
+    stabilityDamage: 3
+    critPercent: 15
+    critMultiplierPercent: 150
+    moveAfterShot: 0
+    noShotAfterMove: 0
+    falloffStartCells: 2
+    falloffPercentPerCell: 15
+  - kind: 3
+    nameKey: weapon.sniper.name
+    ruleKey: weapon.sniper.rule
+    attack: 13
+    attackRange: 12
+    stabilityDamage: 1
+    critPercent: 30
+    critMultiplierPercent: 150
+    moveAfterShot: 0
+    noShotAfterMove: 1
+    falloffStartCells: 0
+    falloffPercentPerCell: 0
+  combatDropWeaponPercent: 30
+  combatDropMedkitPercent: 40
+  crateWeaponPercent: 50
+  medkitHealPercent: 40
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

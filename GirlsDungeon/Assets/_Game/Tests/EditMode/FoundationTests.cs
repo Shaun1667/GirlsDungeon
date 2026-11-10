@@ -278,6 +278,8 @@ namespace GirlsDungeon.Tests
                 ChasmRoomPercent = 50,
                 MinChasmPercent = 30,
                 MaxChasmPercent = 50,
+                MinSupplyCrates = 2,
+                MaxSupplyCrates = 3,
             };
         }
 
@@ -315,7 +317,32 @@ namespace GirlsDungeon.Tests
                 AssaultPercentPerFloor = 5,
                 GuardPercentDropPerFloor = 10,
                 EnemyStatPercentPerFloor = 10,
+                StartWeapon = WeaponKind.AssaultRifle,
+                CombatDropWeaponPercent = 30,
+                CombatDropMedkitPercent = 40,
+                CrateWeaponPercent = 50,
+                MedkitHealPercent = 40,
             };
+            // BALANCE 12번 무기 표.
+            settings.Weapons.Add(new WeaponStats
+            {
+                Kind = WeaponKind.AssaultRifle, Attack = 10, AttackRange = 8, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
+            });
+            settings.Weapons.Add(new WeaponStats
+            {
+                Kind = WeaponKind.Pistol, Attack = 7, AttackRange = 6, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
+                MoveAfterShot = true,
+            });
+            settings.Weapons.Add(new WeaponStats
+            {
+                Kind = WeaponKind.Shotgun, Attack = 14, AttackRange = 4, StabilityDamage = 3, CritPercent = 15, CritMultiplierPercent = 150,
+                FalloffStartCells = 2, FalloffPercentPerCell = 15,
+            });
+            settings.Weapons.Add(new WeaponStats
+            {
+                Kind = WeaponKind.Sniper, Attack = 13, AttackRange = 12, StabilityDamage = 1, CritPercent = 30, CritMultiplierPercent = 150,
+                NoShotAfterMove = true,
+            });
             settings.Units.Add(new UnitStats
             {
                 Kind = UnitKind.Player, MaxHp = 20, MaxStability = 6, VisionRange = 9,
@@ -338,7 +365,7 @@ namespace GirlsDungeon.Tests
         /// <summary>BALANCE 값으로 새 판을 만든다. 맵 · 이동 테스트는 적 없는 판을 쓴다.</summary>
         public static World NewRun(int seed, int enemies = 0) => RunFactory.NewRun(seed, Map(), Combat(enemies));
 
-        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥, X 낭떠러지. 첫 줄이 y = 0.</summary>
+        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥, X 낭떠러지, S 보급 상자. 첫 줄이 y = 0.</summary>
         public static FloorMap Parse(params string[] rows) => ParseWithRooms(new RoomRect[0], rows);
 
         /// <summary>Parse와 같고, 방 목록을 함께 넣는다 (방 시야 테스트용).</summary>
@@ -356,6 +383,7 @@ namespace GirlsDungeon.Tests
                         : ch == 'C' ? TileType.Crate
                         : ch == 'P' ? TileType.Pillar
                         : ch == 'X' ? TileType.Chasm
+                        : ch == 'S' ? TileType.SupplyCrate
                         : TileType.Floor;
                 }
             }

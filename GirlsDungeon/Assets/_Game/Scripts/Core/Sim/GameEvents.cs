@@ -256,11 +256,14 @@ namespace GirlsDungeon.Core.Sim
     {
         public int UnitId { get; }
         public UnitKind Kind { get; }
+        /// <summary>쓰러진 칸 (낭떠러지일 수 있다). 전투 보상이 이 근처에 떨어진다.</summary>
+        public GridPos Cell { get; }
 
-        public UnitDied(int unitId, UnitKind kind)
+        public UnitDied(int unitId, UnitKind kind, GridPos cell)
         {
             UnitId = unitId;
             Kind = kind;
+            Cell = cell;
         }
     }
 }

@@ -50,6 +50,8 @@ namespace GirlsDungeon.EditorTools
                     DrawMoveSection(root);
                     EditorGUILayout.Space();
                     DrawCombatSection(root);
+                    EditorGUILayout.Space();
+                    DrawLootSection(root);
                 }
             }
 
@@ -101,6 +103,24 @@ namespace GirlsDungeon.EditorTools
             EditorGUILayout.LabelField("유닛", EditorStyles.boldLabel);
             EditorGUILayout.LabelField(root.DebugUnitsSummary(), EditorStyles.wordWrappedLabel);
         }
+
+        private void DrawLootSection(GameRoot root)
+        {
+            EditorGUILayout.LabelField("무기 · 보상", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("상태", root.DebugLootSummary(), EditorStyles.wordWrappedLabel);
+            if (GUILayout.Button("가장 가까운 보급 상자 열기 [상태 변경]")) root.DebugOpenNearestCrate();
+
+            EditorGUILayout.BeginHorizontal();
+            weaponToDrop = (GirlsDungeon.Core.Sim.WeaponKind)EditorGUILayout.EnumPopup("무기", weaponToDrop);
+            if (GUILayout.Button("옆에 놓기 [상태 변경]")) root.DebugDropItem(GirlsDungeon.Core.Sim.ItemKind.Weapon, weaponToDrop);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("옆에 구급상자 [상태 변경]")) root.DebugDropItem(GirlsDungeon.Core.Sim.ItemKind.Medkit, default);
+            if (GUILayout.Button("비교 창 바꾸기 [상태 변경]")) root.DebugPressSwap();
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private GirlsDungeon.Core.Sim.WeaponKind weaponToDrop = GirlsDungeon.Core.Sim.WeaponKind.Shotgun;
 
         private void DrawMoveSection(GameRoot root)
         {

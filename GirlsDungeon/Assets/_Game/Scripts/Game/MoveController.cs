@@ -35,6 +35,8 @@ namespace GirlsDungeon.Game
 
         private readonly Queue<GridPos> pendingSteps = new Queue<GridPos>();
         private int pendingFloor;
+        /// <summary>걸음이 끝나면 열 보급 상자 (탐험 중 먼 상자를 클릭했을 때).</summary>
+        private GridPos? pendingCrate;
         private AimMode aim;
         private Simulation simulation;
         private PlayerView playerView;
@@ -106,6 +108,7 @@ namespace GirlsDungeon.Game
             settings = newSettings;
             moveCostTicks = newMoveCostTicks;
             pendingSteps.Clear();
+            pendingCrate = null;
             reachable = null;
             reachableKey = null;
             rangeView.Hide();
@@ -129,8 +132,45 @@ namespace GirlsDungeon.Game
             if (path.Count == 0) return false;
 
             pendingSteps.Clear();
+            pendingCrate = null;
             foreach (var step in path) pendingSteps.Enqueue(step);
             pendingFloor = world.FloorIndex;
+            return true;
+        }
+
+        /// <summary>
+        /// 보급 상자를 연다. 바로 옆이면 바로 열고, 탐험 중 멀면 가장 가까운 옆 칸까지 걸어간 뒤 연다. 못 하면 false.
+        /// </summary>
+        public bool RequestOpenCrate(GridPos crate)
+        {
+            if (simulation == null || playerView.IsMoving) return false;
+            var world = simulation.World;
+            if (!world.Map.InBounds(crate) || world.Map.Get(crate) != TileType.SupplyCrate || !IsKnown(crate)) return false;
+
+            var player = world.Player;
+            if (Loadout.CellDistance(player.Position, crate) == 1)
+                return simulation.Execute(new OpenSupplyCrateCommand(crate, settings));
+            if (world.Mode != WorldMode.Exploration) return false;
+
+            // 상자 옆 칸 중 가장 짧은 경로 (이웃 순서 고정).
+            List<GridPos> best = null;
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    var side = new GridPos(crate.X + dx, crate.Y + dy);
+                    if ((dx == 0 && dy == 0) || !world.Map.IsWalkable(side) || !IsKnown(side)) continue;
+                    var path = GridNavigation.FindPath(world.Map, player.Position, side,
+                        cell => cell != player.Position && (world.IsOccupied(cell) || !IsKnown(cell)));
+                    if (path.Count > 0 && (best == null || path.Count < best.Count)) best = path;
+                }
+            }
+            if (best == null) return false;
+
+            pendingSteps.Clear();
+            foreach (var step in best) pendingSteps.Enqueue(step);
+            pendingFloor = world.FloorIndex;
+            pendingCrate = crate;
             return true;
         }
 
@@ -150,7 +190,12 @@ namespace GirlsDungeon.Game
             if (simulation == null) return;
 
             var mode = simulation.World.Mode;
-            if (mode != WorldMode.Exploration) pendingSteps.Clear();
+            // 전투가 시작되거나 무기 비교 창이 뜨면 걷던 길을 멈춘다.
+            if (mode != WorldMode.Exploration || hudView.IsWeaponOfferOpen)
+            {
+                pendingSteps.Clear();
+                pendingCrate = null;
+            }
             if (aim != AimMode.None && (!TurnFlow.IsPlayerTurn(simulation.World) || simulation.World.PlayerActed)) SetAiming(AimMode.None);
 
             if (mode == WorldMode.Combat) HandleCombat();
@@ -168,16 +213,21 @@ namespace GirlsDungeon.Game
         {
             var mouse = Mouse.current;
             var cell = mouse != null ? PointerCell(mouse.position.ReadValue()) : null;
-            bool isWalkable = cell.HasValue && simulation.World.Map.IsWalkable(cell.Value) && IsKnown(cell.Value);
-            SetHover(isWalkable ? cell : null);
+            var map = simulation.World.Map;
+            bool isWalkable = cell.HasValue && map.IsWalkable(cell.Value) && IsKnown(cell.Value);
+            bool isCrate = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.SupplyCrate && IsKnown(cell.Value);
+            SetHover(isWalkable || isCrate ? cell : null);
 
-            if (isWalkable && mouse.leftButton.wasPressedThisFrame && !IsPointerOverUi()) RequestMove(cell.Value);
+            bool clicked = mouse != null && mouse.leftButton.wasPressedThisFrame && !IsPointerOverUi();
+            if (isWalkable && clicked) RequestMove(cell.Value);
+            if (isCrate && clicked) RequestOpenCrate(cell.Value);
         }
 
         private void HandleCombat()
         {
             var world = simulation.World;
-            bool canMove = TurnFlow.IsPlayerTurn(world) && !world.PlayerMoved && !world.PlayerActed && !playerView.IsMoving && aim == AimMode.None;
+            // 권총은 쏜 뒤에도 이동할 수 있다 — 판정은 규칙(Loadout.CanCombatMove) 한 곳.
+            bool canMove = Loadout.CanCombatMove(world, settings) && !playerView.IsMoving && aim == AimMode.None;
             RefreshRange(canMove);
 
             var mouse = Mouse.current;
@@ -211,6 +261,14 @@ namespace GirlsDungeon.Game
                 hudView.ShowAreaPreview(area);
                 SetHover(cell);
                 if (clicked) RequestAreaAttack(cell.Value);
+                return;
+            }
+            if (aim == AimMode.None && world.Map.InBounds(cell.Value) && world.Map.Get(cell.Value) == TileType.SupplyCrate && IsKnown(cell.Value))
+            {
+                bool canOpen = !world.PlayerActed && Loadout.CellDistance(world.Player.Position, cell.Value) == 1;
+                hudView.ShowCratePreview(canOpen);
+                SetHover(cell);
+                if (clicked && canOpen) RequestOpenCrate(cell.Value);
                 return;
             }
             if (target != null && !target.IsPlayer && world.Combatants.Contains(target.Id))
@@ -288,11 +346,28 @@ namespace GirlsDungeon.Game
         private void AdvanceSteps()
         {
             // 계단을 지나 층이 바뀌면 남은 걸음은 이전 층 것이라 버린다.
-            if (pendingSteps.Count > 0 && pendingFloor != simulation.World.FloorIndex) pendingSteps.Clear();
-            if (pendingSteps.Count == 0 || playerView.IsMoving) return;
+            if (pendingSteps.Count > 0 && pendingFloor != simulation.World.FloorIndex)
+            {
+                pendingSteps.Clear();
+                pendingCrate = null;
+            }
+            if (playerView.IsMoving) return;
+            if (pendingSteps.Count == 0)
+            {
+                // 상자 옆에 다 왔으면 연다.
+                if (!pendingCrate.HasValue) return;
+                var crate = pendingCrate.Value;
+                pendingCrate = null;
+                if (simulation.World.Mode == WorldMode.Exploration) simulation.Execute(new OpenSupplyCrateCommand(crate, settings));
+                return;
+            }
 
             var command = new MoveCommand(simulation.World.PlayerId, pendingSteps.Dequeue(), moveCostTicks);
-            if (!simulation.Execute(command)) pendingSteps.Clear();
+            if (!simulation.Execute(command))
+            {
+                pendingSteps.Clear();
+                pendingCrate = null;
+            }
         }
 
         private GridPos? PointerCell(Vector2 screenPosition)

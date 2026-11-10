@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using GirlsDungeon.Core.Grid;
 using GirlsDungeon.Core.Map;
 
 namespace GirlsDungeon.Core.Sim
@@ -19,7 +20,7 @@ namespace GirlsDungeon.Core.Sim
             Alert.CheckZones(world, settings, events);
 
             if (world.Mode == WorldMode.Combat && world.Combatants.Count == 0)
-                EndCombat(world, player, events);
+                EndCombat(world, settings, player, events);
         }
 
         /// <summary>유닛을 쓰러뜨린다. 맵에서 빠지고 전투 명단에서도 빠진다.</summary>
@@ -28,7 +29,7 @@ namespace GirlsDungeon.Core.Sim
             world.Units.Remove(unit);
             world.Combatants.Remove(unit.Id);
             if (!unit.IsPlayer) world.Kills++;
-            events.Add(new UnitDied(unit.Id, unit.Kind));
+            events.Add(new UnitDied(unit.Id, unit.Kind, unit.Position));
         }
 
         private static void JoinVisibleEnemies(World world, bool[] visible, List<GameEvent> events)
@@ -62,8 +63,14 @@ namespace GirlsDungeon.Core.Sim
             }
         }
 
-        private static void EndCombat(World world, Unit player, List<GameEvent> events)
+        private static void EndCombat(World world, CombatSettings settings, Unit player, List<GameEvent> events)
         {
+            // 전투 보상: 이번 커맨드에서 마지막으로 쓰러진 적 자리 근처 (Loot). 수치가 없으면(맵 · 이동 테스트) 건너뛴다.
+            GridPos? lastKill = null;
+            foreach (var gameEvent in events)
+                if (gameEvent is UnitDied died && died.Kind != UnitKind.Player) lastKill = died.Cell;
+            if (settings != null && lastKill.HasValue) Loot.DropAfterCombat(world, settings, lastKill.Value, events);
+
             world.Mode = WorldMode.Exploration;
             world.Turn = TurnSide.Player;
             world.Round = 0;

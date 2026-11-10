@@ -26,6 +26,30 @@ namespace GirlsDungeon.Game
         public int pushOnHit;
     }
 
+    /// <summary>무기 하나의 능력치와 규칙 (표 한 줄, BALANCE 12번).</summary>
+    [Serializable]
+    public sealed class WeaponEntry
+    {
+        public WeaponKind kind;
+        [Tooltip("Text table key for the weapon name.")]
+        public string nameKey;
+        [Tooltip("Text table key for the weapon rule description.")]
+        public string ruleKey;
+        public int attack;
+        public int attackRange;
+        public int stabilityDamage;
+        public int critPercent;
+        public int critMultiplierPercent;
+        [Tooltip("Rule: may still move after shooting (then the turn ends).")]
+        public bool moveAfterShot;
+        [Tooltip("Rule: cannot shoot in a turn after moving.")]
+        public bool noShotAfterMove;
+        [Tooltip("Rule: damage drops beyond this many cells (0 = no drop).")]
+        public int falloffStartCells;
+        [Tooltip("Damage lost (%) per cell beyond the falloff start.")]
+        public int falloffPercentPerCell;
+    }
+
     /// <summary>게임 수치의 한 곳 (BALANCE.md와 함께 관리). 코드에 숫자를 직접 넣지 않는다.</summary>
     [CreateAssetMenu(fileName = "GameBalance", menuName = "GirlsDungeon/Game Balance")]
     public sealed class GameBalance : ScriptableObject
@@ -64,6 +88,10 @@ namespace GirlsDungeon.Game
         [SerializeField] private int minChasmPercent = 30;
         [Tooltip("Chasm area (%) of a chasm room, upper bound.")]
         [SerializeField] private int maxChasmPercent = 50;
+
+        [Header("Supply crates (BALANCE 1-18)")]
+        [SerializeField] private int minSupplyCrates = 2;
+        [SerializeField] private int maxSupplyCrates = 3;
 
         [Header("Units (BALANCE 4)")]
         [SerializeField] private UnitStatsEntry[] units =
@@ -139,6 +167,41 @@ namespace GirlsDungeon.Game
         [SerializeField] private int guardPercentDropPerFloor = 10;
         [Tooltip("Enemy max HP and attack added per floor deeper (%).")]
         [SerializeField] private int enemyStatPercentPerFloor = 10;
+
+        [Header("Weapons and loot (BALANCE 12)")]
+        [SerializeField] private WeaponKind startWeapon = WeaponKind.AssaultRifle;
+        [SerializeField] private WeaponEntry[] weapons =
+        {
+            new WeaponEntry
+            {
+                kind = WeaponKind.AssaultRifle, nameKey = "weapon.assault_rifle.name", ruleKey = "weapon.assault_rifle.rule",
+                attack = 10, attackRange = 8, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150,
+            },
+            new WeaponEntry
+            {
+                kind = WeaponKind.Pistol, nameKey = "weapon.pistol.name", ruleKey = "weapon.pistol.rule",
+                attack = 7, attackRange = 6, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150, moveAfterShot = true,
+            },
+            new WeaponEntry
+            {
+                kind = WeaponKind.Shotgun, nameKey = "weapon.shotgun.name", ruleKey = "weapon.shotgun.rule",
+                attack = 14, attackRange = 4, stabilityDamage = 3, critPercent = 15, critMultiplierPercent = 150,
+                falloffStartCells = 2, falloffPercentPerCell = 15,
+            },
+            new WeaponEntry
+            {
+                kind = WeaponKind.Sniper, nameKey = "weapon.sniper.name", ruleKey = "weapon.sniper.rule",
+                attack = 13, attackRange = 12, stabilityDamage = 1, critPercent = 30, critMultiplierPercent = 150, noShotAfterMove = true,
+            },
+        };
+        [Tooltip("Chance (%) that winning a combat drops a weapon.")]
+        [SerializeField] private int combatDropWeaponPercent = 30;
+        [Tooltip("Chance (%) that winning a combat drops a medkit. The rest drops nothing.")]
+        [SerializeField] private int combatDropMedkitPercent = 40;
+        [Tooltip("Chance (%) that a supply crate holds a weapon. The rest holds a medkit.")]
+        [SerializeField] private int crateWeaponPercent = 50;
+        [Tooltip("Medkit heal (% of max HP).")]
+        [SerializeField] private int medkitHealPercent = 40;
 
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
@@ -216,7 +279,28 @@ namespace GirlsDungeon.Game
                 AssaultPercentPerFloor = assaultPercentPerFloor,
                 GuardPercentDropPerFloor = guardPercentDropPerFloor,
                 EnemyStatPercentPerFloor = enemyStatPercentPerFloor,
+                StartWeapon = startWeapon,
+                CombatDropWeaponPercent = combatDropWeaponPercent,
+                CombatDropMedkitPercent = combatDropMedkitPercent,
+                CrateWeaponPercent = crateWeaponPercent,
+                MedkitHealPercent = medkitHealPercent,
             };
+            foreach (var entry in weapons)
+            {
+                settings.Weapons.Add(new WeaponStats
+                {
+                    Kind = entry.kind,
+                    Attack = entry.attack,
+                    AttackRange = entry.attackRange,
+                    StabilityDamage = entry.stabilityDamage,
+                    CritPercent = entry.critPercent,
+                    CritMultiplierPercent = entry.critMultiplierPercent,
+                    MoveAfterShot = entry.moveAfterShot,
+                    NoShotAfterMove = entry.noShotAfterMove,
+                    FalloffStartCells = entry.falloffStartCells,
+                    FalloffPercentPerCell = entry.falloffPercentPerCell,
+                });
+            }
             foreach (var entry in units)
             {
                 settings.Units.Add(new UnitStats
@@ -250,6 +334,29 @@ namespace GirlsDungeon.Game
             foreach (var entry in units) yield return entry.nameKey;
         }
 
+        /// <summary>무기 이름의 텍스트 표 키. 표에 없는 무기면 null.</summary>
+        public string WeaponNameKey(WeaponKind kind)
+        {
+            foreach (var entry in weapons) if (entry.kind == kind) return entry.nameKey;
+            return null;
+        }
+
+        /// <summary>무기 규칙 설명의 텍스트 표 키. 표에 없는 무기면 null.</summary>
+        public string WeaponRuleKey(WeaponKind kind)
+        {
+            foreach (var entry in weapons) if (entry.kind == kind) return entry.ruleKey;
+            return null;
+        }
+
+        public System.Collections.Generic.IEnumerable<string> WeaponTextKeys()
+        {
+            foreach (var entry in weapons)
+            {
+                yield return entry.nameKey;
+                yield return entry.ruleKey;
+            }
+        }
+
         public MapSettings CreateMapSettings()
         {
             return new MapSettings
@@ -276,6 +383,8 @@ namespace GirlsDungeon.Game
                 ChasmRoomPercent = chasmRoomPercent,
                 MinChasmPercent = minChasmPercent,
                 MaxChasmPercent = maxChasmPercent,
+                MinSupplyCrates = minSupplyCrates,
+                MaxSupplyCrates = maxSupplyCrates,
             };
         }
     }

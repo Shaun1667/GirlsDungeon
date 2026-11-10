@@ -39,6 +39,10 @@ namespace GirlsDungeon.EditorTools
             var watchMaterial = LoadOrCreateMaterial("GreyboxWatch", new Color(0.85f, 0.15f, 0.2f));
             var chasmMaterial = LoadOrCreateMaterial("GreyboxChasm", new Color(0.05f, 0.05f, 0.08f));
             var pushMaterial = LoadOrCreateMaterial("GreyboxPush", new Color(0.7f, 0.35f, 0.95f));
+            var supplyMaterial = LoadOrCreateMaterial("GreyboxSupply", new Color(0.25f, 0.65f, 0.35f));
+            var supplyOpenedMaterial = LoadOrCreateMaterial("GreyboxSupplyOpened", new Color(0.12f, 0.3f, 0.17f));
+            var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
+            var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -83,12 +87,35 @@ namespace GirlsDungeon.EditorTools
             pushButton.GetComponent<RectTransform>().sizeDelta = new Vector2(420f, 84f);
             var overwatchButton = CreateButton(canvas.transform, "OverwatchButton", font, "ui.skill.overwatch",
                 new Vector2(1f, 0f), new Vector2(-32f, 332f));
+            var weaponLabel = CreateLabel(canvas.transform, "WeaponLabel", font, 28,
+                new Vector2(0f, 1f), new Vector2(24f, -144f), TextAnchor.UpperLeft);
+
+            // 무기 비교 창: 무기를 밟으면 뜬다 (바꾸기 / 두기).
+            var weaponPanel = new GameObject("WeaponPanel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            weaponPanel.transform.SetParent(canvas.transform, false);
+            var panelRect = weaponPanel.GetComponent<RectTransform>();
+            panelRect.anchorMin = panelRect.anchorMax = panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.sizeDelta = new Vector2(1100f, 330f);
+            panelRect.anchoredPosition = new Vector2(0f, 120f);
+            var panelImage = weaponPanel.GetComponent<Image>();
+            panelImage.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+            panelImage.type = Image.Type.Sliced;
+            panelImage.color = new Color(0.08f, 0.09f, 0.13f, 0.95f);
+            var weaponPanelLabel = CreateLabel(weaponPanel.transform, "Label", font, 28,
+                new Vector2(0.5f, 1f), new Vector2(0f, -24f), TextAnchor.UpperCenter);
+            weaponPanelLabel.rectTransform.sizeDelta = new Vector2(1040f, 180f);
+            var swapButton = CreateButton(weaponPanel.transform, "SwapButton", font, "ui.weapon.swap",
+                new Vector2(0.5f, 0f), new Vector2(-150f, 24f));
+            var keepButton = CreateButton(weaponPanel.transform, "KeepButton", font, "ui.weapon.keep",
+                new Vector2(0.5f, 0f), new Vector2(150f, 24f));
+            weaponPanel.SetActive(false);
             CreateEventSystem();
 
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
                 ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel), ("resultLabel", resultLabel), ("newRunButton", newRunButton), ("floorLabel", floorLabel),
-                ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton), ("pushButton", pushButton), ("overwatchButton", overwatchButton));
+                ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton), ("pushButton", pushButton), ("overwatchButton", overwatchButton),
+                ("weaponLabel", weaponLabel), ("weaponPanel", weaponPanel), ("weaponPanelLabel", weaponPanelLabel), ("swapButton", swapButton), ("keepButton", keepButton));
 
             var rangeObject = new GameObject("RangeView");
             var rangeView = rangeObject.AddComponent<RangeView>();
@@ -118,9 +145,12 @@ namespace GirlsDungeon.EditorTools
             var unitsView = unitsObject.AddComponent<UnitsView>();
             SetReferences(unitsView, ("enemyMaterial", enemyMaterial), ("assaultMaterial", assaultMaterial));
 
+            var itemsView = new GameObject("ItemsView").AddComponent<ItemsView>();
+            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial));
+
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");
@@ -155,7 +185,8 @@ namespace GirlsDungeon.EditorTools
                 ("unitsView", unitsView),
                 ("hudView", hudView),
                 ("fogView", fogView),
-                ("threatView", threatView));
+                ("threatView", threatView),
+                ("itemsView", itemsView));
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
