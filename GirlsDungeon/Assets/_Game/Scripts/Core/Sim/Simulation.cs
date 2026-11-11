@@ -96,6 +96,7 @@ namespace GirlsDungeon.Core.Sim
             world.Round = 0;
             world.PlayerMoved = false;
             world.PlayerActed = false;
+            world.PlayerShots = 0;
             world.GrenadeCooldown = 0;
             world.PushCooldown = 0;
             world.Explored = null;

@@ -13,6 +13,12 @@ namespace GirlsDungeon.Core.Sim
         Shotgun = 2,
         /// <summary>저격총 — 이동한 차례에는 쏘지 못한다.</summary>
         Sniper = 3,
+        /// <summary>기관단총 — 한 차례에 두 번 쏜다 (사이에 이동 가능).</summary>
+        Smg = 4,
+        /// <summary>기관총 — 무거워 이동이 줄어든다.</summary>
+        MachineGun = 5,
+        /// <summary>도검 — 주변 8칸 근접, 엄폐를 무시한다.</summary>
+        Blade = 6,
     }
 
     /// <summary>
@@ -39,6 +45,21 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>FalloffStartCells를 넘는 한 칸마다 줄어드는 피해 (%).</summary>
         public int FalloffPercentPerCell;
+
+        /// <summary>규칙: 한 차례에 더 쏠 수 있는 횟수 (0 = 한 번, 기관단총 1 = 두 번). 사이에 이동할 수 있다.</summary>
+        public int ExtraShotsPerTurn;
+
+        /// <summary>규칙: 플레이어 이동 범위에 더하는 값 (기관총 −2).</summary>
+        public int MoveRangeBonus;
+
+        /// <summary>규칙: 사거리를 가로 · 세로 · 대각 중 큰 값으로 잰다 — 사거리 1이면 주변 8칸 (도검).</summary>
+        public bool Melee;
+
+        /// <summary>규칙: 대상의 엄폐(와 엄폐에 붙는 안정지수 감소)를 무시한다 (도검).</summary>
+        public bool IgnoresCover;
+
+        /// <summary>한 차례에 쏠 수 있는 횟수.</summary>
+        public int ShotsPerTurn => 1 + ExtraShotsPerTurn;
     }
 
     /// <summary>
@@ -57,6 +78,26 @@ namespace GirlsDungeon.Core.Sim
             player.StabilityDamage = weapon.StabilityDamage;
             player.CritPercent = weapon.CritPercent;
             player.CritMultiplierPercent = weapon.CritMultiplierPercent;
+            // 이동 범위 = 유닛 표 값 + 무기 보정 (기관총 −2).
+            player.MoveRange = System.Math.Max(0, settings.StatsFor(UnitKind.Player).MoveRange + weapon.MoveRangeBonus);
+        }
+
+        /// <summary>이번 차례에 플레이어가 쏠 수 있는 횟수 (무기 규칙, 수치가 없으면 1).</summary>
+        public static int ShotsPerTurn(World world, CombatSettings settings)
+        {
+            var weapon = WeaponOf(world, settings, world.Player);
+            return weapon != null ? weapon.ShotsPerTurn : 1;
+        }
+
+        /// <summary>
+        /// 전투 중 플레이어가 지금 쏠 수 있는지: 내 차례이고, 이번 차례 사격 수가 무기 한도보다 적고,
+        /// 사격이 아닌 행동(스킬 · 감시)을 쓰지 않았을 때. 사거리 · 사선은 CombatRules.Preview가 본다.
+        /// </summary>
+        public static bool CanShoot(World world, CombatSettings settings)
+        {
+            if (!TurnFlow.IsPlayerTurn(world)) return false;
+            if (world.PlayerActed && world.PlayerShots == 0) return false;
+            return world.PlayerShots < ShotsPerTurn(world, settings);
         }
 
         /// <summary>attacker가 든 무기의 규칙. 적이거나 수치가 없으면 null (규칙 없음).</summary>
@@ -68,14 +109,32 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>
         /// 전투 중 플레이어가 지금 이동할 수 있는지: 내 차례이고 아직 이동하지 않았고,
-        /// 행동(사격)을 아직 안 했거나 든 무기가 쏜 뒤 이동을 허락할 때 (권총).
+        /// 행동(사격)을 아직 안 했거나, 든 무기가 쏜 뒤 이동을 허락하거나(권총), 아직 더 쏠 수 있을 때(기관단총).
         /// </summary>
         public static bool CanCombatMove(World world, CombatSettings settings)
         {
             if (!TurnFlow.IsPlayerTurn(world) || world.PlayerMoved) return false;
             if (!world.PlayerActed) return true;
             var weapon = WeaponOf(world, settings, world.Player);
-            return weapon != null && weapon.MoveAfterShot;
+            if (weapon == null || world.PlayerShots == 0) return false;
+            return weapon.MoveAfterShot || world.PlayerShots < weapon.ShotsPerTurn;
+        }
+
+        /// <summary>사격 뒤 차례가 이어지는지: 아직 더 쏠 수 있거나(기관단총), 권총이고 아직 이동하지 않았을 때.</summary>
+        public static bool KeepsTurnAfterShot(World world, CombatSettings settings)
+        {
+            var weapon = WeaponOf(world, settings, world.Player);
+            if (weapon == null) return false;
+            return world.PlayerShots < weapon.ShotsPerTurn || (weapon.MoveAfterShot && !world.PlayerMoved);
+        }
+
+        /// <summary>사거리 안인지. 근접 무기(도검)는 가로 · 세로 · 대각 중 큰 값, 나머지는 직선 거리.</summary>
+        public static bool InRange(WeaponStats weapon, int range, GridPos from, GridPos target)
+        {
+            if (weapon != null && weapon.Melee) return CellDistance(from, target) <= range;
+            int dx = target.X - from.X;
+            int dy = target.Y - from.Y;
+            return dx * dx + dy * dy <= range * range;
         }
 
         /// <summary>두 칸의 거리 (가로 · 세로 · 대각 중 큰 값, 대각선도 1칸).</summary>

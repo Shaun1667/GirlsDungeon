@@ -54,6 +54,7 @@ namespace GirlsDungeon.Core.Sim
                 world.Round = 1;
                 world.PlayerMoved = false;
                 world.PlayerActed = false;
+                world.PlayerShots = 0;
                 events.Add(new CombatStarted(joined));
                 events.Add(new TurnStarted(TurnSide.Player, world.Round));
             }
@@ -76,6 +77,7 @@ namespace GirlsDungeon.Core.Sim
             world.Round = 0;
             world.PlayerMoved = false;
             world.PlayerActed = false;
+            world.PlayerShots = 0;
             world.GrenadeCooldown = 0;
             world.PushCooldown = 0;
             player.Overwatching = false;
@@ -126,6 +128,7 @@ namespace GirlsDungeon.Core.Sim
             world.Turn = TurnSide.Player;
             world.PlayerMoved = false;
             world.PlayerActed = false;
+            world.PlayerShots = 0;
             if (world.GrenadeCooldown > 0) world.GrenadeCooldown--;
             if (world.PushCooldown > 0) world.PushCooldown--;
             world.Player.Overwatching = false;

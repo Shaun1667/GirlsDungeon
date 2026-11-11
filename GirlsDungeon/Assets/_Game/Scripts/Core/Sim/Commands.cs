@@ -71,8 +71,9 @@ namespace GirlsDungeon.Core.Sim
 
             world.PlayerMoved = true;
             CombatMovement.Walk(world, settings, player, path, events);
-            // 권총: 쏜 뒤 남은 이동까지 썼으면 차례가 끝난다.
-            if (world.PlayerActed && settings != null && TurnFlow.IsPlayerTurn(world) && world.Combatants.Count > 0)
+            // 권총: 쏜 뒤 남은 이동까지 썼으면 차례가 끝난다. 기관단총은 아직 더 쏠 수 있으면 이어진다.
+            if (world.PlayerActed && settings != null && TurnFlow.IsPlayerTurn(world) && world.Combatants.Count > 0
+                && world.PlayerShots >= Loadout.ShotsPerTurn(world, settings))
                 TurnFlow.EndPlayerTurn(world, settings, events);
             return true;
         }
@@ -81,6 +82,7 @@ namespace GirlsDungeon.Core.Sim
     /// <summary>
     /// 플레이어 사격. 사격하면 차례가 끝나고 적 차례가 이어진다 (전투가 끝났으면 바로 탐험).
     /// 권총으로 아직 이동하지 않고 쐈으면 차례가 이어진다 — 남은 이동을 쓰거나 턴 종료.
+    /// 기관단총은 두 번째 사격까지 차례가 이어진다 (사이에 이동 가능).
     /// </summary>
     public sealed class AttackCommand : ICommand
     {
@@ -98,15 +100,15 @@ namespace GirlsDungeon.Core.Sim
 
         public bool TryApply(World world, List<GameEvent> events)
         {
-            if (!TurnFlow.IsPlayerTurn(world) || world.PlayerActed) return false;
+            if (!Loadout.CanShoot(world, settings)) return false;
 
             var target = world.FindUnit(targetId);
             if (target == null || target.IsPlayer || !world.Combatants.Contains(target.Id)) return false;
             if (!CombatRules.Resolve(world, settings, world.Player, target, events)) return false;
 
             world.PlayerActed = true;
-            var weapon = Loadout.WeaponOf(world, settings, world.Player);
-            bool keepsTurn = weapon != null && weapon.MoveAfterShot && !world.PlayerMoved && world.Mode == WorldMode.Combat;
+            world.PlayerShots++;
+            bool keepsTurn = world.Mode == WorldMode.Combat && Loadout.KeepsTurnAfterShot(world, settings);
             if (world.Combatants.Count > 0 && !keepsTurn) TurnFlow.EndPlayerTurn(world, settings, events);
             return true;
         }

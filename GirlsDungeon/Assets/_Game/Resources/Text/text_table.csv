@@ -90,3 +90,9 @@ weapon.shotgun.name,산탄총,Shotgun
 weapon.shotgun.rule,2칸보다 멀면 1칸마다 피해 −15%,Damage −15% per cell beyond 2 cells
 weapon.sniper.name,저격총,Sniper rifle
 weapon.sniper.rule,이동한 차례에는 쏠 수 없음,Cannot shoot in a turn after moving
+weapon.smg.name,기관단총,SMG
+weapon.smg.rule,한 차례에 두 번 쏨 (사이에 이동 가능),Shoots twice per turn (can move in between)
+weapon.machine_gun.name,기관총,Machine gun
+weapon.machine_gun.rule,무거워 이동 −2,Heavy: move −2
+weapon.blade.name,도검,Blade
+weapon.blade.rule,주변 8칸만 벨 수 있고 엄폐를 무시함,Hits only the eight cells around you and ignores cover

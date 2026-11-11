@@ -274,7 +274,8 @@ namespace GirlsDungeon.Game
             if (target != null && !target.IsPlayer && world.Combatants.Contains(target.Id))
             {
                 var preview = CombatRules.Preview(world, settings, world.Player, world.Player.Position, target);
-                hudView.ShowAttackPreview(target, preview, world.PlayerActed);
+                // 기관단총은 첫 사격 뒤에도 한 번 더 쏠 수 있다 — 판정은 규칙(Loadout.CanShoot) 한 곳.
+                hudView.ShowAttackPreview(target, preview, !Loadout.CanShoot(world, settings));
                 SetHover(cell);
                 if (clicked) RequestCombatAction(cell.Value);
                 return;

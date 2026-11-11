@@ -120,6 +120,10 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    extraShotsPerTurn: 0
+    moveRangeBonus: 0
+    melee: 0
+    ignoresCover: 0
   - kind: 1
     nameKey: weapon.pistol.name
     ruleKey: weapon.pistol.rule
@@ -132,6 +136,10 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    extraShotsPerTurn: 0
+    moveRangeBonus: 0
+    melee: 0
+    ignoresCover: 0
   - kind: 2
     nameKey: weapon.shotgun.name
     ruleKey: weapon.shotgun.rule
@@ -144,6 +152,10 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 2
     falloffPercentPerCell: 15
+    extraShotsPerTurn: 0
+    moveRangeBonus: 0
+    melee: 0
+    ignoresCover: 0
   - kind: 3
     nameKey: weapon.sniper.name
     ruleKey: weapon.sniper.rule
@@ -156,6 +168,58 @@ MonoBehaviour:
     noShotAfterMove: 1
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    extraShotsPerTurn: 0
+    moveRangeBonus: 0
+    melee: 0
+    ignoresCover: 0
+  - kind: 4
+    nameKey: weapon.smg.name
+    ruleKey: weapon.smg.rule
+    attack: 7
+    attackRange: 6
+    stabilityDamage: 2
+    critPercent: 15
+    critMultiplierPercent: 150
+    moveAfterShot: 0
+    noShotAfterMove: 0
+    falloffStartCells: 0
+    falloffPercentPerCell: 0
+    extraShotsPerTurn: 1
+    moveRangeBonus: 0
+    melee: 0
+    ignoresCover: 0
+  - kind: 5
+    nameKey: weapon.machine_gun.name
+    ruleKey: weapon.machine_gun.rule
+    attack: 9
+    attackRange: 8
+    stabilityDamage: 4
+    critPercent: 15
+    critMultiplierPercent: 150
+    moveAfterShot: 0
+    noShotAfterMove: 0
+    falloffStartCells: 0
+    falloffPercentPerCell: 0
+    extraShotsPerTurn: 0
+    moveRangeBonus: -2
+    melee: 0
+    ignoresCover: 0
+  - kind: 6
+    nameKey: weapon.blade.name
+    ruleKey: weapon.blade.rule
+    attack: 16
+    attackRange: 1
+    stabilityDamage: 3
+    critPercent: 20
+    critMultiplierPercent: 150
+    moveAfterShot: 0
+    noShotAfterMove: 0
+    falloffStartCells: 0
+    falloffPercentPerCell: 0
+    extraShotsPerTurn: 0
+    moveRangeBonus: 0
+    melee: 1
+    ignoresCover: 1
   combatDropWeaponPercent: 30
   combatDropMedkitPercent: 40
   crateWeaponPercent: 50

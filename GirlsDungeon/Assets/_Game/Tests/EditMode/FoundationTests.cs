@@ -343,6 +343,21 @@ namespace GirlsDungeon.Tests
                 Kind = WeaponKind.Sniper, Attack = 13, AttackRange = 12, StabilityDamage = 1, CritPercent = 30, CritMultiplierPercent = 150,
                 NoShotAfterMove = true,
             });
+            settings.Weapons.Add(new WeaponStats
+            {
+                Kind = WeaponKind.Smg, Attack = 7, AttackRange = 6, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
+                ExtraShotsPerTurn = 1,
+            });
+            settings.Weapons.Add(new WeaponStats
+            {
+                Kind = WeaponKind.MachineGun, Attack = 9, AttackRange = 8, StabilityDamage = 4, CritPercent = 15, CritMultiplierPercent = 150,
+                MoveRangeBonus = -2,
+            });
+            settings.Weapons.Add(new WeaponStats
+            {
+                Kind = WeaponKind.Blade, Attack = 16, AttackRange = 1, StabilityDamage = 3, CritPercent = 20, CritMultiplierPercent = 150,
+                Melee = true, IgnoresCover = true,
+            });
             settings.Units.Add(new UnitStats
             {
                 Kind = UnitKind.Player, MaxHp = 20, MaxStability = 6, VisionRange = 9,

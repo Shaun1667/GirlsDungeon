@@ -70,6 +70,10 @@ namespace GirlsDungeon.Tests
                 Assert.That(actual.NoShotAfterMove, Is.EqualTo(weapon.NoShotAfterMove), weapon.Kind + " no shot after move");
                 Assert.That(actual.FalloffStartCells, Is.EqualTo(weapon.FalloffStartCells), weapon.Kind + " falloff start");
                 Assert.That(actual.FalloffPercentPerCell, Is.EqualTo(weapon.FalloffPercentPerCell), weapon.Kind + " falloff");
+                Assert.That(actual.ExtraShotsPerTurn, Is.EqualTo(weapon.ExtraShotsPerTurn), weapon.Kind + " extra shots");
+                Assert.That(actual.MoveRangeBonus, Is.EqualTo(weapon.MoveRangeBonus), weapon.Kind + " move bonus");
+                Assert.That(actual.Melee, Is.EqualTo(weapon.Melee), weapon.Kind + " melee");
+                Assert.That(actual.IgnoresCover, Is.EqualTo(weapon.IgnoresCover), weapon.Kind + " ignores cover");
             }
 
             // 처음 무기 = 지금까지의 플레이어 능력치 (4번 표) — 무기를 넣어도 첫 전투 검산(5-10)이 그대로다.

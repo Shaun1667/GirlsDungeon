@@ -48,6 +48,14 @@ namespace GirlsDungeon.Game
         public int falloffStartCells;
         [Tooltip("Damage lost (%) per cell beyond the falloff start.")]
         public int falloffPercentPerCell;
+        [Tooltip("Rule: extra shots per turn (1 = two shots). Moving between shots is allowed.")]
+        public int extraShotsPerTurn;
+        [Tooltip("Rule: added to the player's move range (negative = heavier).")]
+        public int moveRangeBonus;
+        [Tooltip("Rule: range counts diagonals as one cell (range 1 = all eight neighbors).")]
+        public bool melee;
+        [Tooltip("Rule: ignores the target's cover.")]
+        public bool ignoresCover;
     }
 
     /// <summary>게임 수치의 한 곳 (BALANCE.md와 함께 관리). 코드에 숫자를 직접 넣지 않는다.</summary>
@@ -193,6 +201,21 @@ namespace GirlsDungeon.Game
                 kind = WeaponKind.Sniper, nameKey = "weapon.sniper.name", ruleKey = "weapon.sniper.rule",
                 attack = 13, attackRange = 12, stabilityDamage = 1, critPercent = 30, critMultiplierPercent = 150, noShotAfterMove = true,
             },
+            new WeaponEntry
+            {
+                kind = WeaponKind.Smg, nameKey = "weapon.smg.name", ruleKey = "weapon.smg.rule",
+                attack = 7, attackRange = 6, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150, extraShotsPerTurn = 1,
+            },
+            new WeaponEntry
+            {
+                kind = WeaponKind.MachineGun, nameKey = "weapon.machine_gun.name", ruleKey = "weapon.machine_gun.rule",
+                attack = 9, attackRange = 8, stabilityDamage = 4, critPercent = 15, critMultiplierPercent = 150, moveRangeBonus = -2,
+            },
+            new WeaponEntry
+            {
+                kind = WeaponKind.Blade, nameKey = "weapon.blade.name", ruleKey = "weapon.blade.rule",
+                attack = 16, attackRange = 1, stabilityDamage = 3, critPercent = 20, critMultiplierPercent = 150, melee = true, ignoresCover = true,
+            },
         };
         [Tooltip("Chance (%) that winning a combat drops a weapon.")]
         [SerializeField] private int combatDropWeaponPercent = 30;
@@ -299,6 +322,10 @@ namespace GirlsDungeon.Game
                     NoShotAfterMove = entry.noShotAfterMove,
                     FalloffStartCells = entry.falloffStartCells,
                     FalloffPercentPerCell = entry.falloffPercentPerCell,
+                    ExtraShotsPerTurn = entry.extraShotsPerTurn,
+                    MoveRangeBonus = entry.moveRangeBonus,
+                    Melee = entry.melee,
+                    IgnoresCover = entry.ignoresCover,
                 });
             }
             foreach (var entry in units)

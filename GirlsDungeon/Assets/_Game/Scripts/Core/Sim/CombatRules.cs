@@ -63,14 +63,13 @@ namespace GirlsDungeon.Core.Sim
         {
             var map = world.Map;
             var block = AttackBlock.None;
-            int dx = target.Position.X - from.X;
-            int dy = target.Position.Y - from.Y;
             var weapon = Loadout.WeaponOf(world, settings, attacker);
-            if (dx * dx + dy * dy > attacker.AttackRange * attacker.AttackRange) block = AttackBlock.OutOfRange;
+            if (!Loadout.InRange(weapon, attacker.AttackRange, from, target.Position)) block = AttackBlock.OutOfRange;
             else if (!Sight.HasLine(map, from, target.Position)) block = AttackBlock.NoLineOfFire;
             else if (weapon != null && weapon.NoShotAfterMove && MovesThisTurn(world, attacker, from)) block = AttackBlock.MovedThisTurn;
 
-            var cover = Cover.Against(map, target.Position, from);
+            // 도검: 엄폐를 무시한다 (엄폐가 없으니 안정지수 감소도 붙지 않고 엄폐물도 깎이지 않는다).
+            var cover = weapon != null && weapon.IgnoresCover ? CoverLevel.None : Cover.Against(map, target.Position, from);
             bool guard = cover != CoverLevel.None && target.Stability > 0;
             int reduction = cover == CoverLevel.Full ? settings.FullCoverReductionPercent
                 : cover == CoverLevel.Half ? settings.HalfCoverReductionPercent : 0;

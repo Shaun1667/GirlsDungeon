@@ -146,7 +146,8 @@ namespace GirlsDungeon.Core.Sim
             foreach (var weapon in Weapons)
             {
                 if (weapon.Attack < 1 || weapon.AttackRange < 1 || weapon.StabilityDamage < 0 || weapon.CritPercent < 0 || weapon.CritPercent > 100
-                    || weapon.CritMultiplierPercent < 100 || weapon.FalloffStartCells < 0 || weapon.FalloffPercentPerCell < 0)
+                    || weapon.CritMultiplierPercent < 100 || weapon.FalloffStartCells < 0 || weapon.FalloffPercentPerCell < 0
+                    || weapon.ExtraShotsPerTurn < 0)
                     throw new ArgumentException($"Stats for weapon {weapon.Kind} are invalid.");
             }
             if (CombatDropWeaponPercent < 0 || CombatDropMedkitPercent < 0 || CombatDropWeaponPercent + CombatDropMedkitPercent > 100

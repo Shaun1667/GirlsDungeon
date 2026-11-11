@@ -131,6 +131,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>이번 플레이어 차례에 행동(사격)을 썼다 (전투 중).</summary>
         public bool PlayerActed { get; set; }
 
+        /// <summary>이번 플레이어 차례에 쏜 횟수 (기관단총은 두 번까지). PlayerMoved와 같은 때 0이 된다.</summary>
+        public int PlayerShots { get; set; }
+
         /// <summary>수류탄 스킬을 다시 쓸 수 있을 때까지 남은 라운드 (0 = 지금 사용 가능). 전투가 끝나면 0.</summary>
         public int GrenadeCooldown { get; set; }
 
