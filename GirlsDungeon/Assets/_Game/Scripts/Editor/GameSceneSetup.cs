@@ -46,10 +46,16 @@ namespace GirlsDungeon.EditorTools
             var tracerMaterial = LoadOrCreateMaterial("GreyboxTracer", new Color(1f, 0.9f, 0.4f));
             tracerMaterial.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.3f));
             tracerMaterial.EnableKeyword("_EMISSION");
-            // 고른 사격 대상까지 얇은 노란 선 (2026-11-11, 사용자 "빨간 선 말고 얇은 노란 선").
-            var targetLineMaterial = LoadOrCreateMaterial("GreyboxTargetLine", new Color(1f, 0.85f, 0.15f));
-            targetLineMaterial.SetColor("_EmissionColor", new Color(0.9f, 0.75f, 0.1f));
+            // 사거리 안 적까지의 선 (2026-11-11, 사용자): 엄폐 없음 = 노랑, 엄폐 받음 = 흰색, 고른 적 = 더 밝은 노랑.
+            var targetLineMaterial = LoadOrCreateMaterial("GreyboxTargetLine", new Color(0.95f, 0.75f, 0.1f));
+            targetLineMaterial.SetColor("_EmissionColor", new Color(0.55f, 0.42f, 0.05f));
             targetLineMaterial.EnableKeyword("_EMISSION");
+            var coverLineMaterial = LoadOrCreateMaterial("GreyboxTargetLineCover", new Color(0.92f, 0.92f, 0.92f));
+            coverLineMaterial.SetColor("_EmissionColor", new Color(0.55f, 0.55f, 0.55f));
+            coverLineMaterial.EnableKeyword("_EMISSION");
+            var selectedLineMaterial = LoadOrCreateMaterial("GreyboxTargetLineSelected", new Color(1f, 1f, 0.45f));
+            selectedLineMaterial.SetColor("_EmissionColor", new Color(1.6f, 1.5f, 0.5f));
+            selectedLineMaterial.EnableKeyword("_EMISSION");
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -215,7 +221,7 @@ namespace GirlsDungeon.EditorTools
 
             var rootObject = new GameObject("GameRoot");
             var moveController = rootObject.AddComponent<MoveController>();
-            // 고른 사격 대상까지 얇은 노란 선.
+            // 사거리 안 적까지 얇은 선의 틀 (숨겨 두고 MoveController가 적마다 복사한다).
             var targetLine = new GameObject("TargetLine", typeof(LineRenderer)).GetComponent<LineRenderer>();
             targetLine.sharedMaterial = targetLineMaterial;
             targetLine.positionCount = 2;
@@ -223,7 +229,8 @@ namespace GirlsDungeon.EditorTools
             targetLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             targetLine.enabled = false;
             SetReferences(moveController, ("viewCamera", cameraObject.GetComponent<Camera>()), ("hoverMarker", hover.transform),
-                ("rangeView", rangeView), ("areaView", areaView), ("pushAreaView", pushAreaView), ("targetLine", targetLine));
+                ("rangeView", rangeView), ("areaView", areaView), ("pushAreaView", pushAreaView), ("targetLine", targetLine),
+                ("openLineMaterial", targetLineMaterial), ("coverLineMaterial", coverLineMaterial), ("selectedLineMaterial", selectedLineMaterial));
 
             var eventPlayer = rootObject.AddComponent<EventPlayer>();
             var combatFx = new GameObject("CombatFx").AddComponent<CombatFxView>();

@@ -161,7 +161,7 @@ namespace GirlsDungeon.Game
 
         public string DebugTargetSummary()
         {
-            return $"Selected={moveController.SelectedTargetId}, Line={moveController.TargetLineShown}, "
+            return $"Selected={moveController.SelectedTargetId}, Lines=[{moveController.TargetLinesSummary}], "
                 + $"Confirm shown={hudView.AttackConfirmShown} enabled={hudView.AttackConfirmEnabled}, Preview={hudView.PreviewText.Replace('\n', ' ')}";
         }
 

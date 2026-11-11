@@ -33,9 +33,18 @@ namespace GirlsDungeon.Game
         [SerializeField] private RangeView areaView;
         [Tooltip("Shows the push cells while aiming the push skill.")]
         [SerializeField] private RangeView pushAreaView;
-        [Tooltip("Thin yellow line from the player to the selected target.")]
+        [Tooltip("Hidden template copied for each line from the player to an enemy in range.")]
         [SerializeField] private LineRenderer targetLine;
         [SerializeField] private float targetLineHeight = 1.1f;
+        [Tooltip("Line to an enemy in range that has no cover against the player.")]
+        [SerializeField] private Material openLineMaterial;
+        [Tooltip("Line to an enemy in range that gets cover.")]
+        [SerializeField] private Material coverLineMaterial;
+        [Tooltip("Line to the selected target.")]
+        [SerializeField] private Material selectedLineMaterial;
+
+        private readonly List<LineRenderer> lines = new List<LineRenderer>();
+        private readonly List<string> lineKinds = new List<string>();
 
         /// <summary>고른 사격 대상 (없으면 -1). 적을 클릭하면 고르기만 하고, 확인(버튼 · Enter · 사격 카드)을 눌러야 쏜다.</summary>
         private int selectedTargetId = -1;
@@ -59,7 +68,11 @@ namespace GirlsDungeon.Game
         public bool IsAiming => aim != AimMode.None;
         public AimMode Aim => aim;
         public int SelectedTargetId => selectedTargetId;
-        public bool TargetLineShown => targetLine != null && targetLine.enabled;
+        /// <summary>고른 대상까지 선이 그려져 있다.</summary>
+        public bool TargetLineShown => lineKinds.Contains("selected");
+
+        /// <summary>지금 그린 선들 (디버그): "적ID:open|cover|selected".</summary>
+        public string TargetLinesSummary => string.Join(", ", lineKinds);
 
         /// <summary>사격 대상을 고른다 (노란 선 · 미리보기 · 확인 버튼). 전투 중인 적이 아니거나 지금 쏠 수 없으면 false.</summary>
         public bool SelectTarget(int unitId)
@@ -86,8 +99,50 @@ namespace GirlsDungeon.Game
         public void ClearTarget()
         {
             selectedTargetId = -1;
-            if (targetLine != null) targetLine.enabled = false;
             if (hudView != null) hudView.ShowAttackConfirm(false, false);
+        }
+
+        /// <summary>
+        /// 지금 쏠 수 있는 적(사거리 · 사선 안, CombatRules.Preview가 쏠 수 있다고 한 적)마다 플레이어에서 선을 긋는다
+        /// (결정 2026-11-11, 사용자): 엄폐를 받는 적 = 흰 선, 엄폐가 없는 적 = 노란 선, 고른 적 = 밝은 노란 선.
+        /// 쏠 수 없는 때(적 차례 · 재생 중 · 스킬 조준 · 이미 쐈음)에는 모두 숨긴다.
+        /// </summary>
+        private void RefreshTargetLines(World world, bool show)
+        {
+            lineKinds.Clear();
+            int used = 0;
+            if (show)
+            {
+                var player = world.Player;
+                var from = GridSpace.ToWorld(player.Position) + Vector3.up * targetLineHeight;
+                foreach (int id in world.Combatants)
+                {
+                    var enemy = world.FindUnit(id);
+                    if (enemy == null) continue;
+                    var preview = CombatRules.Preview(world, settings, player, player.Position, enemy);
+                    if (!preview.CanAttack) continue;
+
+                    string kind = id == selectedTargetId ? "selected" : preview.Cover != CoverLevel.None ? "cover" : "open";
+                    var line = LineAt(used++);
+                    line.sharedMaterial = kind == "selected" ? selectedLineMaterial : kind == "cover" ? coverLineMaterial : openLineMaterial;
+                    line.SetPosition(0, from);
+                    line.SetPosition(1, GridSpace.ToWorld(enemy.Position) + Vector3.up * targetLineHeight);
+                    line.enabled = true;
+                    lineKinds.Add(id + ":" + kind);
+                }
+            }
+            for (int i = used; i < lines.Count; i++) lines[i].enabled = false;
+        }
+
+        private LineRenderer LineAt(int index)
+        {
+            while (lines.Count <= index)
+            {
+                var line = Instantiate(targetLine, targetLine.transform.parent);
+                line.name = "TargetLine " + lines.Count;
+                lines.Add(line);
+            }
+            return lines[index];
         }
 
         /// <summary>수류탄 조준 모드를 켜고 끈다 (수류탄 버튼). 내 차례에 아직 행동하지 않았을 때만 켤 수 있다.</summary>
@@ -237,7 +292,7 @@ namespace GirlsDungeon.Game
             return simulation.Execute(new CombatMoveCommand(cell, settings));
         }
 
-        /// <summary>고른 대상이 아직 쏠 수 있는 대상인지 보고, 아니면 고른 것을 푼다. 노란 선을 그린다.</summary>
+        /// <summary>고른 대상이 아직 쏠 수 있는 대상인지 보고, 아니면 고른 것을 푼다.</summary>
         private Unit RefreshSelection(World world)
         {
             if (selectedTargetId < 0) return null;
@@ -248,12 +303,6 @@ namespace GirlsDungeon.Game
             {
                 ClearTarget();
                 return null;
-            }
-            if (targetLine != null)
-            {
-                targetLine.enabled = true;
-                targetLine.SetPosition(0, GridSpace.ToWorld(world.Player.Position) + Vector3.up * targetLineHeight);
-                targetLine.SetPosition(1, GridSpace.ToWorld(target.Position) + Vector3.up * targetLineHeight);
             }
             return target;
         }
@@ -275,6 +324,7 @@ namespace GirlsDungeon.Game
             else
             {
                 if (selectedTargetId >= 0) ClearTarget();
+                RefreshTargetLines(simulation.World, false);
                 rangeView.Hide();
                 reachableKey = null;
                 if (mode == WorldMode.Exploration) HandleExploration();
@@ -319,6 +369,7 @@ namespace GirlsDungeon.Game
                 else if (confirm && ConfirmAttack()) return;
                 selected = RefreshSelection(world);
             }
+            RefreshTargetLines(world, TurnFlow.IsPlayerTurn(world) && !Busy && aim == AimMode.None && Loadout.CanShoot(world, settings));
             var selectedPreview = selected != null ? CombatRules.Preview(world, settings, world.Player, world.Player.Position, selected) : default;
             hudView.ShowAttackConfirm(selected != null, selected != null && selectedPreview.CanAttack && !Busy);
 
