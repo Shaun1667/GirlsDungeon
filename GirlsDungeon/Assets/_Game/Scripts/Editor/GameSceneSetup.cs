@@ -43,6 +43,9 @@ namespace GirlsDungeon.EditorTools
             var supplyOpenedMaterial = LoadOrCreateMaterial("GreyboxSupplyOpened", new Color(0.12f, 0.3f, 0.17f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
+            var tracerMaterial = LoadOrCreateMaterial("GreyboxTracer", new Color(1f, 0.9f, 0.4f));
+            tracerMaterial.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.3f));
+            tracerMaterial.EnableKeyword("_EMISSION");
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -56,15 +59,18 @@ namespace GirlsDungeon.EditorTools
                 new Vector2(0.5f, 1f), new Vector2(0f, -20f), TextAnchor.UpperCenter);
             var turnLabel = CreateLabel(canvas.transform, "TurnLabel", font, 30,
                 new Vector2(0.5f, 1f), new Vector2(0f, -64f), TextAnchor.UpperCenter);
-            var controlsLabel = CreateLabel(canvas.transform, "ControlsLabel", font, 26,
-                new Vector2(0f, 0f), new Vector2(24f, 20f), TextAnchor.LowerLeft);
+            // 조작 안내는 오른쪽 위 (층 표시 아래) — 아래 가운데 스킬 바와 겹치지 않게.
+            var controlsLabel = CreateLabel(canvas.transform, "ControlsLabel", font, 22,
+                new Vector2(1f, 1f), new Vector2(-24f, -60f), TextAnchor.UpperRight);
             controlsLabel.gameObject.AddComponent<TextLabel>().TextKey = "ui.hud.controls";
+            // 미리보기는 스킬 바(아래 가운데) · 설명 창 위에 둔다.
             var previewLabel = CreateLabel(canvas.transform, "PreviewLabel", font, 28,
-                new Vector2(0.5f, 0f), new Vector2(0f, 120f), TextAnchor.LowerCenter);
+                new Vector2(0.5f, 0f), new Vector2(0f, 300f), TextAnchor.LowerCenter);
             previewLabel.rectTransform.sizeDelta = new Vector2(1200f, 90f);
+            // 기록은 왼쪽 아래 — 스킬 바와 겹치지 않게 폭을 줄였다.
             var logLabel = CreateLabel(canvas.transform, "LogLabel", font, 24,
                 new Vector2(0f, 0f), new Vector2(24f, 64f), TextAnchor.LowerLeft);
-            logLabel.rectTransform.sizeDelta = new Vector2(700f, 140f);
+            logLabel.rectTransform.sizeDelta = new Vector2(470f, 140f);
             var defeatLabel = CreateLabel(canvas.transform, "DefeatLabel", font, 64,
                 new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
             defeatLabel.color = new Color(1f, 0.35f, 0.3f);
@@ -77,16 +83,44 @@ namespace GirlsDungeon.EditorTools
                 new Vector2(0.5f, 0.5f), new Vector2(0f, -220f));
             var floorLabel = CreateLabel(canvas.transform, "FloorLabel", font, 30,
                 new Vector2(1f, 1f), new Vector2(-24f, -20f), TextAnchor.UpperRight);
-            var endTurnButton = CreateButton(canvas.transform, "EndTurnButton", font, "ui.combat.end_turn",
-                new Vector2(1f, 0f), new Vector2(-32f, 32f));
-            var grenadeButton = CreateButton(canvas.transform, "GrenadeButton", font, "ui.skill.grenade",
-                new Vector2(1f, 0f), new Vector2(-32f, 132f));
-            grenadeButton.GetComponent<RectTransform>().sizeDelta = new Vector2(420f, 84f);
-            var pushButton = CreateButton(canvas.transform, "PushButton", font, "ui.skill.push",
-                new Vector2(1f, 0f), new Vector2(-32f, 232f));
-            pushButton.GetComponent<RectTransform>().sizeDelta = new Vector2(420f, 84f);
-            var overwatchButton = CreateButton(canvas.transform, "OverwatchButton", font, "ui.skill.overwatch",
-                new Vector2(1f, 0f), new Vector2(-32f, 332f));
+            // 스킬 바: 아래 가운데에 카드 5장 (사격 · 수류탄 · 밀치기 · 감시 · 턴 종료). 전투 중에만 보인다.
+            var skillBarObject = new GameObject("SkillBar", typeof(RectTransform));
+            skillBarObject.transform.SetParent(canvas.transform, false);
+            // 화면 전체로 늘려야 자식(카드 · 설명 창)이 화면 아래 가운데에 붙는다.
+            var skillBarRect = skillBarObject.GetComponent<RectTransform>();
+            skillBarRect.anchorMin = Vector2.zero;
+            skillBarRect.anchorMax = Vector2.one;
+            skillBarRect.sizeDelta = Vector2.zero;
+            var barRoot = new GameObject("Cards", typeof(RectTransform));
+            barRoot.transform.SetParent(skillBarObject.transform, false);
+            var barRect = barRoot.GetComponent<RectTransform>();
+            barRect.anchorMin = barRect.anchorMax = barRect.pivot = new Vector2(0.5f, 0f);
+            barRect.anchoredPosition = new Vector2(0f, 24f);
+            barRect.sizeDelta = new Vector2(5 * CardWidth + 4 * CardGap, CardHeight);
+            var shootCard = CreateCard(barRoot.transform, "ShootCard", font, 0);
+            var grenadeCard = CreateCard(barRoot.transform, "GrenadeCard", font, 1);
+            var pushCard = CreateCard(barRoot.transform, "PushCard", font, 2);
+            var overwatchCard = CreateCard(barRoot.transform, "OverwatchCard", font, 3);
+            var endTurnCard = CreateCard(barRoot.transform, "EndTurnCard", font, 4);
+            var tooltipPanel = CreatePanel(skillBarObject.transform, "Tooltip", new Vector2(0.5f, 0f), new Vector2(0f, CardHeight + 40f),
+                new Vector2(900f, 140f), new Color(0.06f, 0.07f, 0.1f, 0.95f));
+            tooltipPanel.GetComponent<Image>().raycastTarget = false;
+            var tooltipLabel = CreateLabel(tooltipPanel.transform, "Label", font, 24, new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
+            tooltipLabel.rectTransform.sizeDelta = new Vector2(860f, 130f);
+            tooltipPanel.SetActive(false);
+            var skillBar = skillBarObject.AddComponent<SkillBarView>();
+            SetReferences(skillBar, ("barRoot", barRoot), ("shootCard", shootCard), ("grenadeCard", grenadeCard), ("pushCard", pushCard),
+                ("overwatchCard", overwatchCard), ("endTurnCard", endTurnCard), ("tooltipPanel", tooltipPanel), ("tooltipLabel", tooltipLabel));
+
+            // 떠오르는 피해 숫자의 틀 (숨겨 두고 복사해 쓴다).
+            var popupTemplate = CreateLabel(canvas.transform, "DamagePopupTemplate", font, 40,
+                new Vector2(0f, 0f), Vector2.zero, TextAnchor.MiddleCenter);
+            popupTemplate.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            popupTemplate.rectTransform.sizeDelta = new Vector2(320f, 60f);
+            popupTemplate.fontStyle = FontStyle.Bold;
+            popupTemplate.gameObject.AddComponent<Outline>().effectColor = new Color(0f, 0f, 0f, 0.8f);
+            popupTemplate.gameObject.SetActive(false);
+
             var weaponLabel = CreateLabel(canvas.transform, "WeaponLabel", font, 28,
                 new Vector2(0f, 1f), new Vector2(24f, -144f), TextAnchor.UpperLeft);
 
@@ -114,7 +148,6 @@ namespace GirlsDungeon.EditorTools
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
                 ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel), ("resultLabel", resultLabel), ("newRunButton", newRunButton), ("floorLabel", floorLabel),
-                ("endTurnButton", endTurnButton), ("grenadeButton", grenadeButton), ("pushButton", pushButton), ("overwatchButton", overwatchButton),
                 ("weaponLabel", weaponLabel), ("weaponPanel", weaponPanel), ("weaponPanelLabel", weaponPanelLabel), ("swapButton", swapButton), ("keepButton", keepButton));
 
             var rangeObject = new GameObject("RangeView");
@@ -174,6 +207,10 @@ namespace GirlsDungeon.EditorTools
             SetReferences(moveController, ("viewCamera", cameraObject.GetComponent<Camera>()), ("hoverMarker", hover.transform),
                 ("rangeView", rangeView), ("areaView", areaView), ("pushAreaView", pushAreaView));
 
+            var eventPlayer = rootObject.AddComponent<EventPlayer>();
+            var combatFx = new GameObject("CombatFx").AddComponent<CombatFxView>();
+            SetReferences(combatFx, ("viewCamera", cameraObject.GetComponent<Camera>()), ("tracerMaterial", tracerMaterial), ("popupTemplate", popupTemplate));
+
             var root = rootObject.AddComponent<GameRoot>();
             SetReferences(root,
                 ("balance", balance),
@@ -186,7 +223,10 @@ namespace GirlsDungeon.EditorTools
                 ("hudView", hudView),
                 ("fogView", fogView),
                 ("threatView", threatView),
-                ("itemsView", itemsView));
+                ("itemsView", itemsView),
+                ("eventPlayer", eventPlayer),
+                ("skillBar", skillBar),
+                ("combatFx", combatFx));
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -217,6 +257,57 @@ namespace GirlsDungeon.EditorTools
             labelRect.sizeDelta = Vector2.zero;
             label.gameObject.AddComponent<TextLabel>().TextKey = textKey;
             return buttonObject.GetComponent<Button>();
+        }
+
+        private const float CardWidth = 170f;
+        private const float CardHeight = 110f;
+        private const float CardGap = 12f;
+
+        /// <summary>스킬 바 카드: 배경 · 이름(가운데) · 단축키(왼쪽 위) · 재사용 대기 덮개와 숫자. 글은 SkillBarView가 채운다.</summary>
+        private static SkillCardView CreateCard(Transform parent, string objectName, Font font, int index)
+        {
+            var cardObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
+            cardObject.transform.SetParent(parent, false);
+            var rect = cardObject.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = rect.pivot = new Vector2(0f, 0f);
+            rect.sizeDelta = new Vector2(CardWidth, CardHeight);
+            rect.anchoredPosition = new Vector2(index * (CardWidth + CardGap), 0f);
+            var image = cardObject.GetComponent<Image>();
+            image.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+            image.type = Image.Type.Sliced;
+
+            var nameLabel = CreateLabel(cardObject.transform, "Name", font, 28, new Vector2(0.5f, 0.5f), new Vector2(0f, -10f), TextAnchor.MiddleCenter);
+            nameLabel.rectTransform.sizeDelta = new Vector2(CardWidth - 10f, 50f);
+            var keyLabel = CreateLabel(cardObject.transform, "Key", font, 20, new Vector2(0f, 1f), new Vector2(10f, -6f), TextAnchor.UpperLeft);
+            keyLabel.rectTransform.sizeDelta = new Vector2(CardWidth - 20f, 30f);
+            keyLabel.color = new Color(1f, 1f, 1f, 0.7f);
+
+            var overlay = CreatePanel(cardObject.transform, "Cooldown", new Vector2(0.5f, 0.5f), Vector2.zero,
+                new Vector2(CardWidth, CardHeight), new Color(0f, 0f, 0f, 0.65f));
+            overlay.GetComponent<Image>().raycastTarget = false;
+            var cooldownLabel = CreateLabel(overlay.transform, "Rounds", font, 44, new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
+            cooldownLabel.rectTransform.sizeDelta = new Vector2(CardWidth, CardHeight);
+            overlay.SetActive(false);
+
+            var card = cardObject.AddComponent<SkillCardView>();
+            SetReferences(card, ("button", cardObject.GetComponent<Button>()), ("background", image), ("nameLabel", nameLabel),
+                ("keyLabel", keyLabel), ("cooldownOverlay", overlay), ("cooldownLabel", cooldownLabel));
+            return card;
+        }
+
+        private static GameObject CreatePanel(Transform parent, string objectName, Vector2 corner, Vector2 offset, Vector2 size, Color color)
+        {
+            var panel = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            panel.transform.SetParent(parent, false);
+            var rect = panel.GetComponent<RectTransform>();
+            rect.anchorMin = rect.anchorMax = rect.pivot = corner;
+            rect.sizeDelta = size;
+            rect.anchoredPosition = offset;
+            var image = panel.GetComponent<Image>();
+            image.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
+            image.type = Image.Type.Sliced;
+            image.color = color;
+            return panel;
         }
 
         private static void CreateEventSystem()

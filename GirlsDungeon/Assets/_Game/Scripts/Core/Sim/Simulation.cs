@@ -7,11 +7,21 @@ using GirlsDungeon.Core.Random;
 namespace GirlsDungeon.Core.Sim
 {
     /// <summary>
+    /// 화면이 사건을 받는 곳. Simulation은 커맨드마다 한꺼번에 내보내고,
+    /// 화면 쪽 재생기(Game.EventPlayer)는 같은 사건을 시간을 두고 하나씩 다시 내보낸다.
+    /// </summary>
+    public interface IEventSource
+    {
+        World World { get; }
+        event Action<IReadOnlyList<GameEvent>> EventsPublished;
+    }
+
+    /// <summary>
     /// 규칙 진행의 한 곳. 모든 변화는 커맨드와 틱으로만 일어나고, 사건은 끝에 한꺼번에 나간다.
     /// 틱 순서 (시스템이 생기면 이 순서에 끼운다):
     /// ① 행동 ② 반응 ③ 지형 ④ 상태 ⑤ 재생 · 기타 ⑥ 사망 · 승패 · 시야(전투 전환 CombatFlow) ⑦ 사건 발행
     /// </summary>
-    public sealed class Simulation
+    public sealed class Simulation : IEventSource
     {
         private readonly List<GameEvent> pending = new List<GameEvent>();
         private readonly CombatSettings settings;

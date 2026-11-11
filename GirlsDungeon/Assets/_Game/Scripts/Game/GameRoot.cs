@@ -20,6 +20,9 @@ namespace GirlsDungeon.Game
         [SerializeField] private FogView fogView;
         [SerializeField] private ThreatView threatView;
         [SerializeField] private ItemsView itemsView;
+        [SerializeField] private EventPlayer eventPlayer;
+        [SerializeField] private SkillBarView skillBar;
+        [SerializeField] private CombatFxView combatFx;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -40,23 +43,25 @@ namespace GirlsDungeon.Game
             combatSettings = balance.CreateCombatSettings();
             mapSettings = balance.CreateMapSettings();
             simulation = new Simulation(RunFactory.NewRun(seed, mapSettings, combatSettings), combatSettings, mapSettings);
-            simulation.EventsPublished += RebuildFloorWhenCoverBreaks;
+
+            // 화면은 규칙 결과를 사건 재생기로 하나씩 받는다 (적 차례가 한 동작씩 보이게). 안개 · 위협 칸만 바로 받는다.
+            eventPlayer.Bind(simulation, balance);
+            eventPlayer.EventsPublished -= RebuildFloorWhenCoverBreaks;
+            eventPlayer.EventsPublished += RebuildFloorWhenCoverBreaks;
+            eventPlayer.FocusChanged -= OnFocusChanged;
+            eventPlayer.FocusChanged += OnFocusChanged;
 
             floorView.Build(simulation.World.Map, balance);
             fogView.Bind(simulation, balance);
-            playerView.Bind(simulation, balance.StepSeconds);
-            unitsView.Bind(simulation);
-            itemsView.Bind(simulation);
-            hudView.Bind(simulation, combatSettings, balance);
-            moveController.Bind(simulation, playerView, hudView, combatSettings, balance.MoveCostTicks);
-            hudView.GrenadeButtonPressed -= moveController.ToggleAim;
-            hudView.GrenadeButtonPressed += moveController.ToggleAim;
-            hudView.PushButtonPressed -= moveController.TogglePushAim;
-            hudView.PushButtonPressed += moveController.TogglePushAim;
+            playerView.Bind(eventPlayer, balance);
+            unitsView.Bind(eventPlayer, balance);
+            itemsView.Bind(eventPlayer);
+            hudView.Bind(eventPlayer, combatSettings, balance);
+            moveController.Bind(simulation, eventPlayer, playerView, hudView, combatSettings, balance.MoveCostTicks);
+            skillBar.Bind(simulation, eventPlayer, moveController, playerView, combatSettings, balance);
+            combatFx.Bind(eventPlayer, balance, unitsView, playerView);
             hudView.NewRunPressed -= OnNewRunButton;
             hudView.NewRunPressed += OnNewRunButton;
-            hudView.OverwatchButtonPressed -= OnOverwatchButton;
-            hudView.OverwatchButtonPressed += OnOverwatchButton;
             hudView.SwapPressed -= OnSwapPressed;
             hudView.SwapPressed += OnSwapPressed;
             threatView.Bind(simulation, combatSettings);
@@ -105,10 +110,33 @@ namespace GirlsDungeon.Game
             return moveController.RequestMove(World.Map.StairsCell);
         }
 
-        private void OnOverwatchButton()
+        /// <summary>적 차례: 카메라가 지금 움직이는 적을 따라가고, 끝나면 플레이어로 돌아온다.</summary>
+        private void OnFocusChanged(int unitId)
         {
-            moveController.RequestOverwatch();
+            var world = World;
+            if (world == null) return;
+            var target = unitId == world.PlayerId ? playerView.transform : unitsView.ViewOf(unitId);
+            cameraRig.SetTarget(target);
         }
+
+        /// <summary>사건 재생 상태 (디버그).</summary>
+        public string DebugPlaybackSummary()
+        {
+            if (eventPlayer == null) return "No player";
+            var target = cameraRig.Target;
+            return $"Playing={eventPlayer.IsPlaying}, Pending={eventPlayer.PendingCount}, ShownTurn={eventPlayer.ShownTurn}, "
+                + $"CameraTarget={(target != null ? target.name : "none")}, Popups={combatFx.ActivePopupCount}, Tracers={combatFx.ActiveTracerCount}, "
+                + $"LastPopup={combatFx.LastPopupText}, SkillBar={skillBar.IsShown}";
+        }
+
+        /// <summary>[상태 변경] 재생 중인 사건을 기다리지 않고 모두 내보낸다.</summary>
+        public void DebugFlushPlayback()
+        {
+            DebugUsed = true;
+            eventPlayer.Flush();
+        }
+
+        public SkillBarView DebugSkillBar => skillBar;
 
         /// <summary>비교 창의 "바꾸기": 발밑 무기로 바꾼다.</summary>
         private void OnSwapPressed(int itemId)
@@ -319,7 +347,7 @@ namespace GirlsDungeon.Game
         public bool DebugEndTurn()
         {
             DebugUsed = true;
-            return hudView.EndTurn();
+            return skillBar.EndTurn();
         }
 
         /// <summary>[상태 변경] 전투 중인 적(없으면 가장 가까운 적) 하나를 쓰러뜨린다. 쓰러뜨린 적이 없으면 false.</summary>

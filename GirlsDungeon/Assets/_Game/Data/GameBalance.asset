@@ -241,3 +241,10 @@ MonoBehaviour:
   cameraDistance: 17
   cameraFollowSharpness: 8
   cameraRotateSharpness: 10
+  enemyTurnBannerSeconds: 0.6
+  attackPauseSeconds: 0.55
+  actionPauseSeconds: 0.3
+  tracerSeconds: 0.2
+  damagePopupSeconds: 1
+  shakeSeconds: 0.2
+  shakeDistance: 0.08

@@ -250,6 +250,18 @@ namespace GirlsDungeon.Game
         [SerializeField] private float cameraFollowSharpness = 8f;
         [SerializeField] private float cameraRotateSharpness = 10f;
 
+        [Header("Turn playback (BALANCE 3-14 ~ 3-20, view only)")]
+        [Tooltip("Pause after the enemy-turn banner appears.")]
+        [SerializeField] private float enemyTurnBannerSeconds = 0.6f;
+        [Tooltip("Pause after each attack (tracer and damage number).")]
+        [SerializeField] private float attackPauseSeconds = 0.55f;
+        [Tooltip("Pause after overwatch, explosions, pushes and deaths.")]
+        [SerializeField] private float actionPauseSeconds = 0.3f;
+        [SerializeField] private float tracerSeconds = 0.2f;
+        [SerializeField] private float damagePopupSeconds = 1f;
+        [SerializeField] private float shakeSeconds = 0.2f;
+        [SerializeField] private float shakeDistance = 0.08f;
+
         public int FixedSeed => fixedSeed;
         public int MoveCostTicks => moveCostTicks;
         public float StepSeconds => stepSeconds;
@@ -268,6 +280,13 @@ namespace GirlsDungeon.Game
         public float CameraDistance => cameraDistance;
         public float CameraFollowSharpness => cameraFollowSharpness;
         public float CameraRotateSharpness => cameraRotateSharpness;
+        public float EnemyTurnBannerSeconds => enemyTurnBannerSeconds;
+        public float AttackPauseSeconds => attackPauseSeconds;
+        public float ActionPauseSeconds => actionPauseSeconds;
+        public float TracerSeconds => tracerSeconds;
+        public float DamagePopupSeconds => damagePopupSeconds;
+        public float ShakeSeconds => shakeSeconds;
+        public float ShakeDistance => shakeDistance;
 
         public CombatSettings CreateCombatSettings()
         {

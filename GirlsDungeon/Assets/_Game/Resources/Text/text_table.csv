@@ -1,6 +1,6 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · 적 클릭: 사격 · 초록 상자 클릭: 열기 · Q/E: 카메라 회전,Click: Move · Click enemy: Shoot · Click green crate: Open · Q/E: Rotate camera
+ui.hud.controls,클릭: 이동 · 적 클릭: 사격 · 초록 상자 클릭: 열기 · 1~4 스킬 · Space 턴 종료 · Q/E: 카메라 회전,Click: Move · Click enemy: Shoot · Click green crate: Open · 1-4 Skills · Space End turn · Q/E: Rotate camera
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
@@ -96,3 +96,27 @@ weapon.machine_gun.name,기관총,Machine gun
 weapon.machine_gun.rule,무거워 이동 −2,Heavy: move −2
 weapon.blade.name,도검,Blade
 weapon.blade.rule,주변 8칸만 벨 수 있고 엄폐를 무시함,Hits only the eight cells around you and ignores cover
+ui.skill.shoot,사격,Shoot
+ui.key.space,Space,Space
+ui.skill.shoot_tip,"사격 · 적을 클릭
+{0} · 공격 {1} · 사거리 {2}칸 · 한 차례 {4}발
+{3}","Shoot · click an enemy
+{0} · Attack {1} · Range {2} · {4} shot(s) per turn
+{3}"
+ui.skill.grenade_tip,"수류탄 · 칸을 클릭해 던짐 (오른쪽 클릭 취소)
+던지는 거리 {0}칸 · 반경 {1}칸 · 피해 {2}% · 안정 −{3}
+재사용 대기 {4}라운드 · 쓰면 차례 끝","Grenade · click a cell to throw (right-click cancels)
+Throw range {0} · Radius {1} · Damage {2}% · Stability −{3}
+Cooldown {4} rounds · Ends your turn"
+ui.skill.push_tip,"밀치기 · 마우스 쪽으로 앞 너비 {0} × 길이 {1}
+피해 {2}% · 부딪히면 {3} · 낭떠러지로 밀린 적은 떨어짐
+재사용 대기 {4}라운드 · 쓰면 차례 끝","Push · width {0} × length {1} toward the pointer
+Damage {2}% · Collision {3} · Enemies pushed into a chasm fall
+Cooldown {4} rounds · Ends your turn"
+ui.skill.overwatch_tip,"감시 · 사격 대신 걸고 차례 끝
+적이 사거리 {0}칸 · 사선 안에서 움직이면 한 번 반응 사격","Overwatch · instead of shooting, ends your turn
+Fires once when an enemy moves within range {0} and line of fire"
+ui.skill.end_turn_tip,턴 종료 · 적 차례로 넘김,End turn · the enemies act
+ui.fx.damage,{0},{0}
+ui.fx.crit,치명 {0},Crit {0}
+ui.fx.stability_break,안정 붕괴,Stability broken

@@ -23,10 +23,6 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnityEngine.UI.Text resultLabel;
         [SerializeField] private Button newRunButton;
         [SerializeField] private UnityEngine.UI.Text floorLabel;
-        [SerializeField] private Button endTurnButton;
-        [SerializeField] private Button grenadeButton;
-        [SerializeField] private Button pushButton;
-        [SerializeField] private Button overwatchButton;
         [SerializeField] private UnityEngine.UI.Text weaponLabel;
         [Tooltip("Weapon compare window shown when the player steps on a weapon.")]
         [SerializeField] private GameObject weaponPanel;
@@ -36,21 +32,17 @@ namespace GirlsDungeon.Game
         [SerializeField] private int logLines = 4;
 
         private readonly List<string> log = new List<string>();
-        private Simulation simulation;
+        private EventPlayer simulation;
         private CombatSettings settings;
         private GameBalance balance;
         private AimMode aim;
+        private int shownRound;
+        private bool wasPlaying;
 
         public string PreviewText => previewLabel.text;
         public string LogText => logLabel.text;
-        public string GrenadeButtonText => GrenadeLabel.text;
-        public string PushButtonText => PushLabel.text;
-
-        /// <summary>밀치기 버튼을 눌렀다. MoveController가 밀치기 조준 모드를 켜고 끈다 (GameRoot가 잇는다).</summary>
-        public event System.Action PushButtonPressed;
-
-        /// <summary>수류탄 버튼을 눌렀다. MoveController가 조준 모드를 켜고 끈다 (GameRoot가 잇는다).</summary>
-        public event System.Action GrenadeButtonPressed;
+        public string TurnText => turnLabel.text;
+        public string HpText => hpLabel.text;
 
         /// <summary>결과 화면의 "새 판" 버튼을 눌렀다 (GameRoot가 새 시드로 판을 다시 시작한다).</summary>
         public event System.Action NewRunPressed;
@@ -69,13 +61,7 @@ namespace GirlsDungeon.Game
 
         private UnitKind? killerKind;
 
-        /// <summary>감시 버튼을 눌렀다 (GameRoot가 MoveController.RequestOverwatch로 잇는다).</summary>
-        public event System.Action OverwatchButtonPressed;
-
-        private UnityEngine.UI.Text GrenadeLabel => grenadeButton.GetComponentInChildren<UnityEngine.UI.Text>(true);
-        private UnityEngine.UI.Text PushLabel => pushButton.GetComponentInChildren<UnityEngine.UI.Text>(true);
-
-        /// <summary>조준 모드 표시. 그 스킬 버튼 글이 "조준 취소"로 바뀐다.</summary>
+        /// <summary>조준 모드가 바뀌었다 (스킬 바 카드 강조는 SkillBarView가 MoveController.Aim을 직접 읽는다).</summary>
         public void SetAiming(AimMode value)
         {
             aim = value;
@@ -140,15 +126,18 @@ namespace GirlsDungeon.Game
             previewLabel.gameObject.SetActive(true);
         }
 
-        public void Bind(Simulation newSimulation, CombatSettings newSettings, GameBalance newBalance)
+        /// <summary>사건 재생기에 묶는다 — 기록 · 차례 표시가 화면 재생 순서를 따른다.</summary>
+        public void Bind(EventPlayer newEventPlayer, CombatSettings newSettings, GameBalance newBalance)
         {
             Unbind();
-            simulation = newSimulation;
+            simulation = newEventPlayer;
             settings = newSettings;
             balance = newBalance;
             log.Clear();
             logLabel.text = string.Empty;
             killerKind = null;
+            shownRound = simulation.World.Round;
+            wasPlaying = false;
             simulation.EventsPublished += HandleEvents;
             CloseWeaponOffer();
             ClearPreview();
@@ -192,12 +181,6 @@ namespace GirlsDungeon.Game
             previewLabel.gameObject.SetActive(true);
         }
 
-        /// <summary>턴 종료 버튼과 같다. 지금 플레이어 차례가 아니면 false.</summary>
-        public bool EndTurn()
-        {
-            return simulation != null && simulation.Execute(new EndTurnCommand(settings));
-        }
-
         public void ShowAttackPreview(Unit target, AttackPreview preview, bool alreadyActed)
         {
             string name = UnitName(target.Kind);
@@ -231,10 +214,6 @@ namespace GirlsDungeon.Game
 
         private void Awake()
         {
-            if (endTurnButton != null) endTurnButton.onClick.AddListener(() => EndTurn());
-            if (grenadeButton != null) grenadeButton.onClick.AddListener(() => GrenadeButtonPressed?.Invoke());
-            if (pushButton != null) pushButton.onClick.AddListener(() => PushButtonPressed?.Invoke());
-            if (overwatchButton != null) overwatchButton.onClick.AddListener(() => OverwatchButtonPressed?.Invoke());
             if (newRunButton != null) newRunButton.onClick.AddListener(() => NewRunPressed?.Invoke());
             if (swapButton != null) swapButton.onClick.AddListener(() => PressSwap());
             if (keepButton != null) keepButton.onClick.AddListener(CloseWeaponOffer);
@@ -257,6 +236,9 @@ namespace GirlsDungeon.Game
             {
                 switch (gameEvent)
                 {
+                    case TurnStarted started:
+                        shownRound = started.Round;
+                        break;
                     case UnitAttacked attacked:
                         string attacker = UnitName(attacked.AttackerKind);
                         string target = UnitName(attacked.TargetKind);
@@ -370,7 +352,9 @@ namespace GirlsDungeon.Game
         {
             var world = simulation.World;
             var player = world.Player;
-            if (player != null)
+            // 상태는 이미 끝난 결과다. 적 차례를 재생하는 동안에는 체력 · 결과 화면을 바꾸지 않고, 다 보여 준 뒤에 맞춘다 (Update).
+            bool playing = simulation.IsPlaying;
+            if (player != null && !playing)
             {
                 hpLabel.text = Text.Get("ui.hud.hp", player.Hp, player.MaxHp);
                 stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
@@ -381,8 +365,8 @@ namespace GirlsDungeon.Game
             floorLabel.text = Text.Get("ui.hud.floor", world.FloorIndex + 1, settings.FloorCount);
 
             // 결과 화면: 패배 · 승리 제목, 도달한 층 · 쓰러뜨린 적 · 시드, 쓰러뜨린 상대, "새 판" 버튼.
-            bool defeated = world.Mode == WorldMode.Defeat;
-            bool won = world.Mode == WorldMode.Victory;
+            bool defeated = world.Mode == WorldMode.Defeat && !playing;
+            bool won = world.Mode == WorldMode.Victory && !playing;
             defeatLabel.gameObject.SetActive(defeated || won);
             resultLabel.gameObject.SetActive(defeated || won);
             newRunButton.gameObject.SetActive(defeated || won);
@@ -395,30 +379,31 @@ namespace GirlsDungeon.Game
             }
 
             bool inCombat = world.Mode == WorldMode.Combat;
-            bool playerTurn = TurnFlow.IsPlayerTurn(world);
+            // 차례 표시는 화면에 지금 재생 중인 차례 (EventPlayer.ShownTurn) — 적 차례 동안 "적 차례"가 보인다.
+            bool playerTurn = simulation.ShownTurn == TurnSide.Player;
             roundLabel.gameObject.SetActive(inCombat);
             turnLabel.gameObject.SetActive(inCombat);
-            endTurnButton.gameObject.SetActive(playerTurn);
-            grenadeButton.gameObject.SetActive(playerTurn && !world.PlayerActed && aim != AimMode.Push);
-            pushButton.gameObject.SetActive(playerTurn && !world.PlayerActed && aim != AimMode.Grenade);
-            overwatchButton.gameObject.SetActive(playerTurn && !world.PlayerActed && aim == AimMode.None);
-            if (playerTurn)
-            {
-                GrenadeLabel.text = aim == AimMode.Grenade ? Text.Get("ui.skill.grenade_aiming")
-                    : world.GrenadeCooldown > 0 ? Text.Get("ui.skill.grenade_cooldown", world.GrenadeCooldown)
-                    : Text.Get("ui.skill.grenade");
-                PushLabel.text = aim == AimMode.Push ? Text.Get("ui.skill.push_aiming")
-                    : world.PushCooldown > 0 ? Text.Get("ui.skill.push_cooldown", world.PushCooldown)
-                    : Text.Get("ui.skill.push");
-            }
             if (!inCombat)
             {
                 ClearPreview();
                 return;
             }
+            if (!playerTurn) ClearPreview();
 
-            roundLabel.text = Text.Get("ui.combat.round", world.Round);
+            roundLabel.text = Text.Get("ui.combat.round", playing ? shownRound : world.Round);
             turnLabel.text = playerTurn ? Text.Get("ui.combat.player_turn") : Text.Get("ui.combat.enemy_turn");
+            turnLabel.color = playerTurn ? Color.white : enemyTurnColor;
+        }
+
+        [SerializeField] private Color enemyTurnColor = new Color(1f, 0.45f, 0.4f);
+
+        private void Update()
+        {
+            // 재생이 끝나는 순간 체력 · 결과 화면을 실제 상태에 맞춘다.
+            if (simulation == null) return;
+            bool playing = simulation.IsPlaying;
+            if (wasPlaying && !playing) Refresh();
+            wasPlaying = playing;
         }
     }
 }

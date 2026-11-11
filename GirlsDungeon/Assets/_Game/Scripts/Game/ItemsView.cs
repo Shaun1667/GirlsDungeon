@@ -15,7 +15,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material medkitMaterial;
 
         private readonly Dictionary<int, GameObject> views = new Dictionary<int, GameObject>();
-        private Simulation simulation;
+        private IEventSource simulation;
 
         public int VisibleCount
         {
@@ -27,7 +27,7 @@ namespace GirlsDungeon.Game
             }
         }
 
-        public void Bind(Simulation newSimulation)
+        public void Bind(IEventSource newSimulation)
         {
             Unbind();
             simulation = newSimulation;

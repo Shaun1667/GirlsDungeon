@@ -164,6 +164,19 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void TurnPlayback_MatchesBalanceTable3()
+        {
+            var balance = Load();
+            Assert.That(balance.EnemyTurnBannerSeconds, Is.EqualTo(0.6f).Within(0.0001f));
+            Assert.That(balance.AttackPauseSeconds, Is.EqualTo(0.55f).Within(0.0001f));
+            Assert.That(balance.ActionPauseSeconds, Is.EqualTo(0.3f).Within(0.0001f));
+            Assert.That(balance.TracerSeconds, Is.EqualTo(0.2f).Within(0.0001f));
+            Assert.That(balance.DamagePopupSeconds, Is.EqualTo(1f).Within(0.0001f));
+            Assert.That(balance.ShakeSeconds, Is.EqualTo(0.2f).Within(0.0001f));
+            Assert.That(balance.ShakeDistance, Is.EqualTo(0.08f).Within(0.0001f));
+        }
+
+        [Test]
         public void FixedSeed_IsOff()
         {
             Assert.That(Load().FixedSeed, Is.EqualTo(0));

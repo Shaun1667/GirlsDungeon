@@ -9,6 +9,8 @@ namespace GirlsDungeon.Game
     {
         private GameBalance balance;
         private Transform target;
+        /// <summary>따라가던 대상이 사라지면(쓰러진 적) 돌아갈 대상 = 플레이어.</summary>
+        private Transform fallback;
         private Vector3 focus;
         private float targetYaw;
         private float yaw;
@@ -18,11 +20,19 @@ namespace GirlsDungeon.Game
         public void Bind(GameBalance newBalance, Transform newTarget)
         {
             balance = newBalance;
-            target = newTarget;
+            target = fallback = newTarget;
             focus = target.position;
             targetYaw = yaw = balance.CameraStartYaw;
             ApplyTransform();
         }
+
+        /// <summary>따라갈 대상을 바꾼다 (적 차례에 움직이는 적 → 끝나면 플레이어). 부드럽게 옮겨 간다.</summary>
+        public void SetTarget(Transform newTarget)
+        {
+            if (newTarget != null) target = newTarget;
+        }
+
+        public Transform Target => target;
 
         /// <summary>카메라를 돌린다. direction이 1이면 오른쪽, -1이면 왼쪽.</summary>
         public void Rotate(int direction)
@@ -32,6 +42,7 @@ namespace GirlsDungeon.Game
 
         private void LateUpdate()
         {
+            if (target == null) target = fallback;
             if (target == null) return;
 
             var keyboard = Keyboard.current;

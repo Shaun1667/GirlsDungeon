@@ -39,6 +39,7 @@ namespace GirlsDungeon.Game
         private GridPos? pendingCrate;
         private AimMode aim;
         private Simulation simulation;
+        private EventPlayer eventPlayer;
         private PlayerView playerView;
         private HudView hudView;
         private CombatSettings settings;
@@ -67,7 +68,7 @@ namespace GirlsDungeon.Game
         /// <summary>마우스 칸 쪽으로 밀치기를 쓴다 (방향 · 옆 줄은 Push.Aim). 못 쓰면 false.</summary>
         public bool RequestPush(GridPos pointer)
         {
-            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || playerView.IsMoving) return false;
+            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
             Push.Aim(simulation.World.Player.Position, pointer, out var direction, out int side);
             if (!simulation.Execute(new PushCommand(direction, side, settings))) return false;
             SetAiming(AimMode.None);
@@ -77,7 +78,7 @@ namespace GirlsDungeon.Game
         /// <summary>수류탄을 그 칸에 던진다. 못 던지면 false (조준 모드는 그대로).</summary>
         public bool RequestAreaAttack(GridPos center)
         {
-            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || playerView.IsMoving) return false;
+            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
             if (!simulation.Execute(new AreaAttackCommand(center, settings))) return false;
             SetAiming(AimMode.None);
             return true;
@@ -86,10 +87,16 @@ namespace GirlsDungeon.Game
         /// <summary>감시 버튼: 사격 대신 감시를 걸고 차례를 끝낸다. 못 하면 false.</summary>
         public bool RequestOverwatch()
         {
-            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || playerView.IsMoving) return false;
+            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
             SetAiming(AimMode.None);
             return simulation.Execute(new OverwatchCommand(settings));
         }
+
+        /// <summary>조준 중인 스킬을 끈다 (스킬 바 "사격" · 턴 종료).</summary>
+        public void CancelAim() => SetAiming(AimMode.None);
+
+        /// <summary>화면이 사건을 재생하는 중(적 차례 연출)이거나 플레이어가 걷는 중이면 입력을 받지 않는다.</summary>
+        private bool Busy => playerView.IsMoving || (eventPlayer != null && eventPlayer.IsPlaying);
 
         private void SetAiming(AimMode mode)
         {
@@ -100,9 +107,10 @@ namespace GirlsDungeon.Game
             reachableKey = null;
         }
 
-        public void Bind(Simulation newSimulation, PlayerView newPlayerView, HudView newHudView, CombatSettings newSettings, int newMoveCostTicks)
+        public void Bind(Simulation newSimulation, EventPlayer newEventPlayer, PlayerView newPlayerView, HudView newHudView, CombatSettings newSettings, int newMoveCostTicks)
         {
             simulation = newSimulation;
+            eventPlayer = newEventPlayer;
             playerView = newPlayerView;
             hudView = newHudView;
             settings = newSettings;
@@ -143,7 +151,7 @@ namespace GirlsDungeon.Game
         /// </summary>
         public bool RequestOpenCrate(GridPos crate)
         {
-            if (simulation == null || playerView.IsMoving) return false;
+            if (simulation == null || Busy) return false;
             var world = simulation.World;
             if (!world.Map.InBounds(crate) || world.Map.Get(crate) != TileType.SupplyCrate || !IsKnown(crate)) return false;
 
@@ -177,7 +185,7 @@ namespace GirlsDungeon.Game
         /// <summary>전투 중 칸 클릭과 같다: 적이 있으면 사격, 아니면 이동. 아무것도 못 하면 false.</summary>
         public bool RequestCombatAction(GridPos cell)
         {
-            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || playerView.IsMoving) return false;
+            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
 
             var world = simulation.World;
             var target = world.UnitAt(cell);
@@ -227,11 +235,11 @@ namespace GirlsDungeon.Game
         {
             var world = simulation.World;
             // 권총은 쏜 뒤에도 이동할 수 있다 — 판정은 규칙(Loadout.CanCombatMove) 한 곳.
-            bool canMove = Loadout.CanCombatMove(world, settings) && !playerView.IsMoving && aim == AimMode.None;
+            bool canMove = Loadout.CanCombatMove(world, settings) && !Busy && aim == AimMode.None;
             RefreshRange(canMove);
 
             var mouse = Mouse.current;
-            var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !playerView.IsMoving ? PointerCell(mouse.position.ReadValue()) : null;
+            var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !Busy ? PointerCell(mouse.position.ReadValue()) : null;
             if (aim != AimMode.None && mouse != null && mouse.rightButton.wasPressedThisFrame) SetAiming(AimMode.None);
             if (!cell.HasValue)
             {
@@ -352,7 +360,7 @@ namespace GirlsDungeon.Game
                 pendingSteps.Clear();
                 pendingCrate = null;
             }
-            if (playerView.IsMoving) return;
+            if (Busy) return;
             if (pendingSteps.Count == 0)
             {
                 // 상자 옆에 다 왔으면 연다.

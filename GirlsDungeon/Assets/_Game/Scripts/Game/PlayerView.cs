@@ -12,21 +12,30 @@ namespace GirlsDungeon.Game
     public sealed class PlayerView : MonoBehaviour
     {
         private readonly Queue<Vector3> pendingSteps = new Queue<Vector3>();
-        private Simulation simulation;
+        private IEventSource simulation;
+        private GameBalance balance;
         private Vector3 fromPosition;
         private Vector3 toPosition;
         private float stepSeconds;
         private float elapsed;
         private bool isStepping;
+        private float shakeLeft;
 
         /// <summary>걷는 중이거나 걸을 칸이 남아 있다.</summary>
         public bool IsMoving => isStepping || pendingSteps.Count > 0;
 
-        public void Bind(Simulation newSimulation, float newStepSeconds)
+        /// <summary>맞았을 때 잠깐 흔든다 (모습만, 자식 도형을 흔든다).</summary>
+        public void Shake()
+        {
+            shakeLeft = balance.ShakeSeconds;
+        }
+
+        public void Bind(IEventSource newSource, GameBalance newBalance)
         {
             Unbind();
-            simulation = newSimulation;
-            stepSeconds = newStepSeconds;
+            simulation = newSource;
+            balance = newBalance;
+            stepSeconds = balance.StepSeconds;
             simulation.EventsPublished += HandleEvents;
 
             pendingSteps.Clear();
@@ -81,6 +90,7 @@ namespace GirlsDungeon.Game
 
         private void Update()
         {
+            UpdateShake();
             if (!isStepping) return;
 
             elapsed += Time.deltaTime;
@@ -90,6 +100,20 @@ namespace GirlsDungeon.Game
 
             isStepping = false;
             BeginNextStep();
+        }
+
+        private void UpdateShake()
+        {
+            if (transform.childCount == 0) return;
+            var body = transform.GetChild(0);
+            if (shakeLeft <= 0f)
+            {
+                body.localPosition = new Vector3(0f, body.localPosition.y, 0f);
+                return;
+            }
+            shakeLeft -= Time.deltaTime;
+            float side = Mathf.Sin(Time.time * 90f) * balance.ShakeDistance;
+            body.localPosition = new Vector3(side, body.localPosition.y, -side);
         }
     }
 }
