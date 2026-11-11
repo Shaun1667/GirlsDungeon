@@ -46,8 +46,9 @@ namespace GirlsDungeon.EditorTools
             var tracerMaterial = LoadOrCreateMaterial("GreyboxTracer", new Color(1f, 0.9f, 0.4f));
             tracerMaterial.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.3f));
             tracerMaterial.EnableKeyword("_EMISSION");
-            var targetLineMaterial = LoadOrCreateMaterial("GreyboxTargetLine", new Color(1f, 0.15f, 0.15f));
-            targetLineMaterial.SetColor("_EmissionColor", new Color(0.9f, 0.05f, 0.05f));
+            // 고른 사격 대상까지 얇은 노란 선 (2026-11-11, 사용자 "빨간 선 말고 얇은 노란 선").
+            var targetLineMaterial = LoadOrCreateMaterial("GreyboxTargetLine", new Color(1f, 0.85f, 0.15f));
+            targetLineMaterial.SetColor("_EmissionColor", new Color(0.9f, 0.75f, 0.1f));
             targetLineMaterial.EnableKeyword("_EMISSION");
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
@@ -214,11 +215,11 @@ namespace GirlsDungeon.EditorTools
 
             var rootObject = new GameObject("GameRoot");
             var moveController = rootObject.AddComponent<MoveController>();
-            // 고른 사격 대상까지 빨간 선.
+            // 고른 사격 대상까지 얇은 노란 선.
             var targetLine = new GameObject("TargetLine", typeof(LineRenderer)).GetComponent<LineRenderer>();
             targetLine.sharedMaterial = targetLineMaterial;
             targetLine.positionCount = 2;
-            targetLine.startWidth = targetLine.endWidth = 0.08f;
+            targetLine.startWidth = targetLine.endWidth = 0.035f;
             targetLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
             targetLine.enabled = false;
             SetReferences(moveController, ("viewCamera", cameraObject.GetComponent<Camera>()), ("hoverMarker", hover.transform),

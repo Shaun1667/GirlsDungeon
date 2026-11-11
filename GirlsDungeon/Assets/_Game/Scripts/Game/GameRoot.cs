@@ -145,7 +145,7 @@ namespace GirlsDungeon.Game
             moveController.ConfirmAttack();
         }
 
-        /// <summary>[상태 변경] 적 클릭과 같다: 그 적을 사격 대상으로 고른다 (빨간 선 · 확인 버튼). 못 고르면 false.</summary>
+        /// <summary>[상태 변경] 적 클릭과 같다: 그 적을 사격 대상으로 고른다 (노란 선 · 확인 버튼). 못 고르면 false.</summary>
         public bool DebugSelectTarget(int unitId)
         {
             DebugUsed = true;

@@ -19,7 +19,7 @@ namespace GirlsDungeon.Game
     /// <summary>
     /// 마우스 입력을 커맨드로 바꾼다. 칸의 이동 · 사격 가능 여부와 숫자는 모두 규칙이 정한다.
     /// 탐험: 클릭한 본 칸까지 경로를 만들어 한 걸음씩 MoveCommand.
-    /// 전투(내 차례): 이동 범위 표시 · 범위 안 칸 클릭 = CombatMoveCommand, 적 클릭 = 사격 대상 고르기(빨간 선 · 미리보기 · 확인 버튼),
+    /// 전투(내 차례): 이동 범위 표시 · 범위 안 칸 클릭 = CombatMoveCommand, 적 클릭 = 사격 대상 고르기(노란 선 · 미리보기 · 확인 버튼),
     /// 확인(버튼 · Enter · 사격 카드) = AttackCommand, 오른쪽 클릭 · Esc = 취소. 마우스를 올리면 미리보기.
     /// 조준 모드: 수류탄 = 칸 클릭으로 AreaAttackCommand, 밀치기 = 마우스 쪽 방향 · 옆 줄로 PushCommand.
     /// </summary>
@@ -33,7 +33,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private RangeView areaView;
         [Tooltip("Shows the push cells while aiming the push skill.")]
         [SerializeField] private RangeView pushAreaView;
-        [Tooltip("Red line from the player to the selected target.")]
+        [Tooltip("Thin yellow line from the player to the selected target.")]
         [SerializeField] private LineRenderer targetLine;
         [SerializeField] private float targetLineHeight = 1.1f;
 
@@ -61,7 +61,7 @@ namespace GirlsDungeon.Game
         public int SelectedTargetId => selectedTargetId;
         public bool TargetLineShown => targetLine != null && targetLine.enabled;
 
-        /// <summary>사격 대상을 고른다 (빨간 선 · 미리보기 · 확인 버튼). 전투 중인 적이 아니거나 지금 쏠 수 없으면 false.</summary>
+        /// <summary>사격 대상을 고른다 (노란 선 · 미리보기 · 확인 버튼). 전투 중인 적이 아니거나 지금 쏠 수 없으면 false.</summary>
         public bool SelectTarget(int unitId)
         {
             if (simulation == null || Busy) return false;
@@ -237,7 +237,7 @@ namespace GirlsDungeon.Game
             return simulation.Execute(new CombatMoveCommand(cell, settings));
         }
 
-        /// <summary>고른 대상이 아직 쏠 수 있는 대상인지 보고, 아니면 고른 것을 푼다. 빨간 선을 그린다.</summary>
+        /// <summary>고른 대상이 아직 쏠 수 있는 대상인지 보고, 아니면 고른 것을 푼다. 노란 선을 그린다.</summary>
         private Unit RefreshSelection(World world)
         {
             if (selectedTargetId < 0) return null;
@@ -309,7 +309,7 @@ namespace GirlsDungeon.Game
             var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !Busy ? PointerCell(mouse.position.ReadValue()) : null;
             if (aim != AimMode.None && mouse != null && mouse.rightButton.wasPressedThisFrame) SetAiming(AimMode.None);
 
-            // 고른 사격 대상: 빨간 선 · 확인 버튼. 오른쪽 클릭 · Esc = 취소, Enter = 확인.
+            // 고른 사격 대상: 노란 선 · 확인 버튼. 오른쪽 클릭 · Esc = 취소, Enter = 확인.
             var selected = RefreshSelection(world);
             if (selected != null && !Busy)
             {
