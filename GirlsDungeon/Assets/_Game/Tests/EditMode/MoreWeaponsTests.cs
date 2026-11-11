@@ -176,8 +176,11 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = MakeCombat(WeaponKind.Blade, new GridPos(0, 0), new GridPos(1, 1), ".C.", "...");
-            Assert.That(new Simulation(world, combat).Execute(new AttackCommand(Enemy(world).Id, combat)), Is.True);
+            // 공격만 본다 — AttackCommand는 차례를 넘기고, 적 차례의 사격이 플레이어 옆 같은 상자를 깎을 수 있다.
+            var events = new System.Collections.Generic.List<GameEvent>();
+            Assert.That(CombatRules.Resolve(world, combat, world.Player, Enemy(world), events), Is.True);
             Assert.That(world.Map.CrateDamage(new GridPos(1, 0)), Is.EqualTo(0));
+            Assert.That(events.OfType<CoverDestroyed>(), Is.Empty);
         }
 
         // ---------- 저장 ----------
