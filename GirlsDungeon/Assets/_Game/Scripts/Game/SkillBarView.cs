@@ -75,10 +75,13 @@ namespace GirlsDungeon.Game
         /// <summary>내 차례이고 화면 재생이 끝나 입력을 받을 수 있다.</summary>
         public bool Ready => simulation != null && TurnFlow.IsPlayerTurn(simulation.World) && !eventPlayer.IsPlaying && !playerView.IsMoving;
 
-        /// <summary>사격 카드 (1): 조준 중인 스킬을 끄고 적 클릭 = 사격 상태로 돌아간다.</summary>
+        /// <summary>
+        /// 사격 카드 (1): 대상을 골라 두었으면 그 대상을 쏜다 (확인). 아니면 조준 중인 스킬을 끄고 적 클릭 = 대상 고르기 상태로 돌아간다.
+        /// </summary>
         public bool PressShoot()
         {
             if (!Ready) return false;
+            if (moveController.SelectedTargetId >= 0) return moveController.ConfirmAttack();
             moveController.CancelAim();
             return true;
         }

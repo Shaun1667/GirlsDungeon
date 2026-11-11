@@ -46,6 +46,9 @@ namespace GirlsDungeon.EditorTools
             var tracerMaterial = LoadOrCreateMaterial("GreyboxTracer", new Color(1f, 0.9f, 0.4f));
             tracerMaterial.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.3f));
             tracerMaterial.EnableKeyword("_EMISSION");
+            var targetLineMaterial = LoadOrCreateMaterial("GreyboxTargetLine", new Color(1f, 0.15f, 0.15f));
+            targetLineMaterial.SetColor("_EmissionColor", new Color(0.9f, 0.05f, 0.05f));
+            targetLineMaterial.EnableKeyword("_EMISSION");
 
             var font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
             var canvas = CreateCanvas();
@@ -61,7 +64,7 @@ namespace GirlsDungeon.EditorTools
                 new Vector2(0.5f, 1f), new Vector2(0f, -64f), TextAnchor.UpperCenter);
             // 조작 안내는 오른쪽 위 (층 표시 아래) — 아래 가운데 스킬 바와 겹치지 않게.
             var controlsLabel = CreateLabel(canvas.transform, "ControlsLabel", font, 22,
-                new Vector2(1f, 1f), new Vector2(-24f, -60f), TextAnchor.UpperRight);
+                new Vector2(1f, 1f), new Vector2(-24f, -130f), TextAnchor.UpperRight);
             controlsLabel.gameObject.AddComponent<TextLabel>().TextKey = "ui.hud.controls";
             // 미리보기는 스킬 바(아래 가운데) · 설명 창 위에 둔다.
             var previewLabel = CreateLabel(canvas.transform, "PreviewLabel", font, 28,
@@ -112,6 +115,13 @@ namespace GirlsDungeon.EditorTools
             SetReferences(skillBar, ("barRoot", barRoot), ("shootCard", shootCard), ("grenadeCard", grenadeCard), ("pushCard", pushCard),
                 ("overwatchCard", overwatchCard), ("endTurnCard", endTurnCard), ("tooltipPanel", tooltipPanel), ("tooltipLabel", tooltipLabel));
 
+            // 사격 확인 버튼: 적을 골랐을 때만 스킬 바 오른쪽(오른쪽 아래)에 뜬다 — 화면 가운데의 플레이어를 가리지 않게.
+            var attackConfirmButton = CreateButton(canvas.transform, "AttackConfirmButton", font, "ui.combat.confirm_attack",
+                new Vector2(1f, 0f), new Vector2(-40f, 24f));
+            attackConfirmButton.GetComponent<RectTransform>().sizeDelta = new Vector2(300f, CardHeight);
+            attackConfirmButton.GetComponent<Image>().color = new Color(0.75f, 0.18f, 0.16f, 0.95f);
+            attackConfirmButton.gameObject.SetActive(false);
+
             // 떠오르는 피해 숫자의 틀 (숨겨 두고 복사해 쓴다).
             var popupTemplate = CreateLabel(canvas.transform, "DamagePopupTemplate", font, 40,
                 new Vector2(0f, 0f), Vector2.zero, TextAnchor.MiddleCenter);
@@ -148,7 +158,7 @@ namespace GirlsDungeon.EditorTools
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
                 ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel), ("resultLabel", resultLabel), ("newRunButton", newRunButton), ("floorLabel", floorLabel),
-                ("weaponLabel", weaponLabel), ("weaponPanel", weaponPanel), ("weaponPanelLabel", weaponPanelLabel), ("swapButton", swapButton), ("keepButton", keepButton));
+                ("weaponLabel", weaponLabel), ("weaponPanel", weaponPanel), ("weaponPanelLabel", weaponPanelLabel), ("swapButton", swapButton), ("keepButton", keepButton), ("attackConfirmButton", attackConfirmButton));
 
             var rangeObject = new GameObject("RangeView");
             var rangeView = rangeObject.AddComponent<RangeView>();
@@ -204,8 +214,15 @@ namespace GirlsDungeon.EditorTools
 
             var rootObject = new GameObject("GameRoot");
             var moveController = rootObject.AddComponent<MoveController>();
+            // 고른 사격 대상까지 빨간 선.
+            var targetLine = new GameObject("TargetLine", typeof(LineRenderer)).GetComponent<LineRenderer>();
+            targetLine.sharedMaterial = targetLineMaterial;
+            targetLine.positionCount = 2;
+            targetLine.startWidth = targetLine.endWidth = 0.08f;
+            targetLine.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            targetLine.enabled = false;
             SetReferences(moveController, ("viewCamera", cameraObject.GetComponent<Camera>()), ("hoverMarker", hover.transform),
-                ("rangeView", rangeView), ("areaView", areaView), ("pushAreaView", pushAreaView));
+                ("rangeView", rangeView), ("areaView", areaView), ("pushAreaView", pushAreaView), ("targetLine", targetLine));
 
             var eventPlayer = rootObject.AddComponent<EventPlayer>();
             var combatFx = new GameObject("CombatFx").AddComponent<CombatFxView>();

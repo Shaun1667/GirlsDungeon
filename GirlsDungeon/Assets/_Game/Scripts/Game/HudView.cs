@@ -29,6 +29,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnityEngine.UI.Text weaponPanelLabel;
         [SerializeField] private Button swapButton;
         [SerializeField] private Button keepButton;
+        [Tooltip("Confirms the shot at the selected target.")]
+        [SerializeField] private Button attackConfirmButton;
         [SerializeField] private int logLines = 4;
 
         private readonly List<string> log = new List<string>();
@@ -48,6 +50,20 @@ namespace GirlsDungeon.Game
         public event System.Action NewRunPressed;
 
         public string ResultText => resultLabel.text;
+
+        /// <summary>사격 확인 버튼을 눌렀다 (GameRoot가 MoveController.ConfirmAttack으로 잇는다).</summary>
+        public event System.Action AttackConfirmPressed;
+
+        public bool AttackConfirmShown => attackConfirmButton.gameObject.activeSelf;
+        public bool AttackConfirmEnabled => attackConfirmButton.interactable;
+
+        /// <summary>사격 확인 버튼: 대상을 골랐을 때만 보이고, 쏠 수 있을 때만 누를 수 있다.</summary>
+        public void ShowAttackConfirm(bool shown, bool enabled)
+        {
+            if (attackConfirmButton == null) return;
+            attackConfirmButton.gameObject.SetActive(shown);
+            attackConfirmButton.interactable = enabled;
+        }
 
         /// <summary>비교 창의 "바꾸기"를 눌렀다 (발밑 무기 ID). GameRoot가 SwapWeaponCommand를 낸다.</summary>
         public event System.Action<int> SwapPressed;
@@ -140,6 +156,7 @@ namespace GirlsDungeon.Game
             wasPlaying = false;
             simulation.EventsPublished += HandleEvents;
             CloseWeaponOffer();
+            ShowAttackConfirm(false, false);
             ClearPreview();
             Refresh();
         }
@@ -217,6 +234,7 @@ namespace GirlsDungeon.Game
             if (newRunButton != null) newRunButton.onClick.AddListener(() => NewRunPressed?.Invoke());
             if (swapButton != null) swapButton.onClick.AddListener(() => PressSwap());
             if (keepButton != null) keepButton.onClick.AddListener(CloseWeaponOffer);
+            if (attackConfirmButton != null) attackConfirmButton.onClick.AddListener(() => AttackConfirmPressed?.Invoke());
         }
 
         private void OnDestroy()

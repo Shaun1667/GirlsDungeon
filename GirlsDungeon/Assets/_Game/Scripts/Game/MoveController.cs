@@ -19,7 +19,8 @@ namespace GirlsDungeon.Game
     /// <summary>
     /// 마우스 입력을 커맨드로 바꾼다. 칸의 이동 · 사격 가능 여부와 숫자는 모두 규칙이 정한다.
     /// 탐험: 클릭한 본 칸까지 경로를 만들어 한 걸음씩 MoveCommand.
-    /// 전투(내 차례): 이동 범위 표시 · 범위 안 칸 클릭 = CombatMoveCommand, 적 클릭 = AttackCommand, 마우스를 올리면 미리보기.
+    /// 전투(내 차례): 이동 범위 표시 · 범위 안 칸 클릭 = CombatMoveCommand, 적 클릭 = 사격 대상 고르기(빨간 선 · 미리보기 · 확인 버튼),
+    /// 확인(버튼 · Enter · 사격 카드) = AttackCommand, 오른쪽 클릭 · Esc = 취소. 마우스를 올리면 미리보기.
     /// 조준 모드: 수류탄 = 칸 클릭으로 AreaAttackCommand, 밀치기 = 마우스 쪽 방향 · 옆 줄로 PushCommand.
     /// </summary>
     public sealed class MoveController : MonoBehaviour
@@ -32,6 +33,12 @@ namespace GirlsDungeon.Game
         [SerializeField] private RangeView areaView;
         [Tooltip("Shows the push cells while aiming the push skill.")]
         [SerializeField] private RangeView pushAreaView;
+        [Tooltip("Red line from the player to the selected target.")]
+        [SerializeField] private LineRenderer targetLine;
+        [SerializeField] private float targetLineHeight = 1.1f;
+
+        /// <summary>고른 사격 대상 (없으면 -1). 적을 클릭하면 고르기만 하고, 확인(버튼 · Enter · 사격 카드)을 눌러야 쏜다.</summary>
+        private int selectedTargetId = -1;
 
         private readonly Queue<GridPos> pendingSteps = new Queue<GridPos>();
         private int pendingFloor;
@@ -51,6 +58,37 @@ namespace GirlsDungeon.Game
         public int ReachableCount => reachable?.Count ?? 0;
         public bool IsAiming => aim != AimMode.None;
         public AimMode Aim => aim;
+        public int SelectedTargetId => selectedTargetId;
+        public bool TargetLineShown => targetLine != null && targetLine.enabled;
+
+        /// <summary>사격 대상을 고른다 (빨간 선 · 미리보기 · 확인 버튼). 전투 중인 적이 아니거나 지금 쏠 수 없으면 false.</summary>
+        public bool SelectTarget(int unitId)
+        {
+            if (simulation == null || Busy) return false;
+            var world = simulation.World;
+            var target = world.FindUnit(unitId);
+            if (target == null || target.IsPlayer || !world.Combatants.Contains(unitId) || !Loadout.CanShoot(world, settings)) return false;
+            SetAiming(AimMode.None);
+            selectedTargetId = unitId;
+            return true;
+        }
+
+        /// <summary>고른 대상을 쏜다 (확인 버튼 · Enter · 사격 카드). 고른 대상이 없거나 쏠 수 없으면 false — 고른 상태는 남는다.</summary>
+        public bool ConfirmAttack()
+        {
+            if (simulation == null || Busy || selectedTargetId < 0) return false;
+            int id = selectedTargetId;
+            if (!simulation.Execute(new AttackCommand(id, settings))) return false;
+            ClearTarget();
+            return true;
+        }
+
+        public void ClearTarget()
+        {
+            selectedTargetId = -1;
+            if (targetLine != null) targetLine.enabled = false;
+            if (hudView != null) hudView.ShowAttackConfirm(false, false);
+        }
 
         /// <summary>수류탄 조준 모드를 켜고 끈다 (수류탄 버튼). 내 차례에 아직 행동하지 않았을 때만 켤 수 있다.</summary>
         public void ToggleAim() => ToggleAim(AimMode.Grenade);
@@ -101,6 +139,7 @@ namespace GirlsDungeon.Game
         private void SetAiming(AimMode mode)
         {
             aim = mode;
+            if (mode != AimMode.None) ClearTarget();
             if (aim != AimMode.Grenade) areaView.Hide();
             if (aim != AimMode.Push) pushAreaView.Hide();
             hudView.SetAiming(aim);
@@ -119,6 +158,7 @@ namespace GirlsDungeon.Game
             pendingCrate = null;
             reachable = null;
             reachableKey = null;
+            ClearTarget();
             rangeView.Hide();
             aim = AimMode.None;
             areaView.Hide();
@@ -182,7 +222,10 @@ namespace GirlsDungeon.Game
             return true;
         }
 
-        /// <summary>전투 중 칸 클릭과 같다: 적이 있으면 사격, 아니면 이동. 아무것도 못 하면 false.</summary>
+        /// <summary>
+        /// 적이 있으면 바로 사격, 아니면 이동 (디버그 · 확인용 지름길). 마우스 클릭은 적을 고르기만 하고 확인을 받는다 (HandleCombat).
+        /// 아무것도 못 하면 false.
+        /// </summary>
         public bool RequestCombatAction(GridPos cell)
         {
             if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
@@ -190,7 +233,29 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             var target = world.UnitAt(cell);
             if (target != null && !target.IsPlayer) return simulation.Execute(new AttackCommand(target.Id, settings));
+            ClearTarget();
             return simulation.Execute(new CombatMoveCommand(cell, settings));
+        }
+
+        /// <summary>고른 대상이 아직 쏠 수 있는 대상인지 보고, 아니면 고른 것을 푼다. 빨간 선을 그린다.</summary>
+        private Unit RefreshSelection(World world)
+        {
+            if (selectedTargetId < 0) return null;
+            var target = world.FindUnit(selectedTargetId);
+            bool valid = target != null && world.Mode == WorldMode.Combat && TurnFlow.IsPlayerTurn(world)
+                && world.Combatants.Contains(selectedTargetId) && Loadout.CanShoot(world, settings) && aim == AimMode.None;
+            if (!valid)
+            {
+                ClearTarget();
+                return null;
+            }
+            if (targetLine != null)
+            {
+                targetLine.enabled = true;
+                targetLine.SetPosition(0, GridSpace.ToWorld(world.Player.Position) + Vector3.up * targetLineHeight);
+                targetLine.SetPosition(1, GridSpace.ToWorld(target.Position) + Vector3.up * targetLineHeight);
+            }
+            return target;
         }
 
         private void Update()
@@ -209,6 +274,7 @@ namespace GirlsDungeon.Game
             if (mode == WorldMode.Combat) HandleCombat();
             else
             {
+                if (selectedTargetId >= 0) ClearTarget();
                 rangeView.Hide();
                 reachableKey = null;
                 if (mode == WorldMode.Exploration) HandleExploration();
@@ -239,14 +305,30 @@ namespace GirlsDungeon.Game
             RefreshRange(canMove);
 
             var mouse = Mouse.current;
+            var keyboard = Keyboard.current;
             var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !Busy ? PointerCell(mouse.position.ReadValue()) : null;
             if (aim != AimMode.None && mouse != null && mouse.rightButton.wasPressedThisFrame) SetAiming(AimMode.None);
+
+            // 고른 사격 대상: 빨간 선 · 확인 버튼. 오른쪽 클릭 · Esc = 취소, Enter = 확인.
+            var selected = RefreshSelection(world);
+            if (selected != null && !Busy)
+            {
+                bool cancel = (mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame);
+                bool confirm = keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame);
+                if (cancel) ClearTarget();
+                else if (confirm && ConfirmAttack()) return;
+                selected = RefreshSelection(world);
+            }
+            var selectedPreview = selected != null ? CombatRules.Preview(world, settings, world.Player, world.Player.Position, selected) : default;
+            hudView.ShowAttackConfirm(selected != null, selected != null && selectedPreview.CanAttack && !Busy);
+
             if (!cell.HasValue)
             {
                 SetHover(null);
                 areaView.Hide();
                 pushAreaView.Hide();
-                hudView.ClearPreview();
+                if (selected != null) hudView.ShowAttackPreview(selected, selectedPreview, false);
+                else hudView.ClearPreview();
                 return;
             }
 
@@ -285,7 +367,8 @@ namespace GirlsDungeon.Game
                 // 기관단총은 첫 사격 뒤에도 한 번 더 쏠 수 있다 — 판정은 규칙(Loadout.CanShoot) 한 곳.
                 hudView.ShowAttackPreview(target, preview, !Loadout.CanShoot(world, settings));
                 SetHover(cell);
-                if (clicked) RequestCombatAction(cell.Value);
+                // 클릭 = 대상 고르기 (바로 쏘지 않는다). 확인은 버튼 · Enter · 사격 카드.
+                if (clicked) SelectTarget(target.Id);
                 return;
             }
 
@@ -298,7 +381,8 @@ namespace GirlsDungeon.Game
             }
 
             SetHover(null);
-            hudView.ClearPreview();
+            if (selected != null) hudView.ShowAttackPreview(selected, selectedPreview, false);
+            else hudView.ClearPreview();
         }
 
         /// <summary>범위 칸은 상태가 바뀔 때만 다시 계산한다.</summary>

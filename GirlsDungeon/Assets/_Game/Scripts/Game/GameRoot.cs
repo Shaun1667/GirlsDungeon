@@ -62,6 +62,8 @@ namespace GirlsDungeon.Game
             combatFx.Bind(eventPlayer, balance, unitsView, playerView);
             hudView.NewRunPressed -= OnNewRunButton;
             hudView.NewRunPressed += OnNewRunButton;
+            hudView.AttackConfirmPressed -= OnAttackConfirmPressed;
+            hudView.AttackConfirmPressed += OnAttackConfirmPressed;
             hudView.SwapPressed -= OnSwapPressed;
             hudView.SwapPressed += OnSwapPressed;
             threatView.Bind(simulation, combatSettings);
@@ -137,6 +139,31 @@ namespace GirlsDungeon.Game
         }
 
         public SkillBarView DebugSkillBar => skillBar;
+
+        private void OnAttackConfirmPressed()
+        {
+            moveController.ConfirmAttack();
+        }
+
+        /// <summary>[상태 변경] 적 클릭과 같다: 그 적을 사격 대상으로 고른다 (빨간 선 · 확인 버튼). 못 고르면 false.</summary>
+        public bool DebugSelectTarget(int unitId)
+        {
+            DebugUsed = true;
+            return moveController.SelectTarget(unitId);
+        }
+
+        /// <summary>[상태 변경] 사격 확인 버튼과 같다. 못 쏘면 false.</summary>
+        public bool DebugConfirmAttack()
+        {
+            DebugUsed = true;
+            return moveController.ConfirmAttack();
+        }
+
+        public string DebugTargetSummary()
+        {
+            return $"Selected={moveController.SelectedTargetId}, Line={moveController.TargetLineShown}, "
+                + $"Confirm shown={hudView.AttackConfirmShown} enabled={hudView.AttackConfirmEnabled}, Preview={hudView.PreviewText.Replace('\n', ' ')}";
+        }
 
         /// <summary>비교 창의 "바꾸기": 발밑 무기로 바꾼다.</summary>
         private void OnSwapPressed(int itemId)
