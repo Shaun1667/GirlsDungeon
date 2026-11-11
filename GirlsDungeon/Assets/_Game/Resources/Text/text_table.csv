@@ -137,3 +137,4 @@ Start weapon: {6}
 Attack {7} · Range {8}"
 character.hero_a.name,대원 A,Operative A
 character.hero_b.name,대원 B,Operative B
+character.hero_c.name,대원 C,Operative C

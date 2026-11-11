@@ -99,6 +99,15 @@ MonoBehaviour:
     defense: 3
     moveRange: 7
     startWeapon: 4
+  - kind: 3
+    nameKey: character.hero_c.name
+    visualId: hero_c
+    maxHp: 100
+    maxStability: 6
+    visionRange: 9
+    defense: 4
+    moveRange: 6
+    startWeapon: 0
   minEnemiesPerFloor: 4
   maxEnemiesPerFloor: 6
   enemyMinDistanceFromStart: 8

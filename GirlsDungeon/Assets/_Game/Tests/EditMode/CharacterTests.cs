@@ -40,6 +40,21 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void HeroC_StartsWithAssaultRifleAndItsBodyStats()
+        {
+            var world = NewRun(7, CharacterKind.HeroC);
+            var player = world.Player;
+            var rifle = TestData.Combat().WeaponFor(WeaponKind.AssaultRifle);
+
+            Assert.That(world.PlayerCharacter, Is.EqualTo(CharacterKind.HeroC));
+            Assert.That(world.PlayerWeapon, Is.EqualTo(WeaponKind.AssaultRifle));
+            Assert.That(new[] { player.MaxHp, player.MaxStability, player.VisionRange, player.Defense, player.MoveRange },
+                Is.EqualTo(new[] { 100, 6, 9, 4, 6 }));
+            Assert.That(player.Attack, Is.EqualTo(rifle.Attack));
+            Assert.That(Loadout.ShotsPerTurn(world, TestData.Combat()), Is.EqualTo(1));
+        }
+
+        [Test]
         public void NoCharacter_KeepsThePlayerRowAndDefaultWeapon()
         {
             var world = TestData.NewRun(7);

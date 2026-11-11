@@ -383,6 +383,10 @@ namespace GirlsDungeon.Tests
             {
                 Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 5, VisionRange = 10, Defense = 3, MoveRange = 7, StartWeapon = WeaponKind.Smg,
             });
+            settings.Characters.Add(new CharacterStats
+            {
+                Kind = CharacterKind.HeroC, MaxHp = 100, MaxStability = 6, VisionRange = 9, Defense = 4, MoveRange = 6, StartWeapon = WeaponKind.AssaultRifle,
+            });
             return settings;
         }
 

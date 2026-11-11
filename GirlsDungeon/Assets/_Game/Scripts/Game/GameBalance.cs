@@ -155,6 +155,11 @@ namespace GirlsDungeon.Game
                 kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
                 maxHp = 90, maxStability = 5, visionRange = 10, defense = 3, moveRange = 7, startWeapon = WeaponKind.Smg,
             },
+            new CharacterEntry
+            {
+                kind = CharacterKind.HeroC, nameKey = "character.hero_c.name", visualId = "hero_c",
+                maxHp = 100, maxStability = 6, visionRange = 9, defense = 4, moveRange = 6, startWeapon = WeaponKind.AssaultRifle,
+            },
         };
 
         [Header("Combat (BALANCE 5)")]

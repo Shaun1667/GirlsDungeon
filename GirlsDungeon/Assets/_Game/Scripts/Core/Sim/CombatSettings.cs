@@ -30,6 +30,7 @@ namespace GirlsDungeon.Core.Sim
         None = 0,
         HeroA = 1,
         HeroB = 2,
+        HeroC = 3,
     }
 
     /// <summary>

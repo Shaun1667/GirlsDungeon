@@ -17,7 +17,7 @@
 4. `UnitVisuals.asset`의 `player` 줄 `prefab`에 넣고, 키가 약 1.6 ~ 1.8(칸 = 1)이 되게 `scale`, 발이 바닥에 닿게 `heightOffset`을 맞춘다.
 5. 플레이 → 캡슐 대신 모델이 걷는다.
 
-플레이어 그림은 고른 캐릭터의 `characters[].visualId`(hero_a · hero_b) 줄에서 찾는다 (3-7). 캐릭터를 고르지 않은 판만 `player` 줄을 쓴다.
+플레이어 그림은 고른 캐릭터의 `characters[].visualId`(hero_a · hero_b · hero_c) 줄에서 찾는다 (3-7). 캐릭터를 고르지 않은 판만 `player` 줄을 쓴다.
 
 개인 테스트용 모델은 `Assets/_Local/` 아래에 둔다 — 이 폴더는 `.gitignore`로 git에 올라가지 않는다. 그런 모델을 `UnitVisuals.asset`에 넣은 채로 커밋하지 않는다 (다른 PC에서는 빈 참조가 된다 — 커밋 전에 비우기).
 
@@ -27,6 +27,7 @@
 | player | 캐릭터를 고르지 않은 판의 주인공 (`PlayerView`) | 분홍 캡슐 | — | — | 미정 |
 | hero_a | 캐릭터 A (`characters[HeroA]`, 3-7) | 분홍 캡슐 | 오리지널 캐릭터 모델 (외형 미정) | — | 미정 |
 | hero_b | 캐릭터 B (`characters[HeroB]`, 3-7) | 분홍 캡슐 | 오리지널 캐릭터 모델 (외형 미정) | — | 미정 |
+| hero_c | 캐릭터 C (`characters[HeroC]`, 3-8) | 분홍 캡슐 | 오리지널 캐릭터 모델 (외형 미정) | — | 미정 |
 | rifleman | 사격병 (`UnitsView`) | 빨강 캡슐 | — | — | 미정 |
 | assault | 돌격병 (`UnitsView`) | 주황 캡슐 | — | — | 미정 |
 | (지형 · 상자 · 보급 상자 · 무기 · 구급상자) | `FloorView` · `ItemsView` | 그레이박스 도형 | — | — | 미정 |

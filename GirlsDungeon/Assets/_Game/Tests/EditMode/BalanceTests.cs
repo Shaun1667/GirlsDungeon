@@ -177,6 +177,8 @@ namespace GirlsDungeon.Tests
             // 사용자 결정 (2026-11-11): 첫 캐릭터는 산탄총, 두 번째는 기관단총으로 시작.
             Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroA).StartWeapon, Is.EqualTo(GirlsDungeon.Core.Sim.WeaponKind.Shotgun));
             Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroB).StartWeapon, Is.EqualTo(GirlsDungeon.Core.Sim.WeaponKind.Smg));
+            // 사용자 결정 (2026-11-11): 세 번째 캐릭터는 돌격소총으로 시작.
+            Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroC).StartWeapon, Is.EqualTo(GirlsDungeon.Core.Sim.WeaponKind.AssaultRifle));
         }
 
         [Test]
