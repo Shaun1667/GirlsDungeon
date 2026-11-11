@@ -28,6 +28,23 @@ namespace GirlsDungeon.Game
         public int pushOnHit;
     }
 
+    /// <summary>고를 수 있는 캐릭터 하나 (표 한 줄, BALANCE 13번). 유닛 표 플레이어 줄의 몸 능력치와 시작 무기를 덮어쓴다.</summary>
+    [Serializable]
+    public sealed class CharacterEntry
+    {
+        public CharacterKind kind;
+        [Tooltip("Text table key for the character name.")]
+        public string nameKey;
+        [Tooltip("Visual id looked up in the UnitVisuals catalog (no prefab there = greybox shape).")]
+        public string visualId;
+        public int maxHp;
+        public int maxStability;
+        public int visionRange;
+        public int defense;
+        public int moveRange;
+        public WeaponKind startWeapon;
+    }
+
     /// <summary>무기 하나의 능력치와 규칙 (표 한 줄, BALANCE 12번).</summary>
     [Serializable]
     public sealed class WeaponEntry
@@ -121,6 +138,22 @@ namespace GirlsDungeon.Game
                 kind = UnitKind.Assault, nameKey = "unit.assault.name", visualId = "assault", maxHp = 8, maxStability = 2, visionRange = 9,
                 attack = 6, defense = 1, moveRange = 8, attackRange = 1, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150,
                 pushOnHit = 1,
+            },
+        };
+
+        [Header("Characters (BALANCE 13)")]
+        [Tooltip("Characters picked on the start screen. Each row replaces the player row's body stats and start weapon.")]
+        [SerializeField] private CharacterEntry[] characters =
+        {
+            new CharacterEntry
+            {
+                kind = CharacterKind.HeroA, nameKey = "character.hero_a.name", visualId = "hero_a",
+                maxHp = 110, maxStability = 7, visionRange = 8, defense = 5, moveRange = 6, startWeapon = WeaponKind.Shotgun,
+            },
+            new CharacterEntry
+            {
+                kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
+                maxHp = 90, maxStability = 5, visionRange = 10, defense = 3, moveRange = 7, startWeapon = WeaponKind.Smg,
             },
         };
 
@@ -367,7 +400,52 @@ namespace GirlsDungeon.Game
                     PushOnHit = entry.pushOnHit,
                 });
             }
+            foreach (var entry in characters)
+            {
+                settings.Characters.Add(new CharacterStats
+                {
+                    Kind = entry.kind,
+                    MaxHp = entry.maxHp,
+                    MaxStability = entry.maxStability,
+                    VisionRange = entry.visionRange,
+                    Defense = entry.defense,
+                    MoveRange = entry.moveRange,
+                    StartWeapon = entry.startWeapon,
+                });
+            }
             return settings;
+        }
+
+        /// <summary>시작 화면에 보이는 캐릭터 (표 순서).</summary>
+        public System.Collections.Generic.IEnumerable<CharacterKind> CharacterKinds()
+        {
+            foreach (var entry in characters) yield return entry.kind;
+        }
+
+        public int CharacterCount => characters.Length;
+
+        /// <summary>캐릭터 이름의 텍스트 표 키. 표에 없으면 null.</summary>
+        public string CharacterNameKey(CharacterKind kind)
+        {
+            foreach (var entry in characters) if (entry.kind == kind) return entry.nameKey;
+            return null;
+        }
+
+        /// <summary>캐릭터 그림 ID. 표에 없으면(None 포함) 유닛 표 플레이어 줄의 그림 ID.</summary>
+        public string PlayerVisualId(CharacterKind kind)
+        {
+            foreach (var entry in characters) if (entry.kind == kind) return entry.visualId;
+            return VisualId(UnitKind.Player);
+        }
+
+        public System.Collections.Generic.IEnumerable<string> CharacterNameKeys()
+        {
+            foreach (var entry in characters) yield return entry.nameKey;
+        }
+
+        public System.Collections.Generic.IEnumerable<string> CharacterVisualIds()
+        {
+            foreach (var entry in characters) yield return entry.visualId;
         }
 
         /// <summary>유닛 이름의 텍스트 표 키. 표에 없는 종류면 null.</summary>

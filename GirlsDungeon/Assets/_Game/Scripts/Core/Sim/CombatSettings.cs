@@ -21,10 +21,39 @@ namespace GirlsDungeon.Core.Sim
         public int PushOnHit;
     }
 
+    /// <summary>
+    /// 고를 수 있는 플레이어 캐릭터. 저장에 정수로 들어가므로 끝에만 추가한다. None = 캐릭터 표 없이 유닛 표의 플레이어 줄 그대로 (테스트 · 기본).
+    /// 이름 · 그림은 화면 쪽 표(GameBalance.characters)에서 ID로 찾는다.
+    /// </summary>
+    public enum CharacterKind : byte
+    {
+        None = 0,
+        HeroA = 1,
+        HeroB = 2,
+    }
+
+    /// <summary>
+    /// 캐릭터 하나의 몸 능력치와 시작 무기 (표 한 줄, BALANCE 13번). 유닛 표의 플레이어 줄 위에 덮어쓴다.
+    /// 공격 · 사거리 · 치명은 무기에서 오므로(Loadout.Apply) 여기에는 없다.
+    /// </summary>
+    public sealed class CharacterStats
+    {
+        public CharacterKind Kind;
+        public int MaxHp;
+        public int MaxStability;
+        public int VisionRange;
+        public int Defense;
+        public int MoveRange;
+        public WeaponKind StartWeapon;
+    }
+
     /// <summary>전투 수치 (BALANCE 4번 · 5번).</summary>
     public sealed class CombatSettings
     {
         public List<UnitStats> Units = new List<UnitStats>();
+
+        /// <summary>고를 수 있는 캐릭터 (BALANCE 13번). 비어 있으면 고르기 없이 유닛 표의 플레이어 줄로 시작한다.</summary>
+        public List<CharacterStats> Characters = new List<CharacterStats>();
         public int MinEnemiesPerFloor;
         public int MaxEnemiesPerFloor;
         public int EnemyMinDistanceFromStart;
@@ -113,6 +142,21 @@ namespace GirlsDungeon.Core.Sim
             throw new ArgumentException($"No stats for unit kind {kind}.");
         }
 
+        /// <summary>캐릭터 표의 줄. None이거나 표에 없으면 null.</summary>
+        public CharacterStats TryCharacter(CharacterKind kind)
+        {
+            if (kind == CharacterKind.None) return null;
+            foreach (var character in Characters) if (character.Kind == kind) return character;
+            return null;
+        }
+
+        /// <summary>무기 보정 전 플레이어 이동 범위: 캐릭터 줄이 있으면 그 값, 없으면 유닛 표의 플레이어 줄.</summary>
+        public int PlayerBaseMoveRange(CharacterKind kind)
+        {
+            var character = TryCharacter(kind);
+            return character != null ? character.MoveRange : StatsFor(UnitKind.Player).MoveRange;
+        }
+
         public void Validate()
         {
             StatsFor(UnitKind.Player);
@@ -149,6 +193,14 @@ namespace GirlsDungeon.Core.Sim
                     || weapon.CritMultiplierPercent < 100 || weapon.FalloffStartCells < 0 || weapon.FalloffPercentPerCell < 0
                     || weapon.ExtraShotsPerTurn < 0)
                     throw new ArgumentException($"Stats for weapon {weapon.Kind} are invalid.");
+            }
+            var seen = new HashSet<CharacterKind>();
+            foreach (var character in Characters)
+            {
+                if (character.Kind == CharacterKind.None || !seen.Add(character.Kind)
+                    || character.MaxHp < 1 || character.MaxStability < 0 || character.VisionRange < 1 || character.Defense < 0 || character.MoveRange < 0)
+                    throw new ArgumentException($"Stats for character {character.Kind} are invalid.");
+                WeaponFor(character.StartWeapon);
             }
             if (CombatDropWeaponPercent < 0 || CombatDropMedkitPercent < 0 || CombatDropWeaponPercent + CombatDropMedkitPercent > 100
                 || CrateWeaponPercent < 0 || CrateWeaponPercent > 100 || MedkitHealPercent < 0)

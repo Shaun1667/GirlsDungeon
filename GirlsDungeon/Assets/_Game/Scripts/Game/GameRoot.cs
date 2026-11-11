@@ -25,10 +25,14 @@ namespace GirlsDungeon.Game
         [SerializeField] private CombatFxView combatFx;
         [Tooltip("Visual catalog: visual id -> model prefab (Docs/ART_ASSETS.md).")]
         [SerializeField] private UnitVisualCatalog visuals;
+        [Tooltip("Start screen: pick a character before each run.")]
+        [SerializeField] private CharacterSelectView characterSelect;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
         private MapSettings mapSettings;
+        /// <summary>지금(또는 다음) 판의 캐릭터. 시작 화면에서 고른 값이고, 디버그 재시작도 이 캐릭터를 쓴다.</summary>
+        private CharacterKind character;
 
         public World World => simulation?.World;
 
@@ -37,6 +41,32 @@ namespace GirlsDungeon.Game
 
         private void Start()
         {
+            // 시작 화면 뒤에 첫 캐릭터로 판을 미리 깔아 둔다 (화면이 비지 않게). 고르면 새 시드로 다시 만든다.
+            foreach (var kind in balance.CharacterKinds())
+            {
+                character = kind;
+                break;
+            }
+            if (characterSelect != null)
+            {
+                characterSelect.Picked -= OnCharacterPicked;
+                characterSelect.Picked += OnCharacterPicked;
+            }
+            BeginRun(PickSeed());
+            ShowCharacterSelect();
+        }
+
+        private void ShowCharacterSelect()
+        {
+            if (characterSelect == null || balance.CharacterCount == 0) return;
+            characterSelect.Show(balance, combatSettings);
+        }
+
+        /// <summary>시작 화면에서 캐릭터를 골랐다: 새 시드로 그 캐릭터의 판을 시작한다. 디버그 표시는 새 판에 넘기지 않는다.</summary>
+        private void OnCharacterPicked(CharacterKind picked)
+        {
+            character = picked;
+            DebugUsed = false;
             BeginRun(PickSeed());
         }
 
@@ -44,7 +74,7 @@ namespace GirlsDungeon.Game
         {
             combatSettings = balance.CreateCombatSettings();
             mapSettings = balance.CreateMapSettings();
-            simulation = new Simulation(RunFactory.NewRun(seed, mapSettings, combatSettings), combatSettings, mapSettings);
+            simulation = new Simulation(RunFactory.NewRun(seed, mapSettings, combatSettings, character), combatSettings, mapSettings);
 
             // 화면은 규칙 결과를 사건 재생기로 하나씩 받는다 (적 차례가 한 동작씩 보이게). 안개 · 위협 칸만 바로 받는다.
             eventPlayer.Bind(simulation, balance);
@@ -55,8 +85,8 @@ namespace GirlsDungeon.Game
 
             floorView.Build(simulation.World.Map, balance);
             fogView.Bind(simulation, balance);
-            // 플레이어 모습: 그림 목록에 그 ID의 프리팹이 있으면 모델, 없으면 캡슐.
-            playerView.Bind(eventPlayer, balance, visuals != null ? visuals.Find(balance.VisualId(UnitKind.Player)) : null);
+            // 플레이어 모습: 고른 캐릭터의 그림 ID — 그림 목록에 그 ID의 프리팹이 있으면 모델, 없으면 캡슐.
+            playerView.Bind(eventPlayer, balance, visuals != null ? visuals.Find(balance.PlayerVisualId(simulation.World.PlayerCharacter)) : null);
             unitsView.Bind(eventPlayer, balance);
             itemsView.Bind(eventPlayer);
             hudView.Bind(eventPlayer, combatSettings, balance);
@@ -86,9 +116,14 @@ namespace GirlsDungeon.Game
             }
         }
 
-        /// <summary>결과 화면의 "새 판": 새 시드로 다시 시작한다. 디버그 표시는 새 판에 넘기지 않는다.</summary>
+        /// <summary>결과 화면의 "새 판": 시작 화면을 다시 띄운다 (캐릭터를 고르면 새 시드로 시작). 캐릭터 표가 비었으면 바로 새 판.</summary>
         private void OnNewRunButton()
         {
+            if (characterSelect != null && balance.CharacterCount > 0)
+            {
+                ShowCharacterSelect();
+                return;
+            }
             DebugUsed = false;
             BeginRun(PickSeed());
         }
@@ -97,6 +132,22 @@ namespace GirlsDungeon.Game
         public void DebugPressNewRun()
         {
             OnNewRunButton();
+        }
+
+        /// <summary>시작 화면의 카드 누르기와 같다 (0 = 첫 카드). 창이 닫혀 있거나 카드가 없으면 false.</summary>
+        public bool DebugPickCharacter(int index)
+        {
+            return characterSelect != null && characterSelect.Press(index);
+        }
+
+        public string DebugCharacterSummary()
+        {
+            var world = World;
+            string open = characterSelect != null && characterSelect.IsOpen ? "open" : "closed";
+            if (world == null) return $"Select={open}, Run not started";
+            var player = world.Player;
+            return $"Select={open}, Character={world.PlayerCharacter}, Visual={balance.PlayerVisualId(world.PlayerCharacter)}, Model={playerView.ModelName ?? "capsule"}, "
+                + $"HP {player.MaxHp}, ST {player.MaxStability}, Vision {player.VisionRange}, Def {player.Defense}, Move {player.MoveRange}, Weapon={world.PlayerWeapon}";
         }
 
         /// <summary>[상태 변경] 바로 계단을 내려간다 (마지막 층이면 승리). 못 하면 false.</summary>

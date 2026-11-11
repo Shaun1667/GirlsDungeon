@@ -146,6 +146,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>플레이어가 든 무기 (하나만 든다). 능력치는 Loadout.Apply가 유닛에 맞춘다.</summary>
         public WeaponKind PlayerWeapon { get; set; }
 
+        /// <summary>판을 시작할 때 고른 캐릭터 (None = 유닛 표의 플레이어 줄 그대로). 이동 범위 기준값 · 화면 그림 · 이름을 여기서 찾는다.</summary>
+        public CharacterKind PlayerCharacter { get; set; }
+
         /// <summary>이 층 바닥에 놓인 물건. ID 오름차순 (추가는 언제나 끝에). 층을 내려가면 비운다.</summary>
         public List<FloorItem> Items { get; } = new List<FloorItem>();
 

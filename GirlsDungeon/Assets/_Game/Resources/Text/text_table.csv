@@ -121,3 +121,19 @@ ui.fx.damage,{0},{0}
 ui.fx.crit,치명 {0},Crit {0}
 ui.fx.stability_break,안정 붕괴,Stability broken
 ui.combat.confirm_attack,공격 (Enter),Attack (Enter)
+ui.select.title,캐릭터 선택,Choose your character
+ui.select.card,"{0}
+
+체력 {1} · 안정지수 {2}
+방어 {3} · 이동 {4}칸 · 시야 {5}칸
+
+시작 무기: {6}
+공격 {7} · 사거리 {8}칸","{0}
+
+HP {1} · Stability {2}
+Defense {3} · Move {4} · Vision {5}
+
+Start weapon: {6}
+Attack {7} · Range {8}"
+character.hero_a.name,대원 A,Operative A
+character.hero_b.name,대원 B,Operative B

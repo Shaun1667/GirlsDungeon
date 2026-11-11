@@ -71,15 +71,38 @@ namespace GirlsDungeon.Core.Sim
     /// <summary>새 판 만들기의 한 곳. 같은 시드와 수치면 언제나 같은 세계가 나온다.</summary>
     public static class RunFactory
     {
+        /// <summary>캐릭터를 고르지 않은 판: 유닛 표의 플레이어 줄과 기본 시작 무기 (테스트 · 기본).</summary>
         public static World NewRun(int seed, MapSettings mapSettings, CombatSettings combatSettings)
         {
+            return NewRun(seed, mapSettings, combatSettings, CharacterKind.None);
+        }
+
+        /// <summary>
+        /// 고른 캐릭터로 새 판을 만든다. 캐릭터 줄(BALANCE 13번)이 유닛 표 플레이어 줄의 체력 · 안정지수 · 시야 · 방어 · 이동과 시작 무기를 덮어쓴다.
+        /// 캐릭터는 지형 · 배치 난수를 쓰지 않으므로 같은 시드면 어느 캐릭터든 같은 맵이 나온다 (적 배치는 시작 칸 시야에 따라 달라질 수 있다).
+        /// </summary>
+        public static World NewRun(int seed, MapSettings mapSettings, CombatSettings combatSettings, CharacterKind character)
+        {
             combatSettings.Validate();
+            var characterStats = combatSettings.TryCharacter(character);
+            if (character != CharacterKind.None && characterStats == null)
+                throw new ArgumentException($"No stats for character {character}.");
 
             var world = new World(seed, new RandomStreams(seed));
             BuildFloor(world, mapSettings);
             var playerStats = combatSettings.StatsFor(UnitKind.Player);
-            world.PlayerId = world.AddUnit(playerStats, world.Map.StartCell).Id;
+            var player = world.AddUnit(playerStats, world.Map.StartCell);
+            world.PlayerId = player.Id;
+            world.PlayerCharacter = characterStats != null ? character : CharacterKind.None;
             world.PlayerWeapon = combatSettings.StartWeapon;
+            if (characterStats != null)
+            {
+                player.MaxHp = player.Hp = characterStats.MaxHp;
+                player.MaxStability = player.Stability = characterStats.MaxStability;
+                player.VisionRange = characterStats.VisionRange;
+                player.Defense = characterStats.Defense;
+                world.PlayerWeapon = characterStats.StartWeapon;
+            }
             Loadout.Apply(world, combatSettings);
             EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
             VisionSystem.Update(world, null);
@@ -135,7 +158,8 @@ namespace GirlsDungeon.Core.Sim
         {
             var map = world.Map;
             var start = map.StartCell;
-            int playerVision = settings.StatsFor(UnitKind.Player).VisionRange;
+            // 플레이어의 실제 시야 (캐릭터마다 다르다). 플레이어가 아직 없으면 유닛 표 값.
+            int playerVision = world.Player?.VisionRange ?? settings.StatsFor(UnitKind.Player).VisionRange;
             var visibleFromStart = Vision.Compute(map, start, playerVision);
 
             var candidates = new List<GridPos>();

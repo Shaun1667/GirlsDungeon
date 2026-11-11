@@ -80,6 +80,25 @@ MonoBehaviour:
     critPercent: 15
     critMultiplierPercent: 150
     pushOnHit: 1
+  characters:
+  - kind: 1
+    nameKey: character.hero_a.name
+    visualId: hero_a
+    maxHp: 110
+    maxStability: 7
+    visionRange: 8
+    defense: 5
+    moveRange: 6
+    startWeapon: 2
+  - kind: 2
+    nameKey: character.hero_b.name
+    visualId: hero_b
+    maxHp: 90
+    maxStability: 5
+    visionRange: 10
+    defense: 3
+    moveRange: 7
+    startWeapon: 4
   minEnemiesPerFloor: 4
   maxEnemiesPerFloor: 6
   enemyMinDistanceFromStart: 8

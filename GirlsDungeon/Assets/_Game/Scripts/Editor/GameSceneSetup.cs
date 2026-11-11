@@ -24,7 +24,7 @@ namespace GirlsDungeon.EditorTools
 
             // 새 씬은 참조 없는 에셋을 메모리에서 내린다. 에셋은 반드시 NewScene 뒤에 불러온다.
             var balance = LoadOrCreateBalance();
-            var visuals = LoadOrCreateVisuals();
+            var visuals = LoadOrCreateVisuals(balance);
             var floorMaterial = LoadOrCreateMaterial("GreyboxFloor", new Color(0.42f, 0.44f, 0.47f));
             var wallMaterial = LoadOrCreateMaterial("GreyboxWall", new Color(0.2f, 0.22f, 0.27f));
             var stairsMaterial = LoadOrCreateMaterial("GreyboxStairs", new Color(0.95f, 0.72f, 0.2f));
@@ -161,6 +161,46 @@ namespace GirlsDungeon.EditorTools
             var keepButton = CreateButton(weaponPanel.transform, "KeepButton", font, "ui.weapon.keep",
                 new Vector2(0.5f, 0f), new Vector2(150f, 24f));
             weaponPanel.SetActive(false);
+
+            // 시작 화면 (3-7): 화면 전체를 덮는 어두운 판 + 제목 + 캐릭터 카드(캐릭터 표 줄 수만큼). 가장 나중에 만들어 맨 위에 그린다.
+            var selectPanel = new GameObject("CharacterSelect", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            selectPanel.transform.SetParent(canvas.transform, false);
+            var selectRect = selectPanel.GetComponent<RectTransform>();
+            selectRect.anchorMin = Vector2.zero;
+            selectRect.anchorMax = Vector2.one;
+            selectRect.sizeDelta = Vector2.zero;
+            // 불투명 — 뒤의 HUD 글(조작 안내 등)이 제목과 겹쳐 보이지 않게.
+            selectPanel.GetComponent<Image>().color = new Color(0.03f, 0.035f, 0.05f, 1f);
+            var selectTitle = CreateLabel(selectPanel.transform, "Title", font, 56, new Vector2(0.5f, 1f), new Vector2(0f, -120f), TextAnchor.UpperCenter);
+            selectTitle.rectTransform.sizeDelta = new Vector2(1400f, 100f);
+            selectTitle.gameObject.AddComponent<TextLabel>().TextKey = "ui.select.title";
+            int cardCount = Mathf.Max(1, balance.CharacterCount);
+            var characterCards = new Button[cardCount];
+            const float selectCardWidth = 560f;
+            const float selectCardGap = 60f;
+            float firstX = -(cardCount - 1) * (selectCardWidth + selectCardGap) * 0.5f;
+            for (int i = 0; i < cardCount; i++)
+            {
+                var card = CreateButton(selectPanel.transform, "CharacterCard" + i, font, "ui.select.title",
+                    new Vector2(0.5f, 0.5f), new Vector2(firstX + i * (selectCardWidth + selectCardGap), -20f));
+                card.GetComponent<RectTransform>().sizeDelta = new Vector2(selectCardWidth, 460f);
+                // 카드 글은 CharacterSelectView가 캐릭터 표에서 채운다 — 고정 글 키는 뗀다.
+                var cardLabel = card.GetComponentInChildren<UnityEngine.UI.Text>();
+                Object.DestroyImmediate(cardLabel.GetComponent<TextLabel>());
+                cardLabel.fontSize = 32;
+                cardLabel.alignment = TextAnchor.MiddleCenter;
+                cardLabel.text = string.Empty;
+                characterCards[i] = card;
+            }
+            selectPanel.SetActive(false);
+            var characterSelect = selectPanel.AddComponent<CharacterSelectView>();
+            var selectSerialized = new SerializedObject(characterSelect);
+            selectSerialized.FindProperty("panel").objectReferenceValue = selectPanel;
+            var cardsProperty = selectSerialized.FindProperty("cards");
+            cardsProperty.arraySize = characterCards.Length;
+            for (int i = 0; i < characterCards.Length; i++) cardsProperty.GetArrayElementAtIndex(i).objectReferenceValue = characterCards[i];
+            selectSerialized.ApplyModifiedPropertiesWithoutUndo();
+
             CreateEventSystem();
 
             var hudView = canvas.gameObject.AddComponent<HudView>();
@@ -255,7 +295,8 @@ namespace GirlsDungeon.EditorTools
                 ("eventPlayer", eventPlayer),
                 ("skillBar", skillBar),
                 ("combatFx", combatFx),
-                ("visuals", visuals));
+                ("visuals", visuals),
+                ("characterSelect", characterSelect));
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -378,11 +419,13 @@ namespace GirlsDungeon.EditorTools
         private const string VisualsPath = "Assets/_Game/Data/UnitVisuals.asset";
 
         /// <summary>
-        /// 그림 목록 에셋을 만들거나 불러온다. 유닛 그림 ID(player · rifleman · assault) 줄이 없으면 빈 줄을 더하고,
+        /// 그림 목록 에셋을 만들거나 불러온다. 유닛 그림 ID(player · rifleman · assault)와 캐릭터 그림 ID(캐릭터 표) 줄이 없으면 빈 줄을 더하고,
         /// 이미 넣어 둔 프리팹 · 크기 · 높이는 건드리지 않는다 (멱등).
         /// </summary>
-        private static UnitVisualCatalog LoadOrCreateVisuals()
+        private static UnitVisualCatalog LoadOrCreateVisuals(GameBalance balance)
         {
+            var ids = new System.Collections.Generic.List<string> { "player", "rifleman", "assault" };
+            foreach (var id in balance.CharacterVisualIds()) if (!string.IsNullOrEmpty(id) && !ids.Contains(id)) ids.Add(id);
             var catalog = AssetDatabase.LoadAssetAtPath<UnitVisualCatalog>(VisualsPath);
             if (catalog == null)
             {
@@ -393,7 +436,7 @@ namespace GirlsDungeon.EditorTools
 
             var serialized = new SerializedObject(catalog);
             var entries = serialized.FindProperty("entries");
-            foreach (var id in new[] { "player", "rifleman", "assault" })
+            foreach (var id in ids)
             {
                 bool found = false;
                 for (int i = 0; i < entries.arraySize; i++)

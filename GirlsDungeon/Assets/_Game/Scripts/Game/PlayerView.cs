@@ -93,7 +93,8 @@ namespace GirlsDungeon.Game
             modelPivot.localRotation = Quaternion.Euler(0f, facingYaw + yawOffset, 0f);
 
             modelAnimator = model.GetComponentInChildren<Animator>();
-            if (modelAnimator != null && !string.IsNullOrEmpty(visual.speedParameter))
+            // 컨트롤러가 없는 Animator(애니메이션 없는 모델)는 parameters를 읽으면 경고가 나므로 건너뛴다.
+            if (modelAnimator != null && modelAnimator.runtimeAnimatorController != null && !string.IsNullOrEmpty(visual.speedParameter))
             {
                 foreach (var parameter in modelAnimator.parameters)
                 {

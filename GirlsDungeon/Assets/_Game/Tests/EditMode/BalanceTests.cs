@@ -156,6 +156,40 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void Characters_MatchBalanceTable13()
+        {
+            var balance = Load();
+            var combat = balance.CreateCombatSettings();
+            var expected = TestData.Combat();
+
+            Assert.That(combat.Characters.Count, Is.EqualTo(expected.Characters.Count));
+            foreach (var character in expected.Characters)
+            {
+                var actual = combat.TryCharacter(character.Kind);
+                Assert.That(actual, Is.Not.Null, character.Kind.ToString());
+                Assert.That(actual.MaxHp, Is.EqualTo(character.MaxHp), character.Kind + " hp");
+                Assert.That(actual.MaxStability, Is.EqualTo(character.MaxStability), character.Kind + " stability");
+                Assert.That(actual.VisionRange, Is.EqualTo(character.VisionRange), character.Kind + " vision");
+                Assert.That(actual.Defense, Is.EqualTo(character.Defense), character.Kind + " defense");
+                Assert.That(actual.MoveRange, Is.EqualTo(character.MoveRange), character.Kind + " move");
+                Assert.That(actual.StartWeapon, Is.EqualTo(character.StartWeapon), character.Kind + " start weapon");
+            }
+            // 사용자 결정 (2026-11-11): 첫 캐릭터는 산탄총, 두 번째는 기관단총으로 시작.
+            Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroA).StartWeapon, Is.EqualTo(GirlsDungeon.Core.Sim.WeaponKind.Shotgun));
+            Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroB).StartWeapon, Is.EqualTo(GirlsDungeon.Core.Sim.WeaponKind.Smg));
+        }
+
+        [Test]
+        public void CharacterTextKeys_ExistInTheTextTable()
+        {
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in Load().CharacterNameKeys())
+                Assert.That(table.Contains(key), Is.True, key);
+            Assert.That(table.Contains("ui.select.title"), Is.True);
+            Assert.That(table.Contains("ui.select.card"), Is.True);
+        }
+
+        [Test]
         public void UnitNameKeys_ExistInTheTextTable()
         {
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));

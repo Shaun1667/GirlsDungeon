@@ -78,8 +78,8 @@ namespace GirlsDungeon.Core.Sim
             player.StabilityDamage = weapon.StabilityDamage;
             player.CritPercent = weapon.CritPercent;
             player.CritMultiplierPercent = weapon.CritMultiplierPercent;
-            // 이동 범위 = 유닛 표 값 + 무기 보정 (기관총 −2).
-            player.MoveRange = System.Math.Max(0, settings.StatsFor(UnitKind.Player).MoveRange + weapon.MoveRangeBonus);
+            // 이동 범위 = 캐릭터 값(없으면 유닛 표 값) + 무기 보정 (기관총 −2).
+            player.MoveRange = System.Math.Max(0, settings.PlayerBaseMoveRange(world.PlayerCharacter) + weapon.MoveRangeBonus);
         }
 
         /// <summary>이번 차례에 플레이어가 쏠 수 있는 횟수 (무기 규칙, 수치가 없으면 1).</summary>

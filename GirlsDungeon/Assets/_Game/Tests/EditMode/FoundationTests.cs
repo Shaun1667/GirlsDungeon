@@ -374,6 +374,15 @@ namespace GirlsDungeon.Tests
                 Attack = 6, Defense = 1, MoveRange = 8, AttackRange = 1, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
                 PushOnHit = 1,
             });
+            // BALANCE 13번 캐릭터 표. 캐릭터를 고르지 않은 판(NewRun 기본)은 위 플레이어 줄을 그대로 쓴다.
+            settings.Characters.Add(new CharacterStats
+            {
+                Kind = CharacterKind.HeroA, MaxHp = 110, MaxStability = 7, VisionRange = 8, Defense = 5, MoveRange = 6, StartWeapon = WeaponKind.Shotgun,
+            });
+            settings.Characters.Add(new CharacterStats
+            {
+                Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 5, VisionRange = 10, Defense = 3, MoveRange = 7, StartWeapon = WeaponKind.Smg,
+            });
             return settings;
         }
 

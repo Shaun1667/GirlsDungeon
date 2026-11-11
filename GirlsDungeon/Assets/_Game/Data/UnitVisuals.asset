@@ -31,3 +31,15 @@ MonoBehaviour:
     heightOffset: 0
     yawOffset: 0
     speedParameter: Speed
+  - id: hero_a
+    prefab: {fileID: 0}
+    scale: 1
+    heightOffset: 0
+    yawOffset: 0
+    speedParameter: Speed
+  - id: hero_b
+    prefab: {fileID: 0}
+    scale: 1
+    heightOffset: 0
+    yawOffset: 0
+    speedParameter: Speed
