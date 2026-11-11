@@ -272,6 +272,12 @@ MonoBehaviour:
   cameraDistance: 17
   cameraFollowSharpness: 8
   cameraRotateSharpness: 10
+  cameraMinDistance: 8
+  cameraMaxDistance: 28
+  cameraZoomStep: 2
+  cameraZoomSharpness: 10
+  cameraDragThresholdPixels: 8
+  cameraMaxPanDistance: 20
   enemyTurnBannerSeconds: 0.6
   attackPauseSeconds: 0.55
   actionPauseSeconds: 0.3

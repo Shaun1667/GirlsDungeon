@@ -90,7 +90,7 @@ namespace GirlsDungeon.Game
             unitsView.Bind(eventPlayer, balance);
             itemsView.Bind(eventPlayer);
             hudView.Bind(eventPlayer, combatSettings, balance);
-            moveController.Bind(simulation, eventPlayer, playerView, hudView, combatSettings, balance.MoveCostTicks);
+            moveController.Bind(simulation, eventPlayer, playerView, hudView, combatSettings, balance.MoveCostTicks, balance.CameraDragThresholdPixels);
             skillBar.Bind(simulation, eventPlayer, moveController, playerView, combatSettings, balance);
             combatFx.Bind(eventPlayer, balance, unitsView, playerView);
             hudView.NewRunPressed -= OnNewRunButton;

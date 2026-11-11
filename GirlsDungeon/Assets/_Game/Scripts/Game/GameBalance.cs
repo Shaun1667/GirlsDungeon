@@ -289,6 +289,16 @@ namespace GirlsDungeon.Game
         [SerializeField] private float cameraDistance = 17f;
         [SerializeField] private float cameraFollowSharpness = 8f;
         [SerializeField] private float cameraRotateSharpness = 10f;
+        [Tooltip("Closest and farthest camera distance for mouse-wheel zoom (BALANCE 3-21, 3-22).")]
+        [SerializeField] private float cameraMinDistance = 8f;
+        [SerializeField] private float cameraMaxDistance = 28f;
+        [Tooltip("Distance change per wheel notch (BALANCE 3-23).")]
+        [SerializeField] private float cameraZoomStep = 2f;
+        [SerializeField] private float cameraZoomSharpness = 10f;
+        [Tooltip("Pixels the mouse must move while held before a click becomes a camera drag (BALANCE 3-25).")]
+        [SerializeField] private float cameraDragThresholdPixels = 8f;
+        [Tooltip("How far the camera can be dragged away from its target (BALANCE 3-26).")]
+        [SerializeField] private float cameraMaxPanDistance = 20f;
 
         [Header("Turn playback (BALANCE 3-14 ~ 3-20, view only)")]
         [Tooltip("Pause after the enemy-turn banner appears.")]
@@ -320,6 +330,12 @@ namespace GirlsDungeon.Game
         public float CameraDistance => cameraDistance;
         public float CameraFollowSharpness => cameraFollowSharpness;
         public float CameraRotateSharpness => cameraRotateSharpness;
+        public float CameraMinDistance => cameraMinDistance;
+        public float CameraMaxDistance => cameraMaxDistance;
+        public float CameraZoomStep => cameraZoomStep;
+        public float CameraZoomSharpness => cameraZoomSharpness;
+        public float CameraDragThresholdPixels => cameraDragThresholdPixels;
+        public float CameraMaxPanDistance => cameraMaxPanDistance;
         public float EnemyTurnBannerSeconds => enemyTurnBannerSeconds;
         public float AttackPauseSeconds => attackPauseSeconds;
         public float ActionPauseSeconds => actionPauseSeconds;

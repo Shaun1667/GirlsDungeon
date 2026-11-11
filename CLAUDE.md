@@ -81,7 +81,7 @@ GirlsDungeon/Assets/_Game/
 - 안개는 `Game.FogView`(전역 셰이더 값 `_GD_FogTex` · `_GD_FogRect` · `_GD_FogStrength`)와 `Shaders/FogOverlay.shader`. 새 지형 메시는 `FloorView.AddPart`로 만들어야 안개 재질이 덧붙는다.
 - 화면은 사건을 `Game.EventPlayer`(사건 재생기, `Core.Sim.IEventSource`)를 거쳐 하나씩 받는다 — 적 차례가 걸음 · 사격 단위로 시간을 두고 보인다(기다림은 BALANCE 3-14 ~ 3-20). 규칙 상태(World)는 이미 끝난 결과이므로 화면은 위치 · 피해를 사건에서 읽고, 체력 · 결과 화면은 재생이 끝난 뒤 맞춘다. 재생 중(`IsPlaying`)에는 입력을 받지 않는다. 안개(`FogView`) · 위협 칸(`ThreatView`)만 Simulation에서 바로 받는다. 카메라는 `FocusChanged` → `CameraRig.SetTarget`.
 - 화면: 적 표시 `Game.UnitsView`(보이거나 전투 중인 적만, 칸 사이를 걸음), 공격 연출 `Game.CombatFxView`(탄도 선 · 피해 숫자 · 흔들림), HUD `Game.HudView`, 스킬 바 `Game.SkillBarView` + 카드 `SkillCardView`(아래 가운데: 사격 1 · 수류탄 2 · 밀치기 3 · 감시 4 · 턴 종료 Space, 재사용 대기 · 설명 창). UI 입력은 EventSystem + `InputSystemUIInputModule`.
-- 칸 ↔ 3D 위치 변환은 `Game.GridSpace` 한 곳. 지형 그리기 `FloorView`, 플레이어 그리기 `PlayerView`, 클릭 이동 `MoveController`, 카메라 `CameraRig`. 화면 쪽은 규칙을 바꾸지 않고 커맨드만 낸다.
+- 칸 ↔ 3D 위치 변환은 `Game.GridSpace` 한 곳. 지형 그리기 `FloorView`, 플레이어 그리기 `PlayerView`, 클릭 이동 `MoveController`, 카메라 `CameraRig`(Q/E 회전 · 휠 확대 · 드래그 이동 — 클릭과 드래그는 `PointerDrag`로 가른다, 클릭은 뗄 때). 화면 쪽은 규칙을 바꾸지 않고 커맨드만 낸다.
 - Setup 메뉴는 에셋을 `NewScene` 뒤에 불러온다 — 앞에서 불러 두면 참조가 비어 저장된다 (TASKS 1-2 피드백).
 
 ## 핵심 설계 규칙 (변경 금지)

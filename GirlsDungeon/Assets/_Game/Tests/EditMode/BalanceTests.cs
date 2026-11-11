@@ -200,6 +200,20 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void CameraZoomAndDrag_MatchesBalanceTable3()
+        {
+            var balance = Load();
+            Assert.That(balance.CameraMinDistance, Is.EqualTo(8f).Within(0.0001f));
+            Assert.That(balance.CameraMaxDistance, Is.EqualTo(28f).Within(0.0001f));
+            Assert.That(balance.CameraZoomStep, Is.EqualTo(2f).Within(0.0001f));
+            Assert.That(balance.CameraZoomSharpness, Is.EqualTo(10f).Within(0.0001f));
+            Assert.That(balance.CameraDragThresholdPixels, Is.EqualTo(8f).Within(0.0001f));
+            Assert.That(balance.CameraMaxPanDistance, Is.EqualTo(20f).Within(0.0001f));
+            // 시작 거리는 확대 · 축소 범위 안에 있어야 한다.
+            Assert.That(balance.CameraDistance, Is.InRange(balance.CameraMinDistance, balance.CameraMaxDistance));
+        }
+
+        [Test]
         public void TurnPlayback_MatchesBalanceTable3()
         {
             var balance = Load();

@@ -54,6 +54,9 @@ namespace GirlsDungeon.Game
         /// <summary>걸음이 끝나면 열 보급 상자 (탐험 중 먼 상자를 클릭했을 때).</summary>
         private GridPos? pendingCrate;
         private AimMode aim;
+        /// <summary>왼쪽 버튼: 움직이지 않고 떼면 클릭, 기준(BALANCE 3-25)보다 움직이면 카메라 드래그.</summary>
+        private PointerDrag leftClick;
+        private float dragThresholdPixels;
         private Simulation simulation;
         private EventPlayer eventPlayer;
         private PlayerView playerView;
@@ -201,8 +204,9 @@ namespace GirlsDungeon.Game
             reachableKey = null;
         }
 
-        public void Bind(Simulation newSimulation, EventPlayer newEventPlayer, PlayerView newPlayerView, HudView newHudView, CombatSettings newSettings, int newMoveCostTicks)
+        public void Bind(Simulation newSimulation, EventPlayer newEventPlayer, PlayerView newPlayerView, HudView newHudView, CombatSettings newSettings, int newMoveCostTicks, float newDragThresholdPixels)
         {
+            dragThresholdPixels = newDragThresholdPixels;
             simulation = newSimulation;
             eventPlayer = newEventPlayer;
             playerView = newPlayerView;
@@ -310,6 +314,8 @@ namespace GirlsDungeon.Game
         private void Update()
         {
             if (simulation == null) return;
+            var pointerMouse = Mouse.current;
+            if (pointerMouse != null) leftClick.Update(pointerMouse.leftButton, pointerMouse.position.ReadValue(), dragThresholdPixels);
 
             var mode = simulation.World.Mode;
             // 전투가 시작되거나 무기 비교 창이 뜨면 걷던 길을 멈춘다.
@@ -342,7 +348,7 @@ namespace GirlsDungeon.Game
             bool isCrate = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.SupplyCrate && IsKnown(cell.Value);
             SetHover(isWalkable || isCrate ? cell : null);
 
-            bool clicked = mouse != null && mouse.leftButton.wasPressedThisFrame && !IsPointerOverUi();
+            bool clicked = mouse != null && leftClick.Clicked && !IsPointerOverUi();
             if (isWalkable && clicked) RequestMove(cell.Value);
             if (isCrate && clicked) RequestOpenCrate(cell.Value);
         }
@@ -384,7 +390,7 @@ namespace GirlsDungeon.Game
             }
 
             var target = world.UnitAt(cell.Value);
-            bool clicked = mouse.leftButton.wasPressedThisFrame && !IsPointerOverUi();
+            bool clicked = leftClick.Clicked && !IsPointerOverUi();
             if (aim == AimMode.Push)
             {
                 Push.Aim(world.Player.Position, cell.Value, out var direction, out int side);
