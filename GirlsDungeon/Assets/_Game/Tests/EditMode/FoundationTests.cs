@@ -360,7 +360,7 @@ namespace GirlsDungeon.Tests
             });
             settings.Units.Add(new UnitStats
             {
-                Kind = UnitKind.Player, MaxHp = 20, MaxStability = 6, VisionRange = 9,
+                Kind = UnitKind.Player, MaxHp = 100, MaxStability = 6, VisionRange = 9,
                 Attack = 10, Defense = 4, MoveRange = 6, AttackRange = 8, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
             });
             settings.Units.Add(new UnitStats

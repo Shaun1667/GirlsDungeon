@@ -106,7 +106,7 @@ namespace GirlsDungeon.Game
         {
             new UnitStatsEntry
             {
-                kind = UnitKind.Player, nameKey = "unit.player.name", maxHp = 20, maxStability = 6, visionRange = 9,
+                kind = UnitKind.Player, nameKey = "unit.player.name", maxHp = 100, maxStability = 6, visionRange = 9,
                 attack = 10, defense = 4, moveRange = 6, attackRange = 8, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150,
             },
             new UnitStatsEntry

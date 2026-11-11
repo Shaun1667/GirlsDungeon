@@ -60,7 +60,7 @@ namespace GirlsDungeon.Tests
             var player = world.Player;
             Assert.That(new[] { player.Attack, player.AttackRange, player.StabilityDamage, player.CritPercent, player.CritMultiplierPercent },
                 Is.EqualTo(new[] { 13, 12, 1, 30, 150 }));
-            Assert.That(player.MaxHp, Is.EqualTo(20), "the weapon does not touch hp");
+            Assert.That(player.MaxHp, Is.EqualTo(100), "the weapon does not touch hp");
             Assert.That(player.MoveRange, Is.EqualTo(6), "the weapon does not touch movement");
         }
 
@@ -378,14 +378,14 @@ namespace GirlsDungeon.Tests
         public void SteppingOnAMedkit_Heals_UpToMax()
         {
             var world = MakeWorld(new GridPos(0, 0), "....");
-            world.Player.Hp = 17;
+            world.Player.Hp = 97;
             var medkit = world.AddItem(ItemKind.Medkit, default, new GridPos(1, 0));
             var events = new List<GameEvent>();
             var simulation = new Simulation(world, TestData.Combat());
             simulation.EventsPublished += published => events.AddRange(published);
 
             Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(1, 0), 1)), Is.True);
-            Assert.That(world.Player.Hp, Is.EqualTo(20), "capped at max");
+            Assert.That(world.Player.Hp, Is.EqualTo(100), "capped at max");
             Assert.That(events.OfType<MedkitUsed>().Single().Healed, Is.EqualTo(3));
             Assert.That(world.FindItem(medkit.Id), Is.Null);
         }

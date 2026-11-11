@@ -45,7 +45,7 @@ namespace GirlsDungeon.Tests
             int damage = events.OfType<UnitAttacked>().Single().Damage;
             Assert.That(damage, Is.EqualTo(CombatRules.Damage(6, 4, 100, 0, 1)).Or.EqualTo(CombatRules.Damage(6, 4, 150, 0, 1)), "3.6 → 4, crit 5");
             Assert.That(world.Player.Position, Is.EqualTo(new GridPos(3, 0)));
-            Assert.That(world.Player.Hp, Is.EqualTo(20 - damage));
+            Assert.That(world.Player.Hp, Is.EqualTo(100 - damage));
             Assert.That(events.OfType<UnitPushed>().Single().CollisionDamage, Is.EqualTo(0));
         }
 
@@ -66,7 +66,7 @@ namespace GirlsDungeon.Tests
             CombatRules.Resolve(world, TestData.Combat(), Assault(world), world.Player, events);
             int damage = events.OfType<UnitAttacked>().Single().Damage;
             Assert.That(world.Player.Position, Is.EqualTo(new GridPos(1, 0)));
-            Assert.That(world.Player.Hp, Is.EqualTo(20 - damage - 3));
+            Assert.That(world.Player.Hp, Is.EqualTo(100 - damage - 3));
         }
 
         [Test]
@@ -79,10 +79,10 @@ namespace GirlsDungeon.Tests
             int damage = events.OfType<UnitAttacked>().Single().Damage;
             var fell = events.OfType<PlayerFell>().Single();
             Assert.That(fell.From, Is.EqualTo(new GridPos(3, 0)));
-            Assert.That(fell.Damage, Is.EqualTo(10));
+            Assert.That(fell.Damage, Is.EqualTo(50), "half of max hp 100");
             Assert.That(fell.To, Is.EqualTo(new GridPos(4, 0)), "first open floor next to the chasm cell");
             Assert.That(world.Player.Position, Is.EqualTo(new GridPos(4, 0)));
-            Assert.That(world.Player.Hp, Is.EqualTo(20 - damage - 10));
+            Assert.That(world.Player.Hp, Is.EqualTo(100 - damage - 50));
             Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
         }
 

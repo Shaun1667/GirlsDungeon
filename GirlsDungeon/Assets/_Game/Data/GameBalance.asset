@@ -40,7 +40,7 @@ MonoBehaviour:
   units:
   - kind: 0
     nameKey: unit.player.name
-    maxHp: 20
+    maxHp: 100
     maxStability: 6
     visionRange: 9
     attack: 10
