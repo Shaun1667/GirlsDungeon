@@ -119,6 +119,32 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void LineOfFire_LeansOutAroundAWallCorner()
+        {
+            // y = 0 이 첫 줄. 쏘는 쪽 (2,1)은 벽 (1,1) 바로 옆 — 위 칸 (2,2)로 몸을 내밀면 (0,2)가 보인다.
+            var map = TestData.Parse(
+                "##..",
+                "##..",
+                "....");
+            var shooter = new GridPos(2, 1);
+            var target = new GridPos(0, 2);
+            Assert.That(Sight.HasLine(map, shooter, target), Is.False, "the straight line clips the wall");
+            Assert.That(Sight.HasLineOfFire(map, shooter, target), Is.True, "leaning out to (2,2)");
+        }
+
+        [Test]
+        public void LineOfFire_DoesNotLeanInTheOpen()
+        {
+            var map = TestData.Parse(
+                "......",
+                "...#..",
+                "......");
+            Assert.That(Sight.HasLineOfFire(map, new GridPos(1, 1), new GridPos(5, 1)), Is.False, "not next to a wall or pillar");
+            Assert.That(Sight.HasLineOfFire(TestData.Parse("..#..."), new GridPos(0, 0), new GridPos(4, 0)), Is.False,
+                "leaning sideways does not see through the wall either");
+        }
+
+        [Test]
         public void ExactCorner_IsBlockedOnlyWhenBothSidesBlock()
         {
             var oneSide = TestData.Parse(".#", "..");

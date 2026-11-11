@@ -65,7 +65,7 @@ namespace GirlsDungeon.Core.Sim
             var block = AttackBlock.None;
             var weapon = Loadout.WeaponOf(world, settings, attacker);
             if (!Loadout.InRange(weapon, attacker.AttackRange, from, target.Position)) block = AttackBlock.OutOfRange;
-            else if (!Sight.HasLine(map, from, target.Position)) block = AttackBlock.NoLineOfFire;
+            else if (!Sight.HasLineOfFire(map, from, target.Position)) block = AttackBlock.NoLineOfFire;
             else if (weapon != null && weapon.NoShotAfterMove && MovesThisTurn(world, attacker, from)) block = AttackBlock.MovedThisTurn;
 
             // 도검: 엄폐를 무시한다 (엄폐가 없으니 안정지수 감소도 붙지 않고 엄폐물도 깎이지 않는다).

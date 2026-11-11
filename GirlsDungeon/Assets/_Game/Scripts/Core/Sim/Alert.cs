@@ -65,7 +65,7 @@ namespace GirlsDungeon.Core.Sim
             int dx = cell.X - watcher.Position.X;
             int dy = cell.Y - watcher.Position.Y;
             if (dx * dx + dy * dy > watcher.AttackRange * watcher.AttackRange) return false;
-            return Sight.HasLine(world.Map, watcher.Position, cell);
+            return Sight.HasLineOfFire(world.Map, watcher.Position, cell);
         }
 
         /// <summary>
