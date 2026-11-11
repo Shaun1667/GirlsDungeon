@@ -23,6 +23,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private EventPlayer eventPlayer;
         [SerializeField] private SkillBarView skillBar;
         [SerializeField] private CombatFxView combatFx;
+        [Tooltip("Visual catalog: visual id -> model prefab (Docs/ART_ASSETS.md).")]
+        [SerializeField] private UnitVisualCatalog visuals;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -53,7 +55,8 @@ namespace GirlsDungeon.Game
 
             floorView.Build(simulation.World.Map, balance);
             fogView.Bind(simulation, balance);
-            playerView.Bind(eventPlayer, balance);
+            // 플레이어 모습: 그림 목록에 그 ID의 프리팹이 있으면 모델, 없으면 캡슐.
+            playerView.Bind(eventPlayer, balance, visuals != null ? visuals.Find(balance.VisualId(UnitKind.Player)) : null);
             unitsView.Bind(eventPlayer, balance);
             itemsView.Bind(eventPlayer);
             hudView.Bind(eventPlayer, combatSettings, balance);

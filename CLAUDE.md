@@ -11,6 +11,7 @@ GirlsDungeon — 오리지널 소녀 캐릭터 한 명을 조종하는 3D 전술
 | `GDD.md` | 기획 | 초안 (2026-11-09) |
 | `TASKS.md` | 진행 요약 · 작업 순서 · 일지 | 사용 중 |
 | `BALANCE.md` | 수치 | 사용 중 (재미 검증 전 출발값) |
+| `Docs/ART_ASSETS.md` | 그림 · 모델 목록 · 출처 · 라이선스, 모델 붙이는 방법 | 사용 중 (2026-11-11) |
 | `Docs/Source/MY_DEV_GUIDE.md` | 작업 방식 원본 (고치지 않음) | 기준 |
 | `Docs/Source/ROGUELIKE_STRUCTURE.md` | 로그라이크 구조 원본 (고치지 않음) | 기준 |
 
@@ -73,6 +74,7 @@ GirlsDungeon/Assets/_Game/
 - 낭떠러지는 `TileType.Chasm`(걸을 수 없음 · 시야를 막지 않음 · 엄폐 없음), 배치는 `FloorDecor.PlaceChasms`(엄폐물보다 먼저). 밀치기는 `Core.Sim.Push` 한 곳(`Aim` · `Preview` · `Resolve`, 한 줄 밀림 `Slide`), 커맨드 `PushCommand`, 재사용 대기 `World.PushCooldown`. 화면은 `MoveController` 조준 모드(`AimMode.Push`) + `HudView.ShowPushPreview`. 공격으로 미는 것(돌격병 `units[].pushOnHit`)은 `CombatRules.Resolve` → `Push.Knockback`, 밀린 결과 · 낙하(적 즉사 / 플레이어 50% 피해 후 `Push.NearestOpenFloor`)는 `Push.ApplySlide` 한 곳.
 - 무기는 `Core.Sim.CombatSettings.Weapons` 표(에셋 `weapons` 배열, 이름 · 규칙 글은 `nameKey` · `ruleKey`) 한 곳, 든 무기는 `World.PlayerWeapon`. 플레이어 공격 · 사거리 · 안정 피해 · 치명은 `Loadout.Apply`가 무기에서 덮어쓴다(효과 합산 한 지점 — 3-4 파츠도 여기). 무기 규칙(권총 `MoveAfterShot` · 산탄총 거리 감소 · 저격총 `NoShotAfterMove` · 기관단총 `ExtraShotsPerTurn` · 기관총 `MoveRangeBonus` · 도검 `Melee` · `IgnoresCover`)은 `CombatRules.Preview` · `AttackCommand` · `Loadout`(`CanShoot` · `CanCombatMove` · `KeepsTurnAfterShot` · `InRange`)에서. 이번 차례 사격 수는 `World.PlayerShots`. 새 무기 = `WeaponKind` 끝에 추가 + 표 한 줄.
 - 보상 · 바닥 물건은 `Core.Sim.Loot` 한 곳(파일 `LootRules.cs` — `Loot.cs`는 Unity가 컴파일 목록에 넣지 않아 이름을 바꿈): 전투 끝 보상 `DropAfterCombat`(`CombatFlow`가 부름), 보급 상자 `OpenCrate`, 줍기 `CheckPickup`(커맨드마다 `Simulation`이 부름), 교체 `Swap`. 물건은 `World.Items`, 난수는 `RandomPurpose.Item`. 보급 상자 칸은 `TileType.SupplyCrate` · `SupplyCrateOpened`, 배치는 `FloorDecor.PlaceSupplyCrates`(아이템 난수). 화면: 물건 `Game.ItemsView`, 비교 창 · 무기 표시 `HudView`, 상자 클릭 `MoveController.RequestOpenCrate`.
+- 유닛 그림은 ID로만: `units[].visualId` → 그림 목록 `Game.UnitVisualCatalog`(`Data/UnitVisuals.asset`, Setup 메뉴가 줄을 만들고 넣어 둔 프리팹은 유지). 프리팹이 없으면 도형. 지금은 플레이어만(`PlayerView` — 걷는 방향 바라보기 · Animator 속도 값). 목록 · 출처 · 라이선스는 `Docs/ART_ASSETS.md`. 개인 테스트 모델은 `Assets/_Local/`(git 제외) — 그 모델을 그림 목록에 넣은 채로 커밋하지 않는다.
 - 유닛 이름은 에셋 `units[].nameKey`(텍스트 표 키), 화면에서는 `GameBalance.NameKey(kind)`.
 - 플레이어 시야는 `Core.Map.Vision.Compute` 한 곳(사선 + 서 있는 방 전체). 본 칸 기록은 `World.Explored`, 갱신은 `Core.Sim.VisionSystem`(커맨드마다). 전투 시작 · 적 표시 · 적 배치 · 클릭 가능 칸이 모두 이것을 쓴다.
 - 안개는 `Game.FogView`(전역 셰이더 값 `_GD_FogTex` · `_GD_FogRect` · `_GD_FogStrength`)와 `Shaders/FogOverlay.shader`. 새 지형 메시는 `FloorView.AddPart`로 만들어야 안개 재질이 덧붙는다.

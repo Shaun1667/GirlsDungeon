@@ -12,6 +12,8 @@ namespace GirlsDungeon.Game
         public UnitKind kind;
         [Tooltip("Text table key for the unit name.")]
         public string nameKey;
+        [Tooltip("Visual id looked up in the UnitVisuals catalog (no prefab there = greybox shape).")]
+        public string visualId;
         public int maxHp;
         public int maxStability;
         public int visionRange;
@@ -106,17 +108,17 @@ namespace GirlsDungeon.Game
         {
             new UnitStatsEntry
             {
-                kind = UnitKind.Player, nameKey = "unit.player.name", maxHp = 100, maxStability = 6, visionRange = 9,
+                kind = UnitKind.Player, nameKey = "unit.player.name", visualId = "player", maxHp = 100, maxStability = 6, visionRange = 9,
                 attack = 10, defense = 4, moveRange = 6, attackRange = 8, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150,
             },
             new UnitStatsEntry
             {
-                kind = UnitKind.Rifleman, nameKey = "unit.rifleman.name", maxHp = 10, maxStability = 3, visionRange = 9,
+                kind = UnitKind.Rifleman, nameKey = "unit.rifleman.name", visualId = "rifleman", maxHp = 10, maxStability = 3, visionRange = 9,
                 attack = 6, defense = 2, moveRange = 6, attackRange = 7, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150,
             },
             new UnitStatsEntry
             {
-                kind = UnitKind.Assault, nameKey = "unit.assault.name", maxHp = 8, maxStability = 2, visionRange = 9,
+                kind = UnitKind.Assault, nameKey = "unit.assault.name", visualId = "assault", maxHp = 8, maxStability = 2, visionRange = 9,
                 attack = 6, defense = 1, moveRange = 8, attackRange = 1, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150,
                 pushOnHit = 1,
             },
@@ -378,6 +380,13 @@ namespace GirlsDungeon.Game
         public System.Collections.Generic.IEnumerable<string> UnitNameKeys()
         {
             foreach (var entry in units) yield return entry.nameKey;
+        }
+
+        /// <summary>유닛 그림 ID (그림 목록 UnitVisualCatalog에서 찾는다). 표에 없는 종류면 null.</summary>
+        public string VisualId(UnitKind kind)
+        {
+            foreach (var entry in units) if (entry.kind == kind) return entry.visualId;
+            return null;
         }
 
         /// <summary>무기 이름의 텍스트 표 키. 표에 없는 무기면 null.</summary>

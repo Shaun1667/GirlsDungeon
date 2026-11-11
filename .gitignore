@@ -106,5 +106,9 @@ InitTestScene*.unity*
 # UI Toolkit auto generated files
 /UIElementsSchema/
 
+# 개인 테스트용 모델 · 에셋 (git에 올리지 않음 — Docs/ART_ASSETS.md)
+/GirlsDungeon/[Aa]ssets/_Local/
+/GirlsDungeon/[Aa]ssets/_Local.meta
+
 # Auto-generated cache in Assets folder
 /GirlsDungeon/[Aa]ssets/[Ss]ceneDependencyCache*

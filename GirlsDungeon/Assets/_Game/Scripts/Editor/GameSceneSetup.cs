@@ -24,6 +24,7 @@ namespace GirlsDungeon.EditorTools
 
             // 새 씬은 참조 없는 에셋을 메모리에서 내린다. 에셋은 반드시 NewScene 뒤에 불러온다.
             var balance = LoadOrCreateBalance();
+            var visuals = LoadOrCreateVisuals();
             var floorMaterial = LoadOrCreateMaterial("GreyboxFloor", new Color(0.42f, 0.44f, 0.47f));
             var wallMaterial = LoadOrCreateMaterial("GreyboxWall", new Color(0.2f, 0.22f, 0.27f));
             var stairsMaterial = LoadOrCreateMaterial("GreyboxStairs", new Color(0.95f, 0.72f, 0.2f));
@@ -207,6 +208,8 @@ namespace GirlsDungeon.EditorTools
             var playerView = playerObject.AddComponent<PlayerView>();
             var capsule = CreateVisual(PrimitiveType.Capsule, "Capsule", playerObject.transform, playerMaterial);
             capsule.transform.localPosition = Vector3.up;
+            // 그림 목록에 플레이어 모델 프리팹이 없을 때 그리는 캡슐.
+            SetReferences(playerView, ("fallbackBody", capsule.transform));
 
             var hover = CreateVisual(PrimitiveType.Quad, "HoverMarker", null, hoverMaterial);
             hover.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
@@ -251,7 +254,8 @@ namespace GirlsDungeon.EditorTools
                 ("itemsView", itemsView),
                 ("eventPlayer", eventPlayer),
                 ("skillBar", skillBar),
-                ("combatFx", combatFx));
+                ("combatFx", combatFx),
+                ("visuals", visuals));
 
             Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
             EditorSceneManager.SaveScene(scene, ScenePath);
@@ -369,6 +373,44 @@ namespace GirlsDungeon.EditorTools
             // 새로 생긴 필드의 값도 에셋 파일에 기록한다.
             EditorUtility.SetDirty(balance);
             return balance;
+        }
+
+        private const string VisualsPath = "Assets/_Game/Data/UnitVisuals.asset";
+
+        /// <summary>
+        /// 그림 목록 에셋을 만들거나 불러온다. 유닛 그림 ID(player · rifleman · assault) 줄이 없으면 빈 줄을 더하고,
+        /// 이미 넣어 둔 프리팹 · 크기 · 높이는 건드리지 않는다 (멱등).
+        /// </summary>
+        private static UnitVisualCatalog LoadOrCreateVisuals()
+        {
+            var catalog = AssetDatabase.LoadAssetAtPath<UnitVisualCatalog>(VisualsPath);
+            if (catalog == null)
+            {
+                EnsureFolder(Path.GetDirectoryName(VisualsPath).Replace('\\', '/'));
+                catalog = ScriptableObject.CreateInstance<UnitVisualCatalog>();
+                AssetDatabase.CreateAsset(catalog, VisualsPath);
+            }
+
+            var serialized = new SerializedObject(catalog);
+            var entries = serialized.FindProperty("entries");
+            foreach (var id in new[] { "player", "rifleman", "assault" })
+            {
+                bool found = false;
+                for (int i = 0; i < entries.arraySize; i++)
+                    if (entries.GetArrayElementAtIndex(i).FindPropertyRelative("id").stringValue == id) found = true;
+                if (found) continue;
+                entries.InsertArrayElementAtIndex(entries.arraySize);
+                var entry = entries.GetArrayElementAtIndex(entries.arraySize - 1);
+                entry.FindPropertyRelative("id").stringValue = id;
+                entry.FindPropertyRelative("prefab").objectReferenceValue = null;
+                entry.FindPropertyRelative("scale").floatValue = 1f;
+                entry.FindPropertyRelative("heightOffset").floatValue = 0f;
+                entry.FindPropertyRelative("yawOffset").floatValue = 0f;
+                entry.FindPropertyRelative("speedParameter").stringValue = "Speed";
+            }
+            serialized.ApplyModifiedPropertiesWithoutUndo();
+            EditorUtility.SetDirty(catalog);
+            return catalog;
         }
 
         private static Material LoadOrCreateMaterial(string materialName, Color color)
