@@ -248,8 +248,8 @@ namespace GirlsDungeon.EditorTools
             var playerView = playerObject.AddComponent<PlayerView>();
             var capsule = CreateVisual(PrimitiveType.Capsule, "Capsule", playerObject.transform, playerMaterial);
             capsule.transform.localPosition = Vector3.up;
-            // 그림 목록에 플레이어 모델 프리팹이 없을 때 그리는 캡슐.
-            SetReferences(playerView, ("fallbackBody", capsule.transform));
+            // 그림 목록에 플레이어 모델 프리팹이 없을 때 그리는 캡슐. 홀로그램 = 전투 이동 예약 칸의 반투명 복제 (3-10).
+            SetReferences(playerView, ("fallbackBody", capsule.transform), ("hologramMaterial", LoadOrCreateHologramMaterial()));
 
             var hover = CreateVisual(PrimitiveType.Quad, "HoverMarker", null, hoverMaterial);
             hover.transform.rotation = Quaternion.Euler(90f, 0f, 0f);
@@ -469,6 +469,32 @@ namespace GirlsDungeon.EditorTools
 
             material.SetColor("_BaseColor", color);
             material.SetFloat("_Smoothness", 0.1f);
+            EditorUtility.SetDirty(material);
+            return material;
+        }
+
+        /// <summary>홀로그램 재질: URP Unlit 반투명 하늘색 (깊이 쓰기 끔). 몇 번 실행해도 같은 값.</summary>
+        private static Material LoadOrCreateHologramMaterial()
+        {
+            var path = $"{MaterialFolder}/Hologram.mat";
+            var material = AssetDatabase.LoadAssetAtPath<Material>(path);
+            if (material == null)
+            {
+                EnsureFolder(MaterialFolder);
+                material = new Material(Shader.Find("Universal Render Pipeline/Unlit"));
+                AssetDatabase.CreateAsset(material, path);
+            }
+            material.shader = Shader.Find("Universal Render Pipeline/Unlit");
+            material.SetColor("_BaseColor", new Color(0.35f, 0.85f, 1f, 0.35f));
+            material.SetFloat("_Surface", 1f);
+            material.SetFloat("_Blend", 0f);
+            material.SetFloat("_SrcBlend", (float)UnityEngine.Rendering.BlendMode.SrcAlpha);
+            material.SetFloat("_DstBlend", (float)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+            material.SetFloat("_ZWrite", 0f);
+            material.SetFloat("_Cull", 0f);
+            material.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            material.SetOverrideTag("RenderType", "Transparent");
+            material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.Transparent;
             EditorUtility.SetDirty(material);
             return material;
         }

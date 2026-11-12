@@ -19,8 +19,9 @@ namespace GirlsDungeon.Game
     /// <summary>
     /// 마우스 입력을 커맨드로 바꾼다. 칸의 이동 · 사격 가능 여부와 숫자는 모두 규칙이 정한다.
     /// 탐험: 클릭한 본 칸까지 경로를 만들어 한 걸음씩 MoveCommand.
-    /// 전투(내 차례): 이동 범위 표시 · 범위 안 칸 클릭 = CombatMoveCommand, 적 클릭 = 사격 대상 고르기(노란 선 · 미리보기 · 확인 버튼),
-    /// 확인(버튼 · Enter · 사격 카드) = AttackCommand, 오른쪽 클릭 · Esc = 취소. 마우스를 올리면 미리보기.
+    /// 전투(내 차례): 이동 범위 표시 · 범위 안 칸 클릭 = 이동 예약(홀로그램, 바로 걷지 않음 — 3-10), 적 클릭 = 사격 대상 고르기(노란 선 · 미리보기 · 확인 버튼).
+    /// 예약이 있으면 선 · 미리보기는 예약 칸에서 계산한다. 확인(버튼 · Enter · 사격 카드) = 예약 칸으로 CombatMoveCommand 뒤 AttackCommand를 한 번에,
+    /// 대상 없이 Enter 또는 예약 칸을 다시 클릭 = 이동만. 오른쪽 클릭 · Esc = 대상 → 예약 순으로 취소. 마우스를 올리면 미리보기.
     /// 조준 모드: 수류탄 = 칸 클릭으로 AreaAttackCommand, 밀치기 = 마우스 쪽 방향 · 옆 줄로 PushCommand.
     /// </summary>
     public sealed class MoveController : MonoBehaviour
@@ -48,6 +49,9 @@ namespace GirlsDungeon.Game
 
         /// <summary>고른 사격 대상 (없으면 -1). 적을 클릭하면 고르기만 하고, 확인(버튼 · Enter · 사격 카드)을 눌러야 쏜다.</summary>
         private int selectedTargetId = -1;
+
+        /// <summary>전투 이동 예약 칸 (홀로그램 자리). 화면의 입력 상태일 뿐 규칙 상태가 아니다 — 확인할 때 커맨드로 바뀐다.</summary>
+        private GridPos? plannedCell;
 
         private readonly Queue<GridPos> pendingSteps = new Queue<GridPos>();
         private int pendingFloor;
@@ -89,14 +93,69 @@ namespace GirlsDungeon.Game
             return true;
         }
 
-        /// <summary>고른 대상을 쏜다 (확인 버튼 · Enter · 사격 카드). 고른 대상이 없거나 쏠 수 없으면 false — 고른 상태는 남는다.</summary>
+        /// <summary>
+        /// 고른 대상을 쏜다 (확인 버튼 · Enter · 사격 카드). 이동 예약이 있으면 먼저 예약 칸으로 걷고 이어서 쏜다 (한 번에).
+        /// 걷는 동안 감시 사격 등으로 상황이 바뀌어 더 쏠 수 없으면 이동만 하고 끝난다. 고른 대상이 없거나 아무것도 못 하면 false — 고른 상태는 남는다.
+        /// </summary>
         public bool ConfirmAttack()
         {
             if (simulation == null || Busy || selectedTargetId < 0) return false;
             int id = selectedTargetId;
+            var world = simulation.World;
+            var target = world.FindUnit(id);
+            if (target == null || !CombatRules.Preview(world, settings, world.Player, Origin(world), target).CanAttack) return false;
+
+            if (plannedCell.HasValue)
+            {
+                if (!simulation.Execute(new CombatMoveCommand(plannedCell.Value, settings))) return false;
+                ClearPlan();
+                // 걷는 동안 반응 사격 · 전투 종료 등이 있었으면 사격은 건너뛴다 (판정은 AttackCommand가 다시 한다).
+                bool stillValid = world.FindUnit(id) != null && TurnFlow.IsPlayerTurn(world) && world.Combatants.Contains(id) && Loadout.CanShoot(world, settings);
+                if (stillValid) simulation.Execute(new AttackCommand(id, settings));
+                ClearTarget();
+                return true;
+            }
+
             if (!simulation.Execute(new AttackCommand(id, settings))) return false;
             ClearTarget();
             return true;
+        }
+
+        /// <summary>지금 예약된 이동 칸 (없으면 null).</summary>
+        public GridPos? PlannedCell => plannedCell;
+
+        /// <summary>선 · 미리보기를 계산하는 자리: 이동 예약이 있으면 그 칸, 없으면 플레이어 칸.</summary>
+        private GridPos Origin(World world) => plannedCell ?? world.Player.Position;
+
+        /// <summary>전투 이동 칸을 예약한다 (홀로그램). 지금 갈 수 있는 칸이 아니면 false.</summary>
+        public bool PlanMove(GridPos cell)
+        {
+            if (simulation == null || Busy || aim != AimMode.None) return false;
+            var world = simulation.World;
+            if (world.Mode != WorldMode.Combat || !Loadout.CanCombatMove(world, settings)) return false;
+            RefreshRange(true);
+            if (reachable == null || !reachable.ContainsKey(cell) || cell == world.Player.Position) return false;
+            plannedCell = cell;
+            // 고른 대상이 새 자리에서 쏠 수 없으면 고르기를 푼다 (선 · 확인 버튼이 새 자리 기준으로 다시 그려진다).
+            var target = selectedTargetId >= 0 ? world.FindUnit(selectedTargetId) : null;
+            if (target != null && !CombatRules.Preview(world, settings, world.Player, cell, target).CanAttack) ClearTarget();
+            return true;
+        }
+
+        /// <summary>예약한 칸으로 이동만 한다 (예약 칸 다시 클릭 · 대상 없이 Enter). 예약이 없거나 못 가면 false.</summary>
+        public bool ConfirmMove()
+        {
+            if (simulation == null || Busy || !plannedCell.HasValue) return false;
+            var cell = plannedCell.Value;
+            ClearPlan();
+            ClearTarget();
+            return simulation.Execute(new CombatMoveCommand(cell, settings));
+        }
+
+        public void ClearPlan()
+        {
+            plannedCell = null;
+            if (playerView != null) playerView.HideGhost();
         }
 
         public void ClearTarget()
@@ -117,12 +176,13 @@ namespace GirlsDungeon.Game
             if (show)
             {
                 var player = world.Player;
-                var from = GridSpace.ToWorld(player.Position) + Vector3.up * targetLineHeight;
+                var origin = Origin(world);
+                var from = GridSpace.ToWorld(origin) + Vector3.up * targetLineHeight;
                 foreach (int id in world.Combatants)
                 {
                     var enemy = world.FindUnit(id);
                     if (enemy == null) continue;
-                    var preview = CombatRules.Preview(world, settings, player, player.Position, enemy);
+                    var preview = CombatRules.Preview(world, settings, player, origin, enemy);
                     if (!preview.CanAttack) continue;
 
                     string kind = id == selectedTargetId ? "selected" : preview.Cover != CoverLevel.None ? "cover" : "open";
@@ -197,7 +257,12 @@ namespace GirlsDungeon.Game
         private void SetAiming(AimMode mode)
         {
             aim = mode;
-            if (mode != AimMode.None) ClearTarget();
+            // 스킬은 지금 자리에서 쓴다 — 이동 예약 · 고른 대상을 푼다.
+            if (mode != AimMode.None)
+            {
+                ClearTarget();
+                ClearPlan();
+            }
             if (aim != AimMode.Grenade) areaView.Hide();
             if (aim != AimMode.Push) pushAreaView.Hide();
             hudView.SetAiming(aim);
@@ -218,6 +283,7 @@ namespace GirlsDungeon.Game
             reachable = null;
             reachableKey = null;
             ClearTarget();
+            ClearPlan();
             rangeView.Hide();
             aim = AimMode.None;
             areaView.Hide();
@@ -330,6 +396,7 @@ namespace GirlsDungeon.Game
             else
             {
                 if (selectedTargetId >= 0) ClearTarget();
+                if (plannedCell.HasValue) ClearPlan();
                 RefreshTargetLines(simulation.World, false);
                 rangeView.Hide();
                 reachableKey = null;
@@ -365,27 +432,36 @@ namespace GirlsDungeon.Game
             var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !Busy ? PointerCell(mouse.position.ReadValue()) : null;
             if (aim != AimMode.None && mouse != null && mouse.rightButton.wasPressedThisFrame) SetAiming(AimMode.None);
 
-            // 고른 사격 대상: 노란 선 · 확인 버튼. 오른쪽 클릭 · Esc = 취소, Enter = 확인.
+            // 이동 예약은 지금 이동할 수 있고 그 칸이 아직 범위 안일 때만 남는다 (적 차례 · 스킬 조준 · 이미 이동함 등이면 푼다).
+            if (plannedCell.HasValue && (!canMove || reachable == null || !reachable.ContainsKey(plannedCell.Value))) ClearPlan();
+
+            // 고른 사격 대상: 노란 선 · 확인 버튼. 오른쪽 클릭 · Esc = 대상 → 이동 예약 순으로 취소, Enter = 확인 (대상이 없으면 예약 칸으로 이동만).
             var selected = RefreshSelection(world);
-            if (selected != null && !Busy)
+            if (!Busy && aim == AimMode.None && (selected != null || plannedCell.HasValue))
             {
                 bool cancel = (mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame);
                 bool confirm = keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame);
-                if (cancel) ClearTarget();
-                else if (confirm && ConfirmAttack()) return;
+                if (cancel)
+                {
+                    if (selected != null) ClearTarget();
+                    else ClearPlan();
+                }
+                else if (confirm && selected != null && ConfirmAttack()) return;
+                else if (confirm && selected == null && ConfirmMove()) return;
                 selected = RefreshSelection(world);
             }
+            var origin = Origin(world);
             RefreshTargetLines(world, TurnFlow.IsPlayerTurn(world) && !Busy && aim == AimMode.None && Loadout.CanShoot(world, settings));
-            var selectedPreview = selected != null ? CombatRules.Preview(world, settings, world.Player, world.Player.Position, selected) : default;
+            var selectedPreview = selected != null ? CombatRules.Preview(world, settings, world.Player, origin, selected) : default;
             hudView.ShowAttackConfirm(selected != null, selected != null && selectedPreview.CanAttack && !Busy);
+            RefreshGhost(world, selected);
 
             if (!cell.HasValue)
             {
                 SetHover(null);
                 areaView.Hide();
                 pushAreaView.Hide();
-                if (selected != null) hudView.ShowAttackPreview(selected, selectedPreview, false);
-                else hudView.ClearPreview();
+                ShowIdlePreview(selected, selectedPreview);
                 return;
             }
 
@@ -420,7 +496,7 @@ namespace GirlsDungeon.Game
             }
             if (target != null && !target.IsPlayer && world.Combatants.Contains(target.Id))
             {
-                var preview = CombatRules.Preview(world, settings, world.Player, world.Player.Position, target);
+                var preview = CombatRules.Preview(world, settings, world.Player, origin, target);
                 // 기관단총은 첫 사격 뒤에도 한 번 더 쏠 수 있다 — 판정은 규칙(Loadout.CanShoot) 한 곳.
                 hudView.ShowAttackPreview(target, preview, !Loadout.CanShoot(world, settings));
                 SetHover(cell);
@@ -431,15 +507,46 @@ namespace GirlsDungeon.Game
 
             if (canMove && reachable != null && reachable.ContainsKey(cell.Value) && cell.Value != world.Player.Position)
             {
-                hudView.ShowMovePreview(WeakestCoverAgainstCombatants(cell.Value));
+                bool isPlanned = plannedCell.HasValue && plannedCell.Value == cell.Value;
+                if (isPlanned) hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(cell.Value));
+                else hudView.ShowMovePreview(WeakestCoverAgainstCombatants(cell.Value));
                 SetHover(cell);
-                if (clicked) RequestCombatAction(cell.Value);
+                // 클릭 = 이동 예약 (홀로그램). 예약 칸을 다시 클릭하면 이동만 한다.
+                if (clicked)
+                {
+                    if (isPlanned) ConfirmMove();
+                    else PlanMove(cell.Value);
+                }
                 return;
             }
 
+            // 플레이어 자기 칸 클릭 = 예약 취소.
+            if (clicked && cell.Value == world.Player.Position && plannedCell.HasValue) ClearPlan();
             SetHover(null);
+            ShowIdlePreview(selected, selectedPreview);
+        }
+
+        /// <summary>마우스가 아무 칸에도 없을 때: 고른 대상 미리보기 → 이동 예약 안내 → 비움.</summary>
+        private void ShowIdlePreview(Unit selected, AttackPreview selectedPreview)
+        {
             if (selected != null) hudView.ShowAttackPreview(selected, selectedPreview, false);
+            else if (plannedCell.HasValue) hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(plannedCell.Value));
             else hudView.ClearPreview();
+        }
+
+        /// <summary>이동 예약 칸에 홀로그램을 세운다. 고른 대상이 있으면 그쪽을, 없으면 걸어갈 방향을 바라본다.</summary>
+        private void RefreshGhost(World world, Unit selected)
+        {
+            if (!plannedCell.HasValue || Busy)
+            {
+                playerView.HideGhost();
+                return;
+            }
+            var at = GridSpace.ToWorld(plannedCell.Value);
+            var look = selected != null ? GridSpace.ToWorld(selected.Position) : at + (at - GridSpace.ToWorld(world.Player.Position));
+            var direction = look - at;
+            float yaw = direction.sqrMagnitude > 0.0001f ? Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg : playerView.FacingYaw;
+            playerView.ShowGhost(at, yaw);
         }
 
         /// <summary>범위 칸은 상태가 바뀔 때만 다시 계산한다.</summary>

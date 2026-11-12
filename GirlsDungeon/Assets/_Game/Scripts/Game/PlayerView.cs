@@ -16,6 +16,12 @@ namespace GirlsDungeon.Game
         [Tooltip("Greybox shape drawn when the visual id has no prefab.")]
         [SerializeField] private Transform fallbackBody;
         [SerializeField] private float turnSharpness = 14f;
+        [Tooltip("See-through material for the planned-move hologram (combat).")]
+        [SerializeField] private Material hologramMaterial;
+
+        /// <summary>전투 이동 예약 칸에 세우는 반투명 복제 (홀로그램). 모습만이고 규칙과 상관없다.</summary>
+        private GameObject ghost;
+        private UnitVisualEntry currentVisual;
 
         private readonly Queue<Vector3> pendingSteps = new Queue<Vector3>();
         private IEventSource simulation;
@@ -69,6 +75,9 @@ namespace GirlsDungeon.Game
         /// <summary>모델을 붙이거나(프리팹이 있으면) 캡슐로 돌아간다. 새 판마다 다시 만든다.</summary>
         private void ApplyVisual(UnitVisualEntry visual)
         {
+            if (ghost != null) Destroy(ghost);
+            ghost = null;
+            currentVisual = visual;
             if (modelPivot != null) Destroy(modelPivot.gameObject);
             modelPivot = null;
             modelAnimator = null;
@@ -105,8 +114,65 @@ namespace GirlsDungeon.Game
             }
         }
 
+        /// <summary>홀로그램이 떠 있다.</summary>
+        public bool GhostShown => ghost != null && ghost.activeSelf;
+
+        /// <summary>
+        /// 이동 예약 칸에 홀로그램(지금 모습의 반투명 복제)을 세운다. yaw = 바라볼 방향(도, +Z 기준).
+        /// 모델이 있으면 모델을, 없으면 캡슐을 복제하고 모든 재질을 홀로그램 재질로 바꾼다.
+        /// </summary>
+        public void ShowGhost(Vector3 position, float yaw)
+        {
+            if (ghost == null) ghost = BuildGhost();
+            if (ghost == null) return;
+            ghost.transform.position = position;
+            ghost.transform.rotation = Quaternion.Euler(0f, yaw + (modelPivot != null ? yawOffset : 0f), 0f);
+            ghost.SetActive(true);
+        }
+
+        public void HideGhost()
+        {
+            if (ghost != null) ghost.SetActive(false);
+        }
+
+        private GameObject BuildGhost()
+        {
+            var root = new GameObject("MoveGhost");
+            GameObject body;
+            if (currentVisual != null && currentVisual.prefab != null)
+            {
+                body = Instantiate(currentVisual.prefab, root.transform, false);
+                body.transform.localPosition = new Vector3(0f, currentVisual.heightOffset, 0f);
+                body.transform.localScale = Vector3.one * currentVisual.scale;
+            }
+            else if (fallbackBody != null)
+            {
+                body = Instantiate(fallbackBody.gameObject, root.transform, false);
+                body.SetActive(true);
+            }
+            else
+            {
+                Destroy(root);
+                return null;
+            }
+            foreach (var collider in body.GetComponentsInChildren<Collider>()) collider.enabled = false;
+            if (hologramMaterial != null)
+            {
+                foreach (var renderer in body.GetComponentsInChildren<Renderer>(true))
+                {
+                    var materials = new Material[renderer.sharedMaterials.Length];
+                    for (int i = 0; i < materials.Length; i++) materials[i] = hologramMaterial;
+                    renderer.sharedMaterials = materials;
+                    renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                }
+            }
+            root.SetActive(false);
+            return root;
+        }
+
         private void OnDestroy()
         {
+            if (ghost != null) Destroy(ghost);
             Unbind();
         }
 

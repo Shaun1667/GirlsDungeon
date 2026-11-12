@@ -206,6 +206,27 @@ namespace GirlsDungeon.Game
             return moveController.SelectTarget(unitId);
         }
 
+        /// <summary>전투 중 이동 칸 클릭과 같다: 그 칸을 이동 예약한다 (홀로그램, 아직 걷지 않음). 못 하면 false.</summary>
+        public bool DebugPlanMove(GridPos cell)
+        {
+            return moveController.PlanMove(cell);
+        }
+
+        /// <summary>[상태 변경] 예약 칸 다시 클릭 · 대상 없이 Enter와 같다: 예약 칸으로 이동만 한다. 못 하면 false.</summary>
+        public bool DebugConfirmMove()
+        {
+            DebugUsed = true;
+            return moveController.ConfirmMove();
+        }
+
+        public string DebugPlanSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            return $"Planned={(moveController.PlannedCell.HasValue ? moveController.PlannedCell.Value.ToString() : "none")}, Ghost={playerView.GhostShown}, "
+                + $"Player={world.Player.Position}, Moved={world.PlayerMoved}, Shots={world.PlayerShots}, Selected={moveController.SelectedTargetId}, Lines=[{moveController.TargetLinesSummary}]";
+        }
+
         /// <summary>[상태 변경] 사격 확인 버튼과 같다. 못 쏘면 false.</summary>
         public bool DebugConfirmAttack()
         {

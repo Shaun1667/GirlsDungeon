@@ -217,6 +217,13 @@ namespace GirlsDungeon.Game
             previewLabel.gameObject.SetActive(true);
         }
 
+        /// <summary>이동 예약(홀로그램) 칸: 엄폐와 조작 안내 (다시 클릭 · Enter = 이동, 적 클릭 = 이동 후 공격, 오른쪽 클릭 = 취소).</summary>
+        public void ShowPlannedMovePreview(CoverLevel cover)
+        {
+            previewLabel.text = Text.Get("ui.combat.preview_planned_move", CoverName(cover));
+            previewLabel.gameObject.SetActive(true);
+        }
+
         public void ShowMovePreview(CoverLevel cover)
         {
             previewLabel.text = Text.Get("ui.combat.preview_move", CoverName(cover));
