@@ -329,10 +329,12 @@
 
 - [x] **3-13. 전투 이동 나눠 쓰기** — 플레이 확인 대기 (2026-11-12 사용자 "이동만 하고 공격을 하지 않았을 경우 남은 이동 칸수만큼 계속 이동할 수 있도록 해줘")
   - 구현: Core `World.PlayerMoveUsed`(이번 차례에 걸은 칸 수 — `PlayerMoved`는 이 값이 0보다 큰지로 계산, 스냅샷 버전 16) · `Loadout.MoveLeft`(이동 범위 − 걸은 칸) · `Loadout.CanCombatMove`(이동 칸이 남았는지) · `CombatMoveCommand`(남은 칸 안에서만, 걸은 칸만큼 더함). Game `MoveController.RefreshRange`가 남은 칸으로 범위를 다시 그린다 (이동 예약 · 홀로그램 · 스킬 미리보기는 그대로 — 모두 같은 규칙 함수를 쓴다).
-  - 정한 것 (Claude, 확인 필요): 무기 규칙은 그대로 둠 — 사격하면 차례가 끝나므로 남은 칸은 사라진다 / 저격총은 한 칸이라도 걸은 차례에 못 쏨 / 권총은 걷지 않고 쐈을 때만 차례가 이어지고, 쏜 뒤 한 번 걸으면 (칸이 남아도) 차례가 끝남 / 기관단총은 두 발 사이에도 남은 칸만큼 나눠 걸을 수 있음. 남은 칸 수 숫자 표시는 넣지 않음 (파란 범위 칸이 줄어드는 것으로 보임).
+  - 정한 것 (Claude, 확인 필요): 무기 규칙은 그대로 둠 — 사격하면 차례가 끝나므로 남은 칸은 사라진다 / 저격총은 한 칸이라도 걸은 차례에 못 쏨 / 기관단총은 두 발 사이에도 남은 칸만큼 나눠 걸을 수 있음. 남은 칸 수 숫자 표시는 넣지 않음 (파란 범위 칸이 줄어드는 것으로 보임).
+  - 결정 (2026-11-12, 사용자 "권총도 바꿔줘"): 권총은 걷고 → 쏘고 → 남은 칸을 또 걸을 수 있다 — 쏜 뒤에도 칸이 남아 있으면 차례가 이어지고(여러 번 나눠 걷기 가능), 쏜 뒤 칸을 다 쓰면 차례가 끝난다. 칸을 다 쓴 뒤에 쏘면 그 사격으로 끝. `Loadout.KeepsTurnAfterShot` · `CombatMoveCommand`, BALANCE 12-2.
+  - 확인 (권총): 에디터에서 규칙 실행 — 2칸 걷기 → 사격 → 차례 유지 · 남은 4 → 2칸 → 차례 유지 → 2칸 → 칸 0 · 적 차례로 넘어감.
   - 확인: 컴파일 오류 0 · 콘솔 오류 · 경고 0 · 에디터에서 규칙 실행 (캐릭터 C, 이동 6): 2칸 → 남은 4 → 2칸 → 남은 2 → 2칸 → 남은 0 · 더 못 걸음 · 차례는 그대로 내 차례, 스냅샷 왕복 뒤 걸은 칸 6 유지, 턴 종료 뒤 다음 내 차례에 남은 6.
   - 확인 못 함: 플레이 화면 (범위 칸이 줄어드는 모습 · 홀로그램 예약을 두 번 이어서 하기 · 마우스 클릭).
-  - 테스트 작성, 실행 안 함: `CombatRulesTests`(`CombatMove_WithinRange_AndTheRestCanBeWalkedLater` — 예전 "한 차례에 한 번" 테스트를 바꿈 · `SplitMoves_ThenTheShotStillWorks_AndTheNextTurnGetsTheFullRangeBack` · `AfterShooting_TheLeftoverCellsAreGone`) · `MoreWeaponsTests`(`PlayerMoveUsed_SurvivesTheSnapshot`, 기관단총 이동 뒤 사격 뒤에도 이동 가능으로 고침) · `WeaponAndLootTests`(저격총 감시 테스트의 값 넣는 방식만).
+  - 테스트 작성, 실행 안 함: `CombatRulesTests`(`CombatMove_WithinRange_AndTheRestCanBeWalkedLater` — 예전 "한 차례에 한 번" 테스트를 바꿈 · `SplitMoves_ThenTheShotStillWorks_AndTheNextTurnGetsTheFullRangeBack` · `AfterShooting_TheLeftoverCellsAreGone`) · `MoreWeaponsTests`(`PlayerMoveUsed_SurvivesTheSnapshot`, 기관단총 이동 뒤 사격 뒤에도 이동 가능으로 고침) · `WeaponAndLootTests`(저격총 감시 테스트의 값 넣는 방식, 권총 두 개를 새 규칙으로 — `Pistol_KeepsTheTurnAfterShooting_UntilTheCellsRunOut` · `Pistol_MoveShootMove_AndAShotWithNoCellsLeftEndsTheTurn`).
   - 확인 방법: 전투에서 가까운 칸을 클릭 → 같은 칸 다시 클릭(또는 Enter)으로 이동만 → 파란 이동 범위가 남은 칸만큼 줄어서 다시 뜸 → 또 이동 → 칸을 다 쓰면 범위가 사라짐. 그 뒤 사격 · 스킬은 그대로 쓸 수 있음.
 
 - [ ] **3-4. 강화 (무기 파츠 · 능력치 · 스킬 강화)** — 세트 효과 표를 사용자에게 받은 뒤. 효과는 한 효과 표에서 합산 (핵심 규칙 7). 보급 상자 내용물에 강화 30%가 이때 들어간다. 크면 파츠 / 가방 · 분해 · 제작 / 능력치 · 스킬 강화로 나눈다.

@@ -161,7 +161,7 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void Pistol_KeepsTheTurnAfterShooting_ThenTheMoveEndsIt()
+        public void Pistol_KeepsTheTurnAfterShooting_UntilTheCellsRunOut()
         {
             var combat = TestData.Combat();
             var world = MakeWorld(new GridPos(0, 0), "..........");
@@ -177,13 +177,19 @@ namespace GirlsDungeon.Tests
             Assert.That(Loadout.CanCombatMove(world, combat), Is.True);
             Assert.That(simulation.Execute(new AttackCommand(enemy.Id, combat)), Is.False, "still one shot per turn");
 
+            // 3-13: 쏜 뒤에도 남은 칸만큼 나눠 걷는다. 6칸 = 1 + 3 + 2, 다 쓰면 차례가 끝난다.
             Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(1, 0), combat)), Is.True);
-            Assert.That(world.Round, Is.EqualTo(2), "moving after the shot ends the turn");
+            Assert.That(world.Round, Is.EqualTo(1), "5 cells are left");
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(4, 0), combat)), Is.True);
+            Assert.That(world.Round, Is.EqualTo(1), "2 cells are left");
+            Assert.That(simulation.Execute(new AttackCommand(enemy.Id, combat)), Is.False, "still one shot per turn");
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(2, 0), combat)), Is.True);
+            Assert.That(world.Round, Is.EqualTo(2), "the last cell after the shot ends the turn");
             Assert.That(world.Turn, Is.EqualTo(TurnSide.Player));
         }
 
         [Test]
-        public void Pistol_AfterMovingFirst_TheShotEndsTheTurn()
+        public void Pistol_MoveShootMove_AndAShotWithNoCellsLeftEndsTheTurn()
         {
             var combat = TestData.Combat();
             var world = MakeWorld(new GridPos(0, 0), "..........");
@@ -192,7 +198,19 @@ namespace GirlsDungeon.Tests
             enemy.Guarding = true;
             var simulation = new Simulation(world, combat);
 
+            // 걷고 → 쏘고 → 남은 칸을 또 걷는다 (3-13, 결정 2026-11-12 사용자).
             Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(1, 0), combat)), Is.True);
+            Assert.That(simulation.Execute(new AttackCommand(enemy.Id, combat)), Is.True);
+            Assert.That(world.Round, Is.EqualTo(1), "5 cells are left, so the turn goes on");
+            Assert.That(Loadout.CanCombatMove(world, combat), Is.True);
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(3, 0), combat)), Is.True);
+            Assert.That(world.Round, Is.EqualTo(1));
+            Assert.That(world.PlayerMoveUsed, Is.EqualTo(3));
+
+            // 다음 상황: 이동 칸을 다 쓴 뒤에 쏘면 그 사격으로 차례가 끝난다.
+            world.PlayerActed = false;
+            world.PlayerShots = 0;
+            world.PlayerMoveUsed = world.Player.MoveRange;
             Assert.That(simulation.Execute(new AttackCommand(enemy.Id, combat)), Is.True);
             Assert.That(world.Round, Is.EqualTo(2));
         }

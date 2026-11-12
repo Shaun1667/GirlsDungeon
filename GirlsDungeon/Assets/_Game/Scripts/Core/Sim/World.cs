@@ -128,7 +128,7 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>이번 플레이어 차례에 걸은 칸 수 (전투 중). 남은 이동 = 이동 범위 − 이 값 (Loadout.MoveLeft).</summary>
         public int PlayerMoveUsed { get; set; }
 
-        /// <summary>이번 플레이어 차례에 한 칸이라도 걸었다 (저격총 · 권총 규칙이 본다).</summary>
+        /// <summary>이번 플레이어 차례에 한 칸이라도 걸었다 (저격총 규칙이 본다).</summary>
         public bool PlayerMoved => PlayerMoveUsed > 0;
 
         /// <summary>이번 플레이어 차례에 행동(사격)을 썼다 (전투 중).</summary>

@@ -46,7 +46,7 @@ namespace GirlsDungeon.Core.Sim
 
     /// <summary>
     /// 전투 중 플레이어 이동. 남은 이동 칸(Loadout.MoveLeft) 안의 본 칸으로 — 칸이 남으면 여러 번 나눠 걸을 수 있다 (3-13).
-    /// 사격 전에만(권총은 쏜 뒤에도 — 그때는 이동 뒤 차례가 끝난다).
+    /// 사격 전에만(권총은 쏜 뒤에도 남은 칸을 걸을 수 있다 — 칸을 다 쓰면 차례가 끝난다).
     /// </summary>
     public sealed class CombatMoveCommand : ICommand
     {
@@ -72,9 +72,9 @@ namespace GirlsDungeon.Core.Sim
 
             world.PlayerMoveUsed += path.Count;
             CombatMovement.Walk(world, settings, player, path, events);
-            // 권총: 쏜 뒤 남은 이동까지 썼으면 차례가 끝난다. 기관단총은 아직 더 쏠 수 있으면 이어진다.
+            // 권총: 쏜 뒤 남은 이동 칸까지 다 썼으면 차례가 끝난다 (칸이 남았으면 이어진다). 기관단총은 아직 더 쏠 수 있으면 이어진다.
             if (world.PlayerActed && settings != null && TurnFlow.IsPlayerTurn(world) && world.Combatants.Count > 0
-                && world.PlayerShots >= Loadout.ShotsPerTurn(world, settings))
+                && world.PlayerShots >= Loadout.ShotsPerTurn(world, settings) && Loadout.MoveLeft(world) <= 0)
                 TurnFlow.EndPlayerTurn(world, settings, events);
             return true;
         }
@@ -82,7 +82,7 @@ namespace GirlsDungeon.Core.Sim
 
     /// <summary>
     /// 플레이어 사격. 사격하면 차례가 끝나고 적 차례가 이어진다 (전투가 끝났으면 바로 탐험).
-    /// 권총으로 아직 이동하지 않고 쐈으면 차례가 이어진다 — 남은 이동을 쓰거나 턴 종료.
+    /// 권총은 이동 칸이 남은 채로 쐈으면 차례가 이어진다 — 남은 칸을 걷거나 턴 종료 (걷고 → 쏘고 → 또 걷기).
     /// 기관단총은 두 번째 사격까지 차례가 이어진다 (사이에 이동 가능).
     /// </summary>
     public sealed class AttackCommand : ICommand

@@ -128,12 +128,12 @@ namespace GirlsDungeon.Core.Sim
             return weapon.MoveAfterShot || world.PlayerShots < weapon.ShotsPerTurn;
         }
 
-        /// <summary>사격 뒤 차례가 이어지는지: 아직 더 쏠 수 있거나(기관단총), 권총이고 아직 이동하지 않았을 때.</summary>
+        /// <summary>사격 뒤 차례가 이어지는지: 아직 더 쏠 수 있거나(기관단총), 권총이고 이동 칸이 남았을 때 (3-13).</summary>
         public static bool KeepsTurnAfterShot(World world, CombatSettings settings)
         {
             var weapon = WeaponOf(world, settings, world.Player);
             if (weapon == null) return false;
-            return world.PlayerShots < weapon.ShotsPerTurn || (weapon.MoveAfterShot && !world.PlayerMoved);
+            return world.PlayerShots < weapon.ShotsPerTurn || (weapon.MoveAfterShot && MoveLeft(world) > 0);
         }
 
         /// <summary>사거리 안인지. 근접 무기(도검)는 가로 · 세로 · 대각 중 큰 값, 나머지는 직선 거리.</summary>
