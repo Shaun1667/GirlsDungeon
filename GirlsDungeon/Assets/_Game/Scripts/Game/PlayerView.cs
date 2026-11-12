@@ -10,6 +10,8 @@ namespace GirlsDungeon.Game
     /// 전투 이동처럼 한 번에 여러 걸음이 오면 줄을 세워 한 칸씩 걷는다.
     /// 모습: 그림 목록(UnitVisualCatalog)에서 플레이어 그림 ID의 프리팹이 있으면 그 모델을, 없으면 그레이박스 캡슐을 그린다.
     /// 모델은 걷는 방향을 바라보고, Animator에 속도 값(예: "Speed")이 있으면 걷는 동안 1 · 서 있으면 0을 넣는다.
+    /// 전투 중 서 있으면 가장 가까운 적에 대한 엄폐(규칙 Cover.Against)를 엄폐 값(예: "Cover" — 0 없음 · 1 낮음 · 2 높음)에 넣고,
+    /// 플레이어가 쏘는 사건(UnitAttacked)이 오면 대상을 바라보고 사격 트리거(예: "Fire")를 켠다 (3-11). 값 이름은 그림 목록 줄에서 온다.
     /// </summary>
     public sealed class PlayerView : MonoBehaviour
     {
@@ -37,6 +39,16 @@ namespace GirlsDungeon.Game
         private Animator modelAnimator;
         private int speedHash;
         private bool hasSpeedParameter;
+        private int coverHash;
+        private bool hasCoverParameter;
+        private int fireHash;
+        private bool hasFireTrigger;
+
+        /// <summary>지금 모델에 넣은 엄폐 값 (0 없음 · 1 낮음 · 2 높음). 디버그 · 확인용.</summary>
+        public int ShownCover { get; private set; }
+
+        /// <summary>사격 트리거를 켠 횟수 (디버그 · 확인용).</summary>
+        public int FireCount { get; private set; }
         private float facingYaw;
         private float yawOffset;
 
@@ -82,6 +94,10 @@ namespace GirlsDungeon.Game
             modelPivot = null;
             modelAnimator = null;
             hasSpeedParameter = false;
+            hasCoverParameter = false;
+            hasFireTrigger = false;
+            pendingFire = false;
+            ShownCover = 0;
             ModelName = null;
 
             bool useModel = visual != null && visual.prefab != null;
@@ -103,15 +119,57 @@ namespace GirlsDungeon.Game
 
             modelAnimator = model.GetComponentInChildren<Animator>();
             // 컨트롤러가 없는 Animator(애니메이션 없는 모델)는 parameters를 읽으면 경고가 나므로 건너뛴다.
-            if (modelAnimator != null && modelAnimator.runtimeAnimatorController != null && !string.IsNullOrEmpty(visual.speedParameter))
+            // 값 이름은 그림 목록 줄에서 온다 — Animator에 그 이름 · 종류의 값이 있을 때만 쓴다.
+            if (modelAnimator != null && modelAnimator.runtimeAnimatorController != null)
             {
                 foreach (var parameter in modelAnimator.parameters)
                 {
-                    if (parameter.type != AnimatorControllerParameterType.Float || parameter.name != visual.speedParameter) continue;
-                    speedHash = parameter.nameHash;
-                    hasSpeedParameter = true;
+                    if (parameter.type == AnimatorControllerParameterType.Float && parameter.name == visual.speedParameter)
+                    {
+                        speedHash = parameter.nameHash;
+                        hasSpeedParameter = true;
+                    }
+                    if (parameter.type == AnimatorControllerParameterType.Int && parameter.name == visual.coverParameter)
+                    {
+                        coverHash = parameter.nameHash;
+                        hasCoverParameter = true;
+                    }
+                    if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == visual.fireTrigger)
+                    {
+                        fireHash = parameter.nameHash;
+                        hasFireTrigger = true;
+                    }
                 }
             }
+        }
+
+        /// <summary>쏘는 사건이 왔지만 아직 걷는 중이면, 다 걸은 뒤 쏘는 모습을 보인다 (이동 + 공격 한 번에).</summary>
+        private bool pendingFire;
+        private Vector3? pendingFireTarget;
+
+        /// <summary>
+        /// 서 있는 칸의 엄폐: 전투 중이고 걷지 않을 때, 가장 가까운 전투 중인 적에 대한 엄폐 (규칙 Cover.Against — 미리보기 · 실제와 같은 판정).
+        /// 탐험 중이거나 적이 없으면 0. 0 없음 · 1 낮음 · 2 높음.
+        /// </summary>
+        private int CoverHere()
+        {
+            var world = simulation?.World;
+            if (world == null || world.Mode != WorldMode.Combat || IsMoving) return 0;
+            var cell = GridSpace.ToCell(transform.position);
+            Unit nearest = null;
+            int best = int.MaxValue;
+            foreach (int id in world.Combatants)
+            {
+                var enemy = world.FindUnit(id);
+                if (enemy == null) continue;
+                int distance = Loadout.CellDistance(cell, enemy.Position);
+                if (distance >= best) continue;
+                best = distance;
+                nearest = enemy;
+            }
+            if (nearest == null) return 0;
+            var cover = Core.Map.Cover.Against(world.Map, cell, nearest.Position);
+            return cover == Core.Map.CoverLevel.Full ? 2 : cover == Core.Map.CoverLevel.Half ? 1 : 0;
         }
 
         /// <summary>홀로그램이 떠 있다.</summary>
@@ -194,6 +252,13 @@ namespace GirlsDungeon.Game
                 // 새 층: 계단까지 걸어간 뒤 새 시작 칸으로 바로 옮긴다.
                 if (gameEvent is FloorChanged floor)
                     pendingSteps.Enqueue(GridSpace.ToWorld(floor.StartCell) + SnapMarker);
+                // 플레이어가 쐈다 (사격 · 감시 반응): 대상을 바라보고 사격 모습. 걷는 중이면 다 걸은 뒤.
+                if (gameEvent is UnitAttacked attacked && attacked.AttackerId == simulation.World.PlayerId)
+                {
+                    var target = simulation.World.FindUnit(attacked.TargetId);
+                    pendingFire = true;
+                    pendingFireTarget = target != null ? GridSpace.ToWorld(target.Position) : (Vector3?)null;
+                }
             }
             if (!isStepping) BeginNextStep();
         }
@@ -236,9 +301,22 @@ namespace GirlsDungeon.Game
         private void UpdateModel()
         {
             if (modelPivot == null) return;
+            if (pendingFire && !IsMoving)
+            {
+                pendingFire = false;
+                if (pendingFireTarget.HasValue)
+                {
+                    var toTarget = pendingFireTarget.Value - transform.position;
+                    if (toTarget.sqrMagnitude > 0.0001f) facingYaw = Mathf.Atan2(toTarget.x, toTarget.z) * Mathf.Rad2Deg;
+                }
+                FireCount++;
+                if (hasFireTrigger) modelAnimator.SetTrigger(fireHash);
+            }
             var target = Quaternion.Euler(0f, facingYaw + yawOffset, 0f);
             modelPivot.localRotation = Quaternion.Slerp(modelPivot.localRotation, target, 1f - Mathf.Exp(-turnSharpness * Time.deltaTime));
             if (hasSpeedParameter) modelAnimator.SetFloat(speedHash, IsMoving ? 1f : 0f);
+            ShownCover = CoverHere();
+            if (hasCoverParameter) modelAnimator.SetInteger(coverHash, ShownCover);
         }
 
         /// <summary>흔들림은 보이는 모습(모델 받침 또는 캡슐)만 옆으로 움직인다.</summary>

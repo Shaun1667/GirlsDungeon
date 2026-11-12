@@ -19,6 +19,10 @@ namespace GirlsDungeon.Game
         public float yawOffset;
         [Tooltip("Animator float parameter set to the walking speed (0 idle, 1 walking). Empty = none.")]
         public string speedParameter = "Speed";
+        [Tooltip("Animator int parameter set to the cover while standing still in combat (0 none, 1 low, 2 high). Empty = none.")]
+        public string coverParameter = "Cover";
+        [Tooltip("Animator trigger fired when the unit shoots. Empty = none.")]
+        public string fireTrigger = "Fire";
     }
 
     /// <summary>

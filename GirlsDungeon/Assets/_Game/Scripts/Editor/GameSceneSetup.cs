@@ -450,6 +450,8 @@ namespace GirlsDungeon.EditorTools
                 entry.FindPropertyRelative("heightOffset").floatValue = 0f;
                 entry.FindPropertyRelative("yawOffset").floatValue = 0f;
                 entry.FindPropertyRelative("speedParameter").stringValue = "Speed";
+                entry.FindPropertyRelative("coverParameter").stringValue = "Cover";
+                entry.FindPropertyRelative("fireTrigger").stringValue = "Fire";
             }
             serialized.ApplyModifiedPropertiesWithoutUndo();
             EditorUtility.SetDirty(catalog);

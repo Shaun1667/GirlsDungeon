@@ -6,7 +6,12 @@
 ## 모델을 붙이는 방법 (모델 자리, 2026-11-11)
 - 데이터는 그림을 ID로만 참조한다: 유닛 표 `units[].visualId` (GameBalance) → 그림 목록 `Assets/_Game/Data/UnitVisuals.asset`의 같은 ID 줄.
 - 그 줄의 `prefab`이 비어 있으면 그레이박스 도형(캡슐)을 그린다. 프리팹을 넣으면 그 모델을 그린다 — 코드 · 규칙은 그대로.
-- 줄의 값: `scale`(크기) · `heightOffset`(발이 바닥에 닿게 위아래) · `yawOffset`(모델 앞이 +Z가 아닐 때 돌림) · `speedParameter`(Animator의 걷기 속도 float 이름, 걷는 동안 1 · 서 있으면 0).
+- 줄의 값: `scale`(크기) · `heightOffset`(발이 바닥에 닿게 위아래) · `yawOffset`(모델 앞이 +Z가 아닐 때 돌림) · `speedParameter`(Animator의 걷기 속도 float 이름, 걷는 동안 1 · 서 있으면 0) · `coverParameter`(Animator int 이름 "Cover" — 전투 중 서 있을 때 가장 가까운 적에 대한 엄폐, 0 없음 · 1 낮음 · 2 높음) · `fireTrigger`(Animator trigger 이름 "Fire" — 플레이어가 쏠 때, 걷는 중이면 다 걸은 뒤 · 쏘기 전에 대상을 바라봄). Animator에 그 이름 · 종류의 값이 없으면 넣지 않는다 (3-11).
+
+### 동작 (애니메이션) — 3-11
+- 모델 Animator Controller가 위 값 세 개를 쓰면 대기 · 달리기 · 엄폐(낮음 / 높음) · 사격이 바뀐다. 예: 상태 Idle(기본) · Run(Speed > 0.5) · CoverCrouch(Cover = 1) · CoverStand(Cover = 2) · Fire(아무 상태 → Fire 트리거, 끝나면 Idle).
+- 동작 파일은 Humanoid로 임포트하고, 위치 · 회전은 코드가 옮기므로 루트 회전 · 높이 · 수평 위치를 고정(Bake Into Pose)한다. 달리기 · 걷기는 제자리(In Place)로 받는다.
+- 개인 테스트 동작: Mixamo 소총 동작 5개(Rifle Idle · Rifle Run · Taking Cover Idle · Cover Idle · Firing Rifle)와 컨트롤러 `PlayerRifle.controller`를 `Assets/_Local/Animations/`에 두었다 (git 제외 — Mixamo 동작은 Adobe 계정으로 받은 것, 게임에 넣을지 · 라이선스는 정식 에셋을 정할 때 따로 확인).
 - 지금은 플레이어(`player`)만 모델을 쓴다 (`PlayerView`). 적(`rifleman` · `assault`)은 줄만 있고 아직 도형 (`UnitsView`는 3-x에서).
 - 모델은 걷는 방향을 바라본다. 클릭 판정은 바닥 평면이라 모델 콜라이더는 끈다.
 
