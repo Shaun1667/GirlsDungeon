@@ -225,27 +225,75 @@ namespace GirlsDungeon.Game
         public bool RequestPush(GridPos pointer)
         {
             if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
-            Push.Aim(simulation.World.Player.Position, pointer, out var direction, out int side);
-            if (!simulation.Execute(new PushCommand(direction, side, settings))) return false;
+            // 방향 · 옆 줄은 쓰는 자리(예약이 있으면 예약 칸) 기준.
+            Push.Aim(Origin(simulation.World), pointer, out var direction, out int side);
+            var preview = PreviewWorld();
+            if (preview == null || !Push.Preview(preview, settings, preview.Player, direction, side).CanPush) return false;
+            if (!RunAfterPlannedMove(new PushCommand(direction, side, settings))) return false;
             SetAiming(AimMode.None);
             return true;
         }
 
-        /// <summary>수류탄을 그 칸에 던진다. 못 던지면 false (조준 모드는 그대로).</summary>
+        /// <summary>수류탄을 그 칸에 던진다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 던지면 false (조준 모드는 그대로).</summary>
         public bool RequestAreaAttack(GridPos center)
         {
             if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
-            if (!simulation.Execute(new AreaAttackCommand(center, settings))) return false;
+            var preview = PreviewWorld();
+            if (preview == null || !AreaAttack.Preview(preview, settings, preview.Player, center).CanThrow) return false;
+            if (!RunAfterPlannedMove(new AreaAttackCommand(center, settings))) return false;
             SetAiming(AimMode.None);
             return true;
         }
 
-        /// <summary>감시 버튼: 사격 대신 감시를 걸고 차례를 끝낸다. 못 하면 false.</summary>
+        /// <summary>감시 버튼: 사격 대신 감시를 걸고 차례를 끝낸다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 하면 false.</summary>
         public bool RequestOverwatch()
         {
             if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
             SetAiming(AimMode.None);
-            return simulation.Execute(new OverwatchCommand(settings));
+            return RunAfterPlannedMove(new OverwatchCommand(settings));
+        }
+
+        /// <summary>
+        /// 이동 예약이 있으면 먼저 예약 칸으로 걷고(CombatMoveCommand) 이어서 그 행동을 낸다. 예약이 없으면 행동만.
+        /// 걷기는 됐는데 그 사이 상황이 바뀌어(감시 사격 · 전투 끝) 행동이 안 되면 이동만 하고 true (걸었으므로).
+        /// </summary>
+        private bool RunAfterPlannedMove(ICommand action)
+        {
+            if (!plannedCell.HasValue) return simulation.Execute(action);
+            var cell = plannedCell.Value;
+            if (!simulation.Execute(new CombatMoveCommand(cell, settings))) return false;
+            ClearPlan();
+            ClearTarget();
+            if (TurnFlow.IsPlayerTurn(simulation.World)) simulation.Execute(action);
+            return true;
+        }
+
+        /// <summary>
+        /// 스킬 미리보기를 계산할 세계: 예약이 없으면 지금 세계, 있으면 지금 세계를 복제해 예약 칸으로 실제로 걸어 본 결과
+        /// (걸음마다 감시 사격까지 같은 난수로 — 확인 때와 똑같다, 핵심 규칙 6). 걸을 수 없으면 null. 상태가 바뀔 때만 다시 만든다.
+        /// </summary>
+        private World PreviewWorld()
+        {
+            var world = simulation.World;
+            if (!plannedCell.HasValue) return world;
+            if (previewWorldCell == plannedCell && previewWorld != null) return previewWorldValid ? previewWorld : null;
+
+            previewWorldCell = plannedCell;
+            previewWorld = WorldSnapshot.Decode(WorldSnapshot.Encode(world));
+            previewWorldValid = new Simulation(previewWorld, settings).Execute(new CombatMoveCommand(plannedCell.Value, settings))
+                && TurnFlow.IsPlayerTurn(previewWorld);
+            return previewWorldValid ? previewWorld : null;
+        }
+
+        private World previewWorld;
+        private GridPos? previewWorldCell;
+        private bool previewWorldValid;
+
+        /// <summary>규칙 상태가 바뀌면(커맨드 실행) 복제 미리보기를 버린다.</summary>
+        private void DropPreviewWorld(IReadOnlyList<GameEvent> events)
+        {
+            previewWorld = null;
+            previewWorldCell = null;
         }
 
         /// <summary>조준 중인 스킬을 끈다 (스킬 바 "사격" · 턴 종료).</summary>
@@ -257,12 +305,8 @@ namespace GirlsDungeon.Game
         private void SetAiming(AimMode mode)
         {
             aim = mode;
-            // 스킬은 지금 자리에서 쓴다 — 이동 예약 · 고른 대상을 푼다.
-            if (mode != AimMode.None)
-            {
-                ClearTarget();
-                ClearPlan();
-            }
+            // 스킬을 조준하면 고른 사격 대상은 푼다. 이동 예약은 남는다 — 스킬도 예약 칸으로 걸은 뒤 쓴다.
+            if (mode != AimMode.None) ClearTarget();
             if (aim != AimMode.Grenade) areaView.Hide();
             if (aim != AimMode.Push) pushAreaView.Hide();
             hudView.SetAiming(aim);
@@ -272,7 +316,12 @@ namespace GirlsDungeon.Game
         public void Bind(Simulation newSimulation, EventPlayer newEventPlayer, PlayerView newPlayerView, HudView newHudView, CombatSettings newSettings, int newMoveCostTicks, float newDragThresholdPixels)
         {
             dragThresholdPixels = newDragThresholdPixels;
+            if (simulation != null) simulation.EventsPublished -= DropPreviewWorld;
             simulation = newSimulation;
+            simulation.EventsPublished -= DropPreviewWorld;
+            simulation.EventsPublished += DropPreviewWorld;
+            previewWorld = null;
+            previewWorldCell = null;
             eventPlayer = newEventPlayer;
             playerView = newPlayerView;
             hudView = newHudView;
@@ -430,14 +479,18 @@ namespace GirlsDungeon.Game
             var mouse = Mouse.current;
             var keyboard = Keyboard.current;
             var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !Busy ? PointerCell(mouse.position.ReadValue()) : null;
-            if (aim != AimMode.None && mouse != null && mouse.rightButton.wasPressedThisFrame) SetAiming(AimMode.None);
+            // 오른쪽 클릭 한 번은 한 단계만 취소한다: 스킬 조준 → 고른 대상 → 이동 예약.
+            bool aimCancelled = aim != AimMode.None && mouse != null && mouse.rightButton.wasPressedThisFrame;
+            if (aimCancelled) SetAiming(AimMode.None);
 
-            // 이동 예약은 지금 이동할 수 있고 그 칸이 아직 범위 안일 때만 남는다 (적 차례 · 스킬 조준 · 이미 이동함 등이면 푼다).
-            if (plannedCell.HasValue && (!canMove || reachable == null || !reachable.ContainsKey(plannedCell.Value))) ClearPlan();
+            // 이동 예약은 지금 이동할 수 있고 그 칸이 아직 범위 안일 때만 남는다 (적 차례 · 이미 이동함 등이면 푼다).
+            // 스킬 조준 중에는 범위 칸을 숨기지만 예약은 남는다 (스킬도 예약 칸에서 쓴다).
+            if (plannedCell.HasValue && !Busy && (!Loadout.CanCombatMove(world, settings)
+                || (reachable != null && !reachable.ContainsKey(plannedCell.Value)))) ClearPlan();
 
             // 고른 사격 대상: 노란 선 · 확인 버튼. 오른쪽 클릭 · Esc = 대상 → 이동 예약 순으로 취소, Enter = 확인 (대상이 없으면 예약 칸으로 이동만).
             var selected = RefreshSelection(world);
-            if (!Busy && aim == AimMode.None && (selected != null || plannedCell.HasValue))
+            if (!Busy && !aimCancelled && aim == AimMode.None && (selected != null || plannedCell.HasValue))
             {
                 bool cancel = (mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame);
                 bool confirm = keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame);
@@ -467,22 +520,30 @@ namespace GirlsDungeon.Game
 
             var target = world.UnitAt(cell.Value);
             bool clicked = leftClick.Clicked && !IsPointerOverUi();
-            if (aim == AimMode.Push)
+            // 스킬 미리보기: 예약이 있으면 예약 칸으로 걸어 본 복제 세계에서 계산한다 (확인 때와 같은 결과).
+            if (aim != AimMode.None)
             {
-                Push.Aim(world.Player.Position, cell.Value, out var direction, out int side);
-                var push = Push.Preview(world, settings, world.Player, direction, side);
-                pushAreaView.Show(push.Cells);
-                hudView.ShowPushPreview(push);
+                var skillWorld = PreviewWorld();
                 SetHover(cell);
-                if (clicked) RequestPush(cell.Value);
-                return;
-            }
-            if (aim == AimMode.Grenade)
-            {
-                var area = AreaAttack.Preview(world, settings, world.Player, cell.Value);
+                if (skillWorld == null)
+                {
+                    areaView.Hide();
+                    pushAreaView.Hide();
+                    hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(plannedCell ?? world.Player.Position));
+                    return;
+                }
+                if (aim == AimMode.Push)
+                {
+                    Push.Aim(skillWorld.Player.Position, cell.Value, out var direction, out int side);
+                    var push = Push.Preview(skillWorld, settings, skillWorld.Player, direction, side);
+                    pushAreaView.Show(push.Cells);
+                    hudView.ShowPushPreview(push);
+                    if (clicked) RequestPush(cell.Value);
+                    return;
+                }
+                var area = AreaAttack.Preview(skillWorld, settings, skillWorld.Player, cell.Value);
                 areaView.Show(area.Cells);
                 hudView.ShowAreaPreview(area);
-                SetHover(cell);
                 if (clicked) RequestAreaAttack(cell.Value);
                 return;
             }

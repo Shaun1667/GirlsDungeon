@@ -68,6 +68,31 @@ namespace GirlsDungeon.Tests
             Assert.That(world.Player.Position, Is.EqualTo(planned));
         }
 
+        /// <summary>
+        /// 스킬 미리보기는 화면이 세계를 복제해 예약 칸으로 걸어 본 뒤 계산한다 (MoveController.PreviewWorld).
+        /// 복제에서 본 수류탄 결과 = 실제로 걸은 뒤 던진 결과.
+        /// </summary>
+        [Test]
+        public void GrenadePreviewOnMovedCopy_EqualsMoveThenThrow()
+        {
+            var (simulation, world, enemy, combat) = StartCombat();
+            var planned = new GridPos(5, 2);
+
+            var copy = WorldSnapshot.Decode(WorldSnapshot.Encode(world));
+            Assert.That(new Simulation(copy, combat).Execute(new CombatMoveCommand(planned, combat)), Is.True);
+            var preview = AreaAttack.Preview(copy, combat, copy.Player, enemy.Position);
+            Assert.That(preview.CanThrow, Is.True);
+            int expected = 0;
+            foreach (var hit in preview.Hits) if (hit.Target.Id == enemy.Id) expected = hit.Damage;
+            Assert.That(world.Player.Position, Is.Not.EqualTo(planned), "previewing does not move the real player");
+
+            int hp = enemy.Hp;
+            Assert.That(simulation.Execute(new CombatMoveCommand(planned, combat)), Is.True);
+            Assert.That(simulation.Execute(new AreaAttackCommand(enemy.Position, combat)), Is.True);
+            Assert.That(hp - enemy.Hp, Is.EqualTo(expected));
+            Assert.That(world.Player.Position, Is.EqualTo(planned));
+        }
+
         [Test]
         public void Sniper_PreviewFromPlannedCell_ShowsItCannotShootAfterMoving()
         {

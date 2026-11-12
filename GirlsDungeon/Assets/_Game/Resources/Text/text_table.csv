@@ -139,5 +139,5 @@ character.hero_a.name,대원 A,Operative A
 character.hero_b.name,대원 B,Operative B
 character.hero_c.name,대원 C,Operative C
 ui.combat.preview_planned_move,"이동 예정 · 엄폐: {0}
-적 클릭 → 공격: 이동 후 공격 · 같은 칸 다시 클릭 / Enter: 이동만 · 오른쪽 클릭: 취소","Planned move · Cover: {0}
-Click enemy → Attack: move then attack · Click again / Enter: move only · Right-click: cancel"
+적 클릭 → 공격 · 스킬(2~4): 이동 후 사용 · 같은 칸 다시 클릭 / Enter: 이동만 · 오른쪽 클릭: 취소","Planned move · Cover: {0}
+Click enemy → Attack · Skills (2-4): used after moving · Click again / Enter: move only · Right-click: cancel"
