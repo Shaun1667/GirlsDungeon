@@ -207,7 +207,8 @@ namespace GirlsDungeon.Tests
             Assert.That(world.Round, Is.EqualTo(1));
             Assert.That(world.PlayerMoveUsed, Is.EqualTo(3));
 
-            // 다음 상황: 이동 칸을 다 쓴 뒤에 쏘면 그 사격으로 차례가 끝난다.
+            // 다음 상황: 이동 칸을 다 쓴 뒤에 쏘면 그 사격으로 차례가 끝난다. (두 발째에 쓰러져 전투가 끝나지 않게 체력을 채운다.)
+            enemy.MaxHp = enemy.Hp = 60;
             world.PlayerActed = false;
             world.PlayerShots = 0;
             world.PlayerMoveUsed = world.Player.MoveRange;
