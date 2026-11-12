@@ -134,6 +134,10 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.PushDamagePercent, Is.EqualTo(expected.PushDamagePercent));
             Assert.That(combat.PushCollisionDamage, Is.EqualTo(expected.PushCollisionDamage));
             Assert.That(combat.PushCooldownRounds, Is.EqualTo(expected.PushCooldownRounds));
+            Assert.That(combat.SonicRange, Is.EqualTo(expected.SonicRange));
+            Assert.That(combat.SonicDamagePercent, Is.EqualTo(expected.SonicDamagePercent));
+            Assert.That(combat.SonicStabilityDamage, Is.EqualTo(expected.SonicStabilityDamage));
+            Assert.That(combat.SonicCooldownRounds, Is.EqualTo(expected.SonicCooldownRounds));
             Assert.That(combat.AssaultPercent, Is.EqualTo(expected.AssaultPercent));
             Assert.That(combat.FallDamagePercent, Is.EqualTo(expected.FallDamagePercent));
             Assert.That(combat.FloorCount, Is.EqualTo(expected.FloorCount));
@@ -173,6 +177,7 @@ namespace GirlsDungeon.Tests
                 Assert.That(actual.Defense, Is.EqualTo(character.Defense), character.Kind + " defense");
                 Assert.That(actual.MoveRange, Is.EqualTo(character.MoveRange), character.Kind + " move");
                 Assert.That(actual.StartWeapon, Is.EqualTo(character.StartWeapon), character.Kind + " start weapon");
+                Assert.That(actual.Skills, Is.EqualTo(character.Skills), character.Kind + " skill slots");
             }
             // 사용자 결정 (2026-11-11): 첫 캐릭터는 산탄총, 두 번째는 기관단총으로 시작.
             Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroA).StartWeapon, Is.EqualTo(GirlsDungeon.Core.Sim.WeaponKind.Shotgun));

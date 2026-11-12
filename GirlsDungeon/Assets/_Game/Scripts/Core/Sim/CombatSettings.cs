@@ -34,6 +34,20 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>
+    /// 스킬 바 2 · 3 · 4번 칸에 들어가는 스킬 (사격 1번 · 감시 5번은 모든 캐릭터 공통). 저장 · 데이터에 정수로 들어가므로 끝에만 추가한다.
+    /// </summary>
+    public enum SkillKind : byte
+    {
+        None = 0,
+        /// <summary>수류탄 (AreaAttack).</summary>
+        Grenade = 1,
+        /// <summary>넉백 공격 = 밀치기 (Push).</summary>
+        Push = 2,
+        /// <summary>음파 공격: 보이는 적 하나에게 엄폐를 무시하는 피해 · 안정 피해 (SonicAttack, 3-12).</summary>
+        Sonic = 3,
+    }
+
+    /// <summary>
     /// 캐릭터 하나의 몸 능력치와 시작 무기 (표 한 줄, BALANCE 13번). 유닛 표의 플레이어 줄 위에 덮어쓴다.
     /// 공격 · 사거리 · 치명은 무기에서 오므로(Loadout.Apply) 여기에는 없다.
     /// </summary>
@@ -46,6 +60,9 @@ namespace GirlsDungeon.Core.Sim
         public int Defense;
         public int MoveRange;
         public WeaponKind StartWeapon;
+
+        /// <summary>스킬 바 2 · 3 · 4번 칸 (순서대로, None = 빈 칸). BALANCE 13번.</summary>
+        public List<SkillKind> Skills = new List<SkillKind>();
     }
 
     /// <summary>전투 수치 (BALANCE 4번 · 5번).</summary>
@@ -92,6 +109,13 @@ namespace GirlsDungeon.Core.Sim
         public int PushDamagePercent;
         public int PushCollisionDamage;
         public int PushCooldownRounds;
+
+        // 음파 공격 스킬 (BALANCE 15번, 3-12)
+        public int SonicRange;
+        /// <summary>든 무기 공격력에 곱하는 피해 배율 (%). 엄폐 감소 · 안정지수 감소를 받지 않는다.</summary>
+        public int SonicDamagePercent;
+        public int SonicStabilityDamage;
+        public int SonicCooldownRounds;
 
         // 돌격병 · 낙하 (BALANCE 10번)
         /// <summary>적마다 돌격병으로 나올 확률 (나머지는 사격병).</summary>
@@ -151,6 +175,24 @@ namespace GirlsDungeon.Core.Sim
             return null;
         }
 
+        /// <summary>캐릭터를 고르지 않은 판(None)의 스킬 칸 = 3-11까지의 스킬 바 (수류탄 · 밀치기).</summary>
+        public static readonly IReadOnlyList<SkillKind> DefaultSkills = new[] { SkillKind.Grenade, SkillKind.Push, SkillKind.None };
+
+        /// <summary>스킬 바 2 · 3 · 4번 칸. 캐릭터 줄이 있으면 그 칸, 없으면 DefaultSkills.</summary>
+        public IReadOnlyList<SkillKind> SkillSlots(CharacterKind kind)
+        {
+            var character = TryCharacter(kind);
+            return character != null ? character.Skills : DefaultSkills;
+        }
+
+        /// <summary>그 캐릭터가 이 스킬을 칸에 가지고 있는지 (스킬 커맨드가 확인한다).</summary>
+        public bool HasSkill(CharacterKind kind, SkillKind skill)
+        {
+            if (skill == SkillKind.None) return false;
+            foreach (var slot in SkillSlots(kind)) if (slot == skill) return true;
+            return false;
+        }
+
         /// <summary>무기 보정 전 플레이어 이동 범위: 캐릭터 줄이 있으면 그 값, 없으면 유닛 표의 플레이어 줄.</summary>
         public int PlayerBaseMoveRange(CharacterKind kind)
         {
@@ -183,6 +225,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Cover durability must be at least 1.");
             if (PushLength < 1 || PushWidth < 1 || PushDamagePercent < 0 || PushCollisionDamage < 0 || PushCooldownRounds < 0)
                 throw new ArgumentException("Push settings are invalid.");
+            if (SonicRange < 1 || SonicDamagePercent < 0 || SonicStabilityDamage < 0 || SonicCooldownRounds < 0)
+                throw new ArgumentException("Sonic settings are invalid.");
             if (AssaultPercent < 0 || AssaultPercent > 100 || FallDamagePercent < 0)
                 throw new ArgumentException("Assault / fall settings are invalid.");
             if (FloorCount < 1 || EnemiesPerFloorStep < 0 || AssaultPercentPerFloor < 0 || GuardPercentDropPerFloor < 0 || EnemyStatPercentPerFloor < 0)
@@ -202,6 +246,7 @@ namespace GirlsDungeon.Core.Sim
                     || character.MaxHp < 1 || character.MaxStability < 0 || character.VisionRange < 1 || character.Defense < 0 || character.MoveRange < 0)
                     throw new ArgumentException($"Stats for character {character.Kind} are invalid.");
                 WeaponFor(character.StartWeapon);
+                if (character.Skills.Count > 3) throw new ArgumentException($"Character {character.Kind} has more than three skill slots.");
             }
             if (CombatDropWeaponPercent < 0 || CombatDropMedkitPercent < 0 || CombatDropWeaponPercent + CombatDropMedkitPercent > 100
                 || CrateWeaponPercent < 0 || CrateWeaponPercent > 100 || MedkitHealPercent < 0)

@@ -132,6 +132,7 @@ namespace GirlsDungeon.Core.Sim
             world.PlayerShots = 0;
             world.GrenadeCooldown = 0;
             world.PushCooldown = 0;
+            world.SonicCooldown = 0;
             world.Explored = null;
 
             EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));

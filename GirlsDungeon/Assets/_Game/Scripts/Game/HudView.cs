@@ -217,6 +217,37 @@ namespace GirlsDungeon.Game
             previewLabel.gameObject.SetActive(true);
         }
 
+        /// <summary>음파 공격 조준 중, 마우스가 적 위에 있지 않을 때.</summary>
+        public void ShowSonicHint()
+        {
+            previewLabel.text = Text.Get("ui.combat.preview_sonic_hint");
+            previewLabel.gameObject.SetActive(true);
+        }
+
+        /// <summary>음파 공격 미리보기 (규칙 SonicAttack.Preview의 값 그대로).</summary>
+        public void ShowSonicPreview(SonicPreview preview)
+        {
+            string name = preview.Target != null ? UnitName(preview.Target.Kind) : string.Empty;
+            switch (preview.Block)
+            {
+                case SonicBlock.NotReady:
+                    previewLabel.text = Text.Get("ui.combat.preview_sonic_not_ready", simulation.World.SonicCooldown);
+                    break;
+                case SonicBlock.OutOfRange:
+                    previewLabel.text = Text.Get("ui.combat.preview_out_of_range", name);
+                    break;
+                case SonicBlock.NotVisible:
+                case SonicBlock.NoTarget:
+                    previewLabel.text = Text.Get("ui.combat.preview_sonic_not_visible", name);
+                    break;
+                default:
+                    previewLabel.text = Text.Get("ui.combat.preview_sonic", name, preview.Target.Hp, preview.Target.MaxHp,
+                        preview.Target.Stability, preview.Target.MaxStability, preview.Damage, preview.StabilityDamage);
+                    break;
+            }
+            previewLabel.gameObject.SetActive(true);
+        }
+
         /// <summary>이동 예약(홀로그램) 칸: 엄폐와 조작 안내 (다시 클릭 · Enter = 이동, 적 클릭 = 이동 후 공격, 오른쪽 클릭 = 취소).</summary>
         public void ShowPlannedMovePreview(CoverLevel cover)
         {

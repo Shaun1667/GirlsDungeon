@@ -333,6 +333,7 @@ namespace GirlsDungeon.Core.Sim
         {
             if (!TurnFlow.IsPlayerTurn(world) || world.PlayerActed) return false;
             if (Math.Abs(direction.X) + Math.Abs(direction.Y) != 1 || (side != 1 && side != -1)) return false;
+            if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Push)) return false;
             if (!Push.Resolve(world, settings, world.Player, direction, side, events)) return false;
 
             world.PlayerActed = true;

@@ -14,6 +14,8 @@ namespace GirlsDungeon.Game
         None = 0,
         Grenade = 1,
         Push = 2,
+        /// <summary>음파 공격: 적을 클릭해 쓴다 (3-12).</summary>
+        Sonic = 3,
     }
 
     /// <summary>
@@ -214,11 +216,37 @@ namespace GirlsDungeon.Game
         /// <summary>밀치기 조준 모드를 켜고 끈다 (밀치기 버튼).</summary>
         public void TogglePushAim() => ToggleAim(AimMode.Push);
 
+        /// <summary>음파 공격 조준 모드를 켜고 끈다 (음파 버튼).</summary>
+        public void ToggleSonicAim() => ToggleAim(AimMode.Sonic);
+
+        /// <summary>그 적에게 음파 공격을 쓴다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 쓰면 false (조준 모드는 그대로).</summary>
+        public bool RequestSonic(int targetId)
+        {
+            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
+            var preview = PreviewWorld();
+            if (preview == null || !SonicAttack.Preview(preview, settings, preview.Player, preview.FindUnit(targetId)).CanUse) return false;
+            if (!RunAfterPlannedMove(new SonicAttackCommand(targetId, settings))) return false;
+            SetAiming(AimMode.None);
+            return true;
+        }
+
         private void ToggleAim(AimMode mode)
         {
             var world = simulation?.World;
-            bool canAim = world != null && TurnFlow.IsPlayerTurn(world) && !world.PlayerActed;
+            // 그 캐릭터의 스킬 칸에 있는 스킬만 조준할 수 있다 (판정은 규칙 CombatSettings.HasSkill).
+            bool canAim = world != null && TurnFlow.IsPlayerTurn(world) && !world.PlayerActed && settings.HasSkill(world.PlayerCharacter, SkillOf(mode));
             SetAiming(aim != mode && canAim ? mode : AimMode.None);
+        }
+
+        private static SkillKind SkillOf(AimMode mode)
+        {
+            switch (mode)
+            {
+                case AimMode.Grenade: return SkillKind.Grenade;
+                case AimMode.Push: return SkillKind.Push;
+                case AimMode.Sonic: return SkillKind.Sonic;
+                default: return SkillKind.None;
+            }
         }
 
         /// <summary>마우스 칸 쪽으로 밀치기를 쓴다 (방향 · 옆 줄은 Push.Aim). 못 쓰면 false.</summary>
@@ -539,6 +567,21 @@ namespace GirlsDungeon.Game
                     pushAreaView.Show(push.Cells);
                     hudView.ShowPushPreview(push);
                     if (clicked) RequestPush(cell.Value);
+                    return;
+                }
+                if (aim == AimMode.Sonic)
+                {
+                    areaView.Hide();
+                    pushAreaView.Hide();
+                    // 마우스 아래 적 (복제 세계에서는 같은 ID로 찾는다).
+                    var under = world.UnitAt(cell.Value);
+                    var sonicTarget = under != null && !under.IsPlayer ? skillWorld.FindUnit(under.Id) : null;
+                    if (sonicTarget == null) hudView.ShowSonicHint();
+                    else
+                    {
+                        hudView.ShowSonicPreview(SonicAttack.Preview(skillWorld, settings, skillWorld.Player, sonicTarget));
+                        if (clicked) RequestSonic(sonicTarget.Id);
+                    }
                     return;
                 }
                 var area = AreaAttack.Preview(skillWorld, settings, skillWorld.Player, cell.Value);

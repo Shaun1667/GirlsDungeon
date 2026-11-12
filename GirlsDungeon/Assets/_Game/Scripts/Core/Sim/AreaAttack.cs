@@ -168,6 +168,7 @@ namespace GirlsDungeon.Core.Sim
         public bool TryApply(World world, List<GameEvent> events)
         {
             if (!TurnFlow.IsPlayerTurn(world) || world.PlayerActed) return false;
+            if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Grenade)) return false;
             if (!AreaAttack.Resolve(world, settings, world.Player, center, events)) return false;
 
             world.PlayerActed = true;

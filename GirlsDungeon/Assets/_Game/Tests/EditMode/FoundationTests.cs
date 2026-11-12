@@ -310,6 +310,10 @@ namespace GirlsDungeon.Tests
                 PushDamagePercent = 30,
                 PushCollisionDamage = 3,
                 PushCooldownRounds = 2,
+                SonicRange = 6,
+                SonicDamagePercent = 60,
+                SonicStabilityDamage = 3,
+                SonicCooldownRounds = 2,
                 AssaultPercent = 30,
                 FallDamagePercent = 50,
                 FloorCount = 5,
@@ -378,14 +382,17 @@ namespace GirlsDungeon.Tests
             settings.Characters.Add(new CharacterStats
             {
                 Kind = CharacterKind.HeroA, MaxHp = 110, MaxStability = 7, VisionRange = 8, Defense = 5, MoveRange = 6, StartWeapon = WeaponKind.Shotgun,
+                Skills = { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
             });
             settings.Characters.Add(new CharacterStats
             {
                 Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 5, VisionRange = 10, Defense = 3, MoveRange = 7, StartWeapon = WeaponKind.Smg,
+                Skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None },
             });
             settings.Characters.Add(new CharacterStats
             {
                 Kind = CharacterKind.HeroC, MaxHp = 100, MaxStability = 6, VisionRange = 9, Defense = 4, MoveRange = 6, StartWeapon = WeaponKind.AssaultRifle,
+                Skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None },
             });
             return settings;
         }

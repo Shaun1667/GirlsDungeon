@@ -90,6 +90,7 @@ MonoBehaviour:
     defense: 5
     moveRange: 6
     startWeapon: 2
+    skills: 020301
   - kind: 2
     nameKey: character.hero_b.name
     visualId: hero_b
@@ -99,6 +100,7 @@ MonoBehaviour:
     defense: 3
     moveRange: 7
     startWeapon: 4
+    skills: 010200
   - kind: 3
     nameKey: character.hero_c.name
     visualId: hero_c
@@ -108,6 +110,7 @@ MonoBehaviour:
     defense: 4
     moveRange: 6
     startWeapon: 0
+    skills: 010200
   minEnemiesPerFloor: 4
   maxEnemiesPerFloor: 6
   enemyMinDistanceFromStart: 8
@@ -130,6 +133,10 @@ MonoBehaviour:
   pushDamagePercent: 30
   pushCollisionDamage: 3
   pushCooldownRounds: 2
+  sonicRange: 6
+  sonicDamagePercent: 60
+  sonicStabilityDamage: 3
+  sonicCooldownRounds: 2
   assaultPercent: 30
   fallDamagePercent: 50
   floorCount: 5

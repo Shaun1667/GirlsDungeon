@@ -17,9 +17,9 @@ namespace GirlsDungeon.Core.Sim
         /// 5: 유닛 전투 능력치 · 이번 차례 이동 / 행동 여부 (2026-11-10). 6: 수류탄 재사용 대기 (2026-11-10).
         /// 7: 유닛 경계 · 감시 (2026-11-10). 8: 상자 · 낮은 벽 손상 (2026-11-10). 9: 밀치기 재사용 대기 (2026-11-10, 낭떠러지 칸은 TileType 값만 추가). 10: 유닛 밀기 칸 수 (2026-11-10). 11: 쓰러뜨린 적 수 (2026-11-10).
         /// 12: 든 무기 · 바닥 물건 (2026-11-10, 보급 상자 칸은 TileType 값만 추가). 13: 이번 차례 사격 수 (2026-11-11).
-        /// 14: 고른 캐릭터 (2026-11-11).
+        /// 14: 고른 캐릭터 (2026-11-11). 15: 음파 공격 재사용 대기 (2026-11-12).
         /// </summary>
-        public const int Version = 14;
+        public const int Version = 15;
 
         public static byte[] Encode(World world)
         {
@@ -88,6 +88,7 @@ namespace GirlsDungeon.Core.Sim
                     WriteCell(writer, item.Position);
                 }
                 writer.Write((byte)world.PlayerCharacter);
+                writer.Write(world.SonicCooldown);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -177,6 +178,7 @@ namespace GirlsDungeon.Core.Sim
                     world.Items.Add(new FloorItem(id, kind, weapon, ReadCell(reader)));
                 }
                 world.PlayerCharacter = (CharacterKind)reader.ReadByte();
+                world.SonicCooldown = reader.ReadInt32();
                 return world;
             }
         }

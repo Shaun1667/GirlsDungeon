@@ -107,12 +107,14 @@ namespace GirlsDungeon.EditorTools
             var barRect = barRoot.GetComponent<RectTransform>();
             barRect.anchorMin = barRect.anchorMax = barRect.pivot = new Vector2(0.5f, 0f);
             barRect.anchoredPosition = new Vector2(0f, 24f);
-            barRect.sizeDelta = new Vector2(5 * CardWidth + 4 * CardGap, CardHeight);
+            // 카드 6장 (3-12): 사격 · 스킬 칸 2 · 3 · 4(캐릭터마다 다름) · 감시 · 턴 종료.
+            barRect.sizeDelta = new Vector2(6 * CardWidth + 5 * CardGap, CardHeight);
             var shootCard = CreateCard(barRoot.transform, "ShootCard", font, 0);
-            var grenadeCard = CreateCard(barRoot.transform, "GrenadeCard", font, 1);
-            var pushCard = CreateCard(barRoot.transform, "PushCard", font, 2);
-            var overwatchCard = CreateCard(barRoot.transform, "OverwatchCard", font, 3);
-            var endTurnCard = CreateCard(barRoot.transform, "EndTurnCard", font, 4);
+            var slotCard2 = CreateCard(barRoot.transform, "SkillSlot2Card", font, 1);
+            var slotCard3 = CreateCard(barRoot.transform, "SkillSlot3Card", font, 2);
+            var slotCard4 = CreateCard(barRoot.transform, "SkillSlot4Card", font, 3);
+            var overwatchCard = CreateCard(barRoot.transform, "OverwatchCard", font, 4);
+            var endTurnCard = CreateCard(barRoot.transform, "EndTurnCard", font, 5);
             var tooltipPanel = CreatePanel(skillBarObject.transform, "Tooltip", new Vector2(0.5f, 0f), new Vector2(0f, CardHeight + 40f),
                 new Vector2(900f, 140f), new Color(0.06f, 0.07f, 0.1f, 0.95f));
             tooltipPanel.GetComponent<Image>().raycastTarget = false;
@@ -120,8 +122,8 @@ namespace GirlsDungeon.EditorTools
             tooltipLabel.rectTransform.sizeDelta = new Vector2(860f, 130f);
             tooltipPanel.SetActive(false);
             var skillBar = skillBarObject.AddComponent<SkillBarView>();
-            SetReferences(skillBar, ("barRoot", barRoot), ("shootCard", shootCard), ("grenadeCard", grenadeCard), ("pushCard", pushCard),
-                ("overwatchCard", overwatchCard), ("endTurnCard", endTurnCard), ("tooltipPanel", tooltipPanel), ("tooltipLabel", tooltipLabel));
+            SetReferences(skillBar, ("barRoot", barRoot), ("shootCard", shootCard), ("slotCard2", slotCard2), ("slotCard3", slotCard3),
+                ("slotCard4", slotCard4), ("overwatchCard", overwatchCard), ("endTurnCard", endTurnCard), ("tooltipPanel", tooltipPanel), ("tooltipLabel", tooltipLabel));
 
             // 사격 확인 버튼: 적을 골랐을 때만 스킬 바 오른쪽(오른쪽 아래)에 뜬다 — 화면 가운데의 플레이어를 가리지 않게.
             var attackConfirmButton = CreateButton(canvas.transform, "AttackConfirmButton", font, "ui.combat.confirm_attack",

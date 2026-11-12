@@ -1,6 +1,6 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 상자 클릭: 열기 · 1~4 스킬 · Space 턴 종료 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click green crate: Open · 1-4 Skills · Space End turn · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
+ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 상자 클릭: 열기 · 1~5 스킬 · Space 턴 종료 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click green crate: Open · 1-5 Skills · Space End turn · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
@@ -42,12 +42,12 @@ ui.cover.half,낮은 엄폐,Low cover
 ui.cover.full,높은 엄폐,High cover
 unit.player.name,나,You
 unit.rifleman.name,사격병,Rifleman
-ui.skill.push,밀치기,Push
-ui.skill.push_cooldown,밀치기 ({0}),Push ({0})
+ui.skill.push,넉백 공격,Knockback
+ui.skill.push_cooldown,넉백 공격 ({0}),Knockback ({0})
 ui.skill.push_aiming,조준 취소,Cancel aim
-ui.combat.preview_push_header,밀치기 · 대상 {0},Push · {0} targets
+ui.combat.preview_push_header,넉백 공격 · 대상 {0},Knockback · {0} targets
 ui.combat.preview_push_hit,{0}: 피해 {1} · {2},{0}: {1} damage · {2}
-ui.combat.preview_push_not_ready,밀치기 재사용 대기 {0}라운드,Push ready in {0} rounds
+ui.combat.preview_push_not_ready,넉백 공격 재사용 대기 {0}라운드,Knockback ready in {0} rounds
 ui.combat.preview_push_no_target,범위 안에 대상 없음,No target in the area
 ui.combat.push_result_down,쓰러짐,Down
 ui.combat.push_result_fall,낭떠러지로 떨어짐,Falls into the chasm
@@ -108,9 +108,9 @@ ui.skill.grenade_tip,"수류탄 · 칸을 클릭해 던짐 (오른쪽 클릭 취
 재사용 대기 {4}라운드 · 쓰면 차례 끝","Grenade · click a cell to throw (right-click cancels)
 Throw range {0} · Radius {1} · Damage {2}% · Stability −{3}
 Cooldown {4} rounds · Ends your turn"
-ui.skill.push_tip,"밀치기 · 마우스 쪽으로 앞 너비 {0} × 길이 {1}
+ui.skill.push_tip,"넉백 공격 · 마우스 쪽으로 앞 너비 {0} × 길이 {1}
 피해 {2}% · 부딪히면 {3} · 낭떠러지로 밀린 적은 떨어짐
-재사용 대기 {4}라운드 · 쓰면 차례 끝","Push · width {0} × length {1} toward the pointer
+재사용 대기 {4}라운드 · 쓰면 차례 끝","Knockback · width {0} × length {1} toward the pointer
 Damage {2}% · Collision {3} · Enemies pushed into a chasm fall
 Cooldown {4} rounds · Ends your turn"
 ui.skill.overwatch_tip,"감시 · 사격 대신 걸고 차례 끝
@@ -141,3 +141,15 @@ character.hero_c.name,대원 C,Operative C
 ui.combat.preview_planned_move,"이동 예정 · 엄폐: {0}
 적 클릭 → 공격 · 스킬(2~4): 이동 후 사용 · 같은 칸 다시 클릭 / Enter: 이동만 · 오른쪽 클릭: 취소","Planned move · Cover: {0}
 Click enemy → Attack · Skills (2-4): used after moving · Click again / Enter: move only · Right-click: cancel"
+ui.skill.sonic,음파 공격,Sonic blast
+ui.skill.sonic_tip,"음파 공격 · 적을 클릭 (사거리 {0}칸, 보이는 적 하나)
+피해 {1}% · 엄폐 무시 · 안정 −{2}
+재사용 대기 {3}라운드 · 쓰면 차례 끝","Sonic blast · click an enemy (range {0}, one visible enemy)
+Damage {1}% · Ignores cover · Stability −{2}
+Cooldown {3} rounds · Ends your turn"
+ui.combat.preview_sonic_hint,음파 공격 · 적을 클릭 (오른쪽 클릭 취소),Sonic blast · click an enemy (right-click to cancel)
+ui.combat.preview_sonic,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
+음파 피해 {5} (엄폐 무시) · 안정 −{6}","{0} · HP {1}/{2} · Stability {3}/{4}
+Sonic damage {5} (ignores cover) · Stability −{6}"
+ui.combat.preview_sonic_not_ready,음파 공격 재사용 대기 {0}라운드,Sonic blast ready in {0} rounds
+ui.combat.preview_sonic_not_visible,{0} · 보이지 않아 음파 공격을 쓸 수 없음,{0} · Not visible for the sonic blast

@@ -43,6 +43,8 @@ namespace GirlsDungeon.Game
         public int defense;
         public int moveRange;
         public WeaponKind startWeapon;
+        [Tooltip("Skill bar slots 2, 3 and 4 in order (None = empty). Shoot (1) and overwatch (5) are shared.")]
+        public SkillKind[] skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None };
     }
 
     /// <summary>무기 하나의 능력치와 규칙 (표 한 줄, BALANCE 12번).</summary>
@@ -149,6 +151,7 @@ namespace GirlsDungeon.Game
             {
                 kind = CharacterKind.HeroA, nameKey = "character.hero_a.name", visualId = "hero_a",
                 maxHp = 110, maxStability = 7, visionRange = 8, defense = 5, moveRange = 6, startWeapon = WeaponKind.Shotgun,
+                skills = new[] { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
             },
             new CharacterEntry
             {
@@ -199,6 +202,13 @@ namespace GirlsDungeon.Game
         [Tooltip("Flat damage when a pushed unit hits a wall, cover or unit.")]
         [SerializeField] private int pushCollisionDamage = 3;
         [SerializeField] private int pushCooldownRounds = 2;
+
+        [Header("Sonic skill (BALANCE 15)")]
+        [SerializeField] private int sonicRange = 6;
+        [Tooltip("Damage multiplier (%) on the held weapon attack. Ignores cover and the stability guard.")]
+        [SerializeField] private int sonicDamagePercent = 60;
+        [SerializeField] private int sonicStabilityDamage = 3;
+        [SerializeField] private int sonicCooldownRounds = 2;
 
         [Header("Assault and falling (BALANCE 10)")]
         [Tooltip("Chance (%) that each spawned enemy is an assault unit instead of a rifleman.")]
@@ -370,6 +380,10 @@ namespace GirlsDungeon.Game
                 PushDamagePercent = pushDamagePercent,
                 PushCollisionDamage = pushCollisionDamage,
                 PushCooldownRounds = pushCooldownRounds,
+                SonicRange = sonicRange,
+                SonicDamagePercent = sonicDamagePercent,
+                SonicStabilityDamage = sonicStabilityDamage,
+                SonicCooldownRounds = sonicCooldownRounds,
                 AssaultPercent = assaultPercent,
                 FallDamagePercent = fallDamagePercent,
                 FloorCount = floorCount,
@@ -432,6 +446,7 @@ namespace GirlsDungeon.Game
                     Defense = entry.defense,
                     MoveRange = entry.moveRange,
                     StartWeapon = entry.startWeapon,
+                    Skills = new System.Collections.Generic.List<SkillKind>(entry.skills ?? System.Array.Empty<SkillKind>()),
                 });
             }
             return settings;
