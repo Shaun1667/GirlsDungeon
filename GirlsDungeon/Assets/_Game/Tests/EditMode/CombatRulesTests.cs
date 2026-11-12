@@ -218,13 +218,55 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void CombatMove_OnceAndWithinRange()
+        public void CombatMove_WithinRange_AndTheRestCanBeWalkedLater()
         {
+            // 3-13: 이동만 했으면 남은 칸만큼 또 걸을 수 있다. 이동 6칸 = 2칸 + 3칸 + 1칸.
             var (simulation, world, _) = StartCombat();
             Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(9, 3))), Is.False, "7 steps > 6");
-            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(4, 3))), Is.True);
-            Assert.That(world.Player.Position, Is.EqualTo(new GridPos(4, 3)));
-            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(3, 3))), Is.False, "only one move per turn");
+            Assert.That(Loadout.MoveLeft(world), Is.EqualTo(6));
+
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(4, 1))), Is.True);
+            Assert.That(world.Player.Position, Is.EqualTo(new GridPos(4, 1)));
+            Assert.That(world.PlayerMoveUsed, Is.EqualTo(2));
+            Assert.That(Loadout.MoveLeft(world), Is.EqualTo(4));
+
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(9, 1))), Is.False, "5 steps > 4 left");
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(7, 1))), Is.True);
+            Assert.That(Loadout.MoveLeft(world), Is.EqualTo(1));
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(9, 1))), Is.False, "2 steps > 1 left");
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(8, 1))), Is.True);
+
+            Assert.That(Loadout.MoveLeft(world), Is.EqualTo(0));
+            Assert.That(Loadout.CanCombatMove(world, TestData.Combat()), Is.False);
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(9, 1))), Is.False, "no cells left");
+            Assert.That(world.Turn, Is.EqualTo(TurnSide.Player), "moving never ends the turn by itself");
+        }
+
+        [Test]
+        public void SplitMoves_ThenTheShotStillWorks_AndTheNextTurnGetsTheFullRangeBack()
+        {
+            var (simulation, world, enemy) = StartCombat();
+            enemy.Hp = 100;
+            enemy.MaxHp = 100;
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(3, 1))), Is.True);
+            Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(4, 1))), Is.True);
+            Assert.That(world.PlayerMoveUsed, Is.EqualTo(2));
+
+            Assert.That(simulation.Execute(new AttackCommand(enemy.Id, TestData.Combat())), Is.True);
+            Assert.That(world.Round, Is.EqualTo(2), "the shot ends the turn");
+            Assert.That(world.PlayerMoveUsed, Is.EqualTo(0), "reset for the new turn");
+            Assert.That(Loadout.MoveLeft(world), Is.EqualTo(world.Player.MoveRange));
+        }
+
+        [Test]
+        public void AfterShooting_TheLeftoverCellsAreGone()
+        {
+            // 돌격소총: 2칸만 걷고 쏴도 차례가 끝난다 — 쏜 뒤에는 남은 칸으로 걸을 수 없다.
+            var (_, world, _) = StartCombat();
+            world.PlayerMoveUsed = 2;
+            world.PlayerActed = true;
+            world.PlayerShots = 1;
+            Assert.That(Loadout.CanCombatMove(world, TestData.Combat()), Is.False);
         }
 
         [Test]

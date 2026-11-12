@@ -224,7 +224,7 @@ namespace GirlsDungeon.Game
             var world = World;
             if (world == null) return "Run not started";
             return $"Planned={(moveController.PlannedCell.HasValue ? moveController.PlannedCell.Value.ToString() : "none")}, Ghost={playerView.GhostShown}, "
-                + $"Player={world.Player.Position}, Moved={world.PlayerMoved}, Shots={world.PlayerShots}, Selected={moveController.SelectedTargetId}, Lines=[{moveController.TargetLinesSummary}]";
+                + $"Player={world.Player.Position}, MoveUsed={world.PlayerMoveUsed}, Shots={world.PlayerShots}, Selected={moveController.SelectedTargetId}, Lines=[{moveController.TargetLinesSummary}]";
         }
 
         /// <summary>[상태 변경] 음파 공격을 그 적에게 쓴다 (조준 모드에서 적을 클릭한 것과 같다). 못 쓰면 false.</summary>
@@ -502,7 +502,7 @@ namespace GirlsDungeon.Game
             var world = World;
             if (world == null) return "Run not started";
             var player = world.Player;
-            return $"Mode={world.Mode}, Turn={world.Turn}, Round={world.Round}, Moved={world.PlayerMoved}, Acted={world.PlayerActed}, "
+            return $"Mode={world.Mode}, Turn={world.Turn}, Round={world.Round}, MoveUsed={world.PlayerMoveUsed}, Acted={world.PlayerActed}, "
                 + $"GrenadeCooldown={world.GrenadeCooldown}, PushCooldown={world.PushCooldown}, Aim={moveController.Aim}, "
                 + $"Reachable={moveController.ReachableCount}, Combatants=[{string.Join(",", world.Combatants)}], "
                 + $"PlayerHp={player.Hp}/{player.MaxHp}, Stability={player.Stability}/{player.MaxStability}, VisibleEnemies={unitsView.VisibleCount}";

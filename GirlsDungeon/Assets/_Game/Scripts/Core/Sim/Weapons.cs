@@ -107,13 +107,21 @@ namespace GirlsDungeon.Core.Sim
             return settings.TryWeapon(world.PlayerWeapon);
         }
 
+        /// <summary>이번 차례에 플레이어가 더 걸을 수 있는 칸 수: 이동 범위 − 이미 걸은 칸 (0 이상). 범위 표시 · 이동 커맨드가 같이 쓴다.</summary>
+        public static int MoveLeft(World world)
+        {
+            var player = world.Player;
+            return player == null ? 0 : System.Math.Max(0, player.MoveRange - world.PlayerMoveUsed);
+        }
+
         /// <summary>
-        /// 전투 중 플레이어가 지금 이동할 수 있는지: 내 차례이고 아직 이동하지 않았고,
+        /// 전투 중 플레이어가 지금 이동할 수 있는지: 내 차례이고 이동 칸이 남았고,
         /// 행동(사격)을 아직 안 했거나, 든 무기가 쏜 뒤 이동을 허락하거나(권총), 아직 더 쏠 수 있을 때(기관단총).
+        /// 행동 전에는 남은 칸만큼 여러 번 나눠 걸을 수 있다 (3-13).
         /// </summary>
         public static bool CanCombatMove(World world, CombatSettings settings)
         {
-            if (!TurnFlow.IsPlayerTurn(world) || world.PlayerMoved) return false;
+            if (!TurnFlow.IsPlayerTurn(world) || MoveLeft(world) <= 0) return false;
             if (!world.PlayerActed) return true;
             var weapon = WeaponOf(world, settings, world.Player);
             if (weapon == null || world.PlayerShots == 0) return false;

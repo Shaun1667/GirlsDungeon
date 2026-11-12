@@ -45,7 +45,8 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>
-    /// 전투 중 플레이어 이동 한 번. 차례마다 한 번, 사격 전에만(권총은 쏜 뒤에도 — 그때는 이동 뒤 차례가 끝난다), 이동 범위 안의 본 칸으로.
+    /// 전투 중 플레이어 이동. 남은 이동 칸(Loadout.MoveLeft) 안의 본 칸으로 — 칸이 남으면 여러 번 나눠 걸을 수 있다 (3-13).
+    /// 사격 전에만(권총은 쏜 뒤에도 — 그때는 이동 뒤 차례가 끝난다).
     /// </summary>
     public sealed class CombatMoveCommand : ICommand
     {
@@ -66,10 +67,10 @@ namespace GirlsDungeon.Core.Sim
             if (!Loadout.CanCombatMove(world, settings)) return false;
 
             var player = world.Player;
-            var path = CombatMovement.Path(world, player, destination, player.MoveRange, world.Explored);
+            var path = CombatMovement.Path(world, player, destination, Loadout.MoveLeft(world), world.Explored);
             if (path.Count == 0) return false;
 
-            world.PlayerMoved = true;
+            world.PlayerMoveUsed += path.Count;
             CombatMovement.Walk(world, settings, player, path, events);
             // 권총: 쏜 뒤 남은 이동까지 썼으면 차례가 끝난다. 기관단총은 아직 더 쏠 수 있으면 이어진다.
             if (world.PlayerActed && settings != null && TurnFlow.IsPlayerTurn(world) && world.Combatants.Count > 0

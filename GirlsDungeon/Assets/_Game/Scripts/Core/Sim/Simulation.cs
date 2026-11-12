@@ -127,7 +127,7 @@ namespace GirlsDungeon.Core.Sim
             world.Mode = WorldMode.Exploration;
             world.Turn = TurnSide.Player;
             world.Round = 0;
-            world.PlayerMoved = false;
+            world.PlayerMoveUsed = 0;
             world.PlayerActed = false;
             world.PlayerShots = 0;
             world.GrenadeCooldown = 0;

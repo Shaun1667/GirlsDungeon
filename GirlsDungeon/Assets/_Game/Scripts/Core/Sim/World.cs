@@ -125,13 +125,16 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>지금 전투에 들어와 있는 적 ID (오름차순).</summary>
         public List<int> Combatants { get; } = new List<int>();
 
-        /// <summary>이번 플레이어 차례에 이동을 썼다 (전투 중).</summary>
-        public bool PlayerMoved { get; set; }
+        /// <summary>이번 플레이어 차례에 걸은 칸 수 (전투 중). 남은 이동 = 이동 범위 − 이 값 (Loadout.MoveLeft).</summary>
+        public int PlayerMoveUsed { get; set; }
+
+        /// <summary>이번 플레이어 차례에 한 칸이라도 걸었다 (저격총 · 권총 규칙이 본다).</summary>
+        public bool PlayerMoved => PlayerMoveUsed > 0;
 
         /// <summary>이번 플레이어 차례에 행동(사격)을 썼다 (전투 중).</summary>
         public bool PlayerActed { get; set; }
 
-        /// <summary>이번 플레이어 차례에 쏜 횟수 (기관단총은 두 번까지). PlayerMoved와 같은 때 0이 된다.</summary>
+        /// <summary>이번 플레이어 차례에 쏜 횟수 (기관단총은 두 번까지). PlayerMoveUsed와 같은 때 0이 된다.</summary>
         public int PlayerShots { get; set; }
 
         /// <summary>수류탄 스킬을 다시 쓸 수 있을 때까지 남은 라운드 (0 = 지금 사용 가능). 전투가 끝나면 0.</summary>

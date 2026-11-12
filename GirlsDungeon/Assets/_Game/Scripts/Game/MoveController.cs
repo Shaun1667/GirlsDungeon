@@ -21,7 +21,7 @@ namespace GirlsDungeon.Game
     /// <summary>
     /// 마우스 입력을 커맨드로 바꾼다. 칸의 이동 · 사격 가능 여부와 숫자는 모두 규칙이 정한다.
     /// 탐험: 클릭한 본 칸까지 경로를 만들어 한 걸음씩 MoveCommand.
-    /// 전투(내 차례): 이동 범위 표시 · 범위 안 칸 클릭 = 이동 예약(홀로그램, 바로 걷지 않음 — 3-10), 적 클릭 = 사격 대상 고르기(노란 선 · 미리보기 · 확인 버튼).
+    /// 전투(내 차례): 남은 이동 범위 표시(이동만 했으면 남은 칸만큼 또 걸을 수 있다 — 3-13) · 범위 안 칸 클릭 = 이동 예약(홀로그램, 바로 걷지 않음 — 3-10), 적 클릭 = 사격 대상 고르기(노란 선 · 미리보기 · 확인 버튼).
     /// 예약이 있으면 선 · 미리보기는 예약 칸에서 계산한다. 확인(버튼 · Enter · 사격 카드) = 예약 칸으로 CombatMoveCommand 뒤 AttackCommand를 한 번에,
     /// 대상 없이 Enter 또는 예약 칸을 다시 클릭 = 이동만. 오른쪽 클릭 · Esc = 대상 → 예약 순으로 취소. 마우스를 올리면 미리보기.
     /// 조준 모드: 수류탄 = 칸 클릭으로 AreaAttackCommand, 밀치기 = 마우스 쪽 방향 · 옆 줄로 PushCommand.
@@ -657,7 +657,7 @@ namespace GirlsDungeon.Game
         private void RefreshRange(bool canMove)
         {
             var world = simulation.World;
-            string key = canMove ? $"{world.Round}:{world.Player.Position}:{world.Units.Count}" : "none";
+            string key = canMove ? $"{world.Round}:{world.Player.Position}:{world.Units.Count}:{Loadout.MoveLeft(world)}" : "none";
             if (key == reachableKey) return;
             reachableKey = key;
 
@@ -669,7 +669,8 @@ namespace GirlsDungeon.Game
             }
 
             var player = world.Player;
-            reachable = CombatMovement.Reachable(world, player, player.MoveRange, world.Explored);
+            // 남은 이동 칸만큼만 (이번 차례에 이미 걸은 칸은 뺀다 — 판정은 규칙 Loadout.MoveLeft 한 곳).
+            reachable = CombatMovement.Reachable(world, player, Loadout.MoveLeft(world), world.Explored);
             var cells = new List<GridPos>();
             foreach (var cell in reachable.Keys) if (cell != player.Position) cells.Add(cell);
             rangeView.Show(cells);

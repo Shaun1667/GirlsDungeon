@@ -144,7 +144,7 @@ namespace GirlsDungeon.Tests
             var world = MakeWorld(new GridPos(0, 0), "..............");
             Equip(world, WeaponKind.Sniper);
             var enemy = AddEnemy(world, new GridPos(12, 0));
-            world.PlayerMoved = true;
+            world.PlayerMoveUsed = 1;
             world.Turn = TurnSide.Enemies;
             Assert.That(CombatRules.Preview(world, combat, world.Player, world.Player.Position, enemy).CanAttack, Is.True);
         }

@@ -80,7 +80,7 @@ namespace GirlsDungeon.Tests
             Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(1, 0), combat)), Is.True);
             Assert.That(simulation.Execute(new AttackCommand(id, combat)), Is.True);
             Assert.That(world.Round, Is.EqualTo(1));
-            Assert.That(Loadout.CanCombatMove(world, combat), Is.False, "only one move per turn");
+            Assert.That(Loadout.CanCombatMove(world, combat), Is.True, "5 cells are left and a shot is left (3-13)");
             Assert.That(simulation.Execute(new AttackCommand(id, combat)), Is.True);
             Assert.That(world.Round, Is.EqualTo(2));
         }
@@ -184,6 +184,16 @@ namespace GirlsDungeon.Tests
         }
 
         // ---------- 저장 ----------
+
+        [Test]
+        public void PlayerMoveUsed_SurvivesTheSnapshot()
+        {
+            var world = TestData.NewRun(61);
+            world.PlayerMoveUsed = 3;
+            var restored = WorldSnapshot.Decode(WorldSnapshot.Encode(world));
+            Assert.That(restored.PlayerMoveUsed, Is.EqualTo(3));
+            Assert.That(restored.PlayerMoved, Is.True);
+        }
 
         [Test]
         public void PlayerShots_SurviveTheSnapshot()
