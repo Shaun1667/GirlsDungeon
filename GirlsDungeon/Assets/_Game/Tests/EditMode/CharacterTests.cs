@@ -20,7 +20,7 @@ namespace GirlsDungeon.Tests
             Assert.That(world.PlayerCharacter, Is.EqualTo(CharacterKind.HeroA));
             Assert.That(world.PlayerWeapon, Is.EqualTo(WeaponKind.Shotgun));
             Assert.That(new[] { player.MaxHp, player.Hp, player.MaxStability, player.Stability, player.VisionRange, player.Defense, player.MoveRange },
-                Is.EqualTo(new[] { 110, 110, 7, 7, 8, 5, 6 }));
+                Is.EqualTo(new[] { 110, 110, 7, 7, 8, 5, 8 }));
             // 공격 · 사거리는 무기에서 온다 (Loadout.Apply).
             Assert.That(player.Attack, Is.EqualTo(shotgun.Attack));
             Assert.That(player.AttackRange, Is.EqualTo(shotgun.AttackRange));
@@ -35,7 +35,7 @@ namespace GirlsDungeon.Tests
             Assert.That(world.PlayerCharacter, Is.EqualTo(CharacterKind.HeroB));
             Assert.That(world.PlayerWeapon, Is.EqualTo(WeaponKind.Smg));
             Assert.That(new[] { player.MaxHp, player.MaxStability, player.VisionRange, player.Defense, player.MoveRange },
-                Is.EqualTo(new[] { 90, 5, 10, 3, 7 }));
+                Is.EqualTo(new[] { 90, 5, 10, 3, 6 }));
             Assert.That(Loadout.ShotsPerTurn(world, TestData.Combat()), Is.EqualTo(2));
         }
 
@@ -70,12 +70,12 @@ namespace GirlsDungeon.Tests
         public void WeaponMoveBonus_AppliesToTheCharacterMoveRange()
         {
             var combat = TestData.Combat();
-            var world = NewRun(7, CharacterKind.HeroB);
+            var world = NewRun(7, CharacterKind.HeroA);
             world.PlayerWeapon = WeaponKind.MachineGun;
             Loadout.Apply(world, combat);
 
-            // HeroB 이동 7 + 기관총 −2 = 5 (유닛 표 6이 아니라 캐릭터 값이 기준).
-            Assert.That(world.Player.MoveRange, Is.EqualTo(7 + combat.WeaponFor(WeaponKind.MachineGun).MoveRangeBonus));
+            // HeroA 이동 8 + 기관총 −2 = 6 (유닛 표 6이 아니라 캐릭터 값이 기준 — 유닛 표 기준이면 4).
+            Assert.That(world.Player.MoveRange, Is.EqualTo(8 + combat.WeaponFor(WeaponKind.MachineGun).MoveRangeBonus));
         }
 
         [Test]

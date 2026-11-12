@@ -150,13 +150,13 @@ namespace GirlsDungeon.Game
             new CharacterEntry
             {
                 kind = CharacterKind.HeroA, nameKey = "character.hero_a.name", visualId = "hero_a",
-                maxHp = 110, maxStability = 7, visionRange = 8, defense = 5, moveRange = 6, startWeapon = WeaponKind.Shotgun,
+                maxHp = 110, maxStability = 7, visionRange = 8, defense = 5, moveRange = 8, startWeapon = WeaponKind.Shotgun,
                 skills = new[] { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
             },
             new CharacterEntry
             {
                 kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
-                maxHp = 90, maxStability = 5, visionRange = 10, defense = 3, moveRange = 7, startWeapon = WeaponKind.Smg,
+                maxHp = 90, maxStability = 5, visionRange = 10, defense = 3, moveRange = 6, startWeapon = WeaponKind.Smg,
             },
             new CharacterEntry
             {

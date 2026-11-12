@@ -88,7 +88,7 @@ MonoBehaviour:
     maxStability: 7
     visionRange: 8
     defense: 5
-    moveRange: 6
+    moveRange: 8
     startWeapon: 2
     skills: 020301
   - kind: 2
@@ -98,7 +98,7 @@ MonoBehaviour:
     maxStability: 5
     visionRange: 10
     defense: 3
-    moveRange: 7
+    moveRange: 6
     startWeapon: 4
     skills: 010200
   - kind: 3
