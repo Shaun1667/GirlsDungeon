@@ -284,7 +284,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar, GirlsDungeon.Core.Map.SpecialRoomKind.Arena, GirlsDungeon.Core.Map.SpecialRoomKind.Trap, GirlsDungeon.Core.Map.SpecialRoomKind.Gamble }), "3-14c ~ 3-14k");
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar, GirlsDungeon.Core.Map.SpecialRoomKind.Arena, GirlsDungeon.Core.Map.SpecialRoomKind.Trap, GirlsDungeon.Core.Map.SpecialRoomKind.Gamble, GirlsDungeon.Core.Map.SpecialRoomKind.Archive }), "3-14c ~ 3-14l");
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.observatory.log_used"), Is.True);
         }
@@ -343,7 +343,7 @@ namespace GirlsDungeon.Tests
             // 검산: 매복 = 100 − 30 − 30 − 20 = 20%.
             Assert.That(100 - combat.GambleJackpotPercent - combat.GambleSmallPercent - combat.GambleEmptyPercent, Is.EqualTo(20));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
-            foreach (var key in new[] { "ui.gamble.log_jackpot", "ui.gamble.log_small", "ui.gamble.log_empty", "ui.gamble.log_ambush" })
+            foreach (var key in new[] { "ui.gamble.log_jackpot", "ui.gamble.log_small", "ui.gamble.log_empty", "ui.gamble.log_ambush", "ui.archive.log_rooms", "ui.archive.log_enemies", "ui.archive.log_last" })
                 Assert.That(table.Contains(key), Is.True, key);
         }
 

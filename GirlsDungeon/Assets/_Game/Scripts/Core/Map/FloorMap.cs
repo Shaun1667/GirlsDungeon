@@ -58,6 +58,10 @@ namespace GirlsDungeon.Core.Map
         GambleChest = 25,
         /// <summary>연 · 닫혀 버린 도박 상자 (하나를 열면 그 방의 상자가 모두 이것이 된다).</summary>
         GambleChestOpened = 26,
+        /// <summary>기록 단말 (기록실, 3-14l). 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 쓰면 다음 층 예고를 보여 주고 ArchiveTerminalUsed.</summary>
+        ArchiveTerminal = 27,
+        /// <summary>쓴 기록 단말.</summary>
+        ArchiveTerminalUsed = 28,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -207,7 +211,7 @@ namespace GirlsDungeon.Core.Map
             if (!InBounds(cell)) return false;
             var tile = Get(cell);
             return tile == TileType.SupplyCrate || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation
-                || tile == TileType.ObservatoryConsole || tile == TileType.GambleChest;
+                || tile == TileType.ObservatoryConsole || tile == TileType.GambleChest || tile == TileType.ArchiveTerminal;
         }
 
         /// <summary>특수 방의 상자류 칸 (보물 상자 · 보급 선반, 닫힘 · 열림) — 낮은 엄폐, 옆에 다른 물건을 놓지 않는다.</summary>
@@ -222,7 +226,8 @@ namespace GirlsDungeon.Core.Map
                 || tile == TileType.ExchangeCounter
                 || tile == TileType.SetGalleryCase || tile == TileType.SetGalleryCaseUsed
                 || tile == TileType.Altar || tile == TileType.AltarUsed
-                || tile == TileType.GambleChest || tile == TileType.GambleChestOpened;
+                || tile == TileType.GambleChest || tile == TileType.GambleChestOpened
+                || tile == TileType.ArchiveTerminal || tile == TileType.ArchiveTerminalUsed;
         }
 
         /// <summary>보물 상자 칸 (닫힘 · 열림).</summary>

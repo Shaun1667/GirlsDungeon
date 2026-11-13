@@ -30,7 +30,7 @@ namespace GirlsDungeon.Core.Map
     /// - 순서: 작업방(WorkshopsPerFloor) → 늘 나오는 방(AlwaysSpecialRooms) → 무작위 방(RandomSpecialRooms에서 겹치지 않게 RandomSpecialRoomsPerFloor개).
     /// - 시작 · 계단 방은 쓰지 않고, 일반 방이 MinNormalRooms개 남도록 개수를 줄인다 (작업방 · 늘 나오는 방이 먼저).
     /// - 잠그는 종류(LockedSpecialRooms)는 FloorDecor.LockRoom으로 입구를 잠근다. 잠글 수 있는 방이 없으면 문 없이 둔다.
-    /// - 보급 상자가 없는 방을 먼저 고른다. 굴림은 작업 난수(RandomPurpose.Workshop) — 보급 상자 다음에 부른다.
+    /// - 보급 상자가 없는 방을 먼저 고른다. 굴림은 층 만들기 난수(RandomPurpose.Floor, 3-14l) — 보급 상자 다음에 부른다.
     /// 특수 방에는 일반 적을 놓지 않는다 (EnemySpawner — 결투장은 Arena.Spawn, 함정 방은 Trap.Spawn이 따로 놓는다).
     /// </summary>
     public static class SpecialRoomLayout
@@ -147,6 +147,8 @@ namespace GirlsDungeon.Core.Map
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.SetGalleryCase);
                 case SpecialRoomKind.Altar:
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.Altar);
+                case SpecialRoomKind.Archive:
+                    return FloorDecor.TryPlaceAtCenter(map, room, TileType.ArchiveTerminal);
                 case SpecialRoomKind.Gamble:
                     return FloorDecor.TryPlaceGambleChests(map, room, settings.GambleChests);
                 case SpecialRoomKind.Trap:
@@ -169,6 +171,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.Altar) FloorDecor.RemoveTile(map, room, TileType.Altar);
             if (kind == SpecialRoomKind.Trap) FloorDecor.RemoveTile(map, room, TileType.TreasureChest);
             if (kind == SpecialRoomKind.Gamble) FloorDecor.RemoveTile(map, room, TileType.GambleChest);
+            if (kind == SpecialRoomKind.Archive) FloorDecor.RemoveTile(map, room, TileType.ArchiveTerminal);
         }
 
         /// <summary>문을 단 뒤에도 방 안 내용에 닿을 수 있는가 (작업대 옆 설 칸).</summary>
@@ -184,6 +187,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.Altar) return FloorDecor.TileHasRoom(map, room, TileType.Altar);
             if (kind == SpecialRoomKind.Trap) return FloorDecor.TileHasRoom(map, room, TileType.TreasureChest);
             if (kind == SpecialRoomKind.Gamble) return FloorDecor.TileHasRoom(map, room, TileType.GambleChest);
+            if (kind == SpecialRoomKind.Archive) return FloorDecor.TileHasRoom(map, room, TileType.ArchiveTerminal);
             return true;
         }
     }

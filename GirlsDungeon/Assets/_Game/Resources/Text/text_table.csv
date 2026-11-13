@@ -320,6 +320,9 @@ ui.altar.accept_1,1번 받기,Accept 1
 ui.altar.accept_2,2번 받기,Accept 2
 ui.altar.accept_3,3번 받기,Accept 3
 ui.altar.close,거절 · 닫기,Refuse · Close
+ui.archive.log_rooms,기록실: 다음 층의 특수 방 — {0},Archive: special rooms on the next floor — {0}
+ui.archive.log_enemies,기록실: 다음 층의 적 {0}명,Archive: {0} enemies on the next floor
+ui.archive.log_last,기록실: 이 층이 마지막 층이다,Archive: this is the last floor
 ui.gamble.log_jackpot,도박 상자: 대박! 정밀 파츠가 나왔다 (다른 상자는 닫혔다),Gamble chest: jackpot! A precision part (the other chests sealed)
 ui.gamble.log_small,도박 상자: 구급상자가 나왔다 (다른 상자는 닫혔다),Gamble chest: a medkit (the other chests sealed)
 ui.gamble.log_empty,도박 상자: 비어 있다 (다른 상자는 닫혔다),Gamble chest: empty (the other chests sealed)

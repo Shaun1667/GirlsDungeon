@@ -39,6 +39,7 @@ namespace GirlsDungeon.Game
         private EventPlayer simulation;
         private CombatSettings settings;
         private GameBalance balance;
+        private MapSettings mapSettings;
         private AimMode aim;
         private int shownRound;
         private bool wasPlaying;
@@ -154,6 +155,7 @@ namespace GirlsDungeon.Game
             simulation = newEventPlayer;
             settings = newSettings;
             balance = newBalance;
+            mapSettings = newBalance != null ? newBalance.CreateMapSettings() : null;
             log.Clear();
             logLabel.text = string.Empty;
             killerKind = null;
@@ -497,6 +499,9 @@ namespace GirlsDungeon.Game
                     case AltarTraded traded:
                         AddLog(Text.Get("ui.altar.log_traded", Text.Get(StatNameKey(traded.CostStat)), traded.CostAmount, Text.Get(StatNameKey(traded.BoonStat)), traded.BoonAmount));
                         break;
+                    case ArchiveUsed _:
+                        ShowArchiveForecast();
+                        break;
                     case GambleOpened gamble:
                         AddLog(Text.Get(gamble.Outcome == GambleOutcome.Jackpot ? "ui.gamble.log_jackpot"
                             : gamble.Outcome == GambleOutcome.Small ? "ui.gamble.log_small"
@@ -575,6 +580,22 @@ namespace GirlsDungeon.Game
                 }
             }
             Refresh();
+        }
+
+        /// <summary>기록실 예고 (3-14l): 다음 층의 특수 방 · 적 수 — Archive.Forecast (복제본에서 다음 층을 실제로 만들어 본 값).</summary>
+        private void ShowArchiveForecast()
+        {
+            if (mapSettings == null || settings == null) return;
+            var forecast = Archive.Forecast(simulation.World, mapSettings, settings);
+            if (forecast.LastFloor)
+            {
+                AddLog(Text.Get("ui.archive.log_last"));
+                return;
+            }
+            var names = new List<string>();
+            foreach (var kind in forecast.Rooms) names.Add(Text.Get(RoomLabelsView.NameKey(kind)));
+            AddLog(Text.Get("ui.archive.log_rooms", string.Join(" · ", names)));
+            AddLog(Text.Get("ui.archive.log_enemies", forecast.Enemies));
         }
 
         private void AddLog(string line)

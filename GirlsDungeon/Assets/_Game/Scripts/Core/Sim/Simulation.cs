@@ -149,11 +149,13 @@ namespace GirlsDungeon.Core.Sim
             world.GalleryOffers.Clear();
             world.AltarOffers.Clear();
             world.ArenaEnemies.Clear();
+            world.ArchiveRead = false;
             FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
-            // 보급 상자는 아이템 난수로 따로 — 지형 · 엄폐물 굴림에 영향을 주지 않는다.
-            FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, world.Random.Get(RandomPurpose.Item));
-            // 특수 방(작업방 포함)도 작업 난수로 따로 (3-4c · 3-14).
-            SpecialRoomLayout.Place(world.Map, mapSettings, world.Random.Get(RandomPurpose.Workshop));
+            // 보급 상자 · 특수 방(작업방 포함)은 층 만들기 난수로 (3-14l — 전에는 아이템 · 작업 난수). 층을 진행하는 동안 쓰지 않는 난수라
+            // 기록실 예고가 실제 다음 층과 같다 (Map · Decor · Floor · Spawn · EnemyKind는 층을 만들 때만 쓴다).
+            var floorRandom = world.Random.Get(RandomPurpose.Floor);
+            FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, floorRandom);
+            SpecialRoomLayout.Place(world.Map, mapSettings, floorRandom);
         }
     }
 

@@ -45,6 +45,9 @@ namespace GirlsDungeon.Game
         [Tooltip("Gamble chest, closed and opened / sealed (3-14k).")]
         [SerializeField] private Material gambleMaterial;
         [SerializeField] private Material gambleUsedMaterial;
+        [Tooltip("Archive terminal, ready and used (3-14l).")]
+        [SerializeField] private Material archiveMaterial;
+        [SerializeField] private Material archiveUsedMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -81,6 +84,8 @@ namespace GirlsDungeon.Game
             var altarUsed = new MeshData();
             var gamble = new MeshData();
             var gambleUsed = new MeshData();
+            var archive = new MeshData();
+            var archiveUsed = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -182,6 +187,15 @@ namespace GirlsDungeon.Game
                             // 도박 상자: 작고 높은 상자 (보물 상자와 구별).
                             gamble.AddBox(position, balance.CrateSize * 0.4f, balance.CrateSize * 0.4f, balance.LowCoverHeight * 1.1f);
                             break;
+                        case TileType.ArchiveTerminal:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            // 기록 단말: 얇고 높은 책장 모양.
+                            archive.AddBox(position, 0.45f, 0.2f, balance.LowCoverHeight * 1.5f);
+                            break;
+                        case TileType.ArchiveTerminalUsed:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            archiveUsed.AddBox(position, 0.45f, 0.2f, balance.LowCoverHeight * 1.5f);
+                            break;
                         case TileType.GambleChestOpened:
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             gambleUsed.AddBox(position, balance.CrateSize * 0.4f, balance.CrateSize * 0.4f, balance.LowCoverHeight * 0.6f);
@@ -233,6 +247,8 @@ namespace GirlsDungeon.Game
             AddPart("AltarUsed", altarUsed, altarUsedMaterial != null ? altarUsedMaterial : coverMaterial);
             AddPart("Gamble", gamble, gambleMaterial != null ? gambleMaterial : coverMaterial);
             AddPart("GambleUsed", gambleUsed, gambleUsedMaterial != null ? gambleUsedMaterial : coverMaterial);
+            AddPart("Archive", archive, archiveMaterial != null ? archiveMaterial : coverMaterial);
+            AddPart("ArchiveUsed", archiveUsed, archiveUsedMaterial != null ? archiveUsedMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>

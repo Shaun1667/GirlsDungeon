@@ -190,6 +190,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>제단에서 받은 영구 효과 (대가는 음수, 판이 끝날 때까지, 3-14h). Parts.Sum이 더한다.</summary>
         public List<PartBonus> AltarBonuses { get; } = new List<PartBonus>();
 
+        /// <summary>이 층 기록실에서 다음 층 예고를 읽었는가 (3-14l). 층을 새로 만들 때 false.</summary>
+        public bool ArchiveRead { get; set; }
+
         /// <summary>이 층 결투장 무리의 유닛 ID (Arena.Spawn이 넣고, 모두 쓰러뜨려 보상을 받으면 비운다, 3-14i). 층을 새로 만들 때 비운다.</summary>
         public List<int> ArenaEnemies { get; } = new List<int>();
 

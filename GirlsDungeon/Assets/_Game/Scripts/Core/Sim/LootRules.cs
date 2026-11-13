@@ -65,6 +65,7 @@ namespace GirlsDungeon.Core.Sim
             if (map.InBounds(cell) && map.Get(cell) == TileType.RepairStation) return UseRepairStation(world, settings, cell, events);
             if (map.InBounds(cell) && map.Get(cell) == TileType.ObservatoryConsole) return UseObservatory(world, cell, events);
             if (map.InBounds(cell) && map.Get(cell) == TileType.GambleChest) return Gamble.Open(world, settings, cell, events);
+            if (map.InBounds(cell) && map.Get(cell) == TileType.ArchiveTerminal) return Archive.Use(world, cell, events);
             if (!map.InBounds(cell) || map.Get(cell) != TileType.SupplyCrate) return false;
 
             map.SetTile(cell, TileType.SupplyCrateOpened);

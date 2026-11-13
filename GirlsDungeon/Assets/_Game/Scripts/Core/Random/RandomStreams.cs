@@ -16,6 +16,8 @@ namespace GirlsDungeon.Core.Random
         Workshop = 7,
         /// <summary>잠긴 문 — 힘으로 열기 굴림 · 전투 보상 열쇠 굴림 (3-4d).</summary>
         Door = 8,
+        /// <summary>층 만들기 — 보급 상자 · 특수 방 배치 (3-14l). 층을 진행하는 동안에는 쓰지 않는다 — 기록실 예고(Archive.Forecast)가 실제 다음 층과 같도록.</summary>
+        Floor = 9,
     }
 
     /// <summary>시드 하나에서 용도별 난수를 만든다. 상태는 세계 스냅샷에 저장된다.</summary>

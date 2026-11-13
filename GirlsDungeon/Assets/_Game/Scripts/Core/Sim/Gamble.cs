@@ -22,7 +22,7 @@ namespace GirlsDungeon.Core.Sim
     /// <summary>
     /// 도박실의 한 곳 (3-14k — 열린 특수 방). 방에 도박 상자(TileType.GambleChest) 여러 개, 그중 하나만 열 수 있다.
     /// 여는 법은 보급 상자와 같다 (Loot.OpenCrate → Open). 열면 그 방의 다른 도박 상자는 모두 닫혀 버린다(GambleChestOpened).
-    /// 결과는 열 때 아이템 난수로 굴린다 (대박 · 작은 상 · 빈 상자 · 매복 확률, 나머지가 매복). 매복 적의 종류는 적 종류 난수, 능력치는 층 강화 그대로.
+    /// 결과는 열 때 아이템 난수로 굴린다 (대박 · 작은 상 · 빈 상자 확률, 나머지가 매복). 매복 적의 종류도 아이템 난수 (적 종류 난수는 층을 만들 때만 — 3-14l 기록실 예고), 능력치는 층 강화 그대로.
     /// </summary>
     public static class Gamble
     {
@@ -53,7 +53,7 @@ namespace GirlsDungeon.Core.Sim
                     break;
                 }
                 case GambleOutcome.Ambush:
-                    SpawnAmbush(world, settings, cell);
+                    SpawnAmbush(world, settings, cell, random);
                     break;
             }
             return true;
@@ -89,7 +89,7 @@ namespace GirlsDungeon.Core.Sim
         }
 
         /// <summary>매복 적을 상자에서 가까운 빈 칸(플레이어 바로 옆은 빼고, 칸 순서 고정)에 놓는다.</summary>
-        private static void SpawnAmbush(World world, CombatSettings settings, GridPos chest)
+        private static void SpawnAmbush(World world, CombatSettings settings, GridPos chest, IRandom kindRandom)
         {
             var map = world.Map;
             var player = world.Player;
@@ -113,7 +113,6 @@ namespace GirlsDungeon.Core.Sim
             int floor = world.FloorIndex;
             int assaultPercent = settings.AssaultPercent + floor * settings.AssaultPercentPerFloor;
             int statPercent = 100 + floor * settings.EnemyStatPercentPerFloor;
-            var kindRandom = world.Random.Get(RandomPurpose.EnemyKind);
             for (int n = 0; n < settings.GambleAmbushEnemies && n < cells.Count; n++)
             {
                 var kind = kindRandom.Range(0, 100) < assaultPercent ? UnitKind.Assault : UnitKind.Rifleman;
