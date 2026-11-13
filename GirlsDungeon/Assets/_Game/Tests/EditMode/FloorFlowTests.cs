@@ -110,7 +110,8 @@ namespace GirlsDungeon.Tests
                 for (int i = 0; i < 4; i++) RunFactory.NextFloor(world, TestData.Map(), combat, null);
                 Assert.That(world.FloorIndex, Is.EqualTo(4));
 
-                var enemies = world.Units.Where(u => !u.IsPlayer).ToList();
+                // 결투장 · 함정 방(3-14i · 3-14j)의 적은 따로 놓는다 — 일반 적만 센다.
+                var enemies = world.Units.Where(u => !u.IsPlayer && !GirlsDungeon.Core.Map.FloorDecor.InSpecialRoom(world.Map, u.Position)).ToList();
                 Assert.That(enemies.Count, Is.EqualTo(5 + 4), $"seed {seed}: +1 enemy per floor");
                 foreach (var enemy in enemies)
                 {

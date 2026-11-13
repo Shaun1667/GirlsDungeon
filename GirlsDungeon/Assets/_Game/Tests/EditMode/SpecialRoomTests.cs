@@ -64,6 +64,8 @@ namespace GirlsDungeon.Tests
                     bool locked = FloorDecor.Entrances(map, room).Any(map.IsLockedDoor);
                     if (settings.LockedSpecialRooms.Contains(kind)) { if (!locked) lockedFallbacks++; }
                     else Assert.That(locked, Is.False, $"seed {seed} {kind} is open");
+                    // 결투장 · 함정 방은 자기 적을 따로 놓는다 (ArenaTests · TrapTests).
+                    if (kind == SpecialRoomKind.Arena || kind == SpecialRoomKind.Trap) continue;
                     foreach (var unit in world.Units)
                         if (!unit.IsPlayer) Assert.That(room.Contains(unit.Position), Is.False, $"seed {seed}: enemy in {kind}");
                 }

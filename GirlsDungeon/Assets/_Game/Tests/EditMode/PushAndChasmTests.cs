@@ -54,14 +54,16 @@ namespace GirlsDungeon.Tests
                 var map = TestData.NewRun(seed).Map;
                 int chasmRooms = 0;
                 int inRooms = 0;
-                foreach (var room in map.Rooms)
+                for (int roomIndex = 0; roomIndex < map.Rooms.Count; roomIndex++)
                 {
+                    var room = map.Rooms[roomIndex];
                     int count = 0;
                     for (int y = room.Y; y < room.Y + room.Height; y++)
                         for (int x = room.X; x < room.X + room.Width; x++)
                             if (map.IsChasm(new GridPos(x, y))) count++;
                     inRooms += count;
-                    if (count == 0) continue;
+                    // 함정 방(3-14j)은 낭떠러지를 따로 더한다 — 꾸미기 규칙은 나머지 방으로 본다 (TrapTests).
+                    if (count == 0 || map.RoomKind(roomIndex) == SpecialRoomKind.Trap) continue;
 
                     chasmRooms++;
                     int area = room.Width * room.Height;
@@ -74,7 +76,10 @@ namespace GirlsDungeon.Tests
                     }
                 }
 
-                Assert.That(chasmRooms, Is.EqualTo((map.Rooms.Count * settings.ChasmRoomPercent + 50) / 100), $"seed {seed}: room count");
+                // 꾸미기가 고른 방이 함정 방이 되면 위에서 빠지므로 그만큼 적을 수 있다.
+                int trapRooms = Enumerable.Range(0, map.Rooms.Count).Count(i => map.RoomKind(i) == SpecialRoomKind.Trap);
+                int expected = (map.Rooms.Count * settings.ChasmRoomPercent + 50) / 100;
+                Assert.That(chasmRooms, Is.InRange(expected - trapRooms, expected), $"seed {seed}: room count");
                 Assert.That(map.CountTiles(TileType.Chasm), Is.EqualTo(inRooms), $"seed {seed}: chasm outside rooms");
                 TestData.OpenAllDoors(map);
                 Assert.That(ReachableFromStart(map), Is.EqualTo(map.CountWalkable()), $"seed {seed}: floor split");

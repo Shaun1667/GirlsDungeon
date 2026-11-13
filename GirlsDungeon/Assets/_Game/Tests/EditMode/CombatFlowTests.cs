@@ -23,7 +23,8 @@ namespace GirlsDungeon.Tests
             {
                 var world = RunFactory.NewRun(seed, TestData.Map(), settings);
                 var map = world.Map;
-                var enemies = world.Units.Where(u => !u.IsPlayer).ToList();
+                // 결투장 · 함정 방(3-14i · 3-14j)의 적은 따로 놓는다 — 일반 적만 센다.
+                var enemies = world.Units.Where(u => !u.IsPlayer && !FloorDecor.InSpecialRoom(map, u.Position)).ToList();
                 counts.Add(enemies.Count);
                 Assert.That(enemies.Count, Is.InRange(4, 6), $"seed {seed}");
                 Assert.That(world.Mode, Is.EqualTo(WorldMode.Exploration), $"seed {seed}");

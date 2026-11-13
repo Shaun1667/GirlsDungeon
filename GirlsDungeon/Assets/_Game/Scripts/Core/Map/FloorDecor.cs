@@ -344,7 +344,8 @@ namespace GirlsDungeon.Core.Map
                 for (int x = room.X; x < room.X + room.Width; x++)
                     if (map.Get(new GridPos(x, y)) == TileType.Chasm) existing++;
             int target = room.Width * room.Height * settings.TrapChasmPercent / 100 - existing;
-            if (target > 0) GrowChasm(map, room, target, random, nearKeep);
+            // 낮은 벽에 붙은 칸은 쓰지 않는다 — 낮은 벽은 설 수 있는 두 칸 사이에만 선다.
+            if (target > 0) GrowChasm(map, room, target, random, cell => nearKeep(cell) || TouchesLowWall(map, cell));
 
             var spots = new List<GridPos>();
             for (int y = room.Y + 1; y < room.Y + room.Height - 1; y++)
