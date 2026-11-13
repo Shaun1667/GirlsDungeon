@@ -29,6 +29,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnityEngine.UI.Text weaponPanelLabel;
         [SerializeField] private Button swapButton;
         [SerializeField] private Button keepButton;
+        [Tooltip("Puts the part under the player into spare storage (part offers only).")]
+        [SerializeField] private Button storeButton;
         [Tooltip("Confirms the shot at the selected target.")]
         [SerializeField] private Button attackConfirmButton;
         [SerializeField] private int logLines = 4;
@@ -67,6 +69,9 @@ namespace GirlsDungeon.Game
 
         /// <summary>비교 창의 "바꾸기"를 눌렀다 (발밑 무기 ID). GameRoot가 SwapWeaponCommand를 낸다.</summary>
         public event System.Action<int> SwapPressed;
+
+        /// <summary>파츠 비교 창의 "보관"을 눌렀다 (발밑 파츠 ID). GameRoot가 StorePartCommand를 낸다 (3-4c).</summary>
+        public event System.Action<int> StorePressed;
 
         /// <summary>비교 창이 떠 있으면 그 무기 ID, 아니면 -1.</summary>
         public int OfferedItemId { get; private set; } = -1;
@@ -185,9 +190,15 @@ namespace GirlsDungeon.Game
             OfferedItemId = itemId;
             weaponPanel.SetActive(true);
             if (swapButton != null) swapButton.interactable = fits;
+            // 보관함 (3-4c): 어느 무기용이든 넣을 수 있다 — 차면 누를 수 없다.
+            if (storeButton != null)
+            {
+                storeButton.gameObject.SetActive(true);
+                storeButton.interactable = world.SpareParts.Count < settings.SpareSlots;
+            }
         }
 
-        private string PartSlotName(WeaponKind weapon, int slot)
+        internal string PartSlotName(WeaponKind weapon, int slot)
         {
             string key = balance.PartSlotKey(weapon, slot);
             return key != null ? Text.Get(key) : (slot + 1).ToString();
@@ -202,7 +213,7 @@ namespace GirlsDungeon.Game
         }
 
         /// <summary>세트 이름 (텍스트 표 part.set.{이름}.name).</summary>
-        private static string SetName(PartSet set)
+        internal static string SetName(PartSet set)
         {
             switch (set)
             {
@@ -233,7 +244,7 @@ namespace GirlsDungeon.Game
             }
         }
 
-        private static string GradeName(PartGrade grade)
+        internal static string GradeName(PartGrade grade)
         {
             switch (grade)
             {
@@ -251,7 +262,24 @@ namespace GirlsDungeon.Game
             return string.Join(" · ", lines);
         }
 
-        private static string StatKey(PartStat stat)
+        /// <summary>능력치 이름만 (값 없이, 작업 화면의 "원하는 능력치").</summary>
+        internal static string StatNameKey(PartStat stat)
+        {
+            switch (stat)
+            {
+                case PartStat.Attack: return "part.stat_name.attack";
+                case PartStat.AttackRange: return "part.stat_name.range";
+                case PartStat.CritPercent: return "part.stat_name.crit";
+                case PartStat.CritMultiplier: return "part.stat_name.crit_multiplier";
+                case PartStat.StabilityDamage: return "part.stat_name.stability_damage";
+                case PartStat.MaxHp: return "part.stat_name.hp";
+                case PartStat.Defense: return "part.stat_name.defense";
+                case PartStat.MoveRange: return "part.stat_name.move";
+                default: return "part.stat_name.stability";
+            }
+        }
+
+        internal static string StatKey(PartStat stat)
         {
             switch (stat)
             {
@@ -274,6 +302,16 @@ namespace GirlsDungeon.Game
             int id = OfferedItemId;
             CloseWeaponOffer();
             SwapPressed?.Invoke(id);
+            return true;
+        }
+
+        /// <summary>파츠 비교 창의 "보관"과 같다. 창이 없으면 false.</summary>
+        public bool PressStore()
+        {
+            if (!IsWeaponOfferOpen) return false;
+            int id = OfferedItemId;
+            CloseWeaponOffer();
+            StorePressed?.Invoke(id);
             return true;
         }
 
@@ -301,6 +339,7 @@ namespace GirlsDungeon.Game
             OfferedItemId = itemId;
             weaponPanel.SetActive(true);
             if (swapButton != null) swapButton.interactable = true;
+            if (storeButton != null) storeButton.gameObject.SetActive(false);
         }
 
         /// <summary>전투 중 보급 상자에 마우스를 올렸을 때.</summary>
@@ -384,6 +423,7 @@ namespace GirlsDungeon.Game
             if (newRunButton != null) newRunButton.onClick.AddListener(() => NewRunPressed?.Invoke());
             if (swapButton != null) swapButton.onClick.AddListener(() => PressSwap());
             if (keepButton != null) keepButton.onClick.AddListener(CloseWeaponOffer);
+            if (storeButton != null) storeButton.onClick.AddListener(() => PressStore());
             if (attackConfirmButton != null) attackConfirmButton.onClick.AddListener(() => AttackConfirmPressed?.Invoke());
         }
 
@@ -468,6 +508,15 @@ namespace GirlsDungeon.Game
                     case PartEquipped equipped:
                         AddLog(Text.Get("ui.loot.log_part_equipped", PartSlotName(equipped.Weapon, equipped.Slot), GradeName(equipped.Grade)));
                         break;
+                    case PartStored stored:
+                        AddLog(Text.Get("ui.loot.log_part_stored", WeaponName(stored.Weapon), stored.SpareCount, settings.SpareSlots));
+                        break;
+                    case PartDisassembled disassembled:
+                        AddLog(Text.Get("ui.workshop.log_disassembled", PartSlotName(disassembled.Weapon, disassembled.Slot), disassembled.Gained));
+                        break;
+                    case PartReworked reworked:
+                        AddLog(Text.Get(reworked.Success ? "ui.workshop.log_success" : "ui.workshop.log_fail"));
+                        break;
                     case MedkitUsed medkit:
                         AddLog(Text.Get("ui.loot.log_medkit_used", medkit.Healed));
                         break;
@@ -500,7 +549,7 @@ namespace GirlsDungeon.Game
             return key != null ? Text.Get(key) : kind.ToString();
         }
 
-        private string WeaponName(WeaponKind kind)
+        internal string WeaponName(WeaponKind kind)
         {
             string key = balance.WeaponNameKey(kind);
             return key != null ? Text.Get(key) : kind.ToString();
@@ -534,6 +583,9 @@ namespace GirlsDungeon.Game
                 stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
                 // 표시 값 = 실제 값: 무기 표가 아니라 유닛에 적용된 값(Loadout.Apply 결과)을 읽는다.
                 weaponLabel.text = Text.Get("ui.hud.weapon", WeaponName(world.PlayerWeapon), player.Attack, player.AttackRange);
+                // 재료 · 보관함 (3-4c): 하나라도 있을 때만.
+                if (world.PartMaterials > 0 || world.SpareParts.Count > 0)
+                    weaponLabel.text += "\n" + Text.Get("ui.hud.materials", world.PartMaterials, world.SpareParts.Count, settings.SpareSlots);
                 // 켜진 세트 (3-4b): 이름 · 연쇄 가속 중첩 · 방호 태세 남은 차례.
                 var activeSet = SetEffects.Active(world, settings);
                 if (activeSet == PartSet.Chain) weaponLabel.text += "\n" + Text.Get("ui.hud.set_chain", SetName(activeSet), world.SetChainStacks, settings.SetChainMaxStacks);

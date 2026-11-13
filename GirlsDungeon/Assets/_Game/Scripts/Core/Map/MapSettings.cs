@@ -39,6 +39,10 @@ namespace GirlsDungeon.Core.Map
         public int MinSupplyCrates;
         public int MaxSupplyCrates;
 
+        // 파츠 작업방 (BALANCE 1-19, 3-4c)
+        /// <summary>층마다 작업방 수 (작업대 하나씩, 시작 · 계단 방 제외, 적이 나오지 않는다). 0이면 없음.</summary>
+        public int WorkshopsPerFloor;
+
         public void Validate()
         {
             if (Width < MaxRoomSize + 2 || Height < MaxRoomSize + 2)
@@ -58,6 +62,8 @@ namespace GirlsDungeon.Core.Map
                 throw new ArgumentException("Chasm settings are invalid.");
             if (MinSupplyCrates < 0 || MaxSupplyCrates < MinSupplyCrates)
                 throw new ArgumentException("Supply crate settings are invalid.");
+            if (WorkshopsPerFloor < 0)
+                throw new ArgumentException("Workshop settings are invalid.");
         }
     }
 }

@@ -63,6 +63,10 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>스킬 바 2 · 3 · 4번 칸 (순서대로, None = 빈 칸). BALANCE 13번.</summary>
         public List<SkillKind> Skills = new List<SkillKind>();
+
+        /// <summary>파츠 작업방 옵션 · 세트 바꾸기 성공 확률 (%, BALANCE 19번, 3-4c).</summary>
+        public int WorkshopOptionPercent;
+        public int WorkshopSetPercent;
     }
 
     /// <summary>전투 수치 (BALANCE 4번 · 5번).</summary>
@@ -182,6 +186,18 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>백병 강습: 근접 무기(도검) 공격이면 SetAssaultPercent 위에 더하는 값.</summary>
         public int SetAssaultMeleePercent;
 
+        // 파츠 작업방 (BALANCE 19번, 3-4c — Workshop)
+        /// <summary>캐릭터를 고르지 않은 판의 옵션 · 세트 바꾸기 성공 확률 (%).</summary>
+        public int WorkshopOptionPercent;
+        public int WorkshopSetPercent;
+        /// <summary>옵션 · 세트 바꾸기에 드는 재료 (성공 · 실패 모두).</summary>
+        public int WorkshopOptionCost;
+        public int WorkshopSetCost;
+        /// <summary>분해로 얻는 재료, PartGrade 순서 (공업 · 군용 · 정밀).</summary>
+        public int[] DisassembleMaterials = new int[3];
+        /// <summary>예비 파츠 보관함 칸 수.</summary>
+        public int SpareSlots;
+
         public PartStatRange PartRange(PartStat stat)
         {
             foreach (var range in PartStatRanges) if (range.Stat == stat) return range;
@@ -294,6 +310,12 @@ namespace GirlsDungeon.Core.Sim
             if (PartGradePercents.Length != 3 || PartPrimaryStatCounts.Length != 3 || PartSecondaryStatCounts.Length != 3
                 || PartGradePercents[0] + PartGradePercents[1] + PartGradePercents[2] != 100)
                 throw new ArgumentException("Part grade settings are invalid.");
+            if (WorkshopOptionPercent < 0 || WorkshopOptionPercent > 100 || WorkshopSetPercent < 0 || WorkshopSetPercent > 100
+                || WorkshopOptionCost < 0 || WorkshopSetCost < 0 || DisassembleMaterials.Length != 3 || SpareSlots < 0)
+                throw new ArgumentException("Workshop settings are invalid.");
+            foreach (var character in Characters)
+                if (character.WorkshopOptionPercent < 0 || character.WorkshopOptionPercent > 100 || character.WorkshopSetPercent < 0 || character.WorkshopSetPercent > 100)
+                    throw new ArgumentException($"Workshop chances for {character.Kind} are invalid.");
             if (SetPiecesRequired < 1 || SetPiecesRequired > WeaponPart.SlotCount - SetEffects.FirstSetSlot
                 || SetChainPercentPerStack < 0 || SetChainMaxStacks < 0 || SetTwoSidedPercent < 0 || SetFracturePercent < 0
                 || SetEmergencyStability < 0 || SetBulwarkPercent < 0 || SetBulwarkPercent > 100 || SetBulwarkTurns < 0

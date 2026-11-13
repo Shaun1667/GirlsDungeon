@@ -37,6 +37,7 @@ MonoBehaviour:
   maxChasmPercent: 50
   minSupplyCrates: 2
   maxSupplyCrates: 3
+  workshopsPerFloor: 1
   units:
   - kind: 0
     nameKey: unit.player.name
@@ -91,6 +92,8 @@ MonoBehaviour:
     moveRange: 8
     startWeapon: 2
     skills: 020301
+    workshopOptionPercent: 55
+    workshopSetPercent: 35
   - kind: 2
     nameKey: character.hero_b.name
     visualId: hero_b
@@ -101,6 +104,8 @@ MonoBehaviour:
     moveRange: 6
     startWeapon: 4
     skills: 010200
+    workshopOptionPercent: 70
+    workshopSetPercent: 50
   - kind: 3
     nameKey: character.hero_c.name
     visualId: hero_c
@@ -111,6 +116,8 @@ MonoBehaviour:
     moveRange: 6
     startWeapon: 0
     skills: 010200
+    workshopOptionPercent: 70
+    workshopSetPercent: 50
   minEnemiesPerFloor: 4
   maxEnemiesPerFloor: 6
   enemyMinDistanceFromStart: 8
@@ -343,6 +350,12 @@ MonoBehaviour:
   setAmbushPercent: 25
   setAssaultPercent: 12
   setAssaultMeleePercent: 24
+  workshopOptionPercent: 70
+  workshopSetPercent: 50
+  workshopOptionCost: 2
+  workshopSetCost: 3
+  disassembleMaterials: 010000000200000003000000
+  spareSlots: 4
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

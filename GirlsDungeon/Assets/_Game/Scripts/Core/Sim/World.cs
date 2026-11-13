@@ -170,6 +170,12 @@ namespace GirlsDungeon.Core.Sim
         public int PartAppliedDefense { get; set; }
         public int PartAppliedMaxStability { get; set; }
 
+        /// <summary>예비 파츠 보관함 (어느 무기용이든, 최대 CombatSettings.SpareSlots, 3-4c). 작업대에서 분해 · 작업 · 끼우기.</summary>
+        public List<WeaponPart> SpareParts { get; } = new List<WeaponPart>();
+
+        /// <summary>파츠를 분해해 모은 재료 (판 안에서만, 3-4c).</summary>
+        public int PartMaterials { get; set; }
+
         /// <summary>연쇄 가속 세트의 중첩 (스킬을 쓸 때마다 +1, 최대 CombatSettings.SetChainMaxStacks, 3-4b). 전투가 끝나면 0.</summary>
         public int SetChainStacks { get; set; }
 

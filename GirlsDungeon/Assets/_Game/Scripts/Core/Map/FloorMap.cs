@@ -20,6 +20,8 @@ namespace GirlsDungeon.Core.Map
         SupplyCrate = 6,
         /// <summary>연 보급 상자. 닫힌 상자와 같지만 다시 열리지 않는다.</summary>
         SupplyCrateOpened = 7,
+        /// <summary>파츠 작업대 (3-4c). 칸을 막고, 옆 칸에 반엄폐를 주며, 시야는 막지 않는다. 바로 옆에서 작업 화면을 연다. 부서지지 않는다.</summary>
+        Workbench = 8,
     }
 
     /// <summary>방 하나의 사각형.</summary>

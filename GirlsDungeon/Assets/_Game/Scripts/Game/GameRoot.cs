@@ -27,6 +27,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private UnitVisualCatalog visuals;
         [Tooltip("Start screen: pick a character before each run.")]
         [SerializeField] private CharacterSelectView characterSelect;
+        [Tooltip("Part workshop screen shown next to a workbench (3-4c).")]
+        [SerializeField] private WorkshopView workshopView;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -99,6 +101,11 @@ namespace GirlsDungeon.Game
             hudView.AttackConfirmPressed += OnAttackConfirmPressed;
             hudView.SwapPressed -= OnSwapPressed;
             hudView.SwapPressed += OnSwapPressed;
+            hudView.StorePressed -= OnStorePressed;
+            hudView.StorePressed += OnStorePressed;
+            if (workshopView != null) workshopView.Bind(simulation, combatSettings, hudView);
+            moveController.WorkbenchReached -= OnWorkbenchReached;
+            moveController.WorkbenchReached += OnWorkbenchReached;
             threatView.Bind(simulation, combatSettings);
             cameraRig.Bind(balance, playerView.transform);
 
@@ -267,6 +274,71 @@ namespace GirlsDungeon.Game
             if (item != null && item.Kind == ItemKind.Part) simulation.Execute(new EquipPartCommand(itemId, combatSettings));
             else simulation.Execute(new SwapWeaponCommand(itemId, combatSettings));
         }
+
+        /// <summary>파츠 비교 창의 "보관": 발밑 파츠를 예비 보관함에 넣는다 (3-4c).</summary>
+        private void OnStorePressed(int itemId)
+        {
+            simulation.Execute(new StorePartCommand(itemId, combatSettings));
+        }
+
+        /// <summary>작업대 옆에 섰다: 작업 화면을 연다 (3-4c).</summary>
+        private void OnWorkbenchReached()
+        {
+            if (workshopView != null) workshopView.Open();
+        }
+
+        private void Update()
+        {
+            // 작업 화면이 떠 있는 동안 지도 클릭을 받지 않는다.
+            if (moveController != null) moveController.Blocked = workshopView != null && workshopView.IsOpen;
+        }
+
+        /// <summary>[상태 변경] 작업대 옆 칸으로 순간 이동하고 작업 화면을 연다 (작업방 시험용). 작업대가 없으면 false.</summary>
+        public bool DebugGoToWorkbench()
+        {
+            var world = World;
+            if (world == null || world.Mode != WorldMode.Exploration) return false;
+            var map = world.Map;
+            for (int y = 0; y < map.Height; y++)
+                for (int x = 0; x < map.Width; x++)
+                {
+                    var bench = new GridPos(x, y);
+                    if (map.Get(bench) != TileType.Workbench) continue;
+                    for (int dy = -1; dy <= 1; dy++)
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            var side = new GridPos(x + dx, y + dy);
+                            if ((dx == 0 && dy == 0) || !map.IsWalkable(side) || world.IsOccupied(side)) continue;
+                            DebugUsed = true;
+                            if (!simulation.Execute(new DebugTeleportCommand(world.PlayerId, side))) return false;
+                            OnWorkbenchReached();
+                            return true;
+                        }
+                }
+            return false;
+        }
+
+        /// <summary>[상태 변경] 재료를 더한다 (작업방 시험용).</summary>
+        public void DebugAddMaterials(int amount)
+        {
+            if (World == null) return;
+            DebugUsed = true;
+            simulation.Execute(new DebugAddMaterialsCommand(amount));
+        }
+
+        /// <summary>작업방 · 재료 · 보관함 (디버그).</summary>
+        public string DebugWorkshopSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var spares = new System.Collections.Generic.List<string>();
+            foreach (var part in world.SpareParts) spares.Add($"{part.Weapon}/{part.Slot + 1}/{part.Grade}/{part.Set}");
+            return $"Benches={world.Map.CountTiles(TileType.Workbench)} AtBench={Workshop.AtBench(world)} Materials={world.PartMaterials} "
+                + $"Spare=[{string.Join(" ", spares)}] Chances option {Workshop.OptionPercent(world, combatSettings)}% set {Workshop.SetPercent(world, combatSettings)}% "
+                + $"Open={(workshopView != null && workshopView.IsOpen)}";
+        }
+
+        public WorkshopView DebugWorkshopView => workshopView;
 
         /// <summary>[상태 변경] 플레이어 옆 빈 칸에 지금 든 무기용 새 파츠를 놓는다 (파츠 시험용). 놓은 칸, 못 놓으면 null.</summary>
         public GridPos? DebugDropPart()

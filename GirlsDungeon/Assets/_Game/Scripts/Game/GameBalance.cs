@@ -45,6 +45,9 @@ namespace GirlsDungeon.Game
         public WeaponKind startWeapon;
         [Tooltip("Skill bar slots 2, 3 and 4 in order (None = empty). Shoot (1) and overwatch (5) are shared.")]
         public SkillKind[] skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None };
+        [Tooltip("Part workshop success chance (%): change option, change set.")]
+        public int workshopOptionPercent = 70;
+        public int workshopSetPercent = 50;
     }
 
     /// <summary>파츠 능력치 하나의 값 범위 (표 한 줄, BALANCE 17번).</summary>
@@ -133,6 +136,10 @@ namespace GirlsDungeon.Game
         [SerializeField] private int minSupplyCrates = 2;
         [SerializeField] private int maxSupplyCrates = 3;
 
+        [Header("Part workshop room (BALANCE 1-19)")]
+        [Tooltip("Workshop rooms per floor (one workbench each, no enemies).")]
+        [SerializeField] private int workshopsPerFloor = 1;
+
         [Header("Units (BALANCE 4)")]
         [SerializeField] private UnitStatsEntry[] units =
         {
@@ -163,6 +170,7 @@ namespace GirlsDungeon.Game
                 kind = CharacterKind.HeroA, nameKey = "character.hero_a.name", visualId = "hero_a",
                 maxHp = 110, maxStability = 7, visionRange = 8, defense = 5, moveRange = 8, startWeapon = WeaponKind.Shotgun,
                 skills = new[] { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
+                workshopOptionPercent = 55, workshopSetPercent = 35,
             },
             new CharacterEntry
             {
@@ -346,6 +354,18 @@ namespace GirlsDungeon.Game
         [SerializeField] private int setAssaultPercent = 12;
         [SerializeField] private int setAssaultMeleePercent = 24;
 
+        [Header("Part workshop (BALANCE 19)")]
+        [Tooltip("Success chance (%) when no character is picked: change option, change set. Characters have their own.")]
+        [SerializeField] private int workshopOptionPercent = 70;
+        [SerializeField] private int workshopSetPercent = 50;
+        [Tooltip("Materials spent per try (success or fail): change option, change set.")]
+        [SerializeField] private int workshopOptionCost = 2;
+        [SerializeField] private int workshopSetCost = 3;
+        [Tooltip("Materials from disassembling a part by grade: industrial, military, precision.")]
+        [SerializeField] private int[] disassembleMaterials = { 1, 2, 3 };
+        [Tooltip("Spare part storage slots.")]
+        [SerializeField] private int spareSlots = 4;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
@@ -482,6 +502,12 @@ namespace GirlsDungeon.Game
                 SetAmbushPercent = setAmbushPercent,
                 SetAssaultPercent = setAssaultPercent,
                 SetAssaultMeleePercent = setAssaultMeleePercent,
+                WorkshopOptionPercent = workshopOptionPercent,
+                WorkshopSetPercent = workshopSetPercent,
+                WorkshopOptionCost = workshopOptionCost,
+                WorkshopSetCost = workshopSetCost,
+                DisassembleMaterials = (int[])disassembleMaterials.Clone(),
+                SpareSlots = spareSlots,
             };
             foreach (var entry in weapons)
             {
@@ -533,6 +559,8 @@ namespace GirlsDungeon.Game
                     MoveRange = entry.moveRange,
                     StartWeapon = entry.startWeapon,
                     Skills = new System.Collections.Generic.List<SkillKind>(entry.skills ?? System.Array.Empty<SkillKind>()),
+                    WorkshopOptionPercent = entry.workshopOptionPercent,
+                    WorkshopSetPercent = entry.workshopSetPercent,
                 });
             }
             foreach (var entry in partStats) settings.PartStatRanges.Add(new PartStatRange { Stat = entry.stat, Min = entry.min, Max = entry.max });
@@ -659,6 +687,7 @@ namespace GirlsDungeon.Game
                 MaxChasmPercent = maxChasmPercent,
                 MinSupplyCrates = minSupplyCrates,
                 MaxSupplyCrates = maxSupplyCrates,
+                WorkshopsPerFloor = workshopsPerFloor,
             };
         }
     }

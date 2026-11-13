@@ -18,6 +18,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material supplyMaterial;
         [Tooltip("Opened supply crates (drawn lower and darker so they do not look like breakable crates).")]
         [SerializeField] private Material supplyOpenedMaterial;
+        [Tooltip("Part workbench (3-4c).")]
+        [SerializeField] private Material workbenchMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -37,6 +39,7 @@ namespace GirlsDungeon.Game
             var chasm = new MeshData();
             var supply = new MeshData();
             var supplyOpened = new MeshData();
+            var workbench = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -72,6 +75,11 @@ namespace GirlsDungeon.Game
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             supplyOpened.AddBox(position, balance.CrateSize * 0.5f, balance.CrateSize * 0.35f, balance.LowCoverHeight * 0.6f);
                             break;
+                        case TileType.Workbench:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            // 작업대: 칸을 거의 채우는 낮고 넓은 판 (상자와 구별되게).
+                            workbench.AddBox(position, 0.46f, 0.46f, balance.LowCoverHeight * 0.85f);
+                            break;
                         default:
                             if (!TouchesOpenCell(map, cell)) break;
                             AddWall(walls, map, cell, balance.WallHeight);
@@ -90,6 +98,7 @@ namespace GirlsDungeon.Game
             AddPart("Chasm", chasm, chasmMaterial != null ? chasmMaterial : wallMaterial);
             AddPart("Supply", supply, supplyMaterial != null ? supplyMaterial : coverMaterial);
             AddPart("SupplyOpened", supplyOpened, supplyOpenedMaterial != null ? supplyOpenedMaterial : coverMaterial);
+            AddPart("Workbench", workbench, workbenchMaterial != null ? workbenchMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>

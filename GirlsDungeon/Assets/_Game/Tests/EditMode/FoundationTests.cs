@@ -280,6 +280,7 @@ namespace GirlsDungeon.Tests
                 MaxChasmPercent = 50,
                 MinSupplyCrates = 2,
                 MaxSupplyCrates = 3,
+                WorkshopsPerFloor = 1,
             };
         }
 
@@ -343,6 +344,13 @@ namespace GirlsDungeon.Tests
                 SetAmbushPercent = 25,
                 SetAssaultPercent = 12,
                 SetAssaultMeleePercent = 24,
+                // BALANCE 19번 작업방.
+                WorkshopOptionPercent = 70,
+                WorkshopSetPercent = 50,
+                WorkshopOptionCost = 2,
+                WorkshopSetCost = 3,
+                DisassembleMaterials = new[] { 1, 2, 3 },
+                SpareSlots = 4,
             };
             // BALANCE 12번 무기 표.
             settings.Weapons.Add(new WeaponStats
@@ -400,16 +408,19 @@ namespace GirlsDungeon.Tests
             {
                 Kind = CharacterKind.HeroA, MaxHp = 110, MaxStability = 7, VisionRange = 8, Defense = 5, MoveRange = 8, StartWeapon = WeaponKind.Shotgun,
                 Skills = { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
+                WorkshopOptionPercent = 55, WorkshopSetPercent = 35,
             });
             settings.Characters.Add(new CharacterStats
             {
                 Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 5, VisionRange = 10, Defense = 3, MoveRange = 6, StartWeapon = WeaponKind.Smg,
                 Skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None },
+                WorkshopOptionPercent = 70, WorkshopSetPercent = 50,
             });
             settings.Characters.Add(new CharacterStats
             {
                 Kind = CharacterKind.HeroC, MaxHp = 100, MaxStability = 6, VisionRange = 9, Defense = 4, MoveRange = 6, StartWeapon = WeaponKind.AssaultRifle,
                 Skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None },
+                WorkshopOptionPercent = 70, WorkshopSetPercent = 50,
             });
             // BALANCE 17번 파츠 표 (3-4).
             settings.PartStatRanges.AddRange(new[]
@@ -436,7 +447,7 @@ namespace GirlsDungeon.Tests
         /// <summary>BALANCE 값으로 새 판을 만든다. 맵 · 이동 테스트는 적 없는 판을 쓴다.</summary>
         public static World NewRun(int seed, int enemies = 0) => RunFactory.NewRun(seed, Map(), Combat(enemies));
 
-        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥, X 낭떠러지, S 보급 상자. 첫 줄이 y = 0.</summary>
+        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥, X 낭떠러지, S 보급 상자, W 작업대. 첫 줄이 y = 0.</summary>
         public static FloorMap Parse(params string[] rows) => ParseWithRooms(new RoomRect[0], rows);
 
         /// <summary>Parse와 같고, 방 목록을 함께 넣는다 (방 시야 테스트용).</summary>
@@ -455,6 +466,7 @@ namespace GirlsDungeon.Tests
                         : ch == 'P' ? TileType.Pillar
                         : ch == 'X' ? TileType.Chasm
                         : ch == 'S' ? TileType.SupplyCrate
+                        : ch == 'W' ? TileType.Workbench
                         : TileType.Floor;
                 }
             }

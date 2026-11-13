@@ -233,6 +233,50 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void Workshop_MatchesBalanceTable19()
+        {
+            var balance = Load();
+            var combat = balance.CreateCombatSettings();
+            Assert.That(balance.CreateMapSettings().WorkshopsPerFloor, Is.EqualTo(1), "1-19");
+            Assert.That(combat.WorkshopOptionPercent, Is.EqualTo(70));
+            Assert.That(combat.WorkshopSetPercent, Is.EqualTo(50));
+            Assert.That(combat.WorkshopOptionCost, Is.EqualTo(2));
+            Assert.That(combat.WorkshopSetCost, Is.EqualTo(3));
+            Assert.That(combat.DisassembleMaterials, Is.EqualTo(new[] { 1, 2, 3 }));
+            Assert.That(combat.SpareSlots, Is.EqualTo(4));
+            var heroA = combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroA);
+            Assert.That(new[] { heroA.WorkshopOptionPercent, heroA.WorkshopSetPercent }, Is.EqualTo(new[] { 55, 35 }));
+            foreach (var kind in new[] { GirlsDungeon.Core.Sim.CharacterKind.HeroB, GirlsDungeon.Core.Sim.CharacterKind.HeroC })
+            {
+                var character = combat.TryCharacter(kind);
+                Assert.That(new[] { character.WorkshopOptionPercent, character.WorkshopSetPercent }, Is.EqualTo(new[] { 70, 50 }), kind.ToString());
+                // 사용자 결정: A는 성공 확률이 낮다.
+                Assert.That(heroA.WorkshopOptionPercent, Is.LessThan(character.WorkshopOptionPercent));
+                Assert.That(heroA.WorkshopSetPercent, Is.LessThan(character.WorkshopSetPercent));
+            }
+            // 검산: 정밀 파츠 하나 분해(3)로 세트 바꾸기 1번(3) 또는 옵션 바꾸기 1번(2).
+            Assert.That(combat.DisassembleMaterials[2], Is.EqualTo(combat.WorkshopSetCost));
+        }
+
+        [Test]
+        public void WorkshopTextKeys_ExistInTheTextTable()
+        {
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in new[]
+            {
+                "ui.part.store", "ui.loot.log_part_stored", "ui.hud.materials", "ui.workshop.header", "ui.workshop.no_parts",
+                "ui.workshop.part_equipped", "ui.workshop.part_spare", "ui.workshop.line", "ui.workshop.line_selected", "ui.workshop.set_line",
+                "ui.workshop.no_set", "ui.workshop.disassemble_hint", "ui.workshop.mode_option", "ui.workshop.mode_set", "ui.workshop.mode_set_none",
+                "ui.workshop.result_option_success", "ui.workshop.result_option_fail", "ui.workshop.result_set_success", "ui.workshop.result_set_fail",
+                "ui.workshop.result_disassembled", "ui.workshop.result_equipped", "ui.workshop.result_not_enough", "ui.workshop.result_not_fit",
+                "ui.workshop.log_disassembled", "ui.workshop.log_success", "ui.workshop.log_fail",
+            })
+                Assert.That(table.Contains(key), Is.True, key);
+            foreach (var name in new[] { "attack", "range", "crit", "crit_multiplier", "stability_damage", "hp", "defense", "move", "stability" })
+                Assert.That(table.Contains("part.stat_name." + name), Is.True, name);
+        }
+
+        [Test]
         public void PartSetTextKeys_ExistInTheTextTable()
         {
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));

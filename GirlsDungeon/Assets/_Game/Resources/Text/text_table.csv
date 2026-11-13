@@ -1,6 +1,6 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 상자 클릭: 열기 · 1~5 스킬 · Space 턴 종료 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click green crate: Open · 1-5 Skills · Space End turn · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
+ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 상자 클릭: 열기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click green crate: Open · 1-5 Skills · Space End turn · Click purple workbench: Part work · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
@@ -204,3 +204,50 @@ part.set.ambush.name,매복 사수,Ambush Marksman
 part.set.ambush.rule,감시 사격 피해 +{0}%,+{0}% overwatch shot damage
 part.set.assault.name,백병 강습,Close Assault
 part.set.assault.rule,주는 피해 +{0}% · 근접 무기 공격이면 +{1}% 더,+{0}% damage dealt · +{1}% more with melee weapon attacks
+part.stat_name.attack,공격,Attack
+part.stat_name.range,사거리,Range
+part.stat_name.crit,치명,Crit
+part.stat_name.crit_multiplier,치명 피해,Crit damage
+part.stat_name.stability_damage,안정 피해,Stability damage
+part.stat_name.hp,체력,HP
+part.stat_name.defense,방어,Defense
+part.stat_name.move,이동,Move
+part.stat_name.stability,안정지수,Stability
+ui.part.store,보관,Store
+ui.loot.log_part_stored,{0} 파츠를 보관함에 넣었다 ({1}/{2}),Stored a {0} part ({1}/{2})
+ui.hud.materials,재료 {0} · 보관함 {1}/{2},Materials {0} · Spare {1}/{2}
+ui.workshop.header,파츠 작업대 · 재료 {0} · 보관함 {1}/{2},Part workbench · Materials {0} · Spare {1}/{2}
+ui.workshop.no_parts,다룰 파츠가 없음 — 끼운 파츠와 보관함 파츠가 여기에 나온다,No parts to work on — equipped and stored parts appear here
+ui.workshop.part_equipped,[{0}/{1}] 끼운 파츠 · {2} {3} ({4}),[{0}/{1}] Equipped · {2} {3} ({4})
+ui.workshop.part_spare,[{0}/{1}] 보관함 · {2} {3} ({4}),[{0}/{1}] Spare · {2} {3} ({4})
+ui.workshop.line,   {0}. {1},   {0}. {1}
+ui.workshop.line_selected,▶ {0}. {1},▶ {0}. {1}
+ui.workshop.set_line,   세트: {0},   Set: {0}
+ui.workshop.no_set,   세트 없음 (군용 · 정밀의 2 · 3 · 4번 칸만),   No set (military and precision parts in slots 2-4 only)
+ui.workshop.disassemble_hint,분해하면 재료 +{0},Disassemble for {0} materials
+ui.workshop.mode_option,옵션 바꾸기: {0}번 줄 → {1} · 성공 {2}% (실패하면 무작위) · 재료 {3},Change option: line {0} → {1} · {2}% success (random on failure) · {3} materials
+ui.workshop.mode_set,세트 바꾸기: → {0} · 성공 {1}% (실패하면 무작위) · 재료 {2},Change set: → {0} · {1}% success (random on failure) · {2} materials
+ui.workshop.mode_set_none,이 파츠에는 세트가 없어 세트를 바꿀 수 없음,This part has no set to change
+ui.workshop.result_option_success,성공 — 원하던 옵션이 붙었다,Success — the option you chose
+ui.workshop.result_option_fail,실패 — 옵션이 무작위로 바뀌었다,Failed — the option changed at random
+ui.workshop.result_set_success,성공 — 원하던 세트가 붙었다,Success — the set you chose
+ui.workshop.result_set_fail,실패 — 세트가 무작위로 바뀌었다,Failed — the set changed at random
+ui.workshop.result_disassembled,분해 — 재료 +{0},Disassembled — {0} materials
+ui.workshop.result_equipped,보관함 파츠를 끼웠다,Equipped the stored part
+ui.workshop.result_not_enough,재료가 모자람 ({0} 필요),Not enough materials ({0} needed)
+ui.workshop.result_not_fit,지금 든 무기용 파츠가 아니라 끼울 수 없음,This part does not fit the weapon you hold
+ui.workshop.log_disassembled,{0} 파츠 분해 — 재료 +{1},Disassembled a {0} part — {1} materials
+ui.workshop.log_success,파츠 작업 성공,Part work succeeded
+ui.workshop.log_fail,파츠 작업 실패 — 무작위로 바뀜,Part work failed — changed at random
+ui.workshop.prev_part,◀ 파츠,◀ Part
+ui.workshop.next_part,파츠 ▶,Part ▶
+ui.workshop.mode_option_button,옵션 바꾸기,Change option
+ui.workshop.mode_set_button,세트 바꾸기,Change set
+ui.workshop.prev_line,◀ 줄,◀ Line
+ui.workshop.next_line,줄 ▶,Line ▶
+ui.workshop.prev_target,◀ 원하는 것,◀ Wanted
+ui.workshop.next_target,원하는 것 ▶,Wanted ▶
+ui.workshop.run,바꾸기 시도,Try change
+ui.workshop.disassemble,분해,Disassemble
+ui.workshop.equip,끼우기,Equip
+ui.workshop.close,닫기,Close

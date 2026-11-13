@@ -42,6 +42,8 @@ namespace GirlsDungeon.EditorTools
             var pushMaterial = LoadOrCreateMaterial("GreyboxPush", new Color(0.7f, 0.35f, 0.95f));
             var supplyMaterial = LoadOrCreateMaterial("GreyboxSupply", new Color(0.25f, 0.65f, 0.35f));
             var supplyOpenedMaterial = LoadOrCreateMaterial("GreyboxSupplyOpened", new Color(0.12f, 0.3f, 0.17f));
+            // 파츠 작업대 (3-4c): 보라 — 보급 상자(초록) · 엄폐 상자와 구별.
+            var workbenchMaterial = LoadOrCreateMaterial("GreyboxWorkbench", new Color(0.55f, 0.35f, 0.75f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
             var partItemMaterial = LoadOrCreateMaterial("GreyboxPartItem", new Color(0.95f, 0.55f, 0.1f));
@@ -160,10 +162,42 @@ namespace GirlsDungeon.EditorTools
                 new Vector2(0.5f, 1f), new Vector2(0f, -24f), TextAnchor.UpperCenter);
             weaponPanelLabel.rectTransform.sizeDelta = new Vector2(1040f, 180f);
             var swapButton = CreateButton(weaponPanel.transform, "SwapButton", font, "ui.weapon.swap",
-                new Vector2(0.5f, 0f), new Vector2(-150f, 24f));
+                new Vector2(0.5f, 0f), new Vector2(-300f, 24f));
+            // 보관 (3-4c): 파츠 비교 창에서만 보인다 (HudView).
+            var storeButton = CreateButton(weaponPanel.transform, "StoreButton", font, "ui.part.store",
+                new Vector2(0.5f, 0f), new Vector2(0f, 24f));
             var keepButton = CreateButton(weaponPanel.transform, "KeepButton", font, "ui.weapon.keep",
-                new Vector2(0.5f, 0f), new Vector2(150f, 24f));
+                new Vector2(0.5f, 0f), new Vector2(300f, 24f));
             weaponPanel.SetActive(false);
+
+            // 파츠 작업 화면 (3-4c): 작업대 옆에 서면 뜬다. 글은 WorkshopView가 채우고, 버튼 3줄 × 4개.
+            var workshopPanel = CreatePanel(canvas.transform, "WorkshopPanel", new Vector2(0.5f, 0.5f), new Vector2(0f, 40f),
+                new Vector2(1300f, 780f), new Color(0.08f, 0.07f, 0.12f, 0.97f));
+            var workshopLabel = CreateLabel(workshopPanel.transform, "Label", font, 28,
+                new Vector2(0.5f, 1f), new Vector2(0f, -24f), TextAnchor.UpperLeft);
+            workshopLabel.rectTransform.sizeDelta = new Vector2(1220f, 400f);
+            string[,] workshopButtons =
+            {
+                { "prevPartButton", "ui.workshop.prev_part" }, { "nextPartButton", "ui.workshop.next_part" },
+                { "optionModeButton", "ui.workshop.mode_option_button" }, { "setModeButton", "ui.workshop.mode_set_button" },
+                { "prevLineButton", "ui.workshop.prev_line" }, { "nextLineButton", "ui.workshop.next_line" },
+                { "prevTargetButton", "ui.workshop.prev_target" }, { "nextTargetButton", "ui.workshop.next_target" },
+                { "runButton", "ui.workshop.run" }, { "disassembleButton", "ui.workshop.disassemble" },
+                { "equipButton", "ui.workshop.equip" }, { "closeButton", "ui.workshop.close" },
+            };
+            var workshopRefs = new System.Collections.Generic.List<(string, Object)> { ("panel", workshopPanel), ("label", workshopLabel) };
+            for (int i = 0; i < workshopButtons.GetLength(0); i++)
+            {
+                int row = i / 4;
+                int column = i % 4;
+                var button = CreateButton(workshopPanel.transform, workshopButtons[i, 0], font, workshopButtons[i, 1],
+                    new Vector2(0.5f, 0f), new Vector2(-450f + column * 300f, 250f - row * 110f));
+                button.GetComponentInChildren<UnityEngine.UI.Text>().fontSize = 28;
+                workshopRefs.Add((workshopButtons[i, 0], button));
+            }
+            workshopPanel.SetActive(false);
+            var workshopView = canvas.gameObject.AddComponent<WorkshopView>();
+            SetReferences(workshopView, workshopRefs.ToArray());
 
             // 시작 화면 (3-7): 화면 전체를 덮는 어두운 판 + 제목 + 캐릭터 카드(캐릭터 표 줄 수만큼). 가장 나중에 만들어 맨 위에 그린다.
             var selectPanel = new GameObject("CharacterSelect", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
@@ -209,7 +243,7 @@ namespace GirlsDungeon.EditorTools
             var hudView = canvas.gameObject.AddComponent<HudView>();
             SetReferences(hudView, ("hpLabel", hpLabel), ("stabilityLabel", stabilityLabel), ("roundLabel", roundLabel),
                 ("turnLabel", turnLabel), ("previewLabel", previewLabel), ("logLabel", logLabel), ("defeatLabel", defeatLabel), ("resultLabel", resultLabel), ("newRunButton", newRunButton), ("floorLabel", floorLabel),
-                ("weaponLabel", weaponLabel), ("weaponPanel", weaponPanel), ("weaponPanelLabel", weaponPanelLabel), ("swapButton", swapButton), ("keepButton", keepButton), ("attackConfirmButton", attackConfirmButton));
+                ("weaponLabel", weaponLabel), ("weaponPanel", weaponPanel), ("weaponPanelLabel", weaponPanelLabel), ("swapButton", swapButton), ("keepButton", keepButton), ("storeButton", storeButton), ("attackConfirmButton", attackConfirmButton));
 
             var rangeObject = new GameObject("RangeView");
             var rangeView = rangeObject.AddComponent<RangeView>();
@@ -244,7 +278,7 @@ namespace GirlsDungeon.EditorTools
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");
@@ -298,6 +332,7 @@ namespace GirlsDungeon.EditorTools
                 ("eventPlayer", eventPlayer),
                 ("skillBar", skillBar),
                 ("combatFx", combatFx),
+                ("workshopView", workshopView),
                 ("visuals", visuals),
                 ("characterSelect", characterSelect));
 

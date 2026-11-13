@@ -59,6 +59,11 @@ namespace GirlsDungeon.Game
         private int pendingFloor;
         /// <summary>걸음이 끝나면 열 보급 상자 (탐험 중 먼 상자를 클릭했을 때).</summary>
         private GridPos? pendingCrate;
+        /// <summary>걸음이 끝나면 작업 화면을 연다 (탐험 중 먼 작업대를 클릭했을 때, 3-4c).</summary>
+        private bool pendingBench;
+
+        /// <summary>작업대 바로 옆에 섰다 — GameRoot가 작업 화면(WorkshopView)을 연다.</summary>
+        public event System.Action WorkbenchReached;
         private AimMode aim;
         /// <summary>왼쪽 버튼: 움직이지 않고 떼면 클릭, 기준(BALANCE 3-25)보다 움직이면 카메라 드래그.</summary>
         private PointerDrag leftClick;
@@ -357,6 +362,7 @@ namespace GirlsDungeon.Game
             moveCostTicks = newMoveCostTicks;
             pendingSteps.Clear();
             pendingCrate = null;
+            pendingBench = false;
             reachable = null;
             reachableKey = null;
             ClearTarget();
@@ -383,6 +389,7 @@ namespace GirlsDungeon.Game
 
             pendingSteps.Clear();
             pendingCrate = null;
+            pendingBench = false;
             foreach (var step in path) pendingSteps.Enqueue(step);
             pendingFloor = world.FloorIndex;
             return true;
@@ -421,6 +428,45 @@ namespace GirlsDungeon.Game
             foreach (var step in best) pendingSteps.Enqueue(step);
             pendingFloor = world.FloorIndex;
             pendingCrate = crate;
+            pendingBench = false;
+            return true;
+        }
+
+        /// <summary>
+        /// 작업대를 쓴다 (3-4c): 바로 옆이면 작업 화면을 열고, 탐험 중 멀면 가장 가까운 옆 칸까지 걸어간 뒤 연다. 전투 중이거나 못 가면 false.
+        /// </summary>
+        public bool RequestUseWorkbench(GridPos bench)
+        {
+            if (simulation == null || Busy) return false;
+            var world = simulation.World;
+            if (world.Mode != WorldMode.Exploration || !world.Map.InBounds(bench) || world.Map.Get(bench) != TileType.Workbench || !IsKnown(bench)) return false;
+
+            var player = world.Player;
+            if (Loadout.CellDistance(player.Position, bench) == 1)
+            {
+                WorkbenchReached?.Invoke();
+                return true;
+            }
+
+            List<GridPos> best = null;
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    var side = new GridPos(bench.X + dx, bench.Y + dy);
+                    if ((dx == 0 && dy == 0) || !world.Map.IsWalkable(side) || !IsKnown(side)) continue;
+                    var path = GridNavigation.FindPath(world.Map, player.Position, side,
+                        cell => cell != player.Position && (world.IsOccupied(cell) || !IsKnown(cell)));
+                    if (path.Count > 0 && (best == null || path.Count < best.Count)) best = path;
+                }
+            }
+            if (best == null) return false;
+
+            pendingSteps.Clear();
+            pendingCrate = null;
+            foreach (var step in best) pendingSteps.Enqueue(step);
+            pendingFloor = world.FloorIndex;
+            pendingBench = true;
             return true;
         }
 
@@ -454,9 +500,12 @@ namespace GirlsDungeon.Game
             return target;
         }
 
+        /// <summary>작업 화면 같은 창이 떠 있는 동안 지도 클릭 · 단축키를 받지 않는다 (GameRoot가 켠다).</summary>
+        public bool Blocked { get; set; }
+
         private void Update()
         {
-            if (simulation == null) return;
+            if (simulation == null || Blocked) return;
             var pointerMouse = Mouse.current;
             if (pointerMouse != null) leftClick.Update(pointerMouse.leftButton, pointerMouse.position.ReadValue(), dragThresholdPixels);
 
@@ -466,6 +515,7 @@ namespace GirlsDungeon.Game
             {
                 pendingSteps.Clear();
                 pendingCrate = null;
+                pendingBench = false;
             }
             if (aim != AimMode.None && (!TurnFlow.IsPlayerTurn(simulation.World) || simulation.World.PlayerActed)) SetAiming(AimMode.None);
 
@@ -490,11 +540,13 @@ namespace GirlsDungeon.Game
             var map = simulation.World.Map;
             bool isWalkable = cell.HasValue && map.IsWalkable(cell.Value) && IsKnown(cell.Value);
             bool isCrate = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.SupplyCrate && IsKnown(cell.Value);
-            SetHover(isWalkable || isCrate ? cell : null);
+            bool isBench = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.Workbench && IsKnown(cell.Value);
+            SetHover(isWalkable || isCrate || isBench ? cell : null);
 
             bool clicked = mouse != null && leftClick.Clicked && !IsPointerOverUi();
             if (isWalkable && clicked) RequestMove(cell.Value);
             if (isCrate && clicked) RequestOpenCrate(cell.Value);
+            if (isBench && clicked) RequestUseWorkbench(cell.Value);
         }
 
         private void HandleCombat()
@@ -712,14 +764,23 @@ namespace GirlsDungeon.Game
             {
                 pendingSteps.Clear();
                 pendingCrate = null;
+                pendingBench = false;
             }
             if (Busy) return;
             if (pendingSteps.Count == 0)
             {
+                // 작업대 옆에 다 왔으면 작업 화면을 연다.
+                if (pendingBench)
+                {
+                    pendingBench = false;
+                    if (Workshop.AtBench(simulation.World)) WorkbenchReached?.Invoke();
+                    return;
+                }
                 // 상자 옆에 다 왔으면 연다.
                 if (!pendingCrate.HasValue) return;
                 var crate = pendingCrate.Value;
                 pendingCrate = null;
+                pendingBench = false;
                 if (simulation.World.Mode == WorldMode.Exploration) simulation.Execute(new OpenSupplyCrateCommand(crate, settings));
                 return;
             }
@@ -729,6 +790,7 @@ namespace GirlsDungeon.Game
             {
                 pendingSteps.Clear();
                 pendingCrate = null;
+                pendingBench = false;
             }
         }
 

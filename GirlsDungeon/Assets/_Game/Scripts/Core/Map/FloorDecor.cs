@@ -120,6 +120,82 @@ namespace GirlsDungeon.Core.Map
             }
         }
 
+        /// <summary>
+        /// 파츠 작업방을 정한다 (결정 2026-11-13, 사용자: 층마다 1개 · 적 없음, 3-4c). 보급 상자 다음에 작업 난수로 따로 부른다.
+        /// 시작 방 · 계단 방 제외, 보급 상자가 없는 방을 먼저 고른다. 작업대는 방 가운데에 가까운 칸부터 — 상자와 같은 조건(테두리 · 낮은 벽 · 열쇠 칸 · 연결).
+        /// </summary>
+        public static void PlaceWorkshops(FloorMap map, MapSettings settings, IRandom random)
+        {
+            var plain = new List<RoomRect>();
+            var withCrate = new List<RoomRect>();
+            foreach (var room in map.Rooms)
+            {
+                if (room.Contains(map.StartCell) || room.Contains(map.StairsCell)) continue;
+                (HasTile(map, room, TileType.SupplyCrate) ? withCrate : plain).Add(room);
+            }
+
+            int placed = 0;
+            foreach (var candidates in new[] { plain, withCrate })
+            {
+                while (placed < settings.WorkshopsPerFloor && candidates.Count > 0)
+                {
+                    int pick = random.Range(0, candidates.Count);
+                    var room = candidates[pick];
+                    candidates.RemoveAt(pick);
+                    if (TryPlaceWorkbench(map, room)) placed++;
+                }
+            }
+        }
+
+        /// <summary>그 칸이 작업대가 있는 방 안인가 (적 배치에서 뺀다).</summary>
+        public static bool InWorkshopRoom(FloorMap map, GridPos cell)
+        {
+            foreach (var room in map.Rooms)
+                if (room.Contains(cell) && HasTile(map, room, TileType.Workbench)) return true;
+            return false;
+        }
+
+        private static bool HasTile(FloorMap map, RoomRect room, TileType tile)
+        {
+            for (int y = room.Y; y < room.Y + room.Height; y++)
+                for (int x = room.X; x < room.X + room.Width; x++)
+                    if (map.Get(new GridPos(x, y)) == tile) return true;
+            return false;
+        }
+
+        private static bool TryPlaceWorkbench(FloorMap map, RoomRect room)
+        {
+            // 가운데에서 가까운 칸 순서 (거리 같으면 행 순서) — 난수 없이 정해진다.
+            var cells = new List<GridPos>();
+            for (int y = room.Y + 1; y < room.Y + room.Height - 1; y++)
+                for (int x = room.X + 1; x < room.X + room.Width - 1; x++)
+                    cells.Add(new GridPos(x, y));
+            var center = room.Center;
+            cells.Sort((a, b) =>
+            {
+                int da = System.Math.Max(System.Math.Abs(a.X - center.X), System.Math.Abs(a.Y - center.Y));
+                int db = System.Math.Max(System.Math.Abs(b.X - center.X), System.Math.Abs(b.Y - center.Y));
+                if (da != db) return da.CompareTo(db);
+                return a.Y != b.Y ? a.Y.CompareTo(b.Y) : a.X.CompareTo(b.X);
+            });
+            foreach (var cell in cells)
+            {
+                if (map.Get(cell) != TileType.Floor || !HasWalkableNeighbor(map, cell) || TouchesLowWall(map, cell)) continue;
+                bool nearKeyCell = false;
+                foreach (var step in Steps)
+                {
+                    var near = new GridPos(cell.X + step.X, cell.Y + step.Y);
+                    if (near == map.StartCell || near == map.StairsCell) nearKeyCell = true;
+                }
+                if (nearKeyCell) continue;
+
+                map.SetTile(cell, TileType.Workbench);
+                if (IsFullyConnected(map)) return true;
+                map.SetTile(cell, TileType.Floor);
+            }
+            return false;
+        }
+
         private static bool TryPlaceSupplyCrate(FloorMap map, MapSettings settings, RoomRect room, IRandom random)
         {
             for (int attempt = 0; attempt < settings.DecorAttempts; attempt++)

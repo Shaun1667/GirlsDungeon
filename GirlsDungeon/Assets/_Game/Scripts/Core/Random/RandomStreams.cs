@@ -12,6 +12,8 @@ namespace GirlsDungeon.Core.Random
         EnemyKind = 4,
         Effects = 5,
         Spawn = 6,
+        /// <summary>파츠 작업방 — 작업방 고르기 · 옵션 · 세트 바꾸기 굴림 (3-4c).</summary>
+        Workshop = 7,
     }
 
     /// <summary>시드 하나에서 용도별 난수를 만든다. 상태는 세계 스냅샷에 저장된다.</summary>
