@@ -29,6 +29,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private CharacterSelectView characterSelect;
         [Tooltip("Part workshop screen shown next to a workbench (3-4c).")]
         [SerializeField] private WorkshopView workshopView;
+        [Tooltip("Locked door window shown next to a locked door (3-4d).")]
+        [SerializeField] private DoorView doorView;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -106,6 +108,9 @@ namespace GirlsDungeon.Game
             if (workshopView != null) workshopView.Bind(simulation, combatSettings, hudView);
             moveController.WorkbenchReached -= OnWorkbenchReached;
             moveController.WorkbenchReached += OnWorkbenchReached;
+            if (doorView != null) doorView.Bind(simulation, combatSettings);
+            moveController.DoorReached -= OnDoorReached;
+            moveController.DoorReached += OnDoorReached;
             threatView.Bind(simulation, combatSettings);
             cameraRig.Bind(balance, playerView.transform);
 
@@ -117,7 +122,7 @@ namespace GirlsDungeon.Game
         {
             foreach (var gameEvent in events)
             {
-                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened)) continue;
+                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened)) continue;
                 floorView.Build(simulation.World.Map, balance);
                 return;
             }
@@ -287,11 +292,63 @@ namespace GirlsDungeon.Game
             if (workshopView != null) workshopView.Open();
         }
 
+        /// <summary>잠긴 문 옆에 섰다: 문 창을 연다 (3-4d).</summary>
+        private void OnDoorReached(GridPos door)
+        {
+            if (doorView != null) doorView.Open(door);
+        }
+
         private void Update()
         {
-            // 작업 화면이 떠 있는 동안 지도 클릭을 받지 않는다.
-            if (moveController != null) moveController.Blocked = workshopView != null && workshopView.IsOpen;
+            // 작업 화면 · 문 창이 떠 있는 동안 지도 클릭을 받지 않는다.
+            if (moveController != null)
+                moveController.Blocked = (workshopView != null && workshopView.IsOpen) || (doorView != null && doorView.IsOpen);
         }
+
+        /// <summary>[상태 변경] 가장 가까운 잠긴 문 옆으로 순간 이동하고 문 창을 연다 (문 시험용). 없으면 false.</summary>
+        public bool DebugGoToLockedDoor()
+        {
+            var world = World;
+            if (world == null || world.Mode != WorldMode.Exploration) return false;
+            var map = world.Map;
+            for (int y = 0; y < map.Height; y++)
+                for (int x = 0; x < map.Width; x++)
+                {
+                    var door = new GridPos(x, y);
+                    if (!map.IsLockedDoor(door)) continue;
+                    for (int dy = -1; dy <= 1; dy++)
+                        for (int dx = -1; dx <= 1; dx++)
+                        {
+                            var side = new GridPos(x + dx, y + dy);
+                            if ((dx == 0 && dy == 0) || !map.IsWalkable(side) || world.IsOccupied(side) || FloorDecor.InWorkshopRoom(map, side)) continue;
+                            DebugUsed = true;
+                            if (!simulation.Execute(new DebugTeleportCommand(world.PlayerId, side))) return false;
+                            OnDoorReached(door);
+                            return true;
+                        }
+                }
+            return false;
+        }
+
+        /// <summary>[상태 변경] 열쇠를 더한다 (문 시험용).</summary>
+        public void DebugAddKeys(int amount)
+        {
+            if (World == null) return;
+            DebugUsed = true;
+            simulation.Execute(new DebugAddKeysCommand(amount));
+        }
+
+        /// <summary>열쇠 · 문 (디버그).</summary>
+        public string DebugDoorSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var map = world.Map;
+            return $"Keys={world.Keys} FloorKeyGiven={world.FloorKeyGiven} Locked={map.CountTiles(TileType.DoorLocked)} Forced={map.CountTiles(TileType.DoorLockedForced)} "
+                + $"Open={map.CountTiles(TileType.DoorOpen)} Force={Doors.ForcePercent(world, combatSettings)}% Window={(doorView != null && doorView.IsOpen)}";
+        }
+
+        public DoorView DebugDoorView => doorView;
 
         /// <summary>[상태 변경] 작업대 옆 칸으로 순간 이동하고 작업 화면을 연다 (작업방 시험용). 작업대가 없으면 false.</summary>
         public bool DebugGoToWorkbench()

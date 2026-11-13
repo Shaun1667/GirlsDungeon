@@ -39,6 +39,9 @@ namespace GirlsDungeon.Core.Sim
                 Drop(world, ItemKind.Medkit, default, lastKillCell, DropSource.Combat, events);
             else if (roll < settings.CombatDropWeaponPercent + settings.CombatDropMedkitPercent + settings.CombatDropPartPercent)
                 DropPart(world, settings, random, lastKillCell, DropSource.Combat, events);
+            // 열쇠는 다른 보상과 따로, 문 난수로 굴린다 (3-4d) — 아이템 난수 순서는 그대로.
+            if (world.Random.Get(RandomPurpose.Door).Range(0, 100) < settings.CombatDropKeyPercent)
+                Drop(world, ItemKind.Key, default, lastKillCell, DropSource.Combat, events);
         }
 
         /// <summary>지금 든 무기에 맞는 새 파츠를 near 근처 빈 칸에 놓는다 (3-4 — 주우면 바로 끼울 수 있게 든 무기 기준).</summary>
@@ -66,6 +69,12 @@ namespace GirlsDungeon.Core.Sim
             if (roll < settings.CrateWeaponPercent) DropWeapon(world, settings, random, cell, DropSource.SupplyCrate, events);
             else if (roll < settings.CrateWeaponPercent + settings.CratePartPercent) DropPart(world, settings, random, cell, DropSource.SupplyCrate, events);
             else Drop(world, ItemKind.Medkit, default, cell, DropSource.SupplyCrate, events);
+            // 층마다 열쇠 1개 보장 (3-4d): 그 층에서 처음 여는 보급 상자에 원래 물건과 함께 들어 있다.
+            if (!world.FloorKeyGiven)
+            {
+                world.FloorKeyGiven = true;
+                Drop(world, ItemKind.Key, default, cell, DropSource.SupplyCrate, events);
+            }
             return true;
         }
 
@@ -83,6 +92,13 @@ namespace GirlsDungeon.Core.Sim
             foreach (var item in world.Items.ToArray())
             {
                 if (item.Position != player.Position) continue;
+                if (item.Kind == ItemKind.Key)
+                {
+                    world.Items.Remove(item);
+                    world.Keys++;
+                    events.Add(new KeyPickedUp(item.Id, world.Keys));
+                    continue;
+                }
                 if (item.Kind == ItemKind.Medkit)
                 {
                     if (player.Hp >= player.MaxHp) continue;

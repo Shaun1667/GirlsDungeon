@@ -259,6 +259,30 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void Doors_MatchBalanceTable20()
+        {
+            var combat = Load().CreateCombatSettings();
+            Assert.That(combat.CombatDropKeyPercent, Is.EqualTo(10));
+            // 사용자 결정: 캐릭터 A만 힘으로 열기 70%.
+            Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroA).DoorForcePercent, Is.EqualTo(70));
+            Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroB).DoorForcePercent, Is.EqualTo(0));
+            Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroC).DoorForcePercent, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void DoorTextKeys_ExistInTheTextTable()
+        {
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in new[]
+            {
+                "ui.hud.keys", "ui.door.title", "ui.door.force_ready", "ui.door.force_used", "ui.door.no_key", "ui.door.force_failed",
+                "ui.door.use_key", "ui.door.use_force", "ui.door.close", "ui.door.log_key", "ui.door.log_key_dropped",
+                "ui.door.log_opened", "ui.door.log_forced", "ui.door.log_force_failed",
+            })
+                Assert.That(table.Contains(key), Is.True, key);
+        }
+
+        [Test]
         public void WorkshopTextKeys_ExistInTheTextTable()
         {
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));

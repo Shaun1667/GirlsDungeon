@@ -22,6 +22,12 @@ namespace GirlsDungeon.Core.Map
         SupplyCrateOpened = 7,
         /// <summary>파츠 작업대 (3-4c). 칸을 막고, 옆 칸에 반엄폐를 주며, 시야는 막지 않는다. 바로 옆에서 작업 화면을 연다. 부서지지 않는다.</summary>
         Workbench = 8,
+        /// <summary>잠긴 문 (특수 방 입구, 3-4d). 걸을 수 없고 시야를 막는다 (벽처럼 높은 엄폐). 열쇠 · 힘으로 열면 DoorOpen.</summary>
+        DoorLocked = 9,
+        /// <summary>열린 문. 바닥과 같다.</summary>
+        DoorOpen = 10,
+        /// <summary>잠긴 문인데 힘으로 열기를 이미 한 번 실패했다 (문당 1번). 열쇠로는 열 수 있다.</summary>
+        DoorLockedForced = 11,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -139,7 +145,15 @@ namespace GirlsDungeon.Core.Map
         {
             if (!InBounds(cell)) return false;
             var tile = Get(cell);
-            return tile == TileType.Floor || tile == TileType.Stairs;
+            return tile == TileType.Floor || tile == TileType.Stairs || tile == TileType.DoorOpen;
+        }
+
+        /// <summary>잠긴 문 칸 (힘으로 열기를 실패한 문 포함).</summary>
+        public bool IsLockedDoor(GridPos cell)
+        {
+            if (!InBounds(cell)) return false;
+            var tile = Get(cell);
+            return tile == TileType.DoorLocked || tile == TileType.DoorLockedForced;
         }
 
         /// <summary>낭떠러지 칸.</summary>
@@ -158,7 +172,7 @@ namespace GirlsDungeon.Core.Map
         {
             if (!InBounds(cell)) return true;
             var tile = Get(cell);
-            return tile == TileType.Wall || tile == TileType.Pillar;
+            return tile == TileType.Wall || tile == TileType.Pillar || tile == TileType.DoorLocked || tile == TileType.DoorLockedForced;
         }
 
         /// <summary>동서남북으로 붙은 두 칸 사이에 낮은 벽이 있으면 true.</summary>

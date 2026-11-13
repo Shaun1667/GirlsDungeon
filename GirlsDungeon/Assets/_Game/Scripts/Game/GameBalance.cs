@@ -48,6 +48,8 @@ namespace GirlsDungeon.Game
         [Tooltip("Part workshop success chance (%): change option, change set.")]
         public int workshopOptionPercent = 70;
         public int workshopSetPercent = 50;
+        [Tooltip("Chance (%) to force a locked door open, one try per door. 0 = cannot force.")]
+        public int doorForcePercent;
     }
 
     /// <summary>파츠 능력치 하나의 값 범위 (표 한 줄, BALANCE 17번).</summary>
@@ -171,6 +173,7 @@ namespace GirlsDungeon.Game
                 maxHp = 110, maxStability = 7, visionRange = 8, defense = 5, moveRange = 8, startWeapon = WeaponKind.Shotgun,
                 skills = new[] { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
                 workshopOptionPercent = 55, workshopSetPercent = 35,
+                doorForcePercent = 70,
             },
             new CharacterEntry
             {
@@ -366,6 +369,10 @@ namespace GirlsDungeon.Game
         [Tooltip("Spare part storage slots.")]
         [SerializeField] private int spareSlots = 4;
 
+        [Header("Locked doors and keys (BALANCE 20)")]
+        [Tooltip("Chance (%) that winning a combat also drops a key (rolled apart from other rewards).")]
+        [SerializeField] private int combatDropKeyPercent = 10;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
@@ -508,6 +515,7 @@ namespace GirlsDungeon.Game
                 WorkshopSetCost = workshopSetCost,
                 DisassembleMaterials = (int[])disassembleMaterials.Clone(),
                 SpareSlots = spareSlots,
+                CombatDropKeyPercent = combatDropKeyPercent,
             };
             foreach (var entry in weapons)
             {
@@ -561,6 +569,7 @@ namespace GirlsDungeon.Game
                     Skills = new System.Collections.Generic.List<SkillKind>(entry.skills ?? System.Array.Empty<SkillKind>()),
                     WorkshopOptionPercent = entry.workshopOptionPercent,
                     WorkshopSetPercent = entry.workshopSetPercent,
+                    DoorForcePercent = entry.doorForcePercent,
                 });
             }
             foreach (var entry in partStats) settings.PartStatRanges.Add(new PartStatRange { Stat = entry.stat, Min = entry.min, Max = entry.max });

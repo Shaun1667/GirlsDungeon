@@ -35,4 +35,4 @@
 | hero_c | 캐릭터 C (`characters[HeroC]`, 3-8) | 분홍 캡슐 | 오리지널 캐릭터 모델 (외형 미정) | — | 미정 |
 | rifleman | 사격병 (`UnitsView`) | 빨강 캡슐 | — | — | 미정 |
 | assault | 돌격병 (`UnitsView`) | 주황 캡슐 | — | — | 미정 |
-| (지형 · 상자 · 보급 상자 · 작업대 · 무기 · 구급상자) | `FloorView` · `ItemsView` | 그레이박스 도형 | — | — | 미정 |
+| (지형 · 상자 · 보급 상자 · 작업대 · 잠긴 문 · 무기 · 구급상자 · 열쇠) | `FloorView` · `ItemsView` | 그레이박스 도형 | — | — | 미정 |

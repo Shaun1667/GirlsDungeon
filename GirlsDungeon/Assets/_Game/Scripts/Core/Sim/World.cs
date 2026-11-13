@@ -82,6 +82,8 @@ namespace GirlsDungeon.Core.Sim
         Medkit = 1,
         /// <summary>무기 파츠 (3-4). 밟으면 비교 창 → 끼우기 / 두기. Weapon = 맞는 무기 종류.</summary>
         Part = 2,
+        /// <summary>열쇠 (3-4d). 밟으면 바로 줍는다 (World.Keys).</summary>
+        Key = 3,
     }
 
     /// <summary>바닥에 놓인 물건. 다른 곳에서는 고유 ID로 참조한다.</summary>
@@ -175,6 +177,12 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>파츠를 분해해 모은 재료 (판 안에서만, 3-4c).</summary>
         public int PartMaterials { get; set; }
+
+        /// <summary>가진 열쇠 (층을 넘어가도 남는다, 3-4d). 잠긴 문 하나(그 방 전체)에 1개.</summary>
+        public int Keys { get; set; }
+
+        /// <summary>이 층에서 보장 열쇠가 이미 나왔다 (첫 보급 상자). 층을 새로 만들 때 false.</summary>
+        public bool FloorKeyGiven { get; set; }
 
         /// <summary>연쇄 가속 세트의 중첩 (스킬을 쓸 때마다 +1, 최대 CombatSettings.SetChainMaxStacks, 3-4b). 전투가 끝나면 0.</summary>
         public int SetChainStacks { get; set; }

@@ -67,6 +67,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>파츠 작업방 옵션 · 세트 바꾸기 성공 확률 (%, BALANCE 19번, 3-4c).</summary>
         public int WorkshopOptionPercent;
         public int WorkshopSetPercent;
+
+        /// <summary>잠긴 문을 힘으로 열 확률 (%, 문당 1번, 0 = 못 함 — BALANCE 20번, 3-4d).</summary>
+        public int DoorForcePercent;
     }
 
     /// <summary>전투 수치 (BALANCE 4번 · 5번).</summary>
@@ -198,6 +201,10 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>예비 파츠 보관함 칸 수.</summary>
         public int SpareSlots;
 
+        // 잠긴 문 · 열쇠 (BALANCE 20번, 3-4d — Doors)
+        /// <summary>전투에서 이기면 열쇠가 더 떨어질 확률 (%) — 다른 보상과 따로 굴린다 (문 난수).</summary>
+        public int CombatDropKeyPercent;
+
         public PartStatRange PartRange(PartStat stat)
         {
             foreach (var range in PartStatRanges) if (range.Stat == stat) return range;
@@ -313,6 +320,11 @@ namespace GirlsDungeon.Core.Sim
             if (WorkshopOptionPercent < 0 || WorkshopOptionPercent > 100 || WorkshopSetPercent < 0 || WorkshopSetPercent > 100
                 || WorkshopOptionCost < 0 || WorkshopSetCost < 0 || DisassembleMaterials.Length != 3 || SpareSlots < 0)
                 throw new ArgumentException("Workshop settings are invalid.");
+            if (CombatDropKeyPercent < 0 || CombatDropKeyPercent > 100)
+                throw new ArgumentException("Key settings are invalid.");
+            foreach (var character in Characters)
+                if (character.DoorForcePercent < 0 || character.DoorForcePercent > 100)
+                    throw new ArgumentException($"Door force chance for {character.Kind} is invalid.");
             foreach (var character in Characters)
                 if (character.WorkshopOptionPercent < 0 || character.WorkshopOptionPercent > 100 || character.WorkshopSetPercent < 0 || character.WorkshopSetPercent > 100)
                     throw new ArgumentException($"Workshop chances for {character.Kind} are invalid.");

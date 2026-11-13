@@ -500,6 +500,7 @@ namespace GirlsDungeon.Game
                     case ItemDropped dropped when dropped.Source == DropSource.Combat || dropped.Source == DropSource.SupplyCrate:
                         AddLog(dropped.Kind == ItemKind.Weapon ? Text.Get("ui.loot.log_weapon_dropped", WeaponName(dropped.Weapon))
                             : dropped.Kind == ItemKind.Part ? Text.Get("ui.loot.log_part_dropped", WeaponName(dropped.Weapon))
+                            : dropped.Kind == ItemKind.Key ? Text.Get("ui.door.log_key_dropped")
                             : Text.Get("ui.loot.log_medkit_dropped"));
                         break;
                     case PartFound partFound:
@@ -507,6 +508,15 @@ namespace GirlsDungeon.Game
                         break;
                     case PartEquipped equipped:
                         AddLog(Text.Get("ui.loot.log_part_equipped", PartSlotName(equipped.Weapon, equipped.Slot), GradeName(equipped.Grade)));
+                        break;
+                    case KeyPickedUp key:
+                        AddLog(Text.Get("ui.door.log_key", key.Keys));
+                        break;
+                    case DoorOpened opened:
+                        AddLog(Text.Get(opened.Method == DoorOpenMethod.Force ? "ui.door.log_forced" : "ui.door.log_opened"));
+                        break;
+                    case DoorForceFailed _:
+                        AddLog(Text.Get("ui.door.log_force_failed"));
                         break;
                     case PartStored stored:
                         AddLog(Text.Get("ui.loot.log_part_stored", WeaponName(stored.Weapon), stored.SpareCount, settings.SpareSlots));
@@ -583,6 +593,8 @@ namespace GirlsDungeon.Game
                 stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
                 // 표시 값 = 실제 값: 무기 표가 아니라 유닛에 적용된 값(Loadout.Apply 결과)을 읽는다.
                 weaponLabel.text = Text.Get("ui.hud.weapon", WeaponName(world.PlayerWeapon), player.Attack, player.AttackRange);
+                // 열쇠 (3-4d): 하나라도 있을 때만.
+                if (world.Keys > 0) weaponLabel.text += "\n" + Text.Get("ui.hud.keys", world.Keys);
                 // 재료 · 보관함 (3-4c): 하나라도 있을 때만.
                 if (world.PartMaterials > 0 || world.SpareParts.Count > 0)
                     weaponLabel.text += "\n" + Text.Get("ui.hud.materials", world.PartMaterials, world.SpareParts.Count, settings.SpareSlots);

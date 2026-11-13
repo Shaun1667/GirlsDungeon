@@ -142,9 +142,87 @@ namespace GirlsDungeon.Core.Map
                     int pick = random.Range(0, candidates.Count);
                     var room = candidates[pick];
                     candidates.RemoveAt(pick);
-                    if (TryPlaceWorkbench(map, room)) placed++;
+                    if (!TryPlaceWorkbench(map, room)) continue;
+                    // 특수 방 입구는 잠긴 문 (3-4d). 문을 달면 다른 곳이 끊기는 방(복도가 방 옆을 지나감 등)은 쓰지 않는다.
+                    if (LockRoom(map, room))
+                    {
+                        placed++;
+                        continue;
+                    }
+                    RemoveTile(map, room, TileType.Workbench);
                 }
             }
+        }
+
+        /// <summary>
+        /// 특수 방의 모든 입구에 잠긴 문을 단다 (3-4d) — 입구 = 방 밖의 설 수 있는 칸 중 방 칸과 8방향으로 붙은 칸.
+        /// 문을 단 뒤 방 밖은 모두 시작 칸에서 이어지고 방 안은 닿지 않아야 한다. 아니면(또는 입구가 시작 · 계단 칸이거나 없으면) 되돌리고 false.
+        /// 다른 특수 방도 이 함수를 쓴다.
+        /// </summary>
+        public static bool LockRoom(FloorMap map, RoomRect room)
+        {
+            var doors = Entrances(map, room);
+            if (doors.Count == 0) return false;
+            foreach (var cell in doors)
+                if (cell == map.StartCell || cell == map.StairsCell) return false;
+            foreach (var cell in doors) map.SetTile(cell, TileType.DoorLocked);
+            if (OutsideConnectedAndRoomSealed(map, room)) return true;
+            foreach (var cell in doors) map.SetTile(cell, TileType.Floor);
+            return false;
+        }
+
+        /// <summary>방의 입구 칸 (방 밖, 방 칸과 8방향으로 붙은 칸 중 설 수 있거나 문인 칸). 행 순서.</summary>
+        public static List<GridPos> Entrances(FloorMap map, RoomRect room)
+        {
+            var result = new List<GridPos>();
+            for (int y = room.Y - 1; y <= room.Y + room.Height; y++)
+                for (int x = room.X - 1; x <= room.X + room.Width; x++)
+                {
+                    var cell = new GridPos(x, y);
+                    if (room.Contains(cell) || !map.InBounds(cell)) continue;
+                    var tile = map.Get(cell);
+                    if (map.IsWalkable(cell) || tile == TileType.DoorLocked || tile == TileType.DoorLockedForced || tile == TileType.DoorOpen) result.Add(cell);
+                }
+            return result;
+        }
+
+        private static bool OutsideConnectedAndRoomSealed(FloorMap map, RoomRect room)
+        {
+            var seen = new bool[map.Width * map.Height];
+            var frontier = new Queue<GridPos>();
+            seen[map.StartCell.X + map.StartCell.Y * map.Width] = true;
+            frontier.Enqueue(map.StartCell);
+            int reachedOutside = 0;
+            while (frontier.Count > 0)
+            {
+                var cell = frontier.Dequeue();
+                if (room.Contains(cell)) return false;
+                reachedOutside++;
+                foreach (var step in Steps)
+                {
+                    var next = new GridPos(cell.X + step.X, cell.Y + step.Y);
+                    if (!GridNavigation.CanStep(map, cell, next)) continue;
+                    int index = next.X + next.Y * map.Width;
+                    if (seen[index]) continue;
+                    seen[index] = true;
+                    frontier.Enqueue(next);
+                }
+            }
+            int walkableOutside = 0;
+            for (int y = 0; y < map.Height; y++)
+                for (int x = 0; x < map.Width; x++)
+                {
+                    var cell = new GridPos(x, y);
+                    if (map.IsWalkable(cell) && !room.Contains(cell)) walkableOutside++;
+                }
+            return reachedOutside == walkableOutside;
+        }
+
+        private static void RemoveTile(FloorMap map, RoomRect room, TileType tile)
+        {
+            for (int y = room.Y; y < room.Y + room.Height; y++)
+                for (int x = room.X; x < room.X + room.Width; x++)
+                    if (map.Get(new GridPos(x, y)) == tile) map.SetTile(new GridPos(x, y), TileType.Floor);
         }
 
         /// <summary>그 칸이 작업대가 있는 방 안인가 (적 배치에서 뺀다).</summary>

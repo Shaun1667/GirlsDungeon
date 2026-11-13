@@ -74,6 +74,8 @@ namespace GirlsDungeon.Tests
             for (int seed = 1; seed <= SeedCount; seed++)
             {
                 var map = Generate(seed);
+                // 특수 방은 잠긴 문 뒤에 있다 (3-4d) — 문을 모두 연 지도가 하나로 이어져 있어야 한다.
+                TestData.OpenAllDoors(map);
                 Assert.That(CountReachable(map), Is.EqualTo(map.CountWalkable()), $"seed {seed}");
             }
         }
@@ -351,6 +353,8 @@ namespace GirlsDungeon.Tests
                 WorkshopSetCost = 3,
                 DisassembleMaterials = new[] { 1, 2, 3 },
                 SpareSlots = 4,
+                // BALANCE 20번 잠긴 문 · 열쇠.
+                CombatDropKeyPercent = 10,
             };
             // BALANCE 12번 무기 표.
             settings.Weapons.Add(new WeaponStats
@@ -408,7 +412,7 @@ namespace GirlsDungeon.Tests
             {
                 Kind = CharacterKind.HeroA, MaxHp = 110, MaxStability = 7, VisionRange = 8, Defense = 5, MoveRange = 8, StartWeapon = WeaponKind.Shotgun,
                 Skills = { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
-                WorkshopOptionPercent = 55, WorkshopSetPercent = 35,
+                WorkshopOptionPercent = 55, WorkshopSetPercent = 35, DoorForcePercent = 70,
             });
             settings.Characters.Add(new CharacterStats
             {
@@ -447,7 +451,15 @@ namespace GirlsDungeon.Tests
         /// <summary>BALANCE 값으로 새 판을 만든다. 맵 · 이동 테스트는 적 없는 판을 쓴다.</summary>
         public static World NewRun(int seed, int enemies = 0) => RunFactory.NewRun(seed, Map(), Combat(enemies));
 
-        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥, X 낭떠러지, S 보급 상자, W 작업대. 첫 줄이 y = 0.</summary>
+        /// <summary>잠긴 문을 모두 연다 (지도 연결 검사용, 3-4d).</summary>
+        public static void OpenAllDoors(FloorMap map)
+        {
+            for (int y = 0; y < map.Height; y++)
+                for (int x = 0; x < map.Width; x++)
+                    if (map.IsLockedDoor(new GridPos(x, y))) map.SetTile(new GridPos(x, y), TileType.DoorOpen);
+        }
+
+        /// <summary>글자 지도로 맵을 만든다. # 벽, . 바닥, C 상자, P 기둥, X 낭떠러지, S 보급 상자, W 작업대, D 잠긴 문. 첫 줄이 y = 0.</summary>
         public static FloorMap Parse(params string[] rows) => ParseWithRooms(new RoomRect[0], rows);
 
         /// <summary>Parse와 같고, 방 목록을 함께 넣는다 (방 시야 테스트용).</summary>
@@ -467,6 +479,7 @@ namespace GirlsDungeon.Tests
                         : ch == 'X' ? TileType.Chasm
                         : ch == 'S' ? TileType.SupplyCrate
                         : ch == 'W' ? TileType.Workbench
+                        : ch == 'D' ? TileType.DoorLocked
                         : TileType.Floor;
                 }
             }

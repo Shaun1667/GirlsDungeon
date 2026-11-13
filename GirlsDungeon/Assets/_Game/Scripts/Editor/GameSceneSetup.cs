@@ -44,6 +44,9 @@ namespace GirlsDungeon.EditorTools
             var supplyOpenedMaterial = LoadOrCreateMaterial("GreyboxSupplyOpened", new Color(0.12f, 0.3f, 0.17f));
             // 파츠 작업대 (3-4c): 보라 — 보급 상자(초록) · 엄폐 상자와 구별.
             var workbenchMaterial = LoadOrCreateMaterial("GreyboxWorkbench", new Color(0.55f, 0.35f, 0.75f));
+            // 잠긴 문 · 열쇠 (3-4d): 문은 갈색, 열쇠는 노랑.
+            var doorMaterial = LoadOrCreateMaterial("GreyboxDoor", new Color(0.5f, 0.3f, 0.15f));
+            var keyItemMaterial = LoadOrCreateMaterial("GreyboxKeyItem", new Color(1f, 0.85f, 0.2f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
             var partItemMaterial = LoadOrCreateMaterial("GreyboxPartItem", new Color(0.95f, 0.55f, 0.1f));
@@ -199,6 +202,18 @@ namespace GirlsDungeon.EditorTools
             var workshopView = canvas.gameObject.AddComponent<WorkshopView>();
             SetReferences(workshopView, workshopRefs.ToArray());
 
+            // 잠긴 문 창 (3-4d): 잠긴 문 옆에 서면 뜬다 (열쇠로 열기 / 힘으로 열기 / 닫기).
+            var doorPanel = CreatePanel(canvas.transform, "DoorPanel", new Vector2(0.5f, 0.5f), new Vector2(0f, 120f),
+                new Vector2(1000f, 300f), new Color(0.1f, 0.08f, 0.06f, 0.96f));
+            var doorLabel = CreateLabel(doorPanel.transform, "Label", font, 30, new Vector2(0.5f, 1f), new Vector2(0f, -24f), TextAnchor.UpperCenter);
+            doorLabel.rectTransform.sizeDelta = new Vector2(940f, 150f);
+            var doorKeyButton = CreateButton(doorPanel.transform, "KeyButton", font, "ui.door.use_key", new Vector2(0.5f, 0f), new Vector2(-300f, 24f));
+            var doorForceButton = CreateButton(doorPanel.transform, "ForceButton", font, "ui.door.use_force", new Vector2(0.5f, 0f), new Vector2(0f, 24f));
+            var doorCloseButton = CreateButton(doorPanel.transform, "CloseButton", font, "ui.door.close", new Vector2(0.5f, 0f), new Vector2(300f, 24f));
+            doorPanel.SetActive(false);
+            var doorView = canvas.gameObject.AddComponent<DoorView>();
+            SetReferences(doorView, ("panel", doorPanel), ("label", doorLabel), ("keyButton", doorKeyButton), ("forceButton", doorForceButton), ("closeButton", doorCloseButton));
+
             // 시작 화면 (3-7): 화면 전체를 덮는 어두운 판 + 제목 + 캐릭터 카드(캐릭터 표 줄 수만큼). 가장 나중에 만들어 맨 위에 그린다.
             var selectPanel = new GameObject("CharacterSelect", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
             selectPanel.transform.SetParent(canvas.transform, false);
@@ -274,11 +289,11 @@ namespace GirlsDungeon.EditorTools
             SetReferences(unitsView, ("enemyMaterial", enemyMaterial), ("assaultMaterial", assaultMaterial));
 
             var itemsView = new GameObject("ItemsView").AddComponent<ItemsView>();
-            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial), ("partMaterial", partItemMaterial));
+            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial), ("partMaterial", partItemMaterial), ("keyMaterial", keyItemMaterial));
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");
@@ -333,6 +348,7 @@ namespace GirlsDungeon.EditorTools
                 ("skillBar", skillBar),
                 ("combatFx", combatFx),
                 ("workshopView", workshopView),
+                ("doorView", doorView),
                 ("visuals", visuals),
                 ("characterSelect", characterSelect));
 

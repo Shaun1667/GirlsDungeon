@@ -76,6 +76,7 @@ namespace GirlsDungeon.Tests
 
                 Assert.That(chasmRooms, Is.EqualTo((map.Rooms.Count * settings.ChasmRoomPercent + 50) / 100), $"seed {seed}: room count");
                 Assert.That(map.CountTiles(TileType.Chasm), Is.EqualTo(inRooms), $"seed {seed}: chasm outside rooms");
+                TestData.OpenAllDoors(map);
                 Assert.That(ReachableFromStart(map), Is.EqualTo(map.CountWalkable()), $"seed {seed}: floor split");
             }
         }
