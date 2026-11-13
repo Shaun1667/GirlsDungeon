@@ -283,7 +283,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange }), "3-14c ~ 3-14f");
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery }), "3-14c ~ 3-14g");
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.observatory.log_used"), Is.True);
         }
@@ -329,6 +329,15 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.ExchangeKeySellMaterials, Is.LessThan(combat.ExchangeKeyCost));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             foreach (var key in GirlsDungeon.Game.ExchangeView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
+        }
+
+        [Test]
+        public void SetGallery_MatchesBalanceTable26()
+        {
+            var combat = Load().CreateCombatSettings();
+            Assert.That(combat.SetGalleryPartGrade, Is.EqualTo(GirlsDungeon.Core.Sim.PartGrade.Military));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in GirlsDungeon.Game.GalleryView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
         }
 
         [Test]

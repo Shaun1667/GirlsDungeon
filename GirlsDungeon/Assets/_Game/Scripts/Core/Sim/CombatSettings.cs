@@ -207,6 +207,10 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>보물 상자에서 무기가 더 나올 확률 (%).</summary>
         public int TreasureWeaponPercent;
 
+        // 세트 진열실 (BALANCE 26번, 3-14g — SetGallery)
+        /// <summary>진열된 파츠 등급 (같은 세트 · 2 · 3 · 4번 칸 하나씩).</summary>
+        public PartGrade SetGalleryPartGrade;
+
         // 교환소 (BALANCE 25번, 3-14f — Exchange)
         public int ExchangeMedkitCost;
         public int ExchangePartCost;
@@ -345,6 +349,8 @@ namespace GirlsDungeon.Core.Sim
             if (WorkshopOptionPercent < 0 || WorkshopOptionPercent > 100 || WorkshopSetPercent < 0 || WorkshopSetPercent > 100
                 || WorkshopOptionCost < 0 || WorkshopSetCost < 0 || DisassembleMaterials.Length != 3 || SpareSlots < 0)
                 throw new ArgumentException("Workshop settings are invalid.");
+            if (SetGalleryPartGrade == PartGrade.Industrial)
+                throw new ArgumentException("Set gallery parts must be able to carry a set.");
             if (ExchangeMedkitCost < 0 || ExchangePartCost < 0 || ExchangeKeyCost < 0 || ExchangeKeySellMaterials < 0)
                 throw new ArgumentException("Exchange settings are invalid.");
             if (RepairHealPercent < 0 || RepairHealPercent > 100)

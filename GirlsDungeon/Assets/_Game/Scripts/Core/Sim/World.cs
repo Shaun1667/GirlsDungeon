@@ -181,6 +181,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>가진 열쇠 (층을 넘어가도 남는다, 3-4d). 잠긴 문 하나(그 방 전체)에 1개.</summary>
         public int Keys { get; set; }
 
+        /// <summary>세트 진열실 진열장에 놓인 파츠 (처음 열 때 만들고, 하나를 고르면 비운다, 3-14g). 층을 새로 만들 때 비운다.</summary>
+        public List<WeaponPart> GalleryOffers { get; } = new List<WeaponPart>();
+
         /// <summary>이 층 교환소에서 이미 판 물건 (ExchangeOffer 비트, 3-14f). 층을 새로 만들 때 0.</summary>
         public byte ExchangeSold { get; set; }
 

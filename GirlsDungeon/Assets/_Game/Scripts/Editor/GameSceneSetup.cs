@@ -61,6 +61,9 @@ namespace GirlsDungeon.EditorTools
             var consoleUsedMaterial = LoadOrCreateMaterial("GreyboxConsoleUsed", new Color(0.35f, 0.36f, 0.4f));
             // 교환대 (3-14f): 주황.
             var counterMaterial = LoadOrCreateMaterial("GreyboxCounter", new Color(0.95f, 0.45f, 0.15f));
+            // 진열장 (3-14g): 분홍, 빈 뒤에는 어둡게.
+            var galleryMaterial = LoadOrCreateMaterial("GreyboxGallery", new Color(0.95f, 0.45f, 0.75f));
+            var galleryUsedMaterial = LoadOrCreateMaterial("GreyboxGalleryUsed", new Color(0.35f, 0.18f, 0.3f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
             var partItemMaterial = LoadOrCreateMaterial("GreyboxPartItem", new Color(0.95f, 0.55f, 0.1f));
@@ -244,6 +247,24 @@ namespace GirlsDungeon.EditorTools
             var exchangeView = canvas.gameObject.AddComponent<ExchangeView>();
             SetReferences(exchangeView, exchangeRefs.ToArray());
 
+            // 진열 창 (3-14g): 진열장 옆에 서면 뜬다. 파츠 3개 중 하나 고르기 + 닫기.
+            var galleryPanel = CreatePanel(canvas.transform, "GalleryPanel", new Vector2(0.5f, 0.5f), new Vector2(0f, 80f),
+                new Vector2(1300f, 560f), new Color(0.12f, 0.06f, 0.1f, 0.96f));
+            var galleryLabel = CreateLabel(galleryPanel.transform, "Label", font, 28, new Vector2(0.5f, 1f), new Vector2(0f, -24f), TextAnchor.UpperLeft);
+            galleryLabel.rectTransform.sizeDelta = new Vector2(1220f, 340f);
+            var galleryRefs = new System.Collections.Generic.List<(string, Object)> { ("panel", galleryPanel), ("label", galleryLabel) };
+            var galleryButtons = new[] { ("pickButton1", "ui.gallery.pick_1"), ("pickButton2", "ui.gallery.pick_2"), ("pickButton3", "ui.gallery.pick_3") };
+            for (int i = 0; i < galleryButtons.Length; i++)
+            {
+                var button = CreateButton(galleryPanel.transform, galleryButtons[i].Item1, font, galleryButtons[i].Item2,
+                    new Vector2(0.5f, 0f), new Vector2(-300f + i * 300f, 130f));
+                galleryRefs.Add((galleryButtons[i].Item1, button));
+            }
+            galleryRefs.Add(("closeButton", CreateButton(galleryPanel.transform, "CloseButton", font, "ui.gallery.close", new Vector2(0.5f, 0f), new Vector2(0f, 24f))));
+            galleryPanel.SetActive(false);
+            var galleryView = canvas.gameObject.AddComponent<GalleryView>();
+            SetReferences(galleryView, galleryRefs.ToArray());
+
             var doorView = canvas.gameObject.AddComponent<DoorView>();
             SetReferences(doorView, ("panel", doorPanel), ("label", doorLabel), ("keyButton", doorKeyButton), ("forceButton", doorForceButton), ("closeButton", doorCloseButton));
 
@@ -327,7 +348,7 @@ namespace GirlsDungeon.EditorTools
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("rackMaterial", rackMaterial), ("rackOpenedMaterial", rackOpenedMaterial), ("repairMaterial", repairMaterial), ("repairUsedMaterial", repairUsedMaterial), ("consoleMaterial", consoleMaterial), ("consoleUsedMaterial", consoleUsedMaterial), ("counterMaterial", counterMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("rackMaterial", rackMaterial), ("rackOpenedMaterial", rackOpenedMaterial), ("repairMaterial", repairMaterial), ("repairUsedMaterial", repairUsedMaterial), ("consoleMaterial", consoleMaterial), ("consoleUsedMaterial", consoleUsedMaterial), ("counterMaterial", counterMaterial), ("galleryMaterial", galleryMaterial), ("galleryUsedMaterial", galleryUsedMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");
@@ -385,6 +406,7 @@ namespace GirlsDungeon.EditorTools
                 ("doorView", doorView),
                 ("roomLabels", roomLabels),
                 ("exchangeView", exchangeView),
+                ("galleryView", galleryView),
                 ("visuals", visuals),
                 ("characterSelect", characterSelect));
 

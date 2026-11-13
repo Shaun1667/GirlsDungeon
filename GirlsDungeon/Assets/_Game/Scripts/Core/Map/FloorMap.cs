@@ -46,6 +46,10 @@ namespace GirlsDungeon.Core.Map
         ObservatoryConsoleUsed = 19,
         /// <summary>교환대 (교환소, 3-14f). 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 교환 창을 연다 (쓰고 나도 그대로).</summary>
         ExchangeCounter = 20,
+        /// <summary>진열장 (세트 진열실, 3-14g). 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 진열 창을 연다.</summary>
+        SetGalleryCase = 21,
+        /// <summary>빈 진열장 (하나를 고른 뒤).</summary>
+        SetGalleryCaseUsed = 22,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -207,7 +211,8 @@ namespace GirlsDungeon.Core.Map
                 || tile == TileType.StorehouseRack || tile == TileType.StorehouseRackOpened
                 || tile == TileType.RepairStation || tile == TileType.RepairStationUsed
                 || tile == TileType.ObservatoryConsole || tile == TileType.ObservatoryConsoleUsed
-                || tile == TileType.ExchangeCounter;
+                || tile == TileType.ExchangeCounter
+                || tile == TileType.SetGalleryCase || tile == TileType.SetGalleryCaseUsed;
         }
 
         /// <summary>보물 상자 칸 (닫힘 · 열림).</summary>

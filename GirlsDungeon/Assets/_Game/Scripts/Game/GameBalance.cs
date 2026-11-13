@@ -146,7 +146,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Special rooms on every floor, after the workshop.")]
         [SerializeField] private SpecialRoomKind[] alwaysSpecialRooms = { SpecialRoomKind.Treasure };
         [Tooltip("Pool of special rooms picked at random each floor (no repeats).")]
-        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange };
+        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery };
         [SerializeField] private int randomSpecialRoomsPerFloor = 2;
         [Tooltip("Normal rooms kept on each floor besides the start and stairs rooms.")]
         [SerializeField] private int minNormalRooms = 2;
@@ -383,6 +383,10 @@ namespace GirlsDungeon.Game
         [Tooltip("Spare part storage slots.")]
         [SerializeField] private int spareSlots = 4;
 
+        [Header("Set gallery (BALANCE 26)")]
+        [Tooltip("Grade of the three same-set parts on display (one per slot 2-4, for the weapon in hand).")]
+        [SerializeField] private PartGrade setGalleryPartGrade = PartGrade.Military;
+
         [Header("Exchange (BALANCE 25)")]
         [Tooltip("Materials paid at the exchange counter: medkit, part, key. Each offer once per floor.")]
         [SerializeField] private int exchangeMedkitCost = 2;
@@ -559,6 +563,7 @@ namespace GirlsDungeon.Game
                 TreasureWeaponPercent = treasureWeaponPercent,
                 StorehouseMaterials = storehouseMaterials,
                 RepairHealPercent = repairHealPercent,
+                SetGalleryPartGrade = setGalleryPartGrade,
                 ExchangeMedkitCost = exchangeMedkitCost,
                 ExchangePartCost = exchangePartCost,
                 ExchangePartGrade = exchangePartGrade,

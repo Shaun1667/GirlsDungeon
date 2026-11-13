@@ -255,7 +255,7 @@ namespace GirlsDungeon.Game
         }
 
         /// <summary>파츠 능력치 목록 (예: "공격 +2 · 체력 +8"). 항목마다 표의 글 하나, 사이는 구분점.</summary>
-        private static string PartStats(WeaponPart part)
+        internal static string PartStats(WeaponPart part)
         {
             var lines = new List<string>();
             foreach (var bonus in part.Bonuses) lines.Add(Text.Get(StatKey(bonus.Stat), bonus.Value));
@@ -493,6 +493,9 @@ namespace GirlsDungeon.Game
                     case UnitMoved moved when moved.UnitId == simulation.World.PlayerId:
                         // 발밑을 떠나면 비교 창을 닫는다 (무기는 바닥에 남는다).
                         CloseWeaponOffer();
+                        break;
+                    case GalleryPicked picked:
+                        AddLog(Text.Get("ui.gallery.log_picked", SetName(picked.Set)));
                         break;
                     case ExchangeTraded traded:
                         AddLog(Text.Get(traded.Offer == ExchangeOffer.Medkit ? "ui.exchange.log_medkit"

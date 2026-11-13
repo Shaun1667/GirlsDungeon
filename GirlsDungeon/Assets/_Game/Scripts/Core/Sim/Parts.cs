@@ -108,7 +108,14 @@ namespace GirlsDungeon.Core.Sim
             return Build(settings, weapon, slot, grade, random);
         }
 
-        private static WeaponPart Build(CombatSettings settings, WeaponKind weapon, int slot, PartGrade grade, IRandom random)
+        /// <summary>칸 · 등급 · 세트를 정해 굴린다 (세트 진열실, 3-14g). 능력치만 random에서. 세트가 붙을 수 없는 칸 · 등급이면 None.</summary>
+        public static WeaponPart GenerateForSlot(CombatSettings settings, WeaponKind weapon, int slot, PartGrade grade, PartSet set, IRandom random)
+        {
+            var part = Build(settings, weapon, slot, grade, random, false);
+            return new WeaponPart(weapon, slot, grade, part.Bonuses, SetEffects.CanHaveSet(grade, slot) ? set : PartSet.None);
+        }
+
+        private static WeaponPart Build(CombatSettings settings, WeaponKind weapon, int slot, PartGrade grade, IRandom random, bool rollSet = true)
         {
             var pool = new List<PartStat>(slot == 0 ? settings.PartPrimaryStats : settings.PartSecondaryStats);
             int count = Math.Min(pool.Count, (slot == 0 ? settings.PartPrimaryStatCounts : settings.PartSecondaryStatCounts)[(int)grade]);
@@ -123,7 +130,7 @@ namespace GirlsDungeon.Core.Sim
                 bonuses.Add(new PartBonus(stat, random.Range(range.Min, range.Max + 1)));
             }
             // 세트는 능력치 다음에 굴린다 (세트가 없는 파츠는 난수를 더 쓰지 않는다).
-            var set = SetEffects.CanHaveSet(grade, slot) ? (PartSet)random.Range(1, SetEffects.SetCount + 1) : PartSet.None;
+            var set = rollSet && SetEffects.CanHaveSet(grade, slot) ? (PartSet)random.Range(1, SetEffects.SetCount + 1) : PartSet.None;
             return new WeaponPart(weapon, slot, grade, bonuses, set);
         }
 

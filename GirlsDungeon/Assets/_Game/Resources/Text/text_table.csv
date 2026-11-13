@@ -1,6 +1,6 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 · 흰 콘솔 · 주황 교환대 클릭: 열기 · 쓰기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest · blue rack · teal repair station · white console · orange counter: Open · Use · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
+ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 · 흰 콘솔 · 주황 교환대 · 분홍 진열장 클릭: 열기 · 쓰기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest · blue rack · teal repair station · white console · orange counter · pink case: Open · Use · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
@@ -303,3 +303,12 @@ ui.exchange.log_medkit,교환소에서 구급상자를 샀다,Bought a medkit at
 ui.exchange.log_part,교환소에서 파츠를 샀다,Bought a part at the exchange
 ui.exchange.log_key,교환소에서 열쇠를 샀다,Bought a key at the exchange
 ui.exchange.log_sell_key,교환소에 열쇠를 팔았다,Sold a key at the exchange
+ui.gallery.title,세트 진열실 — {0} 세트 파츠 3개 중 1개를 고른다 (나머지는 사라짐),Set gallery — pick one of three {0} set parts (the rest vanish)
+ui.gallery.rule,   같은 세트 3개를 2 · 3 · 4번 칸에 끼우면 세트 효과가 켜진다,   Three parts of one set in slots 2-4 turn its effect on
+ui.gallery.offer,{0}. {1} {2} ({3}) — {4},{0}. {1} {2} ({3}) — {4}
+ui.gallery.empty,진열장이 비었다,The case is empty
+ui.gallery.pick_1,1번 고르기,Pick 1
+ui.gallery.pick_2,2번 고르기,Pick 2
+ui.gallery.pick_3,3번 고르기,Pick 3
+ui.gallery.close,닫기,Close
+ui.gallery.log_picked,진열장에서 {0} 세트 파츠를 골랐다,Picked a {0} set part from the gallery

@@ -39,7 +39,7 @@ MonoBehaviour:
   maxSupplyCrates: 3
   workshopsPerFloor: 1
   alwaysSpecialRooms: 02
-  randomSpecialRooms: 03070b05
+  randomSpecialRooms: 03070b0504
   randomSpecialRoomsPerFloor: 2
   minNormalRooms: 2
   lockedSpecialRooms: 01020406
@@ -364,6 +364,7 @@ MonoBehaviour:
   workshopSetCost: 3
   disassembleMaterials: 010000000200000003000000
   spareSlots: 4
+  setGalleryPartGrade: 1
   exchangeMedkitCost: 2
   exchangePartCost: 4
   exchangePartGrade: 1

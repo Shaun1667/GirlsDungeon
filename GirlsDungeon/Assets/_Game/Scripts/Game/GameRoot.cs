@@ -35,6 +35,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private RoomLabelsView roomLabels;
         [Tooltip("Exchange window shown next to an exchange counter (3-14f).")]
         [SerializeField] private ExchangeView exchangeView;
+        [Tooltip("Set gallery window shown next to a display case (3-14g).")]
+        [SerializeField] private GalleryView galleryView;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -119,6 +121,9 @@ namespace GirlsDungeon.Game
             if (exchangeView != null) exchangeView.Bind(simulation, combatSettings);
             moveController.CounterReached -= OnCounterReached;
             moveController.CounterReached += OnCounterReached;
+            if (galleryView != null) galleryView.Bind(simulation, combatSettings, balance);
+            moveController.GalleryReached -= OnGalleryReached;
+            moveController.GalleryReached += OnGalleryReached;
             threatView.Bind(simulation, combatSettings);
             cameraRig.Bind(balance, playerView.transform);
 
@@ -130,7 +135,7 @@ namespace GirlsDungeon.Game
         {
             foreach (var gameEvent in events)
             {
-                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened) && !(gameEvent is StorehouseOpened) && !(gameEvent is RepairUsed) && !(gameEvent is MapRevealed)) continue;
+                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened) && !(gameEvent is StorehouseOpened) && !(gameEvent is RepairUsed) && !(gameEvent is MapRevealed) && !(gameEvent is GalleryPicked)) continue;
                 floorView.Build(simulation.World.Map, balance);
                 return;
             }
@@ -308,6 +313,14 @@ namespace GirlsDungeon.Game
 
         public ExchangeView DebugExchangeView => exchangeView;
 
+        /// <summary>진열장 옆에 섰다: 진열 창을 연다 (3-14g).</summary>
+        private void OnGalleryReached()
+        {
+            if (galleryView != null) galleryView.Open();
+        }
+
+        public GalleryView DebugGalleryView => galleryView;
+
         /// <summary>잠긴 문 옆에 섰다: 문 창을 연다 (3-4d).</summary>
         private void OnDoorReached(GridPos door)
         {
@@ -319,7 +332,7 @@ namespace GirlsDungeon.Game
             // 작업 화면 · 문 창이 떠 있는 동안 지도 클릭을 받지 않는다.
             if (moveController != null)
                 moveController.Blocked = (workshopView != null && workshopView.IsOpen) || (doorView != null && doorView.IsOpen)
-                    || (exchangeView != null && exchangeView.IsOpen);
+                    || (exchangeView != null && exchangeView.IsOpen) || (galleryView != null && galleryView.IsOpen);
         }
 
         /// <summary>[상태 변경] 가장 가까운 잠긴 문 옆으로 순간 이동하고 문 창을 연다 (문 시험용). 없으면 false.</summary>
@@ -392,7 +405,7 @@ namespace GirlsDungeon.Game
                                 var near = new GridPos(x + dx, y + dy);
                                 if (!map.InBounds(near)) continue;
                                 var tile = map.Get(near);
-                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter) nextToContent = true;
+                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter || tile == TileType.SetGalleryCase) nextToContent = true;
                             }
                         if (nextToContent) { best = cell; break; }
                         if (best == null) best = cell;
