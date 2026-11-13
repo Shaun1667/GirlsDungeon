@@ -258,10 +258,10 @@ namespace GirlsDungeon.Tests
         {
             return new MapSettings
             {
-                Width = 32,
-                Height = 32,
-                MinRooms = 6,
-                MaxRooms = 8,
+                Width = 40,
+                Height = 40,
+                MinRooms = 9,
+                MaxRooms = 11,
                 MinRoomSize = 7,
                 MaxRoomSize = 13,
                 RoomMargin = 1,
