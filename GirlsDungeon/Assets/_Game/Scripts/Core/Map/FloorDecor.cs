@@ -134,6 +134,8 @@ namespace GirlsDungeon.Core.Map
                 (HasTile(map, room, TileType.SupplyCrate) ? withCrate : plain).Add(room);
             }
 
+            var all = new List<RoomRect>(plain);
+            all.AddRange(withCrate);
             int placed = 0;
             foreach (var candidates in new[] { plain, withCrate })
             {
@@ -146,18 +148,30 @@ namespace GirlsDungeon.Core.Map
                     // 특수 방 입구는 잠긴 문 (3-4d). 문을 달면 다른 곳이 끊기는 방(복도가 방 옆을 지나감 등)은 쓰지 않는다.
                     if (LockRoom(map, room))
                     {
-                        placed++;
-                        continue;
+                        if (BenchHasRoom(map, room))
+                        {
+                            placed++;
+                            continue;
+                        }
+                        foreach (var door in Entrances(map, room)) map.SetTile(door, TileType.Floor);
                     }
                     RemoveTile(map, room, TileType.Workbench);
                 }
             }
+
+            // 잠글 수 있는 방이 없는 층(방마다 복도가 지나가거나 낭떠러지뿐인 방 등, 드묾)은 문 없는 작업방으로 둔다 — 작업방은 층마다 있게.
+            foreach (var room in all)
+            {
+                if (placed >= settings.WorkshopsPerFloor) break;
+                if (HasTile(map, room, TileType.Workbench)) continue;
+                if (TryPlaceWorkbench(map, room)) placed++;
+            }
         }
 
         /// <summary>
-        /// 특수 방의 모든 입구에 잠긴 문을 단다 (3-4d) — 입구 = 방 밖의 설 수 있는 칸 중 방 칸과 8방향으로 붙은 칸.
-        /// 문을 단 뒤 방 밖은 모두 시작 칸에서 이어지고 방 안은 닿지 않아야 한다. 아니면(또는 입구가 시작 · 계단 칸이거나 없으면) 되돌리고 false.
-        /// 다른 특수 방도 이 함수를 쓴다.
+        /// 특수 방의 모든 입구에 잠긴 문을 단다 (3-4d) — 입구 = 방 가장자리 줄의 칸 중 방 밖의 설 수 있는 칸과 8방향으로 붙은 칸.
+        /// 문은 방 안쪽 가장자리에 달아서 방 옆을 지나는 복도는 그대로 둔다. 문을 단 뒤 방 밖은 모두 시작 칸에서 이어지고, 방 안은 닿지 않으며,
+        /// 방 안에 설 칸이 남아야 한다. 아니면(또는 입구가 시작 · 계단 칸이거나 없으면) 되돌리고 false. 다른 특수 방도 이 함수를 쓴다.
         /// </summary>
         public static bool LockRoom(FloorMap map, RoomRect room)
         {
@@ -166,24 +180,60 @@ namespace GirlsDungeon.Core.Map
             foreach (var cell in doors)
                 if (cell == map.StartCell || cell == map.StairsCell) return false;
             foreach (var cell in doors) map.SetTile(cell, TileType.DoorLocked);
-            if (OutsideConnectedAndRoomSealed(map, room)) return true;
+            if (OutsideConnectedAndRoomSealed(map, room) && HasWalkableInside(map, room)) return true;
             foreach (var cell in doors) map.SetTile(cell, TileType.Floor);
             return false;
         }
 
-        /// <summary>방의 입구 칸 (방 밖, 방 칸과 8방향으로 붙은 칸 중 설 수 있거나 문인 칸). 행 순서.</summary>
+        /// <summary>방의 입구 칸 — 방 가장자리 줄에서, 이미 문이거나 방 밖의 설 수 있는 칸과 8방향으로 붙은 설 수 있는 칸. 행 순서.</summary>
         public static List<GridPos> Entrances(FloorMap map, RoomRect room)
         {
             var result = new List<GridPos>();
-            for (int y = room.Y - 1; y <= room.Y + room.Height; y++)
-                for (int x = room.X - 1; x <= room.X + room.Width; x++)
+            for (int y = room.Y; y < room.Y + room.Height; y++)
+                for (int x = room.X; x < room.X + room.Width; x++)
                 {
+                    bool edge = x == room.X || y == room.Y || x == room.X + room.Width - 1 || y == room.Y + room.Height - 1;
+                    if (!edge) continue;
                     var cell = new GridPos(x, y);
-                    if (room.Contains(cell) || !map.InBounds(cell)) continue;
                     var tile = map.Get(cell);
-                    if (map.IsWalkable(cell) || tile == TileType.DoorLocked || tile == TileType.DoorLockedForced || tile == TileType.DoorOpen) result.Add(cell);
+                    if (tile == TileType.DoorLocked || tile == TileType.DoorLockedForced || tile == TileType.DoorOpen)
+                    {
+                        result.Add(cell);
+                        continue;
+                    }
+                    if (map.IsWalkable(cell) && TouchesOutsideWalkable(map, room, cell)) result.Add(cell);
                 }
             return result;
+        }
+
+        private static bool TouchesOutsideWalkable(FloorMap map, RoomRect room, GridPos cell)
+        {
+            foreach (var step in Steps)
+            {
+                var next = new GridPos(cell.X + step.X, cell.Y + step.Y);
+                if (!room.Contains(next) && map.IsWalkable(next)) return true;
+            }
+            return false;
+        }
+
+        private static bool HasWalkableInside(FloorMap map, RoomRect room)
+        {
+            for (int y = room.Y; y < room.Y + room.Height; y++)
+                for (int x = room.X; x < room.X + room.Width; x++)
+                    if (map.IsWalkable(new GridPos(x, y))) return true;
+            return false;
+        }
+
+        /// <summary>문을 단 뒤에도 작업대 바로 옆에 설 칸이 남았는가.</summary>
+        private static bool BenchHasRoom(FloorMap map, RoomRect room)
+        {
+            for (int y = room.Y; y < room.Y + room.Height; y++)
+                for (int x = room.X; x < room.X + room.Width; x++)
+                {
+                    var cell = new GridPos(x, y);
+                    if (map.Get(cell) == TileType.Workbench && !HasWalkableNeighbor(map, cell)) return false;
+                }
+            return true;
         }
 
         private static bool OutsideConnectedAndRoomSealed(FloorMap map, RoomRect room)
@@ -263,7 +313,8 @@ namespace GirlsDungeon.Core.Map
                 foreach (var step in Steps)
                 {
                     var near = new GridPos(cell.X + step.X, cell.Y + step.Y);
-                    if (near == map.StartCell || near == map.StairsCell) nearKeyCell = true;
+                    // 보급 상자 바로 옆에도 놓지 않는다 — 상자 옆 설 칸을 막을 수 있다.
+                    if (near == map.StartCell || near == map.StairsCell || map.IsSupplyCrate(near)) nearKeyCell = true;
                 }
                 if (nearKeyCell) continue;
 

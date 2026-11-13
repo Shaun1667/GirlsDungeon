@@ -200,7 +200,7 @@ namespace GirlsDungeon.Core.Map
         {
             int count = 0;
             for (int i = 0; i < tiles.Length; i++)
-                if (tiles[i] == TileType.Floor || tiles[i] == TileType.Stairs) count++;
+                if (tiles[i] == TileType.Floor || tiles[i] == TileType.Stairs || tiles[i] == TileType.DoorOpen) count++;
             return count;
         }
 

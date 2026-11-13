@@ -83,14 +83,8 @@ namespace GirlsDungeon.Core.Sim
             return opened;
         }
 
-        private static bool Touches(RoomRect room, GridPos cell)
-        {
-            if (room.Contains(cell)) return false;
-            for (int dy = -1; dy <= 1; dy++)
-                for (int dx = -1; dx <= 1; dx++)
-                    if (room.Contains(new GridPos(cell.X + dx, cell.Y + dy))) return true;
-            return false;
-        }
+        /// <summary>문은 그 방의 가장자리 줄에 있다 (FloorDecor.Entrances).</summary>
+        private static bool Touches(RoomRect room, GridPos cell) => room.Contains(cell);
     }
 
     public enum DoorOpenMethod : byte

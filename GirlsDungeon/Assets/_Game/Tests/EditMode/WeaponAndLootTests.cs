@@ -253,6 +253,8 @@ namespace GirlsDungeon.Tests
                     Assert.That(rooms[0].Contains(map.StartCell) || rooms[0].Contains(map.StairsCell), Is.False, $"seed {seed} {crate}");
                     Assert.That(crates.Count(c => rooms[0].Contains(c)), Is.EqualTo(1), $"seed {seed}: one per room");
                     Assert.That(map.IsWalkable(crate), Is.False);
+                    // 잠긴 특수 방 안의 상자는 문을 열면 닿는다 (3-4d).
+                    TestData.OpenAllDoors(map);
                     bool standable = false;
                     for (int dy = -1; dy <= 1; dy++)
                         for (int dx = -1; dx <= 1; dx++)
@@ -279,6 +281,7 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = MakeWorld(new GridPos(0, 0), "...S...", ".......");
+            world.FloorKeyGiven = true; // 보장 열쇠(3-4d)는 이 테스트가 보는 물건이 아니다.
             var simulation = new Simulation(world, combat);
             var crate = new GridPos(3, 0);
 
@@ -319,6 +322,7 @@ namespace GirlsDungeon.Tests
                 var world = new World(seed, new RandomStreams(seed)) { Map = TestData.Parse("S.") };
                 world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(1, 0)).Id;
                 world.Map.SetTile(new GridPos(0, 0), TileType.SupplyCrate);
+                world.FloorKeyGiven = true; // 보장 열쇠(3-4d)는 따로 검사한다 (DoorTests).
                 // 바로 옆 빈 칸이 플레이어 칸뿐이면 발밑에 놓인다.
                 Assert.That(Loot.OpenCrate(world, combat, new GridPos(0, 0), new List<GameEvent>()), Is.True);
                 var item = world.Items.Single();
@@ -357,8 +361,10 @@ namespace GirlsDungeon.Tests
 
                 Assert.That(simulation.Execute(new DebugDefeatCommand(enemy.Id)), Is.True);
                 Assert.That(world.Mode, Is.EqualTo(WorldMode.Exploration));
-                if (world.Items.Count == 0) { nothing++; continue; }
-                var item = world.Items.Single();
+                // 열쇠(3-4d)는 따로 굴린다 — 여기서는 원래 보상만 센다 (DoorTests가 열쇠를 본다).
+                var drops = world.Items.Where(i => i.Kind != ItemKind.Key).ToList();
+                if (drops.Count == 0) { nothing++; continue; }
+                var item = drops.Single();
                 Assert.That(item.Position, Is.EqualTo(new GridPos(5, 0)), $"seed {seed}: on the enemy's cell");
                 if (item.Kind == ItemKind.Weapon) weapons++;
                 else if (item.Kind == ItemKind.Part) parts++;
