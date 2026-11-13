@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System;
 
 namespace GirlsDungeon.Core.Map
@@ -43,6 +44,17 @@ namespace GirlsDungeon.Core.Map
         /// <summary>층마다 작업방 수 (작업대 하나씩, 시작 · 계단 방 제외, 적이 나오지 않는다). 0이면 없음.</summary>
         public int WorkshopsPerFloor;
 
+        // 특수 방 (BALANCE 1-21 ~ 1-24, 3-14)
+        /// <summary>층마다 늘 나오는 특수 방 (작업방 다음 순서).</summary>
+        public List<SpecialRoomKind> AlwaysSpecialRooms = new List<SpecialRoomKind>();
+        /// <summary>층마다 무작위로 고르는 특수 방 후보 (겹치지 않게).</summary>
+        public List<SpecialRoomKind> RandomSpecialRooms = new List<SpecialRoomKind>();
+        public int RandomSpecialRoomsPerFloor;
+        /// <summary>특수 방이 아닌 일반 방을 최소 몇 개 남기는가 (시작 · 계단 방 제외).</summary>
+        public int MinNormalRooms;
+        /// <summary>입구를 잠그는 특수 방 종류.</summary>
+        public List<SpecialRoomKind> LockedSpecialRooms = new List<SpecialRoomKind>();
+
         public void Validate()
         {
             if (Width < MaxRoomSize + 2 || Height < MaxRoomSize + 2)
@@ -64,6 +76,8 @@ namespace GirlsDungeon.Core.Map
                 throw new ArgumentException("Supply crate settings are invalid.");
             if (WorkshopsPerFloor < 0)
                 throw new ArgumentException("Workshop settings are invalid.");
+            if (RandomSpecialRoomsPerFloor < 0 || MinNormalRooms < 0 || AlwaysSpecialRooms.Contains(SpecialRoomKind.None) || RandomSpecialRooms.Contains(SpecialRoomKind.None))
+                throw new ArgumentException("Special room settings are invalid.");
         }
     }
 }

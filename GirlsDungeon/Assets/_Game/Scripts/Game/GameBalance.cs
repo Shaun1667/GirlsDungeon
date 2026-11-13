@@ -142,6 +142,20 @@ namespace GirlsDungeon.Game
         [Tooltip("Workshop rooms per floor (one workbench each, no enemies).")]
         [SerializeField] private int workshopsPerFloor = 1;
 
+        [Header("Special rooms (BALANCE 1-21 ~ 1-24)")]
+        [Tooltip("Special rooms on every floor, after the workshop.")]
+        [SerializeField] private SpecialRoomKind[] alwaysSpecialRooms = new SpecialRoomKind[0];
+        [Tooltip("Pool of special rooms picked at random each floor (no repeats).")]
+        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = new SpecialRoomKind[0];
+        [SerializeField] private int randomSpecialRoomsPerFloor = 2;
+        [Tooltip("Normal rooms kept on each floor besides the start and stairs rooms.")]
+        [SerializeField] private int minNormalRooms = 2;
+        [Tooltip("Special room kinds whose entrances are locked doors.")]
+        [SerializeField] private SpecialRoomKind[] lockedSpecialRooms =
+        {
+            SpecialRoomKind.Workshop, SpecialRoomKind.Treasure, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar,
+        };
+
         [Header("Units (BALANCE 4)")]
         [SerializeField] private UnitStatsEntry[] units =
         {
@@ -697,6 +711,11 @@ namespace GirlsDungeon.Game
                 MinSupplyCrates = minSupplyCrates,
                 MaxSupplyCrates = maxSupplyCrates,
                 WorkshopsPerFloor = workshopsPerFloor,
+                AlwaysSpecialRooms = new System.Collections.Generic.List<SpecialRoomKind>(alwaysSpecialRooms),
+                RandomSpecialRooms = new System.Collections.Generic.List<SpecialRoomKind>(randomSpecialRooms),
+                RandomSpecialRoomsPerFloor = randomSpecialRoomsPerFloor,
+                MinNormalRooms = minNormalRooms,
+                LockedSpecialRooms = new System.Collections.Generic.List<SpecialRoomKind>(lockedSpecialRooms),
             };
         }
     }

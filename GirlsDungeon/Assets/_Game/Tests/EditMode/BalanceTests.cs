@@ -270,6 +270,35 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void SpecialRooms_MatchBalanceTable1_21To1_24()
+        {
+            var map = Load().CreateMapSettings();
+            Assert.That(map.RandomSpecialRoomsPerFloor, Is.EqualTo(2), "1-21");
+            Assert.That(map.MinNormalRooms, Is.EqualTo(2), "1-22");
+            // 1-23: 보상이 큰 방만 잠근다 (사용자 결정, 종류는 Claude 정함).
+            Assert.That(map.LockedSpecialRooms, Is.EquivalentTo(new[]
+            {
+                GirlsDungeon.Core.Map.SpecialRoomKind.Workshop, GirlsDungeon.Core.Map.SpecialRoomKind.Treasure,
+                GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar,
+            }));
+            // 1-24: 방 내용이 생기면 하나씩 넣는다 (3-14b ~).
+            Assert.That(map.AlwaysSpecialRooms, Is.Empty);
+            Assert.That(map.RandomSpecialRooms, Is.Empty);
+        }
+
+        [Test]
+        public void RoomNameKeys_ExistInTheTextTable()
+        {
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (GirlsDungeon.Core.Map.SpecialRoomKind kind in System.Enum.GetValues(typeof(GirlsDungeon.Core.Map.SpecialRoomKind)))
+            {
+                if (kind == GirlsDungeon.Core.Map.SpecialRoomKind.None) continue;
+                string key = GirlsDungeon.Game.RoomLabelsView.NameKey(kind);
+                Assert.That(table.Contains(key), Is.True, key);
+            }
+        }
+
+        [Test]
         public void DoorTextKeys_ExistInTheTextTable()
         {
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));

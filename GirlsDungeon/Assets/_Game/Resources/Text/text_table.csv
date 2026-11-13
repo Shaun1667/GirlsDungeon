@@ -265,3 +265,15 @@ ui.door.log_key_dropped,열쇠가 떨어졌다,A key dropped
 ui.door.log_opened,열쇠로 문을 열었다,Opened the door with a key
 ui.door.log_forced,힘으로 문을 열었다,Forced the door open
 ui.door.log_force_failed,문을 힘으로 열지 못했다,Failed to force the door
+room.kind.workshop.name,파츠 작업방,Part Workshop
+room.kind.treasure.name,보물방,Treasure Room
+room.kind.storehouse.name,보급고,Storehouse
+room.kind.set_gallery.name,세트 진열실,Set Gallery
+room.kind.exchange.name,교환소,Exchange
+room.kind.altar.name,제단,Altar
+room.kind.repair.name,수리실,Repair Bay
+room.kind.arena.name,결투장,Arena
+room.kind.trap.name,함정 방,Trap Room
+room.kind.gamble.name,도박실,Gamble Room
+room.kind.observatory.name,관측실,Observatory
+room.kind.archive.name,기록실,Archive

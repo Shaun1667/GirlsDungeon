@@ -68,6 +68,8 @@ namespace GirlsDungeon.Core.Map
         private readonly int[] lowWallEastDamage;
         private readonly int[] lowWallNorthDamage;
         private readonly List<RoomRect> rooms;
+        /// <summary>방마다 특수 방 종류 (Rooms와 같은 순서, 3-14).</summary>
+        private readonly SpecialRoomKind[] roomKinds;
 
         public int Width { get; }
         public int Height { get; }
@@ -100,8 +102,29 @@ namespace GirlsDungeon.Core.Map
             lowWallEastDamage = new int[count];
             lowWallNorthDamage = new int[count];
             this.rooms = new List<RoomRect>(rooms);
+            roomKinds = new SpecialRoomKind[this.rooms.Count];
             StartCell = startCell;
             StairsCell = stairsCell;
+        }
+
+        /// <summary>그 방의 특수 방 종류 (None = 일반 방).</summary>
+        public SpecialRoomKind RoomKind(int roomIndex) => roomKinds[roomIndex];
+
+        public void SetRoomKind(int roomIndex, SpecialRoomKind kind) => roomKinds[roomIndex] = kind;
+
+        /// <summary>그 칸이 든 방의 번호 (방 밖이면 -1).</summary>
+        public int RoomIndexAt(GridPos cell)
+        {
+            for (int i = 0; i < rooms.Count; i++)
+                if (rooms[i].Contains(cell)) return i;
+            return -1;
+        }
+
+        /// <summary>그 칸이 든 특수 방의 종류 (일반 방 · 복도는 None).</summary>
+        public SpecialRoomKind SpecialRoomAt(GridPos cell)
+        {
+            int index = RoomIndexAt(cell);
+            return index < 0 ? SpecialRoomKind.None : roomKinds[index];
         }
 
         public bool InBounds(GridPos cell) => cell.X >= 0 && cell.Y >= 0 && cell.X < Width && cell.Y < Height;

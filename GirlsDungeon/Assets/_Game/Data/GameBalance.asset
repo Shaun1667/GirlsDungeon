@@ -38,6 +38,11 @@ MonoBehaviour:
   minSupplyCrates: 2
   maxSupplyCrates: 3
   workshopsPerFloor: 1
+  alwaysSpecialRooms: 
+  randomSpecialRooms: 
+  randomSpecialRoomsPerFloor: 2
+  minNormalRooms: 2
+  lockedSpecialRooms: 01020406
   units:
   - kind: 0
     nameKey: unit.player.name

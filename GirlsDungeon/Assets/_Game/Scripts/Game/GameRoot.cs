@@ -31,6 +31,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private WorkshopView workshopView;
         [Tooltip("Locked door window shown next to a locked door (3-4d).")]
         [SerializeField] private DoorView doorView;
+        [Tooltip("Special room names over their entrances (3-14).")]
+        [SerializeField] private RoomLabelsView roomLabels;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -93,6 +95,7 @@ namespace GirlsDungeon.Game
             playerView.Bind(eventPlayer, balance, visuals != null ? visuals.Find(balance.PlayerVisualId(simulation.World.PlayerCharacter)) : null);
             unitsView.Bind(eventPlayer, balance);
             itemsView.Bind(eventPlayer);
+            if (roomLabels != null) roomLabels.Bind(eventPlayer);
             hudView.Bind(eventPlayer, combatSettings, balance);
             moveController.Bind(simulation, eventPlayer, playerView, hudView, combatSettings, balance.MoveCostTicks, balance.CameraDragThresholdPixels);
             skillBar.Bind(simulation, eventPlayer, moveController, playerView, combatSettings, balance);
@@ -320,7 +323,7 @@ namespace GirlsDungeon.Game
                         for (int dx = -1; dx <= 1; dx++)
                         {
                             var side = new GridPos(x + dx, y + dy);
-                            if ((dx == 0 && dy == 0) || !map.IsWalkable(side) || world.IsOccupied(side) || FloorDecor.InWorkshopRoom(map, side)) continue;
+                            if ((dx == 0 && dy == 0) || !map.IsWalkable(side) || world.IsOccupied(side) || FloorDecor.InSpecialRoom(map, side)) continue;
                             DebugUsed = true;
                             if (!simulation.Execute(new DebugTeleportCommand(world.PlayerId, side))) return false;
                             OnDoorReached(door);
@@ -349,6 +352,24 @@ namespace GirlsDungeon.Game
         }
 
         public DoorView DebugDoorView => doorView;
+
+        /// <summary>이 층의 특수 방 (디버그): 종류 · 자리 · 잠김.</summary>
+        public string DebugRoomsSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var map = world.Map;
+            var parts = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < map.Rooms.Count; i++)
+            {
+                var kind = map.RoomKind(i);
+                if (kind == SpecialRoomKind.None) continue;
+                var room = map.Rooms[i];
+                bool locked = FloorDecor.Entrances(map, room).Exists(map.IsLockedDoor);
+                parts.Add($"{kind}@{room.X},{room.Y}{(locked ? " locked" : "")}");
+            }
+            return $"Rooms={map.Rooms.Count} Special=[{string.Join(" ", parts)}] Labels={(roomLabels != null ? roomLabels.LabelCount : 0)}";
+        }
 
         /// <summary>[상태 변경] 작업대 옆 칸으로 순간 이동하고 작업 화면을 연다 (작업방 시험용). 작업대가 없으면 false.</summary>
         public bool DebugGoToWorkbench()

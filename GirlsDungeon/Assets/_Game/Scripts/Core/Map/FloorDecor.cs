@@ -121,54 +121,6 @@ namespace GirlsDungeon.Core.Map
         }
 
         /// <summary>
-        /// 파츠 작업방을 정한다 (결정 2026-11-13, 사용자: 층마다 1개 · 적 없음, 3-4c). 보급 상자 다음에 작업 난수로 따로 부른다.
-        /// 시작 방 · 계단 방 제외, 보급 상자가 없는 방을 먼저 고른다. 작업대는 방 가운데에 가까운 칸부터 — 상자와 같은 조건(테두리 · 낮은 벽 · 열쇠 칸 · 연결).
-        /// </summary>
-        public static void PlaceWorkshops(FloorMap map, MapSettings settings, IRandom random)
-        {
-            var plain = new List<RoomRect>();
-            var withCrate = new List<RoomRect>();
-            foreach (var room in map.Rooms)
-            {
-                if (room.Contains(map.StartCell) || room.Contains(map.StairsCell)) continue;
-                (HasTile(map, room, TileType.SupplyCrate) ? withCrate : plain).Add(room);
-            }
-
-            var all = new List<RoomRect>(plain);
-            all.AddRange(withCrate);
-            int placed = 0;
-            foreach (var candidates in new[] { plain, withCrate })
-            {
-                while (placed < settings.WorkshopsPerFloor && candidates.Count > 0)
-                {
-                    int pick = random.Range(0, candidates.Count);
-                    var room = candidates[pick];
-                    candidates.RemoveAt(pick);
-                    if (!TryPlaceWorkbench(map, room)) continue;
-                    // 특수 방 입구는 잠긴 문 (3-4d). 문을 달면 다른 곳이 끊기는 방(복도가 방 옆을 지나감 등)은 쓰지 않는다.
-                    if (LockRoom(map, room))
-                    {
-                        if (BenchHasRoom(map, room))
-                        {
-                            placed++;
-                            continue;
-                        }
-                        foreach (var door in Entrances(map, room)) map.SetTile(door, TileType.Floor);
-                    }
-                    RemoveTile(map, room, TileType.Workbench);
-                }
-            }
-
-            // 잠글 수 있는 방이 없는 층(방마다 복도가 지나가거나 낭떠러지뿐인 방 등, 드묾)은 문 없는 작업방으로 둔다 — 작업방은 층마다 있게.
-            foreach (var room in all)
-            {
-                if (placed >= settings.WorkshopsPerFloor) break;
-                if (HasTile(map, room, TileType.Workbench)) continue;
-                if (TryPlaceWorkbench(map, room)) placed++;
-            }
-        }
-
-        /// <summary>
         /// 특수 방의 모든 입구에 잠긴 문을 단다 (3-4d) — 입구 = 방 가장자리 줄의 칸 중 방 밖의 설 수 있는 칸과 8방향으로 붙은 칸.
         /// 문은 방 안쪽 가장자리에 달아서 방 옆을 지나는 복도는 그대로 둔다. 문을 단 뒤 방 밖은 모두 시작 칸에서 이어지고, 방 안은 닿지 않으며,
         /// 방 안에 설 칸이 남아야 한다. 아니면(또는 입구가 시작 · 계단 칸이거나 없으면) 되돌리고 false. 다른 특수 방도 이 함수를 쓴다.
@@ -225,7 +177,7 @@ namespace GirlsDungeon.Core.Map
         }
 
         /// <summary>문을 단 뒤에도 작업대 바로 옆에 설 칸이 남았는가.</summary>
-        private static bool BenchHasRoom(FloorMap map, RoomRect room)
+        internal static bool BenchHasRoom(FloorMap map, RoomRect room)
         {
             for (int y = room.Y; y < room.Y + room.Height; y++)
                 for (int x = room.X; x < room.X + room.Width; x++)
@@ -268,22 +220,20 @@ namespace GirlsDungeon.Core.Map
             return reachedOutside == walkableOutside;
         }
 
-        private static void RemoveTile(FloorMap map, RoomRect room, TileType tile)
+        internal static void RemoveTile(FloorMap map, RoomRect room, TileType tile)
         {
             for (int y = room.Y; y < room.Y + room.Height; y++)
                 for (int x = room.X; x < room.X + room.Width; x++)
                     if (map.Get(new GridPos(x, y)) == tile) map.SetTile(new GridPos(x, y), TileType.Floor);
         }
 
-        /// <summary>그 칸이 작업대가 있는 방 안인가 (적 배치에서 뺀다).</summary>
-        public static bool InWorkshopRoom(FloorMap map, GridPos cell)
-        {
-            foreach (var room in map.Rooms)
-                if (room.Contains(cell) && HasTile(map, room, TileType.Workbench)) return true;
-            return false;
-        }
+        /// <summary>그 칸이 작업방 안인가.</summary>
+        public static bool InWorkshopRoom(FloorMap map, GridPos cell) => map.SpecialRoomAt(cell) == SpecialRoomKind.Workshop;
 
-        private static bool HasTile(FloorMap map, RoomRect room, TileType tile)
+        /// <summary>그 칸이 특수 방 안인가 (일반 적 배치에서 뺀다, 3-14).</summary>
+        public static bool InSpecialRoom(FloorMap map, GridPos cell) => map.SpecialRoomAt(cell) != SpecialRoomKind.None;
+
+        internal static bool HasTile(FloorMap map, RoomRect room, TileType tile)
         {
             for (int y = room.Y; y < room.Y + room.Height; y++)
                 for (int x = room.X; x < room.X + room.Width; x++)
@@ -291,7 +241,7 @@ namespace GirlsDungeon.Core.Map
             return false;
         }
 
-        private static bool TryPlaceWorkbench(FloorMap map, RoomRect room)
+        internal static bool TryPlaceWorkbench(FloorMap map, RoomRect room)
         {
             // 가운데에서 가까운 칸 순서 (거리 같으면 행 순서) — 난수 없이 정해진다.
             var cells = new List<GridPos>();

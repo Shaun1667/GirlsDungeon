@@ -147,8 +147,8 @@ namespace GirlsDungeon.Core.Sim
             FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
             // 보급 상자는 아이템 난수로 따로 — 지형 · 엄폐물 굴림에 영향을 주지 않는다.
             FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, world.Random.Get(RandomPurpose.Item));
-            // 작업방도 작업 난수로 따로 (3-4c).
-            FloorDecor.PlaceWorkshops(world.Map, mapSettings, world.Random.Get(RandomPurpose.Workshop));
+            // 특수 방(작업방 포함)도 작업 난수로 따로 (3-4c · 3-14).
+            SpecialRoomLayout.Place(world.Map, mapSettings, world.Random.Get(RandomPurpose.Workshop));
         }
     }
 
@@ -175,8 +175,8 @@ namespace GirlsDungeon.Core.Sim
                     if (!map.IsWalkable(cell) || cell == map.StairsCell || world.IsOccupied(cell)) continue;
                     if (Math.Max(Math.Abs(cell.X - start.X), Math.Abs(cell.Y - start.Y)) < settings.EnemyMinDistanceFromStart) continue;
                     if (Vision.IsSet(visibleFromStart, map, cell)) continue;
-                    // 작업방에는 적이 나오지 않는다 (3-4c).
-                    if (FloorDecor.InWorkshopRoom(map, cell)) continue;
+                    // 특수 방에는 일반 적이 나오지 않는다 (3-4c · 3-14).
+                    if (FloorDecor.InSpecialRoom(map, cell)) continue;
                     candidates.Add(cell);
                 }
             }

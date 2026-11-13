@@ -283,6 +283,10 @@ namespace GirlsDungeon.Tests
                 MinSupplyCrates = 2,
                 MaxSupplyCrates = 3,
                 WorkshopsPerFloor = 1,
+                // BALANCE 1-21 ~ 1-24 특수 방 (방 내용은 3-14b부터 하나씩).
+                RandomSpecialRoomsPerFloor = 2,
+                MinNormalRooms = 2,
+                LockedSpecialRooms = { SpecialRoomKind.Workshop, SpecialRoomKind.Treasure, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar },
             };
         }
 

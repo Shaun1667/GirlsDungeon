@@ -288,6 +288,7 @@ namespace GirlsDungeon.EditorTools
             var unitsView = unitsObject.AddComponent<UnitsView>();
             SetReferences(unitsView, ("enemyMaterial", enemyMaterial), ("assaultMaterial", assaultMaterial));
 
+            var roomLabels = new GameObject("RoomLabels").AddComponent<RoomLabelsView>();
             var itemsView = new GameObject("ItemsView").AddComponent<ItemsView>();
             SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial), ("partMaterial", partItemMaterial), ("keyMaterial", keyItemMaterial));
 
@@ -349,6 +350,7 @@ namespace GirlsDungeon.EditorTools
                 ("combatFx", combatFx),
                 ("workshopView", workshopView),
                 ("doorView", doorView),
+                ("roomLabels", roomLabels),
                 ("visuals", visuals),
                 ("characterSelect", characterSelect));
 

@@ -20,7 +20,7 @@ namespace GirlsDungeon.Core.Sim
         /// 14: 고른 캐릭터 (2026-11-11). 15: 음파 공격 재사용 대기 (2026-11-12). 16: 이번 차례 이동 여부 → 걸은 칸 수 (2026-11-12).
         /// 17: 무기 파츠 — 든 무기 4칸 · 바닥 파츠 · 바닥 무기의 파츠 · 파츠가 더해 둔 몸 능력치 (2026-11-12, 3-4).
         /// </summary>
-        public const int Version = 20;
+        public const int Version = 21;
 
         public static byte[] Encode(World world)
         {
@@ -280,6 +280,7 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write(room.Width);
                 writer.Write(room.Height);
             }
+            for (int i = 0; i < map.Rooms.Count; i++) writer.Write((byte)map.RoomKind(i));
 
             WriteCell(writer, map.StartCell);
             WriteCell(writer, map.StairsCell);
@@ -315,10 +316,13 @@ namespace GirlsDungeon.Core.Sim
             var rooms = new List<RoomRect>(roomCount);
             for (int i = 0; i < roomCount; i++)
                 rooms.Add(new RoomRect(reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32(), reader.ReadInt32()));
+            var roomKinds = new SpecialRoomKind[roomCount];
+            for (int i = 0; i < roomCount; i++) roomKinds[i] = (SpecialRoomKind)reader.ReadByte();
 
             var start = ReadCell(reader);
             var stairs = ReadCell(reader);
             var map = new FloorMap(width, height, tiles, lowWallEast, lowWallNorth, rooms, start, stairs);
+            for (int i = 0; i < roomKinds.Length; i++) map.SetRoomKind(i, roomKinds[i]);
             for (int i = 0; i < tiles.Length; i++)
             {
                 var cell = new GridPos(i % width, i / width);
