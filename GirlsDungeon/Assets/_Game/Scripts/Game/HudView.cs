@@ -497,6 +497,11 @@ namespace GirlsDungeon.Game
                     case AltarTraded traded:
                         AddLog(Text.Get("ui.altar.log_traded", Text.Get(StatNameKey(traded.CostStat)), traded.CostAmount, Text.Get(StatNameKey(traded.BoonStat)), traded.BoonAmount));
                         break;
+                    case GambleOpened gamble:
+                        AddLog(Text.Get(gamble.Outcome == GambleOutcome.Jackpot ? "ui.gamble.log_jackpot"
+                            : gamble.Outcome == GambleOutcome.Small ? "ui.gamble.log_small"
+                            : gamble.Outcome == GambleOutcome.Empty ? "ui.gamble.log_empty" : "ui.gamble.log_ambush"));
+                        break;
                     case ArenaCleared cleared:
                         AddLog(Text.Get("ui.arena.log_cleared", GradeName(cleared.Grade)));
                         break;

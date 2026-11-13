@@ -156,7 +156,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Special rooms on every floor, after the workshop.")]
         [SerializeField] private SpecialRoomKind[] alwaysSpecialRooms = { SpecialRoomKind.Treasure };
         [Tooltip("Pool of special rooms picked at random each floor (no repeats).")]
-        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar, SpecialRoomKind.Arena, SpecialRoomKind.Trap };
+        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar, SpecialRoomKind.Arena, SpecialRoomKind.Trap, SpecialRoomKind.Gamble };
         [SerializeField] private int randomSpecialRoomsPerFloor = 2;
         [Tooltip("Normal rooms kept on each floor besides the start and stairs rooms.")]
         [SerializeField] private int minNormalRooms = 2;
@@ -173,6 +173,18 @@ namespace GirlsDungeon.Game
         [SerializeField] private int trapCrates = 3;
         [Tooltip("Riflemen placed on overwatch in a trap room, far from the entrances.")]
         [SerializeField] private int trapEnemyCount = 2;
+
+        [Header("Gamble room (BALANCE 30)")]
+        [Tooltip("Gamble chests in a gamble room; only one can be opened.")]
+        [SerializeField] private int gambleChests = 3;
+        [Tooltip("Outcome chances (%): jackpot part, small prize (medkit), empty. The rest is an ambush.")]
+        [SerializeField] private int gambleJackpotPercent = 30;
+        [SerializeField] private int gambleSmallPercent = 30;
+        [SerializeField] private int gambleEmptyPercent = 20;
+        [Tooltip("Grade of the jackpot part (for the weapon in hand).")]
+        [SerializeField] private PartGrade gambleJackpotGrade = PartGrade.Precision;
+        [Tooltip("Enemies that appear on an ambush (awake, floor strength).")]
+        [SerializeField] private int gambleAmbushEnemies = 2;
 
         [Header("Units (BALANCE 4)")]
         [SerializeField] private UnitStatsEntry[] units =
@@ -605,6 +617,11 @@ namespace GirlsDungeon.Game
                 SetGalleryPartGrade = setGalleryPartGrade,
                 AltarOfferCount = altarOfferCount,
                 TrapEnemyCount = trapEnemyCount,
+                GambleJackpotPercent = gambleJackpotPercent,
+                GambleSmallPercent = gambleSmallPercent,
+                GambleEmptyPercent = gambleEmptyPercent,
+                GambleJackpotGrade = gambleJackpotGrade,
+                GambleAmbushEnemies = gambleAmbushEnemies,
                 ArenaEnemyCount = arenaEnemyCount,
                 ArenaStatPercent = arenaStatPercent,
                 ArenaPartGrade = arenaPartGrade,
@@ -804,6 +821,7 @@ namespace GirlsDungeon.Game
                 LockedSpecialRooms = new System.Collections.Generic.List<SpecialRoomKind>(lockedSpecialRooms),
                 TrapChasmPercent = trapChasmPercent,
                 TrapCrates = trapCrates,
+                GambleChests = gambleChests,
             };
         }
     }

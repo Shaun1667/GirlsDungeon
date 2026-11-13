@@ -225,6 +225,16 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>결투장 무리를 모두 쓰러뜨리면 나오는 파츠 등급 (든 무기용, 확정 1개).</summary>
         public PartGrade ArenaPartGrade;
 
+        // 도박실 (BALANCE 30번, 3-14k — Gamble)
+        /// <summary>도박 상자 결과 확률 (%): 대박 · 작은 상 · 빈 상자. 나머지가 매복.</summary>
+        public int GambleJackpotPercent;
+        public int GambleSmallPercent;
+        public int GambleEmptyPercent;
+        /// <summary>대박 파츠 등급 (든 무기용).</summary>
+        public PartGrade GambleJackpotGrade;
+        /// <summary>매복 적 수.</summary>
+        public int GambleAmbushEnemies;
+
         // 함정 방 (BALANCE 29번, 3-14j — Trap)
         /// <summary>함정 방에 놓는 감시 중인 사격병 수 (입구에서 먼 칸).</summary>
         public int TrapEnemyCount;
@@ -369,6 +379,9 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Workshop settings are invalid.");
             if (SetGalleryPartGrade == PartGrade.Industrial)
                 throw new ArgumentException("Set gallery parts must be able to carry a set.");
+            if (GambleJackpotPercent < 0 || GambleSmallPercent < 0 || GambleEmptyPercent < 0
+                || GambleJackpotPercent + GambleSmallPercent + GambleEmptyPercent > 100 || GambleAmbushEnemies < 0)
+                throw new ArgumentException("Gamble settings are invalid.");
             if (TrapEnemyCount < 0)
                 throw new ArgumentException("Trap settings are invalid.");
             if (ArenaEnemyCount < 0 || ArenaStatPercent < 0)

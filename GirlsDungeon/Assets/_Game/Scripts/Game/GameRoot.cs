@@ -140,7 +140,7 @@ namespace GirlsDungeon.Game
         {
             foreach (var gameEvent in events)
             {
-                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened) && !(gameEvent is StorehouseOpened) && !(gameEvent is RepairUsed) && !(gameEvent is MapRevealed) && !(gameEvent is GalleryPicked) && !(gameEvent is AltarTraded)) continue;
+                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened) && !(gameEvent is StorehouseOpened) && !(gameEvent is RepairUsed) && !(gameEvent is MapRevealed) && !(gameEvent is GalleryPicked) && !(gameEvent is AltarTraded) && !(gameEvent is GambleOpened)) continue;
                 floorView.Build(simulation.World.Map, balance);
                 return;
             }
@@ -418,7 +418,7 @@ namespace GirlsDungeon.Game
                                 var near = new GridPos(x + dx, y + dy);
                                 if (!map.InBounds(near)) continue;
                                 var tile = map.Get(near);
-                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter || tile == TileType.SetGalleryCase || tile == TileType.Altar) nextToContent = true;
+                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter || tile == TileType.SetGalleryCase || tile == TileType.Altar || tile == TileType.GambleChest) nextToContent = true;
                             }
                         if (nextToContent) { best = cell; break; }
                         if (best == null) best = cell;

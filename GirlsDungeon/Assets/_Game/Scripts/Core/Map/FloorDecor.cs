@@ -284,6 +284,18 @@ namespace GirlsDungeon.Core.Map
 
         internal static bool TryPlaceWorkbench(FloorMap map, RoomRect room) => TryPlaceAtCenter(map, room, TileType.Workbench);
 
+        /// <summary>도박실 (3-14k): 방 가운데에 가까운 칸부터 도박 상자 count개 (상자끼리는 붙지 않는다 — TryPlaceAtCenter). 다 놓지 못하면 모두 치우고 false.</summary>
+        internal static bool TryPlaceGambleChests(FloorMap map, RoomRect room, int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                if (TryPlaceAtCenter(map, room, TileType.GambleChest)) continue;
+                RemoveTile(map, room, TileType.GambleChest);
+                return false;
+            }
+            return true;
+        }
+
         /// <summary>방 가운데에 가까운 칸부터 그 칸 종류(작업대 · 보물 상자 등)를 하나 놓는다. 놓을 수 없으면 false.</summary>
         internal static bool TryPlaceAtCenter(FloorMap map, RoomRect room, TileType tile)
         {

@@ -284,7 +284,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar, GirlsDungeon.Core.Map.SpecialRoomKind.Arena, GirlsDungeon.Core.Map.SpecialRoomKind.Trap }), "3-14c ~ 3-14j");
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar, GirlsDungeon.Core.Map.SpecialRoomKind.Arena, GirlsDungeon.Core.Map.SpecialRoomKind.Trap, GirlsDungeon.Core.Map.SpecialRoomKind.Gamble }), "3-14c ~ 3-14k");
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.observatory.log_used"), Is.True);
         }
@@ -330,6 +330,21 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.ExchangeKeySellMaterials, Is.LessThan(combat.ExchangeKeyCost));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             foreach (var key in GirlsDungeon.Game.ExchangeView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
+        }
+
+        [Test]
+        public void Gamble_MatchesBalanceTable30()
+        {
+            var balance = Load();
+            var combat = balance.CreateCombatSettings();
+            Assert.That(balance.CreateMapSettings().GambleChests, Is.EqualTo(3));
+            Assert.That(new[] { combat.GambleJackpotPercent, combat.GambleSmallPercent, combat.GambleEmptyPercent, combat.GambleAmbushEnemies }, Is.EqualTo(new[] { 30, 30, 20, 2 }));
+            Assert.That(combat.GambleJackpotGrade, Is.EqualTo(GirlsDungeon.Core.Sim.PartGrade.Precision));
+            // 검산: 매복 = 100 − 30 − 30 − 20 = 20%.
+            Assert.That(100 - combat.GambleJackpotPercent - combat.GambleSmallPercent - combat.GambleEmptyPercent, Is.EqualTo(20));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in new[] { "ui.gamble.log_jackpot", "ui.gamble.log_small", "ui.gamble.log_empty", "ui.gamble.log_ambush" })
+                Assert.That(table.Contains(key), Is.True, key);
         }
 
         [Test]

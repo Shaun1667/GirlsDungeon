@@ -67,6 +67,8 @@ namespace GirlsDungeon.EditorTools
             // 제단 (3-14h): 붉은 돌, 꺼진 뒤에는 어둡게.
             var altarMaterial = LoadOrCreateMaterial("GreyboxAltar", new Color(0.8f, 0.15f, 0.12f));
             var altarUsedMaterial = LoadOrCreateMaterial("GreyboxAltarUsed", new Color(0.28f, 0.12f, 0.1f));
+            var gambleMaterial = LoadOrCreateMaterial("GreyboxGamble", new Color(0.55f, 0.25f, 0.85f));
+            var gambleUsedMaterial = LoadOrCreateMaterial("GreyboxGambleUsed", new Color(0.22f, 0.14f, 0.3f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
             var partItemMaterial = LoadOrCreateMaterial("GreyboxPartItem", new Color(0.95f, 0.55f, 0.1f));
@@ -369,7 +371,7 @@ namespace GirlsDungeon.EditorTools
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("rackMaterial", rackMaterial), ("rackOpenedMaterial", rackOpenedMaterial), ("repairMaterial", repairMaterial), ("repairUsedMaterial", repairUsedMaterial), ("consoleMaterial", consoleMaterial), ("consoleUsedMaterial", consoleUsedMaterial), ("counterMaterial", counterMaterial), ("galleryMaterial", galleryMaterial), ("galleryUsedMaterial", galleryUsedMaterial), ("altarMaterial", altarMaterial), ("altarUsedMaterial", altarUsedMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("rackMaterial", rackMaterial), ("rackOpenedMaterial", rackOpenedMaterial), ("repairMaterial", repairMaterial), ("repairUsedMaterial", repairUsedMaterial), ("consoleMaterial", consoleMaterial), ("consoleUsedMaterial", consoleUsedMaterial), ("counterMaterial", counterMaterial), ("galleryMaterial", galleryMaterial), ("galleryUsedMaterial", galleryUsedMaterial), ("altarMaterial", altarMaterial), ("altarUsedMaterial", altarUsedMaterial), ("gambleMaterial", gambleMaterial), ("gambleUsedMaterial", gambleUsedMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");

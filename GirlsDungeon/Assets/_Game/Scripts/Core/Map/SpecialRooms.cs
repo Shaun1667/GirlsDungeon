@@ -147,6 +147,8 @@ namespace GirlsDungeon.Core.Map
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.SetGalleryCase);
                 case SpecialRoomKind.Altar:
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.Altar);
+                case SpecialRoomKind.Gamble:
+                    return FloorDecor.TryPlaceGambleChests(map, room, settings.GambleChests);
                 case SpecialRoomKind.Trap:
                     // 함정 방: 보물 상자 + 낭떠러지 · 낮은 엄폐 (열린 방이라 Undo로 되돌릴 일이 없다 — 잠그게 바꾸면 Undo에 지형 복구를 더한다).
                     return FloorDecor.TryMakeTrapRoom(map, room, settings, random);
@@ -166,6 +168,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.SetGallery) FloorDecor.RemoveTile(map, room, TileType.SetGalleryCase);
             if (kind == SpecialRoomKind.Altar) FloorDecor.RemoveTile(map, room, TileType.Altar);
             if (kind == SpecialRoomKind.Trap) FloorDecor.RemoveTile(map, room, TileType.TreasureChest);
+            if (kind == SpecialRoomKind.Gamble) FloorDecor.RemoveTile(map, room, TileType.GambleChest);
         }
 
         /// <summary>문을 단 뒤에도 방 안 내용에 닿을 수 있는가 (작업대 옆 설 칸).</summary>
@@ -180,6 +183,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.SetGallery) return FloorDecor.TileHasRoom(map, room, TileType.SetGalleryCase);
             if (kind == SpecialRoomKind.Altar) return FloorDecor.TileHasRoom(map, room, TileType.Altar);
             if (kind == SpecialRoomKind.Trap) return FloorDecor.TileHasRoom(map, room, TileType.TreasureChest);
+            if (kind == SpecialRoomKind.Gamble) return FloorDecor.TileHasRoom(map, room, TileType.GambleChest);
             return true;
         }
     }

@@ -61,6 +61,10 @@ namespace GirlsDungeon.Core.Map
         /// <summary>함정 방에 놓는 낮은 엄폐(상자) 수.</summary>
         public int TrapCrates;
 
+        // 도박실 (BALANCE 30번, 3-14k — FloorDecor.TryPlaceGambleChests)
+        /// <summary>도박실의 도박 상자 수 (그중 하나만 열 수 있다).</summary>
+        public int GambleChests;
+
         public void Validate()
         {
             if (Width < MaxRoomSize + 2 || Height < MaxRoomSize + 2)
@@ -84,6 +88,8 @@ namespace GirlsDungeon.Core.Map
                 throw new ArgumentException("Workshop settings are invalid.");
             if (RandomSpecialRoomsPerFloor < 0 || MinNormalRooms < 0 || AlwaysSpecialRooms.Contains(SpecialRoomKind.None) || RandomSpecialRooms.Contains(SpecialRoomKind.None))
                 throw new ArgumentException("Special room settings are invalid.");
+            if (GambleChests < 1)
+                throw new ArgumentException("Gamble room settings are invalid.");
             if (TrapChasmPercent < 0 || TrapChasmPercent > 100 || TrapCrates < 0)
                 throw new ArgumentException("Trap room settings are invalid.");
         }
