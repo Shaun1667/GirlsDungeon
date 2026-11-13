@@ -75,6 +75,26 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void WithoutOpeningAnyDoor_TheStairsAndEveryCellOutsideLockedRoomsAreReachable()
+        {
+            // 3-14b 테스트에서 찾음 (seed 7): 계단으로 가는 길이 잠긴 특수 방을 지나가면 열쇠 없이는 내려갈 수 없다.
+            var settings = Settings();
+            for (int seed = 1; seed <= 40; seed++)
+            {
+                var map = RunFactory.NewRun(seed, settings, TestData.Combat()).Map;
+                Assert.That(GridNavigation.FindPath(map, map.StartCell, map.StairsCell), Is.Not.Empty, $"seed {seed}: stairs without keys");
+                var lockedRooms = map.Rooms.Where(r => FloorDecor.Entrances(map, r).Any(map.IsLockedDoor)).ToList();
+                for (int y = 0; y < map.Height; y++)
+                    for (int x = 0; x < map.Width; x++)
+                    {
+                        var cell = new GridPos(x, y);
+                        if (!map.IsWalkable(cell) || cell == map.StartCell || lockedRooms.Any(r => r.Contains(cell))) continue;
+                        Assert.That(GridNavigation.FindPath(map, map.StartCell, cell), Is.Not.Empty, $"seed {seed}: {cell} behind a locked room");
+                    }
+            }
+        }
+
+        [Test]
         public void SpecialRoomAt_FindsTheKindOfACell()
         {
             var world = RunFactory.NewRun(3, Settings(), TestData.Combat());

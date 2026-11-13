@@ -192,28 +192,46 @@ namespace GirlsDungeon.Core.Map
         }
 
         /// <summary>
-        /// 이 방의 문을 잠근 채로: 시작 칸에서 방 밖의 설 수 있는 칸에 모두 닿고, 방 안에는 닿지 않는가.
-        /// 이미 잠긴 다른 특수 방의 문은 "열 수 있는 길"로 친다 (특수 방이 여럿일 때, 3-14).
+        /// 이 방의 문을 잠근 채로, 문을 하나도 열지 않고: 시작 칸에서 잠긴 방(이 방과 이미 잠긴 다른 특수 방) 밖의 설 수 있는 칸에 모두 닿고, 이 방 안에는 닿지 않는가.
+        /// 계단 · 일반 방이 잠긴 방 뒤에 갇히지 않게 한다 (3-14b 테스트에서 찾음).
         /// </summary>
         private static bool OutsideConnectedAndRoomSealed(FloorMap map, RoomRect room)
         {
-            int reached = CountReachable(map, cell => map.IsWalkable(cell) || (map.IsLockedDoor(cell) && !room.Contains(cell)), out bool enteredRoom, room);
+            int reached = CountReachable(map, map.IsWalkable, out bool enteredRoom, room);
             if (enteredRoom) return false;
+            var locked = LockedRoomCells(map);
             int walkableOutside = 0;
             for (int y = 0; y < map.Height; y++)
                 for (int x = 0; x < map.Width; x++)
                 {
                     var cell = new GridPos(x, y);
-                    if (map.IsWalkable(cell) && !room.Contains(cell)) walkableOutside++;
+                    if (map.IsWalkable(cell) && !room.Contains(cell) && !locked[x + y * map.Width]) walkableOutside++;
                 }
             return reached == walkableOutside;
+        }
+
+        /// <summary>잠긴 특수 방(가장자리에 잠긴 문이 있는 방) 안의 칸.</summary>
+        private static bool[] LockedRoomCells(FloorMap map)
+        {
+            var cells = new bool[map.Width * map.Height];
+            foreach (var room in map.Rooms)
+            {
+                bool hasLockedDoor = false;
+                foreach (var entrance in Entrances(map, room))
+                    if (map.IsLockedDoor(entrance)) hasLockedDoor = true;
+                if (!hasLockedDoor) continue;
+                for (int y = room.Y; y < room.Y + room.Height; y++)
+                    for (int x = room.X; x < room.X + room.Width; x++)
+                        cells[x + y * map.Width] = true;
+            }
+            return cells;
         }
 
         /// <summary>
         /// 시작 칸에서 passable 칸으로만 걸어 닿는 "설 수 있는 칸" 수 (8방향, 벽 모서리를 대각선으로 뚫지 못함 — GridNavigation.CanStep과 같은 규칙).
         /// watch 방 안의 칸에 닿으면 enteredRoom = true.
         /// </summary>
-        private static int CountReachable(FloorMap map, System.Func<GridPos, bool> passable, out bool enteredRoom, RoomRect? watch = null)
+        private static int CountReachable(FloorMap map, System.Func<GridPos, bool> passable, out bool enteredRoom, RoomRect? watch = null, bool[] uncounted = null)
         {
             enteredRoom = false;
             var seen = new bool[map.Width * map.Height];
@@ -225,7 +243,7 @@ namespace GirlsDungeon.Core.Map
             {
                 var cell = frontier.Dequeue();
                 if (watch.HasValue && watch.Value.Contains(cell)) enteredRoom = true;
-                if (map.IsWalkable(cell)) reached++;
+                if (map.IsWalkable(cell) && (uncounted == null || !uncounted[cell.X + cell.Y * map.Width])) reached++;
                 foreach (var step in Steps)
                 {
                     var next = new GridPos(cell.X + step.X, cell.Y + step.Y);
@@ -415,12 +433,19 @@ namespace GirlsDungeon.Core.Map
         }
 
         /// <summary>
-        /// 설 수 있는 칸이 모두 시작 칸에서 이어지는가. 잠긴 문은 "열 수 있는 길"로 친다 — 잠긴 특수 방 안도 문을 열면 닿으므로 (3-14).
+        /// 지도가 하나로 이어지는가 (3-14): ① 잠긴 방 밖의 설 수 있는 칸은 문을 하나도 열지 않고 모두 닿고,
+        /// ② 잠긴 문을 열 수 있는 길로 치면 모든 설 수 있는 칸에 닿는다 (잠긴 방 안도 문을 열면 닿는다).
         /// </summary>
         private static bool IsFullyConnected(FloorMap map)
         {
-            int reached = CountReachable(map, cell => map.IsWalkable(cell) || map.IsLockedDoor(cell), out _);
-            return reached == map.CountWalkable();
+            if (CountReachable(map, cell => map.IsWalkable(cell) || map.IsLockedDoor(cell), out _) != map.CountWalkable()) return false;
+            var locked = LockedRoomCells(map);
+            int outside = 0;
+            for (int y = 0; y < map.Height; y++)
+                for (int x = 0; x < map.Width; x++)
+                    if (map.IsWalkable(new GridPos(x, y)) && !locked[x + y * map.Width]) outside++;
+            int reachedWithoutDoors = CountReachable(map, map.IsWalkable, out _, null, locked);
+            return reachedWithoutDoors == outside;
         }
     }
 }
