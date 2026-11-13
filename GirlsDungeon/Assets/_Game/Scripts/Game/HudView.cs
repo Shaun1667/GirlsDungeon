@@ -202,37 +202,34 @@ namespace GirlsDungeon.Game
         }
 
         /// <summary>세트 이름 (텍스트 표 part.set.{이름}.name).</summary>
-        private static string SetName(PartSet set) => Text.Get("part.set." + SetKey(set) + ".name");
-
-        /// <summary>세트 규칙 글 — 숫자는 수치 표(CombatSettings.Set…)에서 넣는다 (표시 값 = 실제 값).</summary>
-        private string SetRule(PartSet set)
+        private static string SetName(PartSet set)
         {
-            string key = "part.set." + SetKey(set) + ".rule";
             switch (set)
             {
-                case PartSet.Chain: return Text.Get(key, settings.SetChainPercentPerStack, settings.SetChainMaxStacks);
-                case PartSet.TwoSided: return Text.Get(key, settings.SetTwoSidedPercent);
-                case PartSet.Fracture: return Text.Get(key, settings.SetFracturePercent);
-                case PartSet.Emergency: return Text.Get(key, settings.SetEmergencyStability);
-                case PartSet.Bulwark: return Text.Get(key, settings.SetBulwarkTurns, settings.SetBulwarkPercent);
-                case PartSet.Ambush: return Text.Get(key, settings.SetAmbushPercent);
-                case PartSet.Assault: return Text.Get(key, settings.SetAssaultPercent, settings.SetAssaultMeleePercent);
+                case PartSet.Chain: return Text.Get("part.set.chain.name");
+                case PartSet.TwoSided: return Text.Get("part.set.two_sided.name");
+                case PartSet.Fracture: return Text.Get("part.set.fracture.name");
+                case PartSet.Emergency: return Text.Get("part.set.emergency.name");
+                case PartSet.Bulwark: return Text.Get("part.set.bulwark.name");
+                case PartSet.Ambush: return Text.Get("part.set.ambush.name");
+                case PartSet.Assault: return Text.Get("part.set.assault.name");
                 default: return string.Empty;
             }
         }
 
-        private static string SetKey(PartSet set)
+        /// <summary>세트 규칙 글 — 숫자는 수치 표(CombatSettings.Set…)에서 넣는다 (표시 값 = 실제 값).</summary>
+        private string SetRule(PartSet set)
         {
             switch (set)
             {
-                case PartSet.Chain: return "chain";
-                case PartSet.TwoSided: return "two_sided";
-                case PartSet.Fracture: return "fracture";
-                case PartSet.Emergency: return "emergency";
-                case PartSet.Bulwark: return "bulwark";
-                case PartSet.Ambush: return "ambush";
-                case PartSet.Assault: return "assault";
-                default: return "none";
+                case PartSet.Chain: return Text.Get("part.set.chain.rule", settings.SetChainPercentPerStack, settings.SetChainMaxStacks);
+                case PartSet.TwoSided: return Text.Get("part.set.two_sided.rule", settings.SetTwoSidedPercent);
+                case PartSet.Fracture: return Text.Get("part.set.fracture.rule", settings.SetFracturePercent);
+                case PartSet.Emergency: return Text.Get("part.set.emergency.rule", settings.SetEmergencyStability);
+                case PartSet.Bulwark: return Text.Get("part.set.bulwark.rule", settings.SetBulwarkTurns, settings.SetBulwarkPercent);
+                case PartSet.Ambush: return Text.Get("part.set.ambush.rule", settings.SetAmbushPercent);
+                case PartSet.Assault: return Text.Get("part.set.assault.rule", settings.SetAssaultPercent, settings.SetAssaultMeleePercent);
+                default: return string.Empty;
             }
         }
 
