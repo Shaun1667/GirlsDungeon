@@ -148,6 +148,8 @@ namespace GirlsDungeon.Core.Sim
         {
             int total = 0;
             foreach (var part in world.PlayerParts) if (part != null) total += part.Sum(stat);
+            // 제단의 영구 효과도 같은 합에 (3-14h) — 능력치 조회 지점은 Loadout.Apply 하나.
+            total += Altar.Sum(world, stat);
             return total;
         }
 

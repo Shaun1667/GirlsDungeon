@@ -1,3 +1,4 @@
+using System.Linq;
 using GirlsDungeon.Game;
 using NUnit.Framework;
 using UnityEditor;
@@ -283,7 +284,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery }), "3-14c ~ 3-14g");
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar }), "3-14c ~ 3-14h");
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.observatory.log_used"), Is.True);
         }
@@ -329,6 +330,17 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.ExchangeKeySellMaterials, Is.LessThan(combat.ExchangeKeyCost));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             foreach (var key in GirlsDungeon.Game.ExchangeView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
+        }
+
+        [Test]
+        public void Altar_MatchesBalanceTable27()
+        {
+            var combat = Load().CreateCombatSettings();
+            Assert.That(combat.AltarOfferCount, Is.EqualTo(3));
+            var rows = combat.AltarTrades.Select(t => $"{t.CostStat} {t.CostAmount} {t.BoonStat} {t.BoonAmount}").ToArray();
+            Assert.That(rows, Is.EqualTo(new[] { "MaxHp 10 Attack 2", "Defense 1 CritPercent 15", "MoveRange 1 AttackRange 2", "MaxStability 2 StabilityDamage 2", "Attack 1 MaxHp 15" }));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in GirlsDungeon.Game.AltarView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
         }
 
         [Test]

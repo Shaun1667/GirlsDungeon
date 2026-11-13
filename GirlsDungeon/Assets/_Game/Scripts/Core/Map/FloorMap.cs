@@ -50,6 +50,10 @@ namespace GirlsDungeon.Core.Map
         SetGalleryCase = 21,
         /// <summary>빈 진열장 (하나를 고른 뒤).</summary>
         SetGalleryCaseUsed = 22,
+        /// <summary>제단 (3-14h). 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 제단 창을 연다.</summary>
+        Altar = 23,
+        /// <summary>꺼진 제단 (거래를 받은 뒤).</summary>
+        AltarUsed = 24,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -212,7 +216,8 @@ namespace GirlsDungeon.Core.Map
                 || tile == TileType.RepairStation || tile == TileType.RepairStationUsed
                 || tile == TileType.ObservatoryConsole || tile == TileType.ObservatoryConsoleUsed
                 || tile == TileType.ExchangeCounter
-                || tile == TileType.SetGalleryCase || tile == TileType.SetGalleryCaseUsed;
+                || tile == TileType.SetGalleryCase || tile == TileType.SetGalleryCaseUsed
+                || tile == TileType.Altar || tile == TileType.AltarUsed;
         }
 
         /// <summary>보물 상자 칸 (닫힘 · 열림).</summary>

@@ -74,6 +74,9 @@ namespace GirlsDungeon.Game
         /// <summary>세트 진열실 진열장 바로 옆에 섰다 — GameRoot가 진열 창(GalleryView)을 연다 (3-14g).</summary>
         public event System.Action GalleryReached;
 
+        /// <summary>제단 바로 옆에 섰다 — GameRoot가 제단 창(AltarView)을 연다 (3-14h).</summary>
+        public event System.Action AltarReached;
+
         /// <summary>걸음이 끝나면 문 창을 연다 (탐험 중 먼 잠긴 문을 클릭했을 때, 3-4d).</summary>
         private GridPos? pendingDoor;
 
@@ -506,7 +509,7 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             if (world.Mode != WorldMode.Exploration || !world.Map.InBounds(counter) || !IsKnown(counter)) return false;
             var tile = world.Map.Get(counter);
-            if (tile != TileType.ExchangeCounter && tile != TileType.SetGalleryCase) return false;
+            if (tile != TileType.ExchangeCounter && tile != TileType.SetGalleryCase && tile != TileType.Altar) return false;
             if (Loadout.CellDistance(world.Player.Position, counter) == 1)
             {
                 ReachStation(tile);
@@ -530,6 +533,7 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             if (tile == TileType.ExchangeCounter && Exchange.AtCounter(world)) CounterReached?.Invoke();
             if (tile == TileType.SetGalleryCase && SetGallery.AtCase(world)) GalleryReached?.Invoke();
+            if (tile == TileType.Altar && Altar.AtAltar(world)) AltarReached?.Invoke();
         }
 
         /// <summary>
@@ -645,7 +649,7 @@ namespace GirlsDungeon.Game
             bool isBench = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.Workbench && IsKnown(cell.Value);
             bool isDoor = cell.HasValue && map.IsLockedDoor(cell.Value) && IsKnown(cell.Value);
             bool isCounter = cell.HasValue && map.InBounds(cell.Value) && IsKnown(cell.Value)
-                && (map.Get(cell.Value) == TileType.ExchangeCounter || map.Get(cell.Value) == TileType.SetGalleryCase);
+                && (map.Get(cell.Value) == TileType.ExchangeCounter || map.Get(cell.Value) == TileType.SetGalleryCase || map.Get(cell.Value) == TileType.Altar);
             SetHover(isWalkable || isCrate || isBench || isDoor || isCounter ? cell : null);
 
             bool clicked = mouse != null && leftClick.Clicked && !IsPointerOverUi();

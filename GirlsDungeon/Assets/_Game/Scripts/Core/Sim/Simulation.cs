@@ -147,6 +147,7 @@ namespace GirlsDungeon.Core.Sim
             world.EnemiesRevealed = false;
             world.ExchangeSold = 0;
             world.GalleryOffers.Clear();
+            world.AltarOffers.Clear();
             FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
             // 보급 상자는 아이템 난수로 따로 — 지형 · 엄폐물 굴림에 영향을 주지 않는다.
             FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, world.Random.Get(RandomPurpose.Item));

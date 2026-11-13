@@ -1,6 +1,6 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 · 흰 콘솔 · 주황 교환대 · 분홍 진열장 클릭: 열기 · 쓰기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest · blue rack · teal repair station · white console · orange counter · pink case: Open · Use · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
+ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 · 흰 콘솔 · 주황 교환대 · 분홍 진열장 · 붉은 제단 클릭: 열기 · 쓰기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest · blue rack · teal repair station · white console · orange counter · pink case · red altar: Open · Use · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
@@ -312,3 +312,12 @@ ui.gallery.pick_2,2번 고르기,Pick 2
 ui.gallery.pick_3,3번 고르기,Pick 3
 ui.gallery.close,닫기,Close
 ui.gallery.log_picked,진열장에서 {0} 세트 파츠를 골랐다,Picked a {0} set part from the gallery
+ui.altar.title,제단 — 대가를 내고 능력치를 영구로 받는다 (하나만 · 판이 끝날 때까지),Altar — pay a price for a permanent boon (one only · lasts the run)
+ui.altar.rule,   닫으면 거절 — 나중에 다시 와도 된다,   Close to refuse — you can come back later
+ui.altar.offer,{0}. {1} −{2} → {3} +{4},{0}. {1} −{2} → {3} +{4}
+ui.altar.offer_blocked,{0} (대가를 낼 수 없음),{0} (cannot pay)
+ui.altar.accept_1,1번 받기,Accept 1
+ui.altar.accept_2,2번 받기,Accept 2
+ui.altar.accept_3,3번 받기,Accept 3
+ui.altar.close,거절 · 닫기,Refuse · Close
+ui.altar.log_traded,제단: {0} −{1} → {2} +{3},Altar: {0} −{1} → {2} +{3}

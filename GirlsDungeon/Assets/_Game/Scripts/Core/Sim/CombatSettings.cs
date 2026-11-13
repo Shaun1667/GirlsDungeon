@@ -211,6 +211,12 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>진열된 파츠 등급 (같은 세트 · 2 · 3 · 4번 칸 하나씩).</summary>
         public PartGrade SetGalleryPartGrade;
 
+        // 제단 (BALANCE 27번, 3-14h — Altar)
+        /// <summary>제단 거래 표 (대가 · 보상, 둘 다 양수).</summary>
+        public List<AltarTrade> AltarTrades = new List<AltarTrade>();
+        /// <summary>제단 하나에 놓이는 거래 수 (표에서 서로 다르게).</summary>
+        public int AltarOfferCount;
+
         // 교환소 (BALANCE 25번, 3-14f — Exchange)
         public int ExchangeMedkitCost;
         public int ExchangePartCost;
@@ -351,6 +357,11 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Workshop settings are invalid.");
             if (SetGalleryPartGrade == PartGrade.Industrial)
                 throw new ArgumentException("Set gallery parts must be able to carry a set.");
+            if (AltarOfferCount < 0 || AltarOfferCount > AltarTrades.Count)
+                throw new ArgumentException("Altar offer count is invalid.");
+            foreach (var trade in AltarTrades)
+                if (trade == null || trade.CostAmount <= 0 || trade.BoonAmount <= 0 || trade.CostStat == trade.BoonStat)
+                    throw new ArgumentException("Altar trade is invalid.");
             if (ExchangeMedkitCost < 0 || ExchangePartCost < 0 || ExchangeKeyCost < 0 || ExchangeKeySellMaterials < 0)
                 throw new ArgumentException("Exchange settings are invalid.");
             if (RepairHealPercent < 0 || RepairHealPercent > 100)

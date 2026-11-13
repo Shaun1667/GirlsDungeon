@@ -6,6 +6,16 @@ using UnityEngine;
 namespace GirlsDungeon.Game
 {
     /// <summary>유닛 종류 하나의 능력치 (표 한 줄).</summary>
+    /// <summary>제단 거래 한 줄 (BALANCE 27번): costStat을 costAmount만큼 내고 boonStat을 boonAmount만큼 받는다.</summary>
+    [Serializable]
+    public sealed class AltarTradeEntry
+    {
+        public PartStat costStat;
+        public int costAmount;
+        public PartStat boonStat;
+        public int boonAmount;
+    }
+
     [Serializable]
     public sealed class UnitStatsEntry
     {
@@ -146,7 +156,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Special rooms on every floor, after the workshop.")]
         [SerializeField] private SpecialRoomKind[] alwaysSpecialRooms = { SpecialRoomKind.Treasure };
         [Tooltip("Pool of special rooms picked at random each floor (no repeats).")]
-        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery };
+        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar };
         [SerializeField] private int randomSpecialRoomsPerFloor = 2;
         [Tooltip("Normal rooms kept on each floor besides the start and stairs rooms.")]
         [SerializeField] private int minNormalRooms = 2;
@@ -387,6 +397,19 @@ namespace GirlsDungeon.Game
         [Tooltip("Grade of the three same-set parts on display (one per slot 2-4, for the weapon in hand).")]
         [SerializeField] private PartGrade setGalleryPartGrade = PartGrade.Military;
 
+        [Header("Altar (BALANCE 27)")]
+        [Tooltip("Permanent trades at an altar: pay costAmount of costStat, gain boonAmount of boonStat.")]
+        [SerializeField] private AltarTradeEntry[] altarTrades =
+        {
+            new AltarTradeEntry { costStat = PartStat.MaxHp, costAmount = 10, boonStat = PartStat.Attack, boonAmount = 2 },
+            new AltarTradeEntry { costStat = PartStat.Defense, costAmount = 1, boonStat = PartStat.CritPercent, boonAmount = 15 },
+            new AltarTradeEntry { costStat = PartStat.MoveRange, costAmount = 1, boonStat = PartStat.AttackRange, boonAmount = 2 },
+            new AltarTradeEntry { costStat = PartStat.MaxStability, costAmount = 2, boonStat = PartStat.StabilityDamage, boonAmount = 2 },
+            new AltarTradeEntry { costStat = PartStat.Attack, costAmount = 1, boonStat = PartStat.MaxHp, boonAmount = 15 },
+        };
+        [Tooltip("Different trades offered by one altar.")]
+        [SerializeField] private int altarOfferCount = 3;
+
         [Header("Exchange (BALANCE 25)")]
         [Tooltip("Materials paid at the exchange counter: medkit, part, key. Each offer once per floor.")]
         [SerializeField] private int exchangeMedkitCost = 2;
@@ -564,6 +587,7 @@ namespace GirlsDungeon.Game
                 StorehouseMaterials = storehouseMaterials,
                 RepairHealPercent = repairHealPercent,
                 SetGalleryPartGrade = setGalleryPartGrade,
+                AltarOfferCount = altarOfferCount,
                 ExchangeMedkitCost = exchangeMedkitCost,
                 ExchangePartCost = exchangePartCost,
                 ExchangePartGrade = exchangePartGrade,
@@ -571,6 +595,8 @@ namespace GirlsDungeon.Game
                 ExchangeKeySellMaterials = exchangeKeySellMaterials,
                 StorehouseMedkits = storehouseMedkits,
             };
+            foreach (var entry in altarTrades)
+                settings.AltarTrades.Add(new AltarTrade { CostStat = entry.costStat, CostAmount = entry.costAmount, BoonStat = entry.boonStat, BoonAmount = entry.boonAmount });
             foreach (var entry in weapons)
             {
                 settings.Weapons.Add(new WeaponStats

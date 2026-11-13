@@ -39,6 +39,9 @@ namespace GirlsDungeon.Game
         [Tooltip("Set gallery display case, full and empty (3-14g).")]
         [SerializeField] private Material galleryMaterial;
         [SerializeField] private Material galleryUsedMaterial;
+        [Tooltip("Altar, lit and spent (3-14h).")]
+        [SerializeField] private Material altarMaterial;
+        [SerializeField] private Material altarUsedMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -71,6 +74,8 @@ namespace GirlsDungeon.Game
             var counter = new MeshData();
             var gallery = new MeshData();
             var galleryUsed = new MeshData();
+            var altar = new MeshData();
+            var altarUsed = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -158,6 +163,15 @@ namespace GirlsDungeon.Game
                             // 진열장: 칸을 거의 채우는 높은 상자.
                             gallery.AddBox(position, 0.4f, 0.4f, balance.LowCoverHeight * 1.7f);
                             break;
+                        case TileType.Altar:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            // 제단: 넓고 낮은 돌 상자.
+                            altar.AddBox(position, 0.45f, 0.45f, balance.LowCoverHeight * 0.8f);
+                            break;
+                        case TileType.AltarUsed:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            altarUsed.AddBox(position, 0.45f, 0.45f, balance.LowCoverHeight * 0.8f);
+                            break;
                         case TileType.SetGalleryCaseUsed:
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             galleryUsed.AddBox(position, 0.4f, 0.4f, balance.LowCoverHeight * 1.7f);
@@ -201,6 +215,8 @@ namespace GirlsDungeon.Game
             AddPart("Counter", counter, counterMaterial != null ? counterMaterial : coverMaterial);
             AddPart("Gallery", gallery, galleryMaterial != null ? galleryMaterial : coverMaterial);
             AddPart("GalleryUsed", galleryUsed, galleryUsedMaterial != null ? galleryUsedMaterial : coverMaterial);
+            AddPart("Altar", altar, altarMaterial != null ? altarMaterial : coverMaterial);
+            AddPart("AltarUsed", altarUsed, altarUsedMaterial != null ? altarUsedMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>

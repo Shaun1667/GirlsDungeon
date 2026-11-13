@@ -37,6 +37,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private ExchangeView exchangeView;
         [Tooltip("Set gallery window shown next to a display case (3-14g).")]
         [SerializeField] private GalleryView galleryView;
+        [Tooltip("Altar window shown next to an altar (3-14h).")]
+        [SerializeField] private AltarView altarView;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -124,6 +126,9 @@ namespace GirlsDungeon.Game
             if (galleryView != null) galleryView.Bind(simulation, combatSettings, balance);
             moveController.GalleryReached -= OnGalleryReached;
             moveController.GalleryReached += OnGalleryReached;
+            if (altarView != null) altarView.Bind(simulation, combatSettings);
+            moveController.AltarReached -= OnAltarReached;
+            moveController.AltarReached += OnAltarReached;
             threatView.Bind(simulation, combatSettings);
             cameraRig.Bind(balance, playerView.transform);
 
@@ -135,7 +140,7 @@ namespace GirlsDungeon.Game
         {
             foreach (var gameEvent in events)
             {
-                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened) && !(gameEvent is StorehouseOpened) && !(gameEvent is RepairUsed) && !(gameEvent is MapRevealed) && !(gameEvent is GalleryPicked)) continue;
+                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened) && !(gameEvent is StorehouseOpened) && !(gameEvent is RepairUsed) && !(gameEvent is MapRevealed) && !(gameEvent is GalleryPicked) && !(gameEvent is AltarTraded)) continue;
                 floorView.Build(simulation.World.Map, balance);
                 return;
             }
@@ -321,6 +326,14 @@ namespace GirlsDungeon.Game
 
         public GalleryView DebugGalleryView => galleryView;
 
+        /// <summary>제단 옆에 섰다: 제단 창을 연다 (3-14h).</summary>
+        private void OnAltarReached()
+        {
+            if (altarView != null) altarView.Open();
+        }
+
+        public AltarView DebugAltarView => altarView;
+
         /// <summary>잠긴 문 옆에 섰다: 문 창을 연다 (3-4d).</summary>
         private void OnDoorReached(GridPos door)
         {
@@ -332,7 +345,7 @@ namespace GirlsDungeon.Game
             // 작업 화면 · 문 창이 떠 있는 동안 지도 클릭을 받지 않는다.
             if (moveController != null)
                 moveController.Blocked = (workshopView != null && workshopView.IsOpen) || (doorView != null && doorView.IsOpen)
-                    || (exchangeView != null && exchangeView.IsOpen) || (galleryView != null && galleryView.IsOpen);
+                    || (exchangeView != null && exchangeView.IsOpen) || (galleryView != null && galleryView.IsOpen) || (altarView != null && altarView.IsOpen);
         }
 
         /// <summary>[상태 변경] 가장 가까운 잠긴 문 옆으로 순간 이동하고 문 창을 연다 (문 시험용). 없으면 false.</summary>
@@ -405,7 +418,7 @@ namespace GirlsDungeon.Game
                                 var near = new GridPos(x + dx, y + dy);
                                 if (!map.InBounds(near)) continue;
                                 var tile = map.Get(near);
-                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter || tile == TileType.SetGalleryCase) nextToContent = true;
+                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter || tile == TileType.SetGalleryCase || tile == TileType.Altar) nextToContent = true;
                             }
                         if (nextToContent) { best = cell; break; }
                         if (best == null) best = cell;

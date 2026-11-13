@@ -39,7 +39,7 @@ MonoBehaviour:
   maxSupplyCrates: 3
   workshopsPerFloor: 1
   alwaysSpecialRooms: 02
-  randomSpecialRooms: 03070b0504
+  randomSpecialRooms: 03070b050406
   randomSpecialRoomsPerFloor: 2
   minNormalRooms: 2
   lockedSpecialRooms: 01020406
@@ -365,6 +365,28 @@ MonoBehaviour:
   disassembleMaterials: 010000000200000003000000
   spareSlots: 4
   setGalleryPartGrade: 1
+  altarTrades:
+  - costStat: 5
+    costAmount: 10
+    boonStat: 0
+    boonAmount: 2
+  - costStat: 6
+    costAmount: 1
+    boonStat: 2
+    boonAmount: 15
+  - costStat: 7
+    costAmount: 1
+    boonStat: 1
+    boonAmount: 2
+  - costStat: 8
+    costAmount: 2
+    boonStat: 4
+    boonAmount: 2
+  - costStat: 0
+    costAmount: 1
+    boonStat: 5
+    boonAmount: 15
+  altarOfferCount: 3
   exchangeMedkitCost: 2
   exchangePartCost: 4
   exchangePartGrade: 1
