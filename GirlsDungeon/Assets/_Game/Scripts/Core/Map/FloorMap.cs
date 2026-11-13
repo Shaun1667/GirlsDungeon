@@ -32,6 +32,10 @@ namespace GirlsDungeon.Core.Map
         TreasureChest = 12,
         /// <summary>연 보물 상자.</summary>
         TreasureChestOpened = 13,
+        /// <summary>닫힌 보급 선반 (보급고, 3-14c). 보급 상자처럼 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 열면 StorehouseRackOpened.</summary>
+        StorehouseRack = 14,
+        /// <summary>연 보급 선반.</summary>
+        StorehouseRackOpened = 15,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -180,7 +184,16 @@ namespace GirlsDungeon.Core.Map
         {
             if (!InBounds(cell)) return false;
             var tile = Get(cell);
-            return tile == TileType.SupplyCrate || tile == TileType.TreasureChest;
+            return tile == TileType.SupplyCrate || tile == TileType.TreasureChest || tile == TileType.StorehouseRack;
+        }
+
+        /// <summary>특수 방의 상자류 칸 (보물 상자 · 보급 선반, 닫힘 · 열림) — 낮은 엄폐, 옆에 다른 물건을 놓지 않는다.</summary>
+        public bool IsRoomChest(GridPos cell)
+        {
+            if (!InBounds(cell)) return false;
+            var tile = Get(cell);
+            return tile == TileType.TreasureChest || tile == TileType.TreasureChestOpened
+                || tile == TileType.StorehouseRack || tile == TileType.StorehouseRackOpened;
         }
 
         /// <summary>보물 상자 칸 (닫힘 · 열림).</summary>

@@ -207,6 +207,12 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>보물 상자에서 무기가 더 나올 확률 (%).</summary>
         public int TreasureWeaponPercent;
 
+        // 보급고 (BALANCE 22번, 3-14c — Loot.OpenStorehouse)
+        /// <summary>보급 선반을 열면 바로 얻는 파츠 재료.</summary>
+        public int StorehouseMaterials;
+        /// <summary>보급 선반 옆에 떨어지는 구급상자 수.</summary>
+        public int StorehouseMedkits;
+
         // 잠긴 문 · 열쇠 (BALANCE 20번, 3-4d — Doors)
         /// <summary>전투에서 이기면 열쇠가 더 떨어질 확률 (%) — 다른 보상과 따로 굴린다 (문 난수).</summary>
         public int CombatDropKeyPercent;
@@ -326,6 +332,8 @@ namespace GirlsDungeon.Core.Sim
             if (WorkshopOptionPercent < 0 || WorkshopOptionPercent > 100 || WorkshopSetPercent < 0 || WorkshopSetPercent > 100
                 || WorkshopOptionCost < 0 || WorkshopSetCost < 0 || DisassembleMaterials.Length != 3 || SpareSlots < 0)
                 throw new ArgumentException("Workshop settings are invalid.");
+            if (StorehouseMaterials < 0 || StorehouseMedkits < 0)
+                throw new ArgumentException("Storehouse settings are invalid.");
             if (TreasureWeaponPercent < 0 || TreasureWeaponPercent > 100)
                 throw new ArgumentException("Treasure settings are invalid.");
             if (CombatDropKeyPercent < 0 || CombatDropKeyPercent > 100)

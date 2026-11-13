@@ -306,7 +306,7 @@ namespace GirlsDungeon.Core.Map
                 {
                     var near = new GridPos(cell.X + step.X, cell.Y + step.Y);
                     // 보급 상자 바로 옆에도 놓지 않는다 — 상자 옆 설 칸을 막을 수 있다.
-                    if (near == map.StartCell || near == map.StairsCell || map.IsSupplyCrate(near) || map.IsTreasureChest(near)) nearKeyCell = true;
+                    if (near == map.StartCell || near == map.StairsCell || map.IsSupplyCrate(near) || map.IsRoomChest(near)) nearKeyCell = true;
                 }
                 if (nearKeyCell) continue;
 

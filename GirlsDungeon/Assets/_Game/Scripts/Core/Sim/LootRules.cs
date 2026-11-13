@@ -61,6 +61,7 @@ namespace GirlsDungeon.Core.Sim
         {
             var map = world.Map;
             if (map.InBounds(cell) && map.Get(cell) == TileType.TreasureChest) return OpenTreasure(world, settings, cell, events);
+            if (map.InBounds(cell) && map.Get(cell) == TileType.StorehouseRack) return OpenStorehouse(world, settings, cell, events);
             if (!map.InBounds(cell) || map.Get(cell) != TileType.SupplyCrate) return false;
 
             map.SetTile(cell, TileType.SupplyCrateOpened);
@@ -93,6 +94,17 @@ namespace GirlsDungeon.Core.Sim
             var item = world.AddPartItem(part, partCell);
             events.Add(new ItemDropped(item.Id, item.Kind, item.Weapon, item.Position, DropSource.SupplyCrate));
             if (random.Range(0, 100) < settings.TreasureWeaponPercent) DropWeapon(world, settings, random, cell, DropSource.SupplyCrate, events);
+            return true;
+        }
+
+        /// <summary>보급 선반을 연다 (보급고, 3-14c): 재료를 바로 얻고, 구급상자를 옆 빈 칸에 놓는다. 난수를 쓰지 않는다.</summary>
+        private static bool OpenStorehouse(World world, CombatSettings settings, GridPos cell, List<GameEvent> events)
+        {
+            world.Map.SetTile(cell, TileType.StorehouseRackOpened);
+            world.PartMaterials += settings.StorehouseMaterials;
+            events.Add(new StorehouseOpened(cell, settings.StorehouseMaterials, world.PartMaterials));
+            for (int i = 0; i < settings.StorehouseMedkits; i++) Drop(world, ItemKind.Medkit, default, cell, DropSource.SupplyCrate, events);
+            events.Add(new UnitStatsChanged(world.PlayerId));
             return true;
         }
 
@@ -325,6 +337,21 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>보급 상자를 열었다. 지형을 다시 그려야 한다. 나온 물건은 ItemDropped가 뒤따른다.</summary>
+    /// <summary>보급 선반을 열었다 (3-14c). 재료 Gained를 얻었다. 화면은 지형을 다시 그린다.</summary>
+    public sealed class StorehouseOpened : GameEvent
+    {
+        public GridPos Cell { get; }
+        public int Gained { get; }
+        public int MaterialsNow { get; }
+
+        public StorehouseOpened(GridPos cell, int gained, int materialsNow)
+        {
+            Cell = cell;
+            Gained = gained;
+            MaterialsNow = materialsNow;
+        }
+    }
+
     /// <summary>보물 상자를 열었다 (3-14b). 화면은 지형을 다시 그린다.</summary>
     public sealed class TreasureOpened : GameEvent
     {

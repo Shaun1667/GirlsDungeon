@@ -283,7 +283,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.Empty);
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse }), "3-14c");
         }
 
         [Test]
@@ -294,6 +294,18 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.TreasureWeaponPercent, Is.EqualTo(50));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.treasure.log_open"), Is.True);
+        }
+
+        [Test]
+        public void Storehouse_MatchesBalanceTable22()
+        {
+            var combat = Load().CreateCombatSettings();
+            Assert.That(combat.StorehouseMaterials, Is.EqualTo(6));
+            Assert.That(combat.StorehouseMedkits, Is.EqualTo(2));
+            // 검산: 재료 6 = 정밀 파츠 2개를 분해한 만큼 (19-4).
+            Assert.That(combat.StorehouseMaterials, Is.EqualTo(2 * combat.DisassembleMaterials[2]));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            Assert.That(table.Contains("ui.storehouse.log_open"), Is.True);
         }
 
         [Test]

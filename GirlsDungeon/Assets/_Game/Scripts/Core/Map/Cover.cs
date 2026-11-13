@@ -43,7 +43,7 @@ namespace GirlsDungeon.Core.Map
             var neighbor = new GridPos(cell.X + direction.X, cell.Y + direction.Y);
             if (map.BlocksSight(neighbor)) return CoverLevel.Full;
             if (map.InBounds(neighbor) && map.Get(neighbor) == TileType.Crate) return CoverLevel.Half;
-            if (map.IsSupplyCrate(neighbor) || map.IsTreasureChest(neighbor)) return CoverLevel.Half;
+            if (map.IsSupplyCrate(neighbor) || map.IsRoomChest(neighbor)) return CoverLevel.Half;
             if (map.InBounds(neighbor) && map.Get(neighbor) == TileType.Workbench) return CoverLevel.Half;
             if (map.HasLowWallBetween(cell, neighbor)) return CoverLevel.Half;
             return CoverLevel.None;

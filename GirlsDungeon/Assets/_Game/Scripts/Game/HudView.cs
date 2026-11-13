@@ -494,6 +494,9 @@ namespace GirlsDungeon.Game
                         // 발밑을 떠나면 비교 창을 닫는다 (무기는 바닥에 남는다).
                         CloseWeaponOffer();
                         break;
+                    case StorehouseOpened storehouse:
+                        AddLog(Text.Get("ui.storehouse.log_open", storehouse.Gained));
+                        break;
                     case TreasureOpened _:
                         AddLog(Text.Get("ui.treasure.log_open"));
                         break;

@@ -146,7 +146,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Special rooms on every floor, after the workshop.")]
         [SerializeField] private SpecialRoomKind[] alwaysSpecialRooms = { SpecialRoomKind.Treasure };
         [Tooltip("Pool of special rooms picked at random each floor (no repeats).")]
-        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = new SpecialRoomKind[0];
+        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse };
         [SerializeField] private int randomSpecialRoomsPerFloor = 2;
         [Tooltip("Normal rooms kept on each floor besides the start and stairs rooms.")]
         [SerializeField] private int minNormalRooms = 2;
@@ -383,6 +383,12 @@ namespace GirlsDungeon.Game
         [Tooltip("Spare part storage slots.")]
         [SerializeField] private int spareSlots = 4;
 
+        [Header("Storehouse (BALANCE 22)")]
+        [Tooltip("Part materials gained when opening a supply rack.")]
+        [SerializeField] private int storehouseMaterials = 6;
+        [Tooltip("Medkits dropped next to a supply rack.")]
+        [SerializeField] private int storehouseMedkits = 2;
+
         [Header("Treasure room (BALANCE 21)")]
         [Tooltip("Grade of the part a treasure chest always holds (for the weapon in hand).")]
         [SerializeField] private PartGrade treasurePartGrade = PartGrade.Precision;
@@ -538,6 +544,8 @@ namespace GirlsDungeon.Game
                 CombatDropKeyPercent = combatDropKeyPercent,
                 TreasurePartGrade = treasurePartGrade,
                 TreasureWeaponPercent = treasureWeaponPercent,
+                StorehouseMaterials = storehouseMaterials,
+                StorehouseMedkits = storehouseMedkits,
             };
             foreach (var entry in weapons)
             {

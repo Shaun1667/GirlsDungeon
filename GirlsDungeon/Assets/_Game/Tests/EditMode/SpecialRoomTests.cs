@@ -17,6 +17,7 @@ namespace GirlsDungeon.Tests
         {
             var map = TestData.Map();
             if (!map.AlwaysSpecialRooms.Contains(SpecialRoomKind.Treasure)) map.AlwaysSpecialRooms.Add(SpecialRoomKind.Treasure);
+            map.RandomSpecialRooms.Clear();
             map.RandomSpecialRooms.AddRange(new[] { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Arena });
             return map;
         }
