@@ -284,7 +284,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar, GirlsDungeon.Core.Map.SpecialRoomKind.Arena }), "3-14c ~ 3-14i");
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar, GirlsDungeon.Core.Map.SpecialRoomKind.Arena, GirlsDungeon.Core.Map.SpecialRoomKind.Trap }), "3-14c ~ 3-14j");
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.observatory.log_used"), Is.True);
         }
@@ -330,6 +330,15 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.ExchangeKeySellMaterials, Is.LessThan(combat.ExchangeKeyCost));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             foreach (var key in GirlsDungeon.Game.ExchangeView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
+        }
+
+        [Test]
+        public void Trap_MatchesBalanceTable29()
+        {
+            var balance = Load();
+            var map = balance.CreateMapSettings();
+            Assert.That(new[] { map.TrapChasmPercent, map.TrapCrates, balance.CreateCombatSettings().TrapEnemyCount }, Is.EqualTo(new[] { 30, 3, 2 }));
+            Assert.That(map.LockedSpecialRooms, Has.No.Member(GirlsDungeon.Core.Map.SpecialRoomKind.Trap), "open room");
         }
 
         [Test]

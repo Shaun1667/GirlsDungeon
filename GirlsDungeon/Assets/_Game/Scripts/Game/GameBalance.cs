@@ -156,7 +156,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Special rooms on every floor, after the workshop.")]
         [SerializeField] private SpecialRoomKind[] alwaysSpecialRooms = { SpecialRoomKind.Treasure };
         [Tooltip("Pool of special rooms picked at random each floor (no repeats).")]
-        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar, SpecialRoomKind.Arena };
+        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar, SpecialRoomKind.Arena, SpecialRoomKind.Trap };
         [SerializeField] private int randomSpecialRoomsPerFloor = 2;
         [Tooltip("Normal rooms kept on each floor besides the start and stairs rooms.")]
         [SerializeField] private int minNormalRooms = 2;
@@ -165,6 +165,14 @@ namespace GirlsDungeon.Game
         {
             SpecialRoomKind.Workshop, SpecialRoomKind.Treasure, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar,
         };
+
+        [Header("Trap room (BALANCE 29)")]
+        [Tooltip("Share (%) of a trap room's area turned into chasm (cells next to the chest and entrances stay open).")]
+        [SerializeField] private int trapChasmPercent = 30;
+        [Tooltip("Low cover crates placed in a trap room.")]
+        [SerializeField] private int trapCrates = 3;
+        [Tooltip("Riflemen placed on overwatch in a trap room, far from the entrances.")]
+        [SerializeField] private int trapEnemyCount = 2;
 
         [Header("Units (BALANCE 4)")]
         [SerializeField] private UnitStatsEntry[] units =
@@ -596,6 +604,7 @@ namespace GirlsDungeon.Game
                 RepairHealPercent = repairHealPercent,
                 SetGalleryPartGrade = setGalleryPartGrade,
                 AltarOfferCount = altarOfferCount,
+                TrapEnemyCount = trapEnemyCount,
                 ArenaEnemyCount = arenaEnemyCount,
                 ArenaStatPercent = arenaStatPercent,
                 ArenaPartGrade = arenaPartGrade,
@@ -793,6 +802,8 @@ namespace GirlsDungeon.Game
                 RandomSpecialRoomsPerFloor = randomSpecialRoomsPerFloor,
                 MinNormalRooms = minNormalRooms,
                 LockedSpecialRooms = new System.Collections.Generic.List<SpecialRoomKind>(lockedSpecialRooms),
+                TrapChasmPercent = trapChasmPercent,
+                TrapCrates = trapCrates,
             };
         }
     }

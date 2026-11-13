@@ -36,7 +36,9 @@ namespace GirlsDungeon.Tests
                     for (int x = room.X; x < room.X + room.Width; x++)
                         if (map.Get(new GridPos(x, y)) == TileType.TreasureChest) chests++;
                 Assert.That(chests, Is.EqualTo(1), $"seed {seed}");
-                Assert.That(map.CountTiles(TileType.TreasureChest), Is.EqualTo(1), $"seed {seed}: only in the treasure room");
+                // 함정 방(3-14j)도 보물 상자를 쓴다 — 그 밖에는 보물방에만.
+                int trapChests = Enumerable.Range(0, map.Rooms.Count).Count(i => map.RoomKind(i) == SpecialRoomKind.Trap);
+                Assert.That(map.CountTiles(TileType.TreasureChest), Is.EqualTo(1 + trapChests), $"seed {seed}: only in the treasure and trap rooms");
                 if (!FloorDecor.Entrances(map, room).Any(map.IsLockedDoor)) unlocked++;
             }
             // 복도가 지나가는 방은 잠글 수 없어 문 없이 둔다 — 잠글 수 있는 방은 작업방이 먼저 쓴다 (2026-11-13 확인: 약 70% 잠김).

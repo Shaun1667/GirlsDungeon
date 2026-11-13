@@ -285,10 +285,13 @@ namespace GirlsDungeon.Tests
                 WorkshopsPerFloor = 1,
                 // BALANCE 1-21 ~ 1-24 특수 방 (방 내용은 3-14b부터 하나씩).
                 AlwaysSpecialRooms = { SpecialRoomKind.Treasure },
-                RandomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar, SpecialRoomKind.Arena },
+                RandomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar, SpecialRoomKind.Arena, SpecialRoomKind.Trap },
                 RandomSpecialRoomsPerFloor = 2,
                 MinNormalRooms = 2,
                 LockedSpecialRooms = { SpecialRoomKind.Workshop, SpecialRoomKind.Treasure, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar },
+                // BALANCE 29번 함정 방.
+                TrapChasmPercent = 30,
+                TrapCrates = 3,
             };
         }
 
@@ -382,6 +385,8 @@ namespace GirlsDungeon.Tests
                     new AltarTrade { CostStat = PartStat.Attack, CostAmount = 1, BoonStat = PartStat.MaxHp, BoonAmount = 15 },
                 },
                 AltarOfferCount = 3,
+                // BALANCE 29번 함정 방.
+                TrapEnemyCount = 2,
                 // BALANCE 28번 결투장.
                 ArenaEnemyCount = 3,
                 ArenaStatPercent = 30,

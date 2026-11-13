@@ -31,7 +31,7 @@ namespace GirlsDungeon.Core.Map
     /// - 시작 · 계단 방은 쓰지 않고, 일반 방이 MinNormalRooms개 남도록 개수를 줄인다 (작업방 · 늘 나오는 방이 먼저).
     /// - 잠그는 종류(LockedSpecialRooms)는 FloorDecor.LockRoom으로 입구를 잠근다. 잠글 수 있는 방이 없으면 문 없이 둔다.
     /// - 보급 상자가 없는 방을 먼저 고른다. 굴림은 작업 난수(RandomPurpose.Workshop) — 보급 상자 다음에 부른다.
-    /// 특수 방에는 일반 적을 놓지 않는다 (EnemySpawner — 결투장은 Arena.Spawn이, 함정 방은 자기 적을 따로 놓는다).
+    /// 특수 방에는 일반 적을 놓지 않는다 (EnemySpawner — 결투장은 Arena.Spawn, 함정 방은 Trap.Spawn이 따로 놓는다).
     /// </summary>
     public static class SpecialRoomLayout
     {
@@ -73,7 +73,7 @@ namespace GirlsDungeon.Core.Map
             foreach (int index in order)
             {
                 var room = map.Rooms[index];
-                if (!Prepare(map, room, kind)) continue;
+                if (!Prepare(map, settings, room, kind, random)) continue;
                 if (!locked)
                 {
                     map.SetRoomKind(index, kind);
@@ -95,7 +95,7 @@ namespace GirlsDungeon.Core.Map
             // 잠글 수 있는 방이 없으면(방마다 복도가 지나가거나 낭떠러지뿐인 방 등, 드묾) 문 없이 둔다 — 그 방은 층마다 있게.
             foreach (int index in order)
             {
-                if (!Prepare(map, map.Rooms[index], kind)) continue;
+                if (!Prepare(map, settings, map.Rooms[index], kind, random)) continue;
                 map.SetRoomKind(index, kind);
                 return true;
             }
@@ -127,7 +127,7 @@ namespace GirlsDungeon.Core.Map
         }
 
         /// <summary>방 안 내용을 놓는다 (작업방 = 작업대). 다른 종류의 내용은 그 방 항목에서 더한다. 놓을 수 없으면 false.</summary>
-        private static bool Prepare(FloorMap map, RoomRect room, SpecialRoomKind kind)
+        private static bool Prepare(FloorMap map, MapSettings settings, RoomRect room, SpecialRoomKind kind, IRandom random)
         {
             switch (kind)
             {
@@ -147,6 +147,9 @@ namespace GirlsDungeon.Core.Map
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.SetGalleryCase);
                 case SpecialRoomKind.Altar:
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.Altar);
+                case SpecialRoomKind.Trap:
+                    // 함정 방: 보물 상자 + 낭떠러지 · 낮은 엄폐 (열린 방이라 Undo로 되돌릴 일이 없다 — 잠그게 바꾸면 Undo에 지형 복구를 더한다).
+                    return FloorDecor.TryMakeTrapRoom(map, room, settings, random);
                 default:
                     return true;
             }
@@ -162,6 +165,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.Exchange) FloorDecor.RemoveTile(map, room, TileType.ExchangeCounter);
             if (kind == SpecialRoomKind.SetGallery) FloorDecor.RemoveTile(map, room, TileType.SetGalleryCase);
             if (kind == SpecialRoomKind.Altar) FloorDecor.RemoveTile(map, room, TileType.Altar);
+            if (kind == SpecialRoomKind.Trap) FloorDecor.RemoveTile(map, room, TileType.TreasureChest);
         }
 
         /// <summary>문을 단 뒤에도 방 안 내용에 닿을 수 있는가 (작업대 옆 설 칸).</summary>
@@ -175,6 +179,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.Exchange) return FloorDecor.TileHasRoom(map, room, TileType.ExchangeCounter);
             if (kind == SpecialRoomKind.SetGallery) return FloorDecor.TileHasRoom(map, room, TileType.SetGalleryCase);
             if (kind == SpecialRoomKind.Altar) return FloorDecor.TileHasRoom(map, room, TileType.Altar);
+            if (kind == SpecialRoomKind.Trap) return FloorDecor.TileHasRoom(map, room, TileType.TreasureChest);
             return true;
         }
     }

@@ -225,6 +225,10 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>결투장 무리를 모두 쓰러뜨리면 나오는 파츠 등급 (든 무기용, 확정 1개).</summary>
         public PartGrade ArenaPartGrade;
 
+        // 함정 방 (BALANCE 29번, 3-14j — Trap)
+        /// <summary>함정 방에 놓는 감시 중인 사격병 수 (입구에서 먼 칸).</summary>
+        public int TrapEnemyCount;
+
         // 교환소 (BALANCE 25번, 3-14f — Exchange)
         public int ExchangeMedkitCost;
         public int ExchangePartCost;
@@ -365,6 +369,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Workshop settings are invalid.");
             if (SetGalleryPartGrade == PartGrade.Industrial)
                 throw new ArgumentException("Set gallery parts must be able to carry a set.");
+            if (TrapEnemyCount < 0)
+                throw new ArgumentException("Trap settings are invalid.");
             if (ArenaEnemyCount < 0 || ArenaStatPercent < 0)
                 throw new ArgumentException("Arena settings are invalid.");
             if (AltarOfferCount < 0 || AltarOfferCount > AltarTrades.Count)

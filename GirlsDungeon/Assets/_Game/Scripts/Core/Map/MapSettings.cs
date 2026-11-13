@@ -55,6 +55,12 @@ namespace GirlsDungeon.Core.Map
         /// <summary>입구를 잠그는 특수 방 종류.</summary>
         public List<SpecialRoomKind> LockedSpecialRooms = new List<SpecialRoomKind>();
 
+        // 함정 방 (BALANCE 29번, 3-14j — FloorDecor.TryMakeTrapRoom)
+        /// <summary>함정 방에서 낭떠러지가 차지하는 방 넓이의 비율 (상자 · 입구 옆은 비운다).</summary>
+        public int TrapChasmPercent;
+        /// <summary>함정 방에 놓는 낮은 엄폐(상자) 수.</summary>
+        public int TrapCrates;
+
         public void Validate()
         {
             if (Width < MaxRoomSize + 2 || Height < MaxRoomSize + 2)
@@ -78,6 +84,8 @@ namespace GirlsDungeon.Core.Map
                 throw new ArgumentException("Workshop settings are invalid.");
             if (RandomSpecialRoomsPerFloor < 0 || MinNormalRooms < 0 || AlwaysSpecialRooms.Contains(SpecialRoomKind.None) || RandomSpecialRooms.Contains(SpecialRoomKind.None))
                 throw new ArgumentException("Special room settings are invalid.");
+            if (TrapChasmPercent < 0 || TrapChasmPercent > 100 || TrapCrates < 0)
+                throw new ArgumentException("Trap room settings are invalid.");
         }
     }
 }

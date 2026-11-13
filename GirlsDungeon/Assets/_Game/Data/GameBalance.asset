@@ -39,10 +39,13 @@ MonoBehaviour:
   maxSupplyCrates: 3
   workshopsPerFloor: 1
   alwaysSpecialRooms: 02
-  randomSpecialRooms: 03070b05040608
+  randomSpecialRooms: 03070b0504060809
   randomSpecialRoomsPerFloor: 2
   minNormalRooms: 2
   lockedSpecialRooms: 01020406
+  trapChasmPercent: 30
+  trapCrates: 3
+  trapEnemyCount: 2
   units:
   - kind: 0
     nameKey: unit.player.name

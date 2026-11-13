@@ -213,6 +213,8 @@ namespace GirlsDungeon.Core.Sim
 
             // 결투장 무리는 일반 적 다음에 (3-14i — 일반 적 배치 굴림은 그대로).
             Arena.Spawn(world, settings, random);
+            // 함정 방의 감시병도 따로 (3-14j).
+            Trap.Spawn(world, settings, random);
         }
 
         /// <summary>값 × 비율%, 반올림 (0.5 올림).</summary>

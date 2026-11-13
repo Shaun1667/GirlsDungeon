@@ -53,14 +53,15 @@ namespace GirlsDungeon.Core.Map
             }
         }
 
-        private static void GrowChasm(FloorMap map, RoomRect room, int target, IRandom random)
+        /// <summary>방 안쪽(테두리 줄 제외)에 낭떠러지 덩어리를 target칸까지 키운다. skip이 참인 칸은 쓰지 않는다 (함정 방 — 상자 · 입구 옆).</summary>
+        private static int GrowChasm(FloorMap map, RoomRect room, int target, IRandom random, System.Func<GridPos, bool> skip = null)
         {
             var open = new List<GridPos>();
             for (int y = room.Y + 1; y < room.Y + room.Height - 1; y++)
                 for (int x = room.X + 1; x < room.X + room.Width - 1; x++)
                 {
                     var cell = new GridPos(x, y);
-                    if (map.Get(cell) == TileType.Floor) open.Add(cell);
+                    if (map.Get(cell) == TileType.Floor && (skip == null || !skip(cell))) open.Add(cell);
                 }
 
             var edge = new List<GridPos>();
@@ -96,6 +97,7 @@ namespace GirlsDungeon.Core.Map
                     if (open.Contains(near) && !edge.Contains(near)) edge.Add(near);
                 }
             }
+            return placed;
         }
 
         /// <summary>
@@ -315,6 +317,58 @@ namespace GirlsDungeon.Core.Map
                 map.SetTile(cell, TileType.Floor);
             }
             return false;
+        }
+
+        /// <summary>
+        /// 함정 방 (3-14j): 방 가운데 보물 상자 → 낭떠러지가 방 넓이의 TrapChasmPercent가 될 때까지(원래 있던 것 포함) → 낮은 엄폐(상자) TrapCrates개.
+        /// 보물 상자 · 입구 바로 옆 칸은 비워 둔다 (상자에 닿을 칸 · 들어올 칸). 놓을 때마다 연결 검사 — 복도가 지나가도 끊기지 않는다.
+        /// 굴림은 작업 난수(특수 방 배치와 같은 흐름). 보물 상자를 놓을 수 없으면 false (낭떠러지 · 엄폐는 상자를 놓은 뒤에만).
+        /// </summary>
+        internal static bool TryMakeTrapRoom(FloorMap map, RoomRect room, MapSettings settings, IRandom random)
+        {
+            if (!TryPlaceAtCenter(map, room, TileType.TreasureChest)) return false;
+            var keep = new List<GridPos>(Entrances(map, room));
+            for (int y = room.Y; y < room.Y + room.Height; y++)
+                for (int x = room.X; x < room.X + room.Width; x++)
+                    if (map.Get(new GridPos(x, y)) == TileType.TreasureChest) keep.Add(new GridPos(x, y));
+            System.Func<GridPos, bool> nearKeep = cell =>
+            {
+                foreach (var other in keep)
+                    if (System.Math.Max(System.Math.Abs(cell.X - other.X), System.Math.Abs(cell.Y - other.Y)) <= 1) return true;
+                return false;
+            };
+
+            // 꾸미기에서 이미 낭떠러지가 생긴 방이면 모자란 만큼만 더한다 (방 넓이 기준 합계 TrapChasmPercent).
+            int existing = 0;
+            for (int y = room.Y; y < room.Y + room.Height; y++)
+                for (int x = room.X; x < room.X + room.Width; x++)
+                    if (map.Get(new GridPos(x, y)) == TileType.Chasm) existing++;
+            int target = room.Width * room.Height * settings.TrapChasmPercent / 100 - existing;
+            if (target > 0) GrowChasm(map, room, target, random, nearKeep);
+
+            var spots = new List<GridPos>();
+            for (int y = room.Y + 1; y < room.Y + room.Height - 1; y++)
+                for (int x = room.X + 1; x < room.X + room.Width - 1; x++)
+                {
+                    var cell = new GridPos(x, y);
+                    if (!nearKeep(cell)) spots.Add(cell);
+                }
+            int placed = 0;
+            while (placed < settings.TrapCrates && spots.Count > 0)
+            {
+                int pick = random.Range(0, spots.Count);
+                var cell = spots[pick];
+                spots.RemoveAt(pick);
+                if (!CanHoldObject(map, cell) || TouchesLowWall(map, cell)) continue;
+                map.SetTile(cell, TileType.Crate);
+                if (!IsFullyConnected(map))
+                {
+                    map.SetTile(cell, TileType.Floor);
+                    continue;
+                }
+                placed++;
+            }
+            return true;
         }
 
         private static bool TryPlaceSupplyCrate(FloorMap map, MapSettings settings, RoomRect room, IRandom random)

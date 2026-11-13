@@ -41,7 +41,7 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             int floors = 0;
-            for (int seed = 1; seed <= 40; seed++)
+            for (int seed = 1; seed <= 200 && floors < 8; seed++)
             {
                 var world = TestData.NewRun(seed);
                 var map = world.Map;
@@ -64,7 +64,8 @@ namespace GirlsDungeon.Tests
                 if (!map.Rooms.Where((r, i) => map.RoomKind(i) == SpecialRoomKind.Arena).Any())
                     Assert.That(world.ArenaEnemies, Is.Empty, $"seed {seed}");
             }
-            Assert.That(floors, Is.GreaterThan(5));
+            // 무작위 후보가 늘면 40개 층의 개수는 흔들린다 — 8개 층을 찾을 때까지 본다 (3-14j).
+            Assert.That(floors, Is.GreaterThanOrEqualTo(8));
         }
 
         [Test]
