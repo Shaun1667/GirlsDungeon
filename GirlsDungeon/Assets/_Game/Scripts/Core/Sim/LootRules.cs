@@ -62,6 +62,7 @@ namespace GirlsDungeon.Core.Sim
             var map = world.Map;
             if (map.InBounds(cell) && map.Get(cell) == TileType.TreasureChest) return OpenTreasure(world, settings, cell, events);
             if (map.InBounds(cell) && map.Get(cell) == TileType.StorehouseRack) return OpenStorehouse(world, settings, cell, events);
+            if (map.InBounds(cell) && map.Get(cell) == TileType.RepairStation) return UseRepairStation(world, settings, cell, events);
             if (!map.InBounds(cell) || map.Get(cell) != TileType.SupplyCrate) return false;
 
             map.SetTile(cell, TileType.SupplyCrateOpened);
@@ -94,6 +95,24 @@ namespace GirlsDungeon.Core.Sim
             var item = world.AddPartItem(part, partCell);
             events.Add(new ItemDropped(item.Id, item.Kind, item.Weapon, item.Position, DropSource.SupplyCrate));
             if (random.Range(0, 100) < settings.TreasureWeaponPercent) DropWeapon(world, settings, random, cell, DropSource.SupplyCrate, events);
+            return true;
+        }
+
+        /// <summary>
+        /// 수리대를 쓴다 (수리실, 3-14d): 체력을 RepairHealPercent만큼(최대까지) · 안정지수를 최대까지 채운다. 한 번만.
+        /// 이미 둘 다 가득이면 쓰지 않고 false (잘못 눌러 낭비하지 않게).
+        /// </summary>
+        private static bool UseRepairStation(World world, CombatSettings settings, GridPos cell, List<GameEvent> events)
+        {
+            var player = world.Player;
+            if (player == null || (player.Hp >= player.MaxHp && player.Stability >= player.MaxStability)) return false;
+            world.Map.SetTile(cell, TileType.RepairStationUsed);
+            int healed = System.Math.Min(MedkitHeal(player.MaxHp, settings.RepairHealPercent), player.MaxHp - player.Hp);
+            int steadied = player.MaxStability - player.Stability;
+            player.Hp += healed;
+            player.Stability = player.MaxStability;
+            events.Add(new RepairUsed(cell, healed, steadied));
+            events.Add(new UnitStatsChanged(player.Id));
             return true;
         }
 
@@ -337,6 +356,21 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>보급 상자를 열었다. 지형을 다시 그려야 한다. 나온 물건은 ItemDropped가 뒤따른다.</summary>
+    /// <summary>수리대를 썼다 (3-14d). 체력 Healed · 안정지수 Steadied만큼 찼다. 화면은 지형을 다시 그린다.</summary>
+    public sealed class RepairUsed : GameEvent
+    {
+        public GridPos Cell { get; }
+        public int Healed { get; }
+        public int Steadied { get; }
+
+        public RepairUsed(GridPos cell, int healed, int steadied)
+        {
+            Cell = cell;
+            Healed = healed;
+            Steadied = steadied;
+        }
+    }
+
     /// <summary>보급 선반을 열었다 (3-14c). 재료 Gained를 얻었다. 화면은 지형을 다시 그린다.</summary>
     public sealed class StorehouseOpened : GameEvent
     {

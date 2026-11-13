@@ -283,7 +283,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse }), "3-14c");
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair }), "3-14c · 3-14d");
         }
 
         [Test]
@@ -306,6 +306,15 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.StorehouseMaterials, Is.EqualTo(2 * combat.DisassembleMaterials[2]));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.storehouse.log_open"), Is.True);
+        }
+
+        [Test]
+        public void Repair_MatchesBalanceTable23()
+        {
+            var combat = Load().CreateCombatSettings();
+            Assert.That(combat.RepairHealPercent, Is.EqualTo(100));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            Assert.That(table.Contains("ui.repair.log_used"), Is.True);
         }
 
         [Test]

@@ -1,6 +1,6 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 클릭: 열기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest or blue rack: Open · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
+ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 클릭: 열기 · 쓰기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest · blue rack · teal repair station: Open · Use · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
@@ -279,3 +279,4 @@ room.kind.observatory.name,관측실,Observatory
 room.kind.archive.name,기록실,Archive
 ui.treasure.log_open,보물 상자를 열었다,Opened the treasure chest
 ui.storehouse.log_open,보급 선반을 열었다 — 재료 +{0},Opened the supply rack — {0} materials
+ui.repair.log_used,수리대를 썼다 — 체력 +{0} · 안정지수 가득,Used the repair station — HP +{0} · stability full

@@ -125,7 +125,7 @@ namespace GirlsDungeon.Game
         {
             foreach (var gameEvent in events)
             {
-                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened) && !(gameEvent is StorehouseOpened)) continue;
+                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened) && !(gameEvent is StorehouseOpened) && !(gameEvent is RepairUsed)) continue;
                 floorView.Build(simulation.World.Map, balance);
                 return;
             }
@@ -378,7 +378,7 @@ namespace GirlsDungeon.Game
                                 var near = new GridPos(x + dx, y + dy);
                                 if (!map.InBounds(near)) continue;
                                 var tile = map.Get(near);
-                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack) nextToContent = true;
+                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation) nextToContent = true;
                             }
                         if (nextToContent) { best = cell; break; }
                         if (best == null) best = cell;

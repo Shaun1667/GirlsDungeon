@@ -36,6 +36,10 @@ namespace GirlsDungeon.Core.Map
         StorehouseRack = 14,
         /// <summary>연 보급 선반.</summary>
         StorehouseRackOpened = 15,
+        /// <summary>수리대 (수리실, 3-14d). 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 쓰면 RepairStationUsed.</summary>
+        RepairStation = 16,
+        /// <summary>쓴 수리대.</summary>
+        RepairStationUsed = 17,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -184,7 +188,7 @@ namespace GirlsDungeon.Core.Map
         {
             if (!InBounds(cell)) return false;
             var tile = Get(cell);
-            return tile == TileType.SupplyCrate || tile == TileType.TreasureChest || tile == TileType.StorehouseRack;
+            return tile == TileType.SupplyCrate || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation;
         }
 
         /// <summary>특수 방의 상자류 칸 (보물 상자 · 보급 선반, 닫힘 · 열림) — 낮은 엄폐, 옆에 다른 물건을 놓지 않는다.</summary>
@@ -193,7 +197,8 @@ namespace GirlsDungeon.Core.Map
             if (!InBounds(cell)) return false;
             var tile = Get(cell);
             return tile == TileType.TreasureChest || tile == TileType.TreasureChestOpened
-                || tile == TileType.StorehouseRack || tile == TileType.StorehouseRackOpened;
+                || tile == TileType.StorehouseRack || tile == TileType.StorehouseRackOpened
+                || tile == TileType.RepairStation || tile == TileType.RepairStationUsed;
         }
 
         /// <summary>보물 상자 칸 (닫힘 · 열림).</summary>

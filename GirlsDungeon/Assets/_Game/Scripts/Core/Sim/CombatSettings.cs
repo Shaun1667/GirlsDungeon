@@ -207,6 +207,10 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>보물 상자에서 무기가 더 나올 확률 (%).</summary>
         public int TreasureWeaponPercent;
 
+        // 수리실 (BALANCE 23번, 3-14d — Loot.UseRepairStation)
+        /// <summary>수리대가 회복하는 체력 (최대 체력의 %). 안정지수는 최대까지.</summary>
+        public int RepairHealPercent;
+
         // 보급고 (BALANCE 22번, 3-14c — Loot.OpenStorehouse)
         /// <summary>보급 선반을 열면 바로 얻는 파츠 재료.</summary>
         public int StorehouseMaterials;
@@ -332,6 +336,8 @@ namespace GirlsDungeon.Core.Sim
             if (WorkshopOptionPercent < 0 || WorkshopOptionPercent > 100 || WorkshopSetPercent < 0 || WorkshopSetPercent > 100
                 || WorkshopOptionCost < 0 || WorkshopSetCost < 0 || DisassembleMaterials.Length != 3 || SpareSlots < 0)
                 throw new ArgumentException("Workshop settings are invalid.");
+            if (RepairHealPercent < 0 || RepairHealPercent > 100)
+                throw new ArgumentException("Repair settings are invalid.");
             if (StorehouseMaterials < 0 || StorehouseMedkits < 0)
                 throw new ArgumentException("Storehouse settings are invalid.");
             if (TreasureWeaponPercent < 0 || TreasureWeaponPercent > 100)

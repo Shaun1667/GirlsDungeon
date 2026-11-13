@@ -39,7 +39,7 @@ MonoBehaviour:
   maxSupplyCrates: 3
   workshopsPerFloor: 1
   alwaysSpecialRooms: 02
-  randomSpecialRooms: 03
+  randomSpecialRooms: 0307
   randomSpecialRoomsPerFloor: 2
   minNormalRooms: 2
   lockedSpecialRooms: 01020406
@@ -364,6 +364,7 @@ MonoBehaviour:
   workshopSetCost: 3
   disassembleMaterials: 010000000200000003000000
   spareSlots: 4
+  repairHealPercent: 100
   storehouseMaterials: 6
   storehouseMedkits: 2
   treasurePartGrade: 2

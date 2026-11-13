@@ -28,6 +28,9 @@ namespace GirlsDungeon.Game
         [Tooltip("Supply rack in a storehouse, closed and opened (3-14c).")]
         [SerializeField] private Material rackMaterial;
         [SerializeField] private Material rackOpenedMaterial;
+        [Tooltip("Repair station in a repair bay, ready and used (3-14d).")]
+        [SerializeField] private Material repairMaterial;
+        [SerializeField] private Material repairUsedMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -53,6 +56,8 @@ namespace GirlsDungeon.Game
             var treasureOpened = new MeshData();
             var rack = new MeshData();
             var rackOpened = new MeshData();
+            var repair = new MeshData();
+            var repairUsed = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -111,6 +116,16 @@ namespace GirlsDungeon.Game
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             rackOpened.AddBox(position, balance.CrateSize * 0.5f, balance.CrateSize * 0.25f, balance.LowCoverHeight * 0.8f);
                             break;
+                        case TileType.RepairStation:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            // 수리대: 넓고 낮은 판 위에 기둥 (다른 상자류와 구별).
+                            repair.AddBox(position, 0.42f, 0.42f, balance.LowCoverHeight * 0.4f);
+                            repair.AddBox(position, 0.12f, 0.12f, balance.LowCoverHeight * 1.6f);
+                            break;
+                        case TileType.RepairStationUsed:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            repairUsed.AddBox(position, 0.42f, 0.42f, balance.LowCoverHeight * 0.4f);
+                            break;
                         case TileType.DoorOpen:
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             break;
@@ -143,6 +158,8 @@ namespace GirlsDungeon.Game
             AddPart("TreasureOpened", treasureOpened, treasureOpenedMaterial != null ? treasureOpenedMaterial : coverMaterial);
             AddPart("Rack", rack, rackMaterial != null ? rackMaterial : coverMaterial);
             AddPart("RackOpened", rackOpened, rackOpenedMaterial != null ? rackOpenedMaterial : coverMaterial);
+            AddPart("Repair", repair, repairMaterial != null ? repairMaterial : coverMaterial);
+            AddPart("RepairUsed", repairUsed, repairUsedMaterial != null ? repairUsedMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>
