@@ -293,11 +293,11 @@ MonoBehaviour:
     - part.slot.tuning
     - part.slot.coupler
     - part.slot.latch
-  combatDropWeaponPercent: 30
-  combatDropMedkitPercent: 40
+  combatDropWeaponPercent: 10
+  combatDropMedkitPercent: 20
   crateWeaponPercent: 10
   medkitHealPercent: 40
-  combatDropPartPercent: 20
+  combatDropPartPercent: 60
   cratePartPercent: 60
   partStats:
   - stat: 0

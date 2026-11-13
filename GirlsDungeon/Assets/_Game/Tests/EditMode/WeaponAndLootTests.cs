@@ -342,9 +342,9 @@ namespace GirlsDungeon.Tests
         // ---------- 전투 보상 ----------
 
         [Test]
-        public void WinningACombat_DropsWeapon30_Medkit40_Part20_Nothing10_AtTheLastKill()
+        public void WinningACombat_DropsWeapon10_Medkit20_Part60_Nothing10_AtTheLastKill()
         {
-            // 3-4 (2026-11-12): 없음 30 중 20을 파츠로 (BALANCE 12-5).
+            // 3-4 (2026-11-12): 없음 30 중 20을 파츠로 → (2026-11-13, 사용자) 무기 10 · 구급상자 20 · 파츠 60 · 없음 10 (BALANCE 12-5).
             var combat = TestData.Combat();
             int weapons = 0, medkits = 0, parts = 0, nothing = 0;
             for (int seed = 1; seed <= 600; seed++)
@@ -364,9 +364,9 @@ namespace GirlsDungeon.Tests
                 else if (item.Kind == ItemKind.Part) parts++;
                 else medkits++;
             }
-            Assert.That(weapons / 6.0, Is.InRange(24.0, 36.0));
-            Assert.That(medkits / 6.0, Is.InRange(34.0, 46.0));
-            Assert.That(parts / 6.0, Is.InRange(15.0, 25.0));
+            Assert.That(weapons / 6.0, Is.InRange(6.0, 14.0));
+            Assert.That(medkits / 6.0, Is.InRange(15.0, 25.0));
+            Assert.That(parts / 6.0, Is.InRange(54.0, 66.0));
             Assert.That(nothing / 6.0, Is.InRange(6.0, 14.0));
         }
 
