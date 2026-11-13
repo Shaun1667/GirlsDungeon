@@ -148,7 +148,7 @@ namespace GirlsDungeon.Tests
                     Assert.That(item.Part.Weapon, Is.EqualTo(world.PlayerWeapon));
                 }
             }
-            Assert.That(parts, Is.GreaterThan(0), "a 30% crate part shows up within 40 crates");
+            Assert.That(parts, Is.GreaterThan(0), "a 60% crate part shows up within 40 crates");
         }
 
         [Test]

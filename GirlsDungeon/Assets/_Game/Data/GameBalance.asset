@@ -295,10 +295,10 @@ MonoBehaviour:
     - part.slot.latch
   combatDropWeaponPercent: 30
   combatDropMedkitPercent: 40
-  crateWeaponPercent: 40
+  crateWeaponPercent: 10
   medkitHealPercent: 40
   combatDropPartPercent: 20
-  cratePartPercent: 30
+  cratePartPercent: 60
   partStats:
   - stat: 0
     min: 1

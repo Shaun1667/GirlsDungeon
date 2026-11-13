@@ -288,7 +288,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Chance (%) that winning a combat drops a medkit. The rest drops nothing.")]
         [SerializeField] private int combatDropMedkitPercent = 40;
         [Tooltip("Chance (%) that a supply crate holds a weapon. Then the part range, the rest holds a medkit.")]
-        [SerializeField] private int crateWeaponPercent = 40;
+        [SerializeField] private int crateWeaponPercent = 10;
         [Tooltip("Medkit heal (% of max HP).")]
         [SerializeField] private int medkitHealPercent = 40;
 
@@ -296,7 +296,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Chance (%) that winning a combat drops a part (after the weapon and medkit ranges).")]
         [SerializeField] private int combatDropPartPercent = 20;
         [Tooltip("Chance (%) that a supply crate holds a part (after the weapon range). The rest holds a medkit.")]
-        [SerializeField] private int cratePartPercent = 30;
+        [SerializeField] private int cratePartPercent = 60;
         [Tooltip("Value range rolled for each part stat.")]
         [SerializeField] private PartStatEntry[] partStats =
         {

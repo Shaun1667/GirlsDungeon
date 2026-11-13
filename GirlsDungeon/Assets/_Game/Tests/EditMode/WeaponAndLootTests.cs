@@ -309,9 +309,9 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void CrateContents_AreWeapon40_Part30_Medkit30_NeverTheWeaponInHand()
+        public void CrateContents_AreWeapon10_Part60_Medkit30_NeverTheWeaponInHand()
         {
-            // 3-4 (2026-11-12): 무기 50 · 구급상자 50 → 무기 40 · 파츠 30 · 구급상자 30 (BALANCE 12-6).
+            // 3-4 (2026-11-12): 무기 50 · 구급상자 50 → 무기 40 · 파츠 30 · 구급상자 30 → (2026-11-13, 사용자) 무기 10 · 파츠 60 · 구급상자 30 (BALANCE 12-6).
             var combat = TestData.Combat();
             int weapons = 0, parts = 0, total = 0;
             for (int seed = 1; seed <= 400; seed++)
@@ -334,8 +334,9 @@ namespace GirlsDungeon.Tests
                     Assert.That(item.Part.Weapon, Is.EqualTo(world.PlayerWeapon), "parts fit the weapon in hand");
                 }
             }
-            Assert.That(weapons * 100.0 / total, Is.InRange(32.0, 48.0));
-            Assert.That(parts * 100.0 / total, Is.InRange(22.0, 38.0));
+            Assert.That(weapons * 100.0 / total, Is.InRange(5.0, 15.0));
+            Assert.That(parts * 100.0 / total, Is.InRange(52.0, 68.0));
+            Assert.That((total - weapons - parts) * 100.0 / total, Is.InRange(22.0, 38.0), "medkits");
         }
 
         // ---------- 전투 보상 ----------
