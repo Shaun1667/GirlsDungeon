@@ -166,6 +166,22 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>2 · 3 · 4번 칸 능력치 개수, PartGrade 순서 (공업 1 · 군용 2 · 정밀 3).</summary>
         public int[] PartSecondaryStatCounts = new int[3];
 
+        // 파츠 세트 효과 (BALANCE 18번, 3-4b — SetEffects)
+        /// <summary>같은 세트 파츠를 몇 개 끼우면 켜지는가 (2 · 3 · 4번 칸 = 3).</summary>
+        public int SetPiecesRequired;
+        public int SetChainPercentPerStack;
+        public int SetChainMaxStacks;
+        public int SetTwoSidedPercent;
+        public int SetFracturePercent;
+        public int SetEmergencyStability;
+        public int SetBulwarkPercent;
+        /// <summary>방호 태세가 걸려 있는 플레이어 차례 수 (감시를 건 뒤).</summary>
+        public int SetBulwarkTurns;
+        public int SetAmbushPercent;
+        public int SetAssaultPercent;
+        /// <summary>백병 강습: 근접 무기(도검) 공격이면 SetAssaultPercent 위에 더하는 값.</summary>
+        public int SetAssaultMeleePercent;
+
         public PartStatRange PartRange(PartStat stat)
         {
             foreach (var range in PartStatRanges) if (range.Stat == stat) return range;
@@ -278,6 +294,11 @@ namespace GirlsDungeon.Core.Sim
             if (PartGradePercents.Length != 3 || PartPrimaryStatCounts.Length != 3 || PartSecondaryStatCounts.Length != 3
                 || PartGradePercents[0] + PartGradePercents[1] + PartGradePercents[2] != 100)
                 throw new ArgumentException("Part grade settings are invalid.");
+            if (SetPiecesRequired < 1 || SetPiecesRequired > WeaponPart.SlotCount - SetEffects.FirstSetSlot
+                || SetChainPercentPerStack < 0 || SetChainMaxStacks < 0 || SetTwoSidedPercent < 0 || SetFracturePercent < 0
+                || SetEmergencyStability < 0 || SetBulwarkPercent < 0 || SetBulwarkPercent > 100 || SetBulwarkTurns < 0
+                || SetAmbushPercent < 0 || SetAssaultPercent < 0 || SetAssaultMeleePercent < 0)
+                throw new ArgumentException("Part set settings are invalid.");
             foreach (var stat in PartPrimaryStats) PartRange(stat);
             foreach (var stat in PartSecondaryStats) PartRange(stat);
             foreach (var range in PartStatRanges)

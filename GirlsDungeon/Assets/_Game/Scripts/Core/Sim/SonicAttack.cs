@@ -55,7 +55,8 @@ namespace GirlsDungeon.Core.Sim
             if (dx * dx + dy * dy > settings.SonicRange * settings.SonicRange) block = SonicBlock.OutOfRange;
             else if (!Vision.IsSet(Vision.Compute(world.Map, attacker.Position, attacker.VisionRange), world.Map, target.Position)) block = SonicBlock.NotVisible;
 
-            int damage = CombatRules.Damage(attacker.Attack, target.Defense, settings.SonicDamagePercent, 0, settings.MinDamage);
+            int setPercent = SetEffects.DamagePercent(world, settings, attacker, target, DamageSource.Sonic);
+            int damage = CombatRules.Damage(attacker.Attack, target.Defense, settings.SonicDamagePercent, 0, settings.MinDamage, 100, setPercent);
             return new SonicPreview(block, target, damage, settings.SonicStabilityDamage);
         }
 
@@ -98,6 +99,7 @@ namespace GirlsDungeon.Core.Sim
             if (!TurnFlow.IsPlayerTurn(world) || world.PlayerActed) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Sonic)) return false;
             if (!SonicAttack.Resolve(world, settings, world.Player, world.FindUnit(targetId), events)) return false;
+            SetEffects.OnSkillUsed(world, settings);
 
             world.PlayerActed = true;
             if (world.Mode == WorldMode.Combat && world.Combatants.Count > 0) TurnFlow.EndPlayerTurn(world, settings, events);

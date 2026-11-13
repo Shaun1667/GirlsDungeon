@@ -174,7 +174,13 @@ namespace GirlsDungeon.Game
             bool fits = Parts.Fits(world, part);
             var current = fits ? world.PlayerParts[part.Slot] : null;
             weaponPanelLabel.text = Text.Get("ui.part.compare", WeaponName(part.Weapon), PartSlotName(part.Weapon, part.Slot), GradeName(part.Grade),
-                PartStats(part), current != null ? Text.Get("ui.part.summary", GradeName(current.Grade), PartStats(current)) : Text.Get("ui.part.empty"));
+                PartStats(part), current != null ? PartSummary(current) : Text.Get("ui.part.empty"));
+            if (part.Set != PartSet.None)
+            {
+                // 끼우면 그 세트가 몇 개가 되는지 (같은 칸의 원래 파츠가 같은 세트면 빠지는 것까지).
+                int after = SetEffects.Count(world, part.Set) - (current != null && current.Set == part.Set ? 1 : 0) + (fits ? 1 : 0);
+                weaponPanelLabel.text += "\n" + Text.Get("ui.part.set", SetName(part.Set), after, settings.SetPiecesRequired, SetRule(part.Set));
+            }
             if (!fits) weaponPanelLabel.text += "\n" + Text.Get("ui.part.not_fit", WeaponName(part.Weapon));
             OfferedItemId = itemId;
             weaponPanel.SetActive(true);
@@ -185,6 +191,49 @@ namespace GirlsDungeon.Game
         {
             string key = balance.PartSlotKey(weapon, slot);
             return key != null ? Text.Get(key) : (slot + 1).ToString();
+        }
+
+        /// <summary>지금 끼운 파츠 한 줄: 등급 · 능력치 (세트가 있으면 세트 이름까지).</summary>
+        private static string PartSummary(WeaponPart part)
+        {
+            return part.Set != PartSet.None
+                ? Text.Get("ui.part.summary_set", GradeName(part.Grade), PartStats(part), SetName(part.Set))
+                : Text.Get("ui.part.summary", GradeName(part.Grade), PartStats(part));
+        }
+
+        /// <summary>세트 이름 (텍스트 표 part.set.{이름}.name).</summary>
+        private static string SetName(PartSet set) => Text.Get("part.set." + SetKey(set) + ".name");
+
+        /// <summary>세트 규칙 글 — 숫자는 수치 표(CombatSettings.Set…)에서 넣는다 (표시 값 = 실제 값).</summary>
+        private string SetRule(PartSet set)
+        {
+            string key = "part.set." + SetKey(set) + ".rule";
+            switch (set)
+            {
+                case PartSet.Chain: return Text.Get(key, settings.SetChainPercentPerStack, settings.SetChainMaxStacks);
+                case PartSet.TwoSided: return Text.Get(key, settings.SetTwoSidedPercent);
+                case PartSet.Fracture: return Text.Get(key, settings.SetFracturePercent);
+                case PartSet.Emergency: return Text.Get(key, settings.SetEmergencyStability);
+                case PartSet.Bulwark: return Text.Get(key, settings.SetBulwarkTurns, settings.SetBulwarkPercent);
+                case PartSet.Ambush: return Text.Get(key, settings.SetAmbushPercent);
+                case PartSet.Assault: return Text.Get(key, settings.SetAssaultPercent, settings.SetAssaultMeleePercent);
+                default: return string.Empty;
+            }
+        }
+
+        private static string SetKey(PartSet set)
+        {
+            switch (set)
+            {
+                case PartSet.Chain: return "chain";
+                case PartSet.TwoSided: return "two_sided";
+                case PartSet.Fracture: return "fracture";
+                case PartSet.Emergency: return "emergency";
+                case PartSet.Bulwark: return "bulwark";
+                case PartSet.Ambush: return "ambush";
+                case PartSet.Assault: return "assault";
+                default: return "none";
+            }
         }
 
         private static string GradeName(PartGrade grade)
@@ -488,6 +537,11 @@ namespace GirlsDungeon.Game
                 stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
                 // 표시 값 = 실제 값: 무기 표가 아니라 유닛에 적용된 값(Loadout.Apply 결과)을 읽는다.
                 weaponLabel.text = Text.Get("ui.hud.weapon", WeaponName(world.PlayerWeapon), player.Attack, player.AttackRange);
+                // 켜진 세트 (3-4b): 이름 · 연쇄 가속 중첩 · 방호 태세 남은 차례.
+                var activeSet = SetEffects.Active(world, settings);
+                if (activeSet == PartSet.Chain) weaponLabel.text += "\n" + Text.Get("ui.hud.set_chain", SetName(activeSet), world.SetChainStacks, settings.SetChainMaxStacks);
+                else if (activeSet == PartSet.Bulwark && world.SetBulwarkTurns > 0) weaponLabel.text += "\n" + Text.Get("ui.hud.set_bulwark", SetName(activeSet), world.SetBulwarkTurns);
+                else if (activeSet != PartSet.None) weaponLabel.text += "\n" + Text.Get("ui.hud.set", SetName(activeSet));
             }
 
             floorLabel.text = Text.Get("ui.hud.floor", world.FloorIndex + 1, settings.FloorCount);

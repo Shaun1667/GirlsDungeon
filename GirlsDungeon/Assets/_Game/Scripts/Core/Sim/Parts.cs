@@ -9,9 +9,9 @@ namespace GirlsDungeon.Core.Sim
     {
         /// <summary>공업: 1번 칸 능력치 2개, 2 · 3 · 4번 칸 1개.</summary>
         Industrial = 0,
-        /// <summary>군용: 1번 칸 3개, 2 · 3 · 4번 칸 2개 (세트 효과는 다음 항목).</summary>
+        /// <summary>군용: 1번 칸 3개, 2 · 3 · 4번 칸 2개 + 세트 (SetEffects).</summary>
         Military = 1,
-        /// <summary>정밀: 1번 칸 4개, 2 · 3 · 4번 칸 3개 (세트 효과는 다음 항목).</summary>
+        /// <summary>정밀: 1번 칸 4개, 2 · 3 · 4번 칸 3개 + 세트 (SetEffects).</summary>
         Precision = 2,
     }
 
@@ -56,8 +56,12 @@ namespace GirlsDungeon.Core.Sim
         public PartGrade Grade { get; }
         public IReadOnlyList<PartBonus> Bonuses { get; }
 
-        public WeaponPart(WeaponKind weapon, int slot, PartGrade grade, IReadOnlyList<PartBonus> bonuses)
+        /// <summary>세트 (군용 · 정밀의 2 · 3 · 4번 칸만, 그 밖은 None). 같은 세트 3개를 끼우면 켜진다 (SetEffects).</summary>
+        public PartSet Set { get; }
+
+        public WeaponPart(WeaponKind weapon, int slot, PartGrade grade, IReadOnlyList<PartBonus> bonuses, PartSet set = PartSet.None)
         {
+            Set = set;
             Weapon = weapon;
             Slot = slot;
             Grade = grade;
@@ -106,7 +110,9 @@ namespace GirlsDungeon.Core.Sim
                 var range = settings.PartRange(stat);
                 bonuses.Add(new PartBonus(stat, random.Range(range.Min, range.Max + 1)));
             }
-            return new WeaponPart(weapon, slot, grade, bonuses);
+            // 세트는 능력치 다음에 굴린다 (세트가 없는 파츠는 난수를 더 쓰지 않는다).
+            var set = SetEffects.CanHaveSet(grade, slot) ? (PartSet)random.Range(1, SetEffects.SetCount + 1) : PartSet.None;
+            return new WeaponPart(weapon, slot, grade, bonuses, set);
         }
 
         private static PartGrade RollGrade(CombatSettings settings, IRandom random)
@@ -196,6 +202,34 @@ namespace GirlsDungeon.Core.Sim
             var part = Parts.Generate(settings, world.PlayerWeapon, world.Random.Get(RandomPurpose.Item));
             var item = world.AddPartItem(part, cell);
             events.Add(new ItemDropped(item.Id, item.Kind, item.Weapon, item.Position, DropSource.Debug));
+            return true;
+        }
+    }
+
+    /// <summary>
+    /// 디버그 전용: 든 무기의 2 · 3 · 4번 칸에 그 세트의 군용 파츠(능력치 없음)를 끼운다 — 세트 효과 시험용 (3-4b).
+    /// 원래 파츠는 지운다. set = None이면 세 칸을 비운다.
+    /// </summary>
+    public sealed class DebugEquipSetCommand : ICommand
+    {
+        private readonly PartSet set;
+        private readonly CombatSettings settings;
+
+        public int CostTicks => 0;
+
+        public DebugEquipSetCommand(PartSet set, CombatSettings settings)
+        {
+            this.set = set;
+            this.settings = settings;
+        }
+
+        public bool TryApply(World world, List<GameEvent> events)
+        {
+            if (world.Player == null) return false;
+            for (int slot = SetEffects.FirstSetSlot; slot < WeaponPart.SlotCount; slot++)
+                world.PlayerParts[slot] = set == PartSet.None ? null : new WeaponPart(world.PlayerWeapon, slot, PartGrade.Military, new List<PartBonus>(), set);
+            Loadout.Apply(world, settings);
+            events.Add(new UnitStatsChanged(world.Player.Id));
             return true;
         }
     }

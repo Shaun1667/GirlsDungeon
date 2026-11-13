@@ -33,11 +33,15 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>거리 때문에 줄어든 피해 (%, 산탄총). 0이면 줄지 않음.</summary>
         public readonly int FalloffPercent;
 
+        /// <summary>세트 효과로 바뀐 피해 (%p, SetEffects). 0이면 없음.</summary>
+        public readonly int SetPercent;
+
         public bool CanAttack => Block == AttackBlock.None;
 
         public AttackPreview(AttackBlock block, CoverLevel cover, bool stabilityGuard, int reductionPercent,
-            int damage, int critDamage, int critPercent, int stabilityDamage, bool breaksCover, int falloffPercent)
+            int damage, int critDamage, int critPercent, int stabilityDamage, bool breaksCover, int falloffPercent, int setPercent = 0)
         {
+            SetPercent = setPercent;
             BreaksCover = breaksCover;
             FalloffPercent = falloffPercent;
             Block = block;
@@ -77,11 +81,14 @@ namespace GirlsDungeon.Core.Sim
 
             // 산탄총: 멀수록 피해가 준다 (엄폐 감소와 곱한다).
             int falloff = Loadout.FalloffPercent(weapon, from, target.Position);
-            int damage = Damage(attacker.Attack, target.Defense, 100, reduction, settings.MinDamage, 100 - falloff);
-            int critDamage = Damage(attacker.Attack, target.Defense, attacker.CritMultiplierPercent, reduction, settings.MinDamage, 100 - falloff);
+            // 세트 효과 (3-4b): 적 차례에 플레이어가 쏘는 것은 감시 사격.
+            var source = attacker.IsPlayer && world.Mode == WorldMode.Combat && world.Turn == TurnSide.Enemies ? DamageSource.Overwatch : DamageSource.Shot;
+            int setPercent = SetEffects.DamagePercent(world, settings, attacker, target, source);
+            int damage = Damage(attacker.Attack, target.Defense, 100, reduction, settings.MinDamage, 100 - falloff, setPercent);
+            int critDamage = Damage(attacker.Attack, target.Defense, attacker.CritMultiplierPercent, reduction, settings.MinDamage, 100 - falloff, setPercent);
             bool breaksCover = cover != CoverLevel.None
                 && CoverBreak.AnyBreaksOnNextHit(map, settings, CoverBreak.Facing(map, target.Position, from));
-            return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, attacker.StabilityDamage, breaksCover, falloff);
+            return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, attacker.StabilityDamage, breaksCover, falloff, setPercent);
         }
 
         /// <summary>
@@ -94,11 +101,15 @@ namespace GirlsDungeon.Core.Sim
             return world.PlayerMoved || from != attacker.Position;
         }
 
-        /// <summary>정수 계산 · 반올림(0.5는 올림). 같은 입력이면 어디서나 같은 값. rangePercent = 거리 감소 뒤 남는 비율 (산탄총).</summary>
-        public static int Damage(int attack, int defense, int multiplierPercent, int reductionPercent, int minDamage, int rangePercent = 100)
+        /// <summary>
+        /// 정수 계산 · 반올림(0.5는 올림). 같은 입력이면 어디서나 같은 값. rangePercent = 거리 감소 뒤 남는 비율 (산탄총),
+        /// setPercent = 세트 효과로 바뀐 피해 (%p, SetEffects — 100에 더해 곱한다, 0 아래로는 안 내려감).
+        /// </summary>
+        public static int Damage(int attack, int defense, int multiplierPercent, int reductionPercent, int minDamage, int rangePercent = 100, int setPercent = 0)
         {
-            long numerator = (long)attack * attack * multiplierPercent * (100 - reductionPercent) * rangePercent;
-            long denominator = (long)(attack + defense) * 100 * 100 * 100;
+            int setFactor = System.Math.Max(0, 100 + setPercent);
+            long numerator = (long)attack * attack * multiplierPercent * (100 - reductionPercent) * rangePercent * setFactor;
+            long denominator = (long)(attack + defense) * 100 * 100 * 100 * 100;
             int value = (int)((2 * numerator + denominator) / (2 * denominator));
             return value < minDamage ? minDamage : value;
         }

@@ -287,6 +287,22 @@ namespace GirlsDungeon.Game
             return null;
         }
 
+        /// <summary>[상태 변경] 든 무기의 2 · 3 · 4번 칸을 그 세트의 군용 파츠로 채운다 (세트 효과 시험용, None = 비우기).</summary>
+        public bool DebugEquipSet(PartSet set)
+        {
+            if (World == null) return false;
+            DebugUsed = true;
+            return simulation.Execute(new DebugEquipSetCommand(set, combatSettings));
+        }
+
+        /// <summary>켜진 세트 · 중첩 · 남은 차례 (디버그).</summary>
+        public string DebugSetSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            return $"Active={SetEffects.Active(world, combatSettings)} ChainStacks={world.SetChainStacks} BulwarkTurns={world.SetBulwarkTurns}";
+        }
+
         /// <summary>든 무기 4칸 파츠 (디버그).</summary>
         public string DebugPartsSummary()
         {
@@ -299,7 +315,7 @@ namespace GirlsDungeon.Game
                 if (part == null) { parts.Add($"{i + 1}:-"); continue; }
                 var bonuses = new System.Collections.Generic.List<string>();
                 foreach (var bonus in part.Bonuses) bonuses.Add($"{bonus.Stat}+{bonus.Value}");
-                parts.Add($"{i + 1}:{part.Grade}({string.Join(",", bonuses)})");
+                parts.Add($"{i + 1}:{part.Grade}/{part.Set}({string.Join(",", bonuses)})");
             }
             var player = world.Player;
             return $"Weapon={world.PlayerWeapon} [{string.Join(" ", parts)}] Atk {player.Attack} Range {player.AttackRange} Crit {player.CritPercent}%x{player.CritMultiplierPercent} "

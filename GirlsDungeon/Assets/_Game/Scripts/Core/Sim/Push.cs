@@ -141,7 +141,8 @@ namespace GirlsDungeon.Core.Sim
             var hits = new List<PushHit>();
             foreach (var target in targets)
             {
-                int damage = CombatRules.Damage(attacker.Attack, target.Defense, settings.PushDamagePercent, 0, settings.MinDamage);
+                int damage = CombatRules.Damage(attacker.Attack, target.Defense, settings.PushDamagePercent, 0, settings.MinDamage, 100,
+                    SetEffects.DamagePercent(world, settings, attacker, target, DamageSource.Push));
                 bool diesFromHit = target.Hp - damage <= 0;
                 var start = target.Position;
                 occupied.Remove(start);
@@ -335,6 +336,7 @@ namespace GirlsDungeon.Core.Sim
             if (Math.Abs(direction.X) + Math.Abs(direction.Y) != 1 || (side != 1 && side != -1)) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Push)) return false;
             if (!Push.Resolve(world, settings, world.Player, direction, side, events)) return false;
+            SetEffects.OnSkillUsed(world, settings);
 
             world.PlayerActed = true;
             if (world.Mode == WorldMode.Combat && world.Combatants.Count > 0) TurnFlow.EndPlayerTurn(world, settings, events);

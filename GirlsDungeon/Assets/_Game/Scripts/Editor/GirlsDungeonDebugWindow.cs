@@ -118,7 +118,17 @@ namespace GirlsDungeon.EditorTools
             if (GUILayout.Button("옆에 구급상자 [상태 변경]")) root.DebugDropItem(GirlsDungeon.Core.Sim.ItemKind.Medkit, default);
             if (GUILayout.Button("비교 창 바꾸기 [상태 변경]")) root.DebugPressSwap();
             EditorGUILayout.EndHorizontal();
+
+            EditorGUILayout.LabelField("파츠", root.DebugPartsSummary(), EditorStyles.wordWrappedLabel);
+            EditorGUILayout.LabelField("세트", root.DebugSetSummary(), EditorStyles.wordWrappedLabel);
+            EditorGUILayout.BeginHorizontal();
+            setToEquip = (GirlsDungeon.Core.Sim.PartSet)EditorGUILayout.EnumPopup("세트", setToEquip);
+            if (GUILayout.Button("2 · 3 · 4번 칸에 끼우기 [상태 변경]")) root.DebugEquipSet(setToEquip);
+            EditorGUILayout.EndHorizontal();
+            if (GUILayout.Button("옆에 파츠 놓기 [상태 변경]")) root.DebugDropPart();
         }
+
+        private GirlsDungeon.Core.Sim.PartSet setToEquip = GirlsDungeon.Core.Sim.PartSet.Assault;
 
         private GirlsDungeon.Core.Sim.WeaponKind weaponToDrop = GirlsDungeon.Core.Sim.WeaponKind.Shotgun;
 

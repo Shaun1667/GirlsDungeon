@@ -108,6 +108,7 @@ namespace GirlsDungeon.Core.Sim
             var player = world.Player;
             player.Overwatching = true;
             world.PlayerActed = true;
+            SetEffects.OnOverwatchSet(world, settings);
             events.Add(new OverwatchSet(player.Id, player.Kind));
             TurnFlow.EndPlayerTurn(world, settings, events);
             return true;

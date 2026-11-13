@@ -159,6 +159,7 @@ ui.part.compare,"{0} 파츠 · {1} ({2})
 New: {3}
 Equipped: {4}"
 ui.part.summary,{0} · {1},{0} · {1}
+ui.part.summary_set,{0} · {1} · {2} 세트,{0} · {1} · {2} set
 ui.part.empty,없음,None
 ui.part.not_fit,지금 든 무기에는 맞지 않음 ({0} 전용),Does not fit the weapon you hold ({0} only)
 ui.part.on_weapon,끼워진 파츠 {0}개도 같이 들어옴,Comes with {0} attached parts
@@ -185,3 +186,21 @@ part.stat.hp,체력 +{0},HP +{0}
 part.stat.defense,방어 +{0},Defense +{0}
 part.stat.move,이동 +{0},Move +{0}
 part.stat.stability,안정지수 +{0},Stability +{0}
+ui.part.set,세트: {0} ({1}/{2}) — {3},Set: {0} ({1}/{2}) — {3}
+ui.hud.set,세트: {0},Set: {0}
+ui.hud.set_chain,세트: {0} · {1}/{2}중첩,Set: {0} · {1}/{2} stacks
+ui.hud.set_bulwark,세트: {0} · {1}차례 남음,Set: {0} · {1} turns left
+part.set.chain.name,연쇄 가속,Chain Drive
+part.set.chain.rule,스킬을 쓸 때마다 이번 전투 스킬 피해 +{0}% (최대 {1}중첩),Each skill used adds +{0}% skill damage this combat (max {1} stacks)
+part.set.two_sided.name,양면 전술,Two-Sided Tactics
+part.set.two_sided.rule,대상 옆에 엄폐물이 없으면 단일 피해 +{0}% · 있으면 범위 피해 +{0}%,+{0}% single damage if no cover is next to the target · +{0}% area damage if there is
+part.set.fracture.name,균열 추격,Fracture Hunt
+part.set.fracture.rule,안정지수가 깎인 적에게 주는 피해 +{0}%,+{0}% damage to enemies with reduced stability
+part.set.emergency.name,응급 정비,Field Repair
+part.set.emergency.rule,구급상자로 체력이 가득 차면 안정지수 +{0},Stability +{0} when a medkit fills your HP
+part.set.bulwark.name,방호 태세,Bulwark Stance
+part.set.bulwark.rule,감시를 걸면 {0}차례 동안 받는 범위 피해 −{1}%,Setting overwatch cuts area damage taken by {1}% for {0} turns
+part.set.ambush.name,매복 사수,Ambush Marksman
+part.set.ambush.rule,감시 사격 피해 +{0}%,+{0}% overwatch shot damage
+part.set.assault.name,백병 강습,Close Assault
+part.set.assault.rule,주는 피해 +{0}% · 근접 무기 공격이면 +{1}% 더,+{0}% damage dealt · +{1}% more with melee weapon attacks

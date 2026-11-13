@@ -325,6 +325,27 @@ namespace GirlsDungeon.Game
         [Tooltip("Stat count on slots 2 to 4 by grade: industrial, military, precision.")]
         [SerializeField] private int[] partSecondaryStatCounts = { 1, 2, 3 };
 
+        [Header("Part sets (BALANCE 18)")]
+        [Tooltip("How many parts of one set (slots 2 to 4) turn the set on.")]
+        [SerializeField] private int setPiecesRequired = 3;
+        [Tooltip("Chain: skill damage per stack (%), stacks gained per skill used, max stacks.")]
+        [SerializeField] private int setChainPercentPerStack = 5;
+        [SerializeField] private int setChainMaxStacks = 4;
+        [Tooltip("Two-sided: single damage when no cover near the target, area damage when cover is near (%).")]
+        [SerializeField] private int setTwoSidedPercent = 10;
+        [Tooltip("Fracture: damage to enemies whose stability is below max (%).")]
+        [SerializeField] private int setFracturePercent = 15;
+        [Tooltip("Emergency: stability gained when a medkit fills HP.")]
+        [SerializeField] private int setEmergencyStability = 2;
+        [Tooltip("Bulwark: area damage taken reduction (%) and player turns it lasts after setting overwatch.")]
+        [SerializeField] private int setBulwarkPercent = 20;
+        [SerializeField] private int setBulwarkTurns = 2;
+        [Tooltip("Ambush: overwatch shot damage (%).")]
+        [SerializeField] private int setAmbushPercent = 25;
+        [Tooltip("Assault: all damage (%) and extra for melee weapon attacks (%).")]
+        [SerializeField] private int setAssaultPercent = 12;
+        [SerializeField] private int setAssaultMeleePercent = 24;
+
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
         [SerializeField] private float stepSeconds = 0.14f;
@@ -450,6 +471,17 @@ namespace GirlsDungeon.Game
                 PartGradePercents = (int[])partGradePercents.Clone(),
                 PartPrimaryStatCounts = (int[])partPrimaryStatCounts.Clone(),
                 PartSecondaryStatCounts = (int[])partSecondaryStatCounts.Clone(),
+                SetPiecesRequired = setPiecesRequired,
+                SetChainPercentPerStack = setChainPercentPerStack,
+                SetChainMaxStacks = setChainMaxStacks,
+                SetTwoSidedPercent = setTwoSidedPercent,
+                SetFracturePercent = setFracturePercent,
+                SetEmergencyStability = setEmergencyStability,
+                SetBulwarkPercent = setBulwarkPercent,
+                SetBulwarkTurns = setBulwarkTurns,
+                SetAmbushPercent = setAmbushPercent,
+                SetAssaultPercent = setAssaultPercent,
+                SetAssaultMeleePercent = setAssaultMeleePercent,
             };
             foreach (var entry in weapons)
             {

@@ -23,8 +23,12 @@ namespace GirlsDungeon.Core.Sim
         public readonly int Damage;
         public readonly int StabilityDamage;
 
-        public AreaHit(Unit target, CoverLevel cover, int reductionPercent, int damage, int stabilityDamage)
+        /// <summary>세트 효과로 바뀐 피해 (%p, SetEffects).</summary>
+        public readonly int SetPercent;
+
+        public AreaHit(Unit target, CoverLevel cover, int reductionPercent, int damage, int stabilityDamage, int setPercent = 0)
         {
+            SetPercent = setPercent;
             Target = target;
             Cover = cover;
             ReductionPercent = reductionPercent;
@@ -96,8 +100,9 @@ namespace GirlsDungeon.Core.Sim
                 var cover = Cover.Against(map, position, center);
                 int reduction = cover == CoverLevel.Full ? settings.FullCoverReductionPercent
                     : cover == CoverLevel.Half ? settings.HalfCoverReductionPercent : 0;
-                int damage = CombatRules.Damage(attacker.Attack, unit.Defense, settings.GrenadeDamagePercent, reduction, settings.MinDamage);
-                hits.Add(new AreaHit(unit, cover, reduction, damage, settings.GrenadeStabilityDamage));
+                int setPercent = SetEffects.DamagePercent(world, settings, attacker, unit, DamageSource.Grenade);
+                int damage = CombatRules.Damage(attacker.Attack, unit.Defense, settings.GrenadeDamagePercent, reduction, settings.MinDamage, 100, setPercent);
+                hits.Add(new AreaHit(unit, cover, reduction, damage, settings.GrenadeStabilityDamage, setPercent));
                 if (unit.IsPlayer) hitsPlayer = true;
             }
 
@@ -170,6 +175,7 @@ namespace GirlsDungeon.Core.Sim
             if (!TurnFlow.IsPlayerTurn(world) || world.PlayerActed) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Grenade)) return false;
             if (!AreaAttack.Resolve(world, settings, world.Player, center, events)) return false;
+            SetEffects.OnSkillUsed(world, settings);
 
             world.PlayerActed = true;
             if (world.Mode == WorldMode.Combat && world.Combatants.Count > 0) TurnFlow.EndPlayerTurn(world, settings, events);

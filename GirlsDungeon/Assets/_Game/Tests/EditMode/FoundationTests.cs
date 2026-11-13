@@ -331,6 +331,18 @@ namespace GirlsDungeon.Tests
                 PartGradePercents = new[] { 60, 30, 10 },
                 PartPrimaryStatCounts = new[] { 2, 3, 4 },
                 PartSecondaryStatCounts = new[] { 1, 2, 3 },
+                // BALANCE 18번 세트 효과.
+                SetPiecesRequired = 3,
+                SetChainPercentPerStack = 5,
+                SetChainMaxStacks = 4,
+                SetTwoSidedPercent = 10,
+                SetFracturePercent = 15,
+                SetEmergencyStability = 2,
+                SetBulwarkPercent = 20,
+                SetBulwarkTurns = 2,
+                SetAmbushPercent = 25,
+                SetAssaultPercent = 12,
+                SetAssaultMeleePercent = 24,
             };
             // BALANCE 12번 무기 표.
             settings.Weapons.Add(new WeaponStats

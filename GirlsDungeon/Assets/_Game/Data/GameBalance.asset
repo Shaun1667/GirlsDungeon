@@ -332,6 +332,17 @@ MonoBehaviour:
   partGradePercents: 3c0000001e0000000a000000
   partPrimaryStatCounts: 020000000300000004000000
   partSecondaryStatCounts: 010000000200000003000000
+  setPiecesRequired: 3
+  setChainPercentPerStack: 5
+  setChainMaxStacks: 4
+  setTwoSidedPercent: 10
+  setFracturePercent: 15
+  setEmergencyStability: 2
+  setBulwarkPercent: 20
+  setBulwarkTurns: 2
+  setAmbushPercent: 25
+  setAssaultPercent: 12
+  setAssaultMeleePercent: 24
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

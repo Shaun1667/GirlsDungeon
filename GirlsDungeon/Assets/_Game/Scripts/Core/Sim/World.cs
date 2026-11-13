@@ -170,6 +170,12 @@ namespace GirlsDungeon.Core.Sim
         public int PartAppliedDefense { get; set; }
         public int PartAppliedMaxStability { get; set; }
 
+        /// <summary>연쇄 가속 세트의 중첩 (스킬을 쓸 때마다 +1, 최대 CombatSettings.SetChainMaxStacks, 3-4b). 전투가 끝나면 0.</summary>
+        public int SetChainStacks { get; set; }
+
+        /// <summary>방호 태세 세트로 받는 범위 피해가 주는 남은 차례 (감시를 걸면 채움, 플레이어 차례 시작마다 -1, 3-4b). 전투가 끝나면 0.</summary>
+        public int SetBulwarkTurns { get; set; }
+
         /// <summary>판을 시작할 때 고른 캐릭터 (None = 유닛 표의 플레이어 줄 그대로). 이동 범위 기준값 · 화면 그림 · 이름을 여기서 찾는다.</summary>
         public CharacterKind PlayerCharacter { get; set; }
 
