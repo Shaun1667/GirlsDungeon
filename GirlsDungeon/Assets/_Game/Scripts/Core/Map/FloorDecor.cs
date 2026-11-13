@@ -24,6 +24,12 @@ namespace GirlsDungeon.Core.Map
         public static void Apply(FloorMap map, MapSettings settings, IRandom random)
         {
             PlaceChasms(map, settings, random);
+            ApplyCover(map, settings, random);
+        }
+
+        /// <summary>낭떠러지 없이 엄폐물 · 낮은 벽만 (특수 방 모음 층 — 방 내용을 시험하기 좋게. 함정 방은 자기 낭떠러지를 따로 만든다).</summary>
+        public static void ApplyCover(FloorMap map, MapSettings settings, IRandom random)
+        {
             foreach (var room in map.Rooms)
             {
                 PlaceCoverObjects(map, settings, room, random);

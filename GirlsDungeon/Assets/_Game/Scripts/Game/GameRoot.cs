@@ -10,6 +10,8 @@ namespace GirlsDungeon.Game
     public sealed class GameRoot : MonoBehaviour
     {
         [SerializeField] private GameBalance balance;
+        [Tooltip("Test scene: the first floor gathers one room of every special room kind (RunFactory.NewShowcaseRun).")]
+        [SerializeField] private bool specialRoomsShowcase;
         [SerializeField] private UnityEngine.UI.Text seedLabel;
         [SerializeField] private FloorView floorView;
         [SerializeField] private PlayerView playerView;
@@ -86,7 +88,10 @@ namespace GirlsDungeon.Game
         {
             combatSettings = balance.CreateCombatSettings();
             mapSettings = balance.CreateMapSettings();
-            simulation = new Simulation(RunFactory.NewRun(seed, mapSettings, combatSettings, character), combatSettings, mapSettings);
+            var world = specialRoomsShowcase
+                ? RunFactory.NewShowcaseRun(seed, mapSettings, combatSettings, character)
+                : RunFactory.NewRun(seed, mapSettings, combatSettings, character);
+            simulation = new Simulation(world, combatSettings, mapSettings);
 
             // 화면은 규칙 결과를 사건 재생기로 하나씩 받는다 (적 차례가 한 동작씩 보이게). 안개 · 위협 칸만 바로 받는다.
             eventPlayer.Bind(simulation, balance);

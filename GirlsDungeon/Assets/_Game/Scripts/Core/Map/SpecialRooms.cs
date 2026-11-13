@@ -63,6 +63,40 @@ namespace GirlsDungeon.Core.Map
             }
         }
 
+        /// <summary>
+        /// 정해진 방 하나를 그 종류의 특수 방으로 만든다 (특수 방 모음 층 — SpecialRoomShowcase). 실제 배치와 같은 순서:
+        /// 내용(Prepare) → 잠그는 종류면 잠금 · 닿는지 확인, 못 잠그면 문 없이. 내용을 놓을 수 없으면 false.
+        /// </summary>
+        public static bool PlaceInRoom(FloorMap map, MapSettings settings, int roomIndex, SpecialRoomKind kind, IRandom random)
+        {
+            bool locked = settings.LockedSpecialRooms.Contains(kind);
+            if (TryRoom(map, settings, roomIndex, kind, random, locked)) return true;
+            return locked && TryRoom(map, settings, roomIndex, kind, random, false);
+        }
+
+        /// <summary>방 하나에 내용을 놓고(잠그는 종류면 잠그고) 종류를 정한다. 안 되면 되돌리고 false.</summary>
+        private static bool TryRoom(FloorMap map, MapSettings settings, int index, SpecialRoomKind kind, IRandom random, bool locked)
+        {
+            var room = map.Rooms[index];
+            if (!Prepare(map, settings, room, kind, random)) return false;
+            if (!locked)
+            {
+                map.SetRoomKind(index, kind);
+                return true;
+            }
+            if (FloorDecor.LockRoom(map, room))
+            {
+                if (ContentReachable(map, room, kind))
+                {
+                    map.SetRoomKind(index, kind);
+                    return true;
+                }
+                foreach (var door in FloorDecor.Entrances(map, room)) map.SetTile(door, TileType.Floor);
+            }
+            Undo(map, room, kind);
+            return false;
+        }
+
         /// <summary>그 칸이 어느 특수 방 안인지 (None = 일반 방 · 복도).</summary>
         public static SpecialRoomKind KindAt(FloorMap map, GridPos cell) => map.SpecialRoomAt(cell);
 
@@ -71,25 +105,7 @@ namespace GirlsDungeon.Core.Map
             bool locked = settings.LockedSpecialRooms.Contains(kind);
             var order = Order(map, random);
             foreach (int index in order)
-            {
-                var room = map.Rooms[index];
-                if (!Prepare(map, settings, room, kind, random)) continue;
-                if (!locked)
-                {
-                    map.SetRoomKind(index, kind);
-                    return true;
-                }
-                if (FloorDecor.LockRoom(map, room))
-                {
-                    if (ContentReachable(map, room, kind))
-                    {
-                        map.SetRoomKind(index, kind);
-                        return true;
-                    }
-                    foreach (var door in FloorDecor.Entrances(map, room)) map.SetTile(door, TileType.Floor);
-                }
-                Undo(map, room, kind);
-            }
+                if (TryRoom(map, settings, index, kind, random, locked)) return true;
             if (!locked) return false;
 
             // 잠글 수 있는 방이 없으면(방마다 복도가 지나가거나 낭떠러지뿐인 방 등, 드묾) 문 없이 둔다 — 그 방은 층마다 있게.

@@ -13,10 +13,18 @@ namespace GirlsDungeon.EditorTools
         private const string BalancePath = "Assets/_Game/Data/GameBalance.asset";
         private const string MaterialFolder = "Assets/_Game/Data/Materials";
         private const string ScenePath = "Assets/_Game/Scenes/Game.unity";
+        /// <summary>특수 방 모음 테스트 씬 (2026-11-14) — 게임 씬과 같고, 첫 층이 모든 특수 방을 하나씩 모은 층이다. 빌드 목록에는 넣지 않는다.</summary>
+        private const string ShowcaseScenePath = "Assets/_Game/Scenes/SpecialRoomsTest.unity";
         private const string LitShaderName = "Universal Render Pipeline/Lit";
 
         [MenuItem("GirlsDungeon/Setup/Build Game Scene")]
-        public static void BuildGameScene()
+        public static void BuildGameScene() => BuildScene(ScenePath, false);
+
+        /// <summary>특수 방 모음 테스트 씬. 특수 방 종류를 더하면 자동으로 방이 늘어난다 (SpecialRoomShowcase) — 이 메뉴를 다시 실행하면 화면 쪽 변경도 따라온다.</summary>
+        [MenuItem("GirlsDungeon/Setup/Build Special Rooms Test Scene")]
+        public static void BuildSpecialRoomsTestScene() => BuildScene(ShowcaseScenePath, true);
+
+        private static void BuildScene(string scenePath, bool showcase)
         {
             if (!EditorSceneManager.SaveCurrentModifiedScenesIfUserWantsTo()) return;
 
@@ -435,12 +443,19 @@ namespace GirlsDungeon.EditorTools
                 ("altarView", altarView),
                 ("visuals", visuals),
                 ("characterSelect", characterSelect));
+            if (showcase)
+            {
+                var rootObjectRef = new SerializedObject(root);
+                rootObjectRef.FindProperty("specialRoomsShowcase").boolValue = true;
+                rootObjectRef.ApplyModifiedPropertiesWithoutUndo();
+            }
 
-            Directory.CreateDirectory(Path.GetDirectoryName(ScenePath));
-            EditorSceneManager.SaveScene(scene, ScenePath);
+            Directory.CreateDirectory(Path.GetDirectoryName(scenePath));
+            EditorSceneManager.SaveScene(scene, scenePath);
+            // 빌드 목록은 게임 씬 하나 (테스트 씬은 넣지 않는다).
             EditorBuildSettings.scenes = new[] { new EditorBuildSettingsScene(ScenePath, true) };
             AssetDatabase.SaveAssets();
-            Debug.Log($"Game scene built: {ScenePath}");
+            Debug.Log($"Scene built: {scenePath}");
         }
 
         private static Button CreateButton(Transform parent, string objectName, Font font, string textKey, Vector2 corner, Vector2 offset)

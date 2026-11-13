@@ -83,13 +83,27 @@ namespace GirlsDungeon.Core.Sim
         /// </summary>
         public static World NewRun(int seed, MapSettings mapSettings, CombatSettings combatSettings, CharacterKind character)
         {
+            return Create(seed, mapSettings, combatSettings, character, false);
+        }
+
+        /// <summary>
+        /// 특수 방 모음 판 (테스트 씬 — SpecialRoomShowcase): 첫 층이 모든 특수 방 종류를 하나씩 모은 층이다. 일반 적은 없고(결투장 · 함정 방은 자기 적),
+        /// 잠긴 방 수만큼 열쇠를 들고 시작한다. 계단을 밟으면 다음 층부터는 보통 층.
+        /// </summary>
+        public static World NewShowcaseRun(int seed, MapSettings mapSettings, CombatSettings combatSettings, CharacterKind character)
+        {
+            return Create(seed, mapSettings, combatSettings, character, true);
+        }
+
+        private static World Create(int seed, MapSettings mapSettings, CombatSettings combatSettings, CharacterKind character, bool showcase)
+        {
             combatSettings.Validate();
             var characterStats = combatSettings.TryCharacter(character);
             if (character != CharacterKind.None && characterStats == null)
                 throw new ArgumentException($"No stats for character {character}.");
 
             var world = new World(seed, new RandomStreams(seed));
-            BuildFloor(world, mapSettings);
+            BuildFloor(world, mapSettings, showcase);
             var playerStats = combatSettings.StatsFor(UnitKind.Player);
             var player = world.AddUnit(playerStats, world.Map.StartCell);
             world.PlayerId = player.Id;
@@ -104,7 +118,14 @@ namespace GirlsDungeon.Core.Sim
                 world.PlayerWeapon = characterStats.StartWeapon;
             }
             Loadout.Apply(world, combatSettings);
-            EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
+            if (showcase)
+            {
+                var spawn = world.Random.Get(RandomPurpose.Spawn);
+                Arena.Spawn(world, combatSettings, spawn);
+                Trap.Spawn(world, combatSettings, spawn);
+                world.Keys = CountLockedRooms(world.Map);
+            }
+            else EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
             VisionSystem.Update(world, null);
             return world;
         }
@@ -140,9 +161,38 @@ namespace GirlsDungeon.Core.Sim
             VisionSystem.Update(world, events);
         }
 
-        private static void BuildFloor(World world, MapSettings mapSettings)
+        private static int CountLockedRooms(FloorMap map)
         {
+            int count = 0;
+            foreach (var room in map.Rooms)
+            {
+                foreach (var cell in FloorDecor.Entrances(map, room))
+                    if (map.IsLockedDoor(cell)) { count++; break; }
+            }
+            return count;
+        }
+
+        private static void BuildFloor(World world, MapSettings mapSettings, bool showcase = false)
+        {
+            if (showcase)
+            {
+                world.Map = SpecialRoomShowcase.Build(mapSettings, world.Random.Get(RandomPurpose.Decor), world.Random.Get(RandomPurpose.Floor));
+                ResetFloorState(world);
+                return;
+            }
             world.Map = DungeonGenerator.Generate(mapSettings, world.Random.Get(RandomPurpose.Map));
+            ResetFloorState(world);
+            FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
+            // 보급 상자 · 특수 방(작업방 포함)은 층 만들기 난수로 (3-14l — 전에는 아이템 · 작업 난수). 층을 진행하는 동안 쓰지 않는 난수라
+            // 기록실 예고가 실제 다음 층과 같다 (Map · Decor · Floor · Spawn · EnemyKind는 층을 만들 때만 쓴다).
+            var floorRandom = world.Random.Get(RandomPurpose.Floor);
+            FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, floorRandom);
+            SpecialRoomLayout.Place(world.Map, mapSettings, floorRandom);
+        }
+
+        /// <summary>층마다 새로 시작하는 상태 (새 층을 만들 때).</summary>
+        private static void ResetFloorState(World world)
+        {
             world.FloorKeyGiven = false;
             world.EnemiesRevealed = false;
             world.ExchangeSold = 0;
@@ -150,12 +200,6 @@ namespace GirlsDungeon.Core.Sim
             world.AltarOffers.Clear();
             world.ArenaEnemies.Clear();
             world.ArchiveRead = false;
-            FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
-            // 보급 상자 · 특수 방(작업방 포함)은 층 만들기 난수로 (3-14l — 전에는 아이템 · 작업 난수). 층을 진행하는 동안 쓰지 않는 난수라
-            // 기록실 예고가 실제 다음 층과 같다 (Map · Decor · Floor · Spawn · EnemyKind는 층을 만들 때만 쓴다).
-            var floorRandom = world.Random.Get(RandomPurpose.Floor);
-            FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, floorRandom);
-            SpecialRoomLayout.Place(world.Map, mapSettings, floorRandom);
         }
     }
 
