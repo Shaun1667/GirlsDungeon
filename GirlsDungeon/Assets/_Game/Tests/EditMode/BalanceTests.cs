@@ -283,7 +283,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory }), "3-14c ~ 3-14e");
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange }), "3-14c ~ 3-14f");
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.observatory.log_used"), Is.True);
         }
@@ -317,6 +317,18 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.RepairHealPercent, Is.EqualTo(100));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.repair.log_used"), Is.True);
+        }
+
+        [Test]
+        public void Exchange_MatchesBalanceTable25()
+        {
+            var combat = Load().CreateCombatSettings();
+            Assert.That(new[] { combat.ExchangeMedkitCost, combat.ExchangePartCost, combat.ExchangeKeyCost, combat.ExchangeKeySellMaterials }, Is.EqualTo(new[] { 2, 4, 5, 3 }));
+            Assert.That(combat.ExchangePartGrade, Is.EqualTo(GirlsDungeon.Core.Sim.PartGrade.Military));
+            // 검산: 열쇠를 사고 바로 팔면 손해 (5 → 3) — 재료를 늘리는 고리가 없다.
+            Assert.That(combat.ExchangeKeySellMaterials, Is.LessThan(combat.ExchangeKeyCost));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in GirlsDungeon.Game.ExchangeView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
         }
 
         [Test]

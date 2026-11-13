@@ -207,6 +207,15 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>보물 상자에서 무기가 더 나올 확률 (%).</summary>
         public int TreasureWeaponPercent;
 
+        // 교환소 (BALANCE 25번, 3-14f — Exchange)
+        public int ExchangeMedkitCost;
+        public int ExchangePartCost;
+        /// <summary>교환소 파츠의 등급 (든 무기용).</summary>
+        public PartGrade ExchangePartGrade;
+        public int ExchangeKeyCost;
+        /// <summary>열쇠 1개를 팔면 받는 재료.</summary>
+        public int ExchangeKeySellMaterials;
+
         // 수리실 (BALANCE 23번, 3-14d — Loot.UseRepairStation)
         /// <summary>수리대가 회복하는 체력 (최대 체력의 %). 안정지수는 최대까지.</summary>
         public int RepairHealPercent;
@@ -336,6 +345,8 @@ namespace GirlsDungeon.Core.Sim
             if (WorkshopOptionPercent < 0 || WorkshopOptionPercent > 100 || WorkshopSetPercent < 0 || WorkshopSetPercent > 100
                 || WorkshopOptionCost < 0 || WorkshopSetCost < 0 || DisassembleMaterials.Length != 3 || SpareSlots < 0)
                 throw new ArgumentException("Workshop settings are invalid.");
+            if (ExchangeMedkitCost < 0 || ExchangePartCost < 0 || ExchangeKeyCost < 0 || ExchangeKeySellMaterials < 0)
+                throw new ArgumentException("Exchange settings are invalid.");
             if (RepairHealPercent < 0 || RepairHealPercent > 100)
                 throw new ArgumentException("Repair settings are invalid.");
             if (StorehouseMaterials < 0 || StorehouseMedkits < 0)

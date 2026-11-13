@@ -285,7 +285,7 @@ namespace GirlsDungeon.Tests
                 WorkshopsPerFloor = 1,
                 // BALANCE 1-21 ~ 1-24 특수 방 (방 내용은 3-14b부터 하나씩).
                 AlwaysSpecialRooms = { SpecialRoomKind.Treasure },
-                RandomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory },
+                RandomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange },
                 RandomSpecialRoomsPerFloor = 2,
                 MinNormalRooms = 2,
                 LockedSpecialRooms = { SpecialRoomKind.Workshop, SpecialRoomKind.Treasure, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar },
@@ -369,6 +369,12 @@ namespace GirlsDungeon.Tests
                 StorehouseMedkits = 2,
                 // BALANCE 23번 수리실.
                 RepairHealPercent = 100,
+                // BALANCE 25번 교환소.
+                ExchangeMedkitCost = 2,
+                ExchangePartCost = 4,
+                ExchangePartGrade = PartGrade.Military,
+                ExchangeKeyCost = 5,
+                ExchangeKeySellMaterials = 3,
             };
             // BALANCE 12번 무기 표.
             settings.Weapons.Add(new WeaponStats

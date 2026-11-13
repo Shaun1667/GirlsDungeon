@@ -1,6 +1,6 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 · 흰 콘솔 클릭: 열기 · 쓰기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest · blue rack · teal repair station · white console: Open · Use · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
+ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 · 흰 콘솔 · 주황 교환대 클릭: 열기 · 쓰기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest · blue rack · teal repair station · white console · orange counter: Open · Use · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
@@ -281,3 +281,25 @@ ui.treasure.log_open,보물 상자를 열었다,Opened the treasure chest
 ui.storehouse.log_open,보급 선반을 열었다 — 재료 +{0},Opened the supply rack — {0} materials
 ui.repair.log_used,수리대를 썼다 — 체력 +{0} · 안정지수 가득,Used the repair station — HP +{0} · stability full
 ui.observatory.log_used,관측 콘솔 — 이 층 지도와 적 {0}명의 위치가 드러났다,Observatory console — the floor map and {0} enemies are revealed
+ui.exchange.title,교환소 — 재료 {0} · 열쇠 {1} (물건마다 한 번씩),Exchange — materials {0} · keys {1} (each offer once)
+ui.exchange.offer_medkit,구급상자 1개 — 재료 {0},Medkit — {0} materials
+ui.exchange.offer_medkit_sold,구급상자 — 다 팔림,Medkit — sold out
+ui.exchange.offer_part,든 무기용 군용 파츠 1개 — 재료 {0},Military part for your weapon — {0} materials
+ui.exchange.offer_part_sold,파츠 — 다 팔림,Part — sold out
+ui.exchange.offer_key,열쇠 1개 — 재료 {0},Key — {0} materials
+ui.exchange.offer_key_sold,열쇠 — 다 팔림,Key — sold out
+ui.exchange.offer_sell_key,열쇠 팔기 — 재료 {0} 받음,Sell a key — get {0} materials
+ui.exchange.offer_sell_key_sold,열쇠 팔기 — 이미 팔았음,Sell a key — already sold
+ui.exchange.result_done,거래했다,Done
+ui.exchange.result_sold,이미 다 팔렸다,Sold out
+ui.exchange.result_not_enough,재료가 모자람,Not enough materials
+ui.exchange.result_no_key,팔 열쇠가 없음,No key to sell
+ui.exchange.buy_medkit,구급상자,Medkit
+ui.exchange.buy_part,파츠,Part
+ui.exchange.buy_key,열쇠,Key
+ui.exchange.sell_key,열쇠 팔기,Sell key
+ui.exchange.close,닫기,Close
+ui.exchange.log_medkit,교환소에서 구급상자를 샀다,Bought a medkit at the exchange
+ui.exchange.log_part,교환소에서 파츠를 샀다,Bought a part at the exchange
+ui.exchange.log_key,교환소에서 열쇠를 샀다,Bought a key at the exchange
+ui.exchange.log_sell_key,교환소에 열쇠를 팔았다,Sold a key at the exchange

@@ -59,6 +59,8 @@ namespace GirlsDungeon.EditorTools
             // 관측 콘솔 (3-14e): 흰색, 쓴 뒤에는 회색.
             var consoleMaterial = LoadOrCreateMaterial("GreyboxConsole", new Color(0.92f, 0.94f, 1f));
             var consoleUsedMaterial = LoadOrCreateMaterial("GreyboxConsoleUsed", new Color(0.35f, 0.36f, 0.4f));
+            // 교환대 (3-14f): 주황.
+            var counterMaterial = LoadOrCreateMaterial("GreyboxCounter", new Color(0.95f, 0.45f, 0.15f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
             var partItemMaterial = LoadOrCreateMaterial("GreyboxPartItem", new Color(0.95f, 0.55f, 0.1f));
@@ -223,6 +225,25 @@ namespace GirlsDungeon.EditorTools
             var doorForceButton = CreateButton(doorPanel.transform, "ForceButton", font, "ui.door.use_force", new Vector2(0.5f, 0f), new Vector2(0f, 24f));
             var doorCloseButton = CreateButton(doorPanel.transform, "CloseButton", font, "ui.door.close", new Vector2(0.5f, 0f), new Vector2(300f, 24f));
             doorPanel.SetActive(false);
+            // 교환 창 (3-14f): 교환대 옆에 서면 뜬다. 물건 4가지 + 닫기.
+            var exchangePanel = CreatePanel(canvas.transform, "ExchangePanel", new Vector2(0.5f, 0.5f), new Vector2(0f, 80f),
+                new Vector2(1300f, 520f), new Color(0.12f, 0.08f, 0.05f, 0.96f));
+            var exchangeLabel = CreateLabel(exchangePanel.transform, "Label", font, 30, new Vector2(0.5f, 1f), new Vector2(0f, -24f), TextAnchor.UpperLeft);
+            exchangeLabel.rectTransform.sizeDelta = new Vector2(1220f, 300f);
+            var exchangeButtons = new[] { ("medkitButton", "ui.exchange.buy_medkit"), ("partButton", "ui.exchange.buy_part"), ("keyButton", "ui.exchange.buy_key"), ("sellKeyButton", "ui.exchange.sell_key") };
+            var exchangeRefs = new System.Collections.Generic.List<(string, Object)> { ("panel", exchangePanel), ("label", exchangeLabel) };
+            for (int i = 0; i < exchangeButtons.Length; i++)
+            {
+                var button = CreateButton(exchangePanel.transform, exchangeButtons[i].Item1, font, exchangeButtons[i].Item2,
+                    new Vector2(0.5f, 0f), new Vector2(-450f + i * 300f, 130f));
+                button.GetComponentInChildren<UnityEngine.UI.Text>().fontSize = 28;
+                exchangeRefs.Add((exchangeButtons[i].Item1, button));
+            }
+            exchangeRefs.Add(("closeButton", CreateButton(exchangePanel.transform, "CloseButton", font, "ui.exchange.close", new Vector2(0.5f, 0f), new Vector2(0f, 24f))));
+            exchangePanel.SetActive(false);
+            var exchangeView = canvas.gameObject.AddComponent<ExchangeView>();
+            SetReferences(exchangeView, exchangeRefs.ToArray());
+
             var doorView = canvas.gameObject.AddComponent<DoorView>();
             SetReferences(doorView, ("panel", doorPanel), ("label", doorLabel), ("keyButton", doorKeyButton), ("forceButton", doorForceButton), ("closeButton", doorCloseButton));
 
@@ -306,7 +327,7 @@ namespace GirlsDungeon.EditorTools
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("rackMaterial", rackMaterial), ("rackOpenedMaterial", rackOpenedMaterial), ("repairMaterial", repairMaterial), ("repairUsedMaterial", repairUsedMaterial), ("consoleMaterial", consoleMaterial), ("consoleUsedMaterial", consoleUsedMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("rackMaterial", rackMaterial), ("rackOpenedMaterial", rackOpenedMaterial), ("repairMaterial", repairMaterial), ("repairUsedMaterial", repairUsedMaterial), ("consoleMaterial", consoleMaterial), ("consoleUsedMaterial", consoleUsedMaterial), ("counterMaterial", counterMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");
@@ -363,6 +384,7 @@ namespace GirlsDungeon.EditorTools
                 ("workshopView", workshopView),
                 ("doorView", doorView),
                 ("roomLabels", roomLabels),
+                ("exchangeView", exchangeView),
                 ("visuals", visuals),
                 ("characterSelect", characterSelect));
 

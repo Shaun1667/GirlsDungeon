@@ -65,6 +65,12 @@ namespace GirlsDungeon.Game
         /// <summary>작업대 바로 옆에 섰다 — GameRoot가 작업 화면(WorkshopView)을 연다.</summary>
         public event System.Action WorkbenchReached;
 
+        /// <summary>걸음이 끝나면 교환 창을 연다 (탐험 중 먼 교환대를 클릭했을 때, 3-14f).</summary>
+        private bool pendingCounter;
+
+        /// <summary>교환대 바로 옆에 섰다 — GameRoot가 교환 창(ExchangeView)을 연다.</summary>
+        public event System.Action CounterReached;
+
         /// <summary>걸음이 끝나면 문 창을 연다 (탐험 중 먼 잠긴 문을 클릭했을 때, 3-4d).</summary>
         private GridPos? pendingDoor;
 
@@ -369,6 +375,7 @@ namespace GirlsDungeon.Game
             pendingSteps.Clear();
             pendingCrate = null;
             pendingBench = false;
+            pendingCounter = false;
             pendingDoor = null;
             reachable = null;
             reachableKey = null;
@@ -397,6 +404,7 @@ namespace GirlsDungeon.Game
             pendingSteps.Clear();
             pendingCrate = null;
             pendingBench = false;
+            pendingCounter = false;
             pendingDoor = null;
             foreach (var step in path) pendingSteps.Enqueue(step);
             pendingFloor = world.FloorIndex;
@@ -437,6 +445,7 @@ namespace GirlsDungeon.Game
             pendingFloor = world.FloorIndex;
             pendingCrate = crate;
             pendingBench = false;
+            pendingCounter = false;
             pendingDoor = null;
             return true;
         }
@@ -459,6 +468,7 @@ namespace GirlsDungeon.Game
             pendingSteps.Clear();
             pendingCrate = null;
             pendingBench = false;
+            pendingCounter = false;
             foreach (var step in best) pendingSteps.Enqueue(step);
             pendingFloor = world.FloorIndex;
             pendingDoor = door;
@@ -482,6 +492,31 @@ namespace GirlsDungeon.Game
                 }
             }
             return best;
+        }
+
+        /// <summary>
+        /// 교환대를 쓴다 (3-14f): 바로 옆이면 교환 창을 열고, 탐험 중 멀면 가장 가까운 옆 칸까지 걸어간 뒤 연다. 전투 중이거나 못 가면 false.
+        /// </summary>
+        public bool RequestUseCounter(GridPos counter)
+        {
+            if (simulation == null || Busy) return false;
+            var world = simulation.World;
+            if (world.Mode != WorldMode.Exploration || !world.Map.InBounds(counter) || world.Map.Get(counter) != TileType.ExchangeCounter || !IsKnown(counter)) return false;
+            if (Loadout.CellDistance(world.Player.Position, counter) == 1)
+            {
+                CounterReached?.Invoke();
+                return true;
+            }
+            var best = PathNextTo(world, counter);
+            if (best == null) return false;
+            pendingSteps.Clear();
+            pendingCrate = null;
+            pendingBench = false;
+            pendingDoor = null;
+            foreach (var step in best) pendingSteps.Enqueue(step);
+            pendingFloor = world.FloorIndex;
+            pendingCounter = true;
+            return true;
         }
 
         /// <summary>
@@ -568,6 +603,7 @@ namespace GirlsDungeon.Game
                 pendingSteps.Clear();
                 pendingCrate = null;
                 pendingBench = false;
+                pendingCounter = false;
                 pendingDoor = null;
             }
             if (aim != AimMode.None && (!TurnFlow.IsPlayerTurn(simulation.World) || simulation.World.PlayerActed)) SetAiming(AimMode.None);
@@ -595,13 +631,15 @@ namespace GirlsDungeon.Game
             bool isCrate = cell.HasValue && map.IsClosedChest(cell.Value) && IsKnown(cell.Value);
             bool isBench = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.Workbench && IsKnown(cell.Value);
             bool isDoor = cell.HasValue && map.IsLockedDoor(cell.Value) && IsKnown(cell.Value);
-            SetHover(isWalkable || isCrate || isBench || isDoor ? cell : null);
+            bool isCounter = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.ExchangeCounter && IsKnown(cell.Value);
+            SetHover(isWalkable || isCrate || isBench || isDoor || isCounter ? cell : null);
 
             bool clicked = mouse != null && leftClick.Clicked && !IsPointerOverUi();
             if (isWalkable && clicked) RequestMove(cell.Value);
             if (isCrate && clicked) RequestOpenCrate(cell.Value);
             if (isBench && clicked) RequestUseWorkbench(cell.Value);
             if (isDoor && clicked) RequestOpenDoor(cell.Value);
+            if (isCounter && clicked) RequestUseCounter(cell.Value);
         }
 
         private void HandleCombat()
@@ -820,6 +858,7 @@ namespace GirlsDungeon.Game
                 pendingSteps.Clear();
                 pendingCrate = null;
                 pendingBench = false;
+                pendingCounter = false;
                 pendingDoor = null;
             }
             if (Busy) return;
@@ -833,10 +872,18 @@ namespace GirlsDungeon.Game
                     if (Doors.CanReach(simulation.World, door)) DoorReached?.Invoke(door);
                     return;
                 }
+                // 교환대 옆에 다 왔으면 교환 창을 연다.
+                if (pendingCounter)
+                {
+                    pendingCounter = false;
+                    if (Exchange.AtCounter(simulation.World)) CounterReached?.Invoke();
+                    return;
+                }
                 // 작업대 옆에 다 왔으면 작업 화면을 연다.
                 if (pendingBench)
                 {
                     pendingBench = false;
+                    pendingCounter = false;
                     pendingDoor = null;
                     if (Workshop.AtBench(simulation.World)) WorkbenchReached?.Invoke();
                     return;
@@ -846,6 +893,7 @@ namespace GirlsDungeon.Game
                 var crate = pendingCrate.Value;
                 pendingCrate = null;
                 pendingBench = false;
+                pendingCounter = false;
                 pendingDoor = null;
                 if (simulation.World.Mode == WorldMode.Exploration) simulation.Execute(new OpenSupplyCrateCommand(crate, settings));
                 return;
@@ -857,6 +905,7 @@ namespace GirlsDungeon.Game
                 pendingSteps.Clear();
                 pendingCrate = null;
                 pendingBench = false;
+                pendingCounter = false;
                 pendingDoor = null;
             }
         }

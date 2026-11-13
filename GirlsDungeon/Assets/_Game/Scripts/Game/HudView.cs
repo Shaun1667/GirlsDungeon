@@ -494,6 +494,11 @@ namespace GirlsDungeon.Game
                         // 발밑을 떠나면 비교 창을 닫는다 (무기는 바닥에 남는다).
                         CloseWeaponOffer();
                         break;
+                    case ExchangeTraded traded:
+                        AddLog(Text.Get(traded.Offer == ExchangeOffer.Medkit ? "ui.exchange.log_medkit"
+                            : traded.Offer == ExchangeOffer.Part ? "ui.exchange.log_part"
+                            : traded.Offer == ExchangeOffer.Key ? "ui.exchange.log_key" : "ui.exchange.log_sell_key"));
+                        break;
                     case MapRevealed revealed:
                         AddLog(Text.Get("ui.observatory.log_used", revealed.Enemies));
                         break;

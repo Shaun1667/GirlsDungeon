@@ -34,6 +34,8 @@ namespace GirlsDungeon.Game
         [Tooltip("Observatory console, ready and used (3-14e).")]
         [SerializeField] private Material consoleMaterial;
         [SerializeField] private Material consoleUsedMaterial;
+        [Tooltip("Exchange counter (3-14f).")]
+        [SerializeField] private Material counterMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -63,6 +65,7 @@ namespace GirlsDungeon.Game
             var repairUsed = new MeshData();
             var console = new MeshData();
             var consoleUsed = new MeshData();
+            var counter = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -140,6 +143,11 @@ namespace GirlsDungeon.Game
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             consoleUsed.AddBox(position, 0.3f, 0.18f, balance.LowCoverHeight * 1.8f);
                             break;
+                        case TileType.ExchangeCounter:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            // 교환대: 칸을 거의 채우는 가로로 긴 탁자.
+                            counter.AddBox(position, 0.46f, 0.3f, balance.LowCoverHeight * 1.1f);
+                            break;
                         case TileType.DoorOpen:
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             break;
@@ -176,6 +184,7 @@ namespace GirlsDungeon.Game
             AddPart("RepairUsed", repairUsed, repairUsedMaterial != null ? repairUsedMaterial : coverMaterial);
             AddPart("Console", console, consoleMaterial != null ? consoleMaterial : coverMaterial);
             AddPart("ConsoleUsed", consoleUsed, consoleUsedMaterial != null ? consoleUsedMaterial : coverMaterial);
+            AddPart("Counter", counter, counterMaterial != null ? counterMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>

@@ -33,6 +33,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private DoorView doorView;
         [Tooltip("Special room names over their entrances (3-14).")]
         [SerializeField] private RoomLabelsView roomLabels;
+        [Tooltip("Exchange window shown next to an exchange counter (3-14f).")]
+        [SerializeField] private ExchangeView exchangeView;
 
         private Simulation simulation;
         private CombatSettings combatSettings;
@@ -114,6 +116,9 @@ namespace GirlsDungeon.Game
             if (doorView != null) doorView.Bind(simulation, combatSettings);
             moveController.DoorReached -= OnDoorReached;
             moveController.DoorReached += OnDoorReached;
+            if (exchangeView != null) exchangeView.Bind(simulation, combatSettings);
+            moveController.CounterReached -= OnCounterReached;
+            moveController.CounterReached += OnCounterReached;
             threatView.Bind(simulation, combatSettings);
             cameraRig.Bind(balance, playerView.transform);
 
@@ -295,6 +300,14 @@ namespace GirlsDungeon.Game
             if (workshopView != null) workshopView.Open();
         }
 
+        /// <summary>교환대 옆에 섰다: 교환 창을 연다 (3-14f).</summary>
+        private void OnCounterReached()
+        {
+            if (exchangeView != null) exchangeView.Open();
+        }
+
+        public ExchangeView DebugExchangeView => exchangeView;
+
         /// <summary>잠긴 문 옆에 섰다: 문 창을 연다 (3-4d).</summary>
         private void OnDoorReached(GridPos door)
         {
@@ -305,7 +318,8 @@ namespace GirlsDungeon.Game
         {
             // 작업 화면 · 문 창이 떠 있는 동안 지도 클릭을 받지 않는다.
             if (moveController != null)
-                moveController.Blocked = (workshopView != null && workshopView.IsOpen) || (doorView != null && doorView.IsOpen);
+                moveController.Blocked = (workshopView != null && workshopView.IsOpen) || (doorView != null && doorView.IsOpen)
+                    || (exchangeView != null && exchangeView.IsOpen);
         }
 
         /// <summary>[상태 변경] 가장 가까운 잠긴 문 옆으로 순간 이동하고 문 창을 연다 (문 시험용). 없으면 false.</summary>
@@ -378,7 +392,7 @@ namespace GirlsDungeon.Game
                                 var near = new GridPos(x + dx, y + dy);
                                 if (!map.InBounds(near)) continue;
                                 var tile = map.Get(near);
-                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole) nextToContent = true;
+                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter) nextToContent = true;
                             }
                         if (nextToContent) { best = cell; break; }
                         if (best == null) best = cell;

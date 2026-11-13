@@ -146,7 +146,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Special rooms on every floor, after the workshop.")]
         [SerializeField] private SpecialRoomKind[] alwaysSpecialRooms = { SpecialRoomKind.Treasure };
         [Tooltip("Pool of special rooms picked at random each floor (no repeats).")]
-        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory };
+        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange };
         [SerializeField] private int randomSpecialRoomsPerFloor = 2;
         [Tooltip("Normal rooms kept on each floor besides the start and stairs rooms.")]
         [SerializeField] private int minNormalRooms = 2;
@@ -383,6 +383,15 @@ namespace GirlsDungeon.Game
         [Tooltip("Spare part storage slots.")]
         [SerializeField] private int spareSlots = 4;
 
+        [Header("Exchange (BALANCE 25)")]
+        [Tooltip("Materials paid at the exchange counter: medkit, part, key. Each offer once per floor.")]
+        [SerializeField] private int exchangeMedkitCost = 2;
+        [SerializeField] private int exchangePartCost = 4;
+        [SerializeField] private PartGrade exchangePartGrade = PartGrade.Military;
+        [SerializeField] private int exchangeKeyCost = 5;
+        [Tooltip("Materials received for selling one key.")]
+        [SerializeField] private int exchangeKeySellMaterials = 3;
+
         [Header("Repair bay (BALANCE 23)")]
         [Tooltip("HP restored by a repair station (% of max HP). Stability is filled to max.")]
         [SerializeField] private int repairHealPercent = 100;
@@ -550,6 +559,11 @@ namespace GirlsDungeon.Game
                 TreasureWeaponPercent = treasureWeaponPercent,
                 StorehouseMaterials = storehouseMaterials,
                 RepairHealPercent = repairHealPercent,
+                ExchangeMedkitCost = exchangeMedkitCost,
+                ExchangePartCost = exchangePartCost,
+                ExchangePartGrade = exchangePartGrade,
+                ExchangeKeyCost = exchangeKeyCost,
+                ExchangeKeySellMaterials = exchangeKeySellMaterials,
                 StorehouseMedkits = storehouseMedkits,
             };
             foreach (var entry in weapons)
