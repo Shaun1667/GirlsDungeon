@@ -63,6 +63,7 @@ namespace GirlsDungeon.Core.Sim
             if (map.InBounds(cell) && map.Get(cell) == TileType.TreasureChest) return OpenTreasure(world, settings, cell, events);
             if (map.InBounds(cell) && map.Get(cell) == TileType.StorehouseRack) return OpenStorehouse(world, settings, cell, events);
             if (map.InBounds(cell) && map.Get(cell) == TileType.RepairStation) return UseRepairStation(world, settings, cell, events);
+            if (map.InBounds(cell) && map.Get(cell) == TileType.ObservatoryConsole) return UseObservatory(world, cell, events);
             if (!map.InBounds(cell) || map.Get(cell) != TileType.SupplyCrate) return false;
 
             map.SetTile(cell, TileType.SupplyCrateOpened);
@@ -95,6 +96,23 @@ namespace GirlsDungeon.Core.Sim
             var item = world.AddPartItem(part, partCell);
             events.Add(new ItemDropped(item.Id, item.Kind, item.Weapon, item.Position, DropSource.SupplyCrate));
             if (random.Range(0, 100) < settings.TreasureWeaponPercent) DropWeapon(world, settings, random, cell, DropSource.SupplyCrate, events);
+            return true;
+        }
+
+        /// <summary>
+        /// 관측 콘솔을 쓴다 (관측실, 3-14e): 이 층의 모든 칸을 "본 칸"으로 하고(World.Explored — 안개 · 클릭할 수 있는 칸), 적 위치를 모두 보이게 한다
+        /// (World.EnemiesRevealed — 화면 표시만, 전투 시작은 그대로 시야로). 한 번만.
+        /// </summary>
+        private static bool UseObservatory(World world, GridPos cell, List<GameEvent> events)
+        {
+            var map = world.Map;
+            map.SetTile(cell, TileType.ObservatoryConsoleUsed);
+            if (world.Explored == null || world.Explored.Length != map.Width * map.Height) world.Explored = new bool[map.Width * map.Height];
+            for (int i = 0; i < world.Explored.Length; i++) world.Explored[i] = true;
+            world.EnemiesRevealed = true;
+            int enemies = 0;
+            foreach (var unit in world.Units) if (!unit.IsPlayer) enemies++;
+            events.Add(new MapRevealed(cell, enemies));
             return true;
         }
 
@@ -356,6 +374,19 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>보급 상자를 열었다. 지형을 다시 그려야 한다. 나온 물건은 ItemDropped가 뒤따른다.</summary>
+    /// <summary>관측 콘솔을 썼다 (3-14e): 지도 전체 · 적 Enemies명이 드러났다. 화면은 지형을 다시 그린다.</summary>
+    public sealed class MapRevealed : GameEvent
+    {
+        public GridPos Cell { get; }
+        public int Enemies { get; }
+
+        public MapRevealed(GridPos cell, int enemies)
+        {
+            Cell = cell;
+            Enemies = enemies;
+        }
+    }
+
     /// <summary>수리대를 썼다 (3-14d). 체력 Healed · 안정지수 Steadied만큼 찼다. 화면은 지형을 다시 그린다.</summary>
     public sealed class RepairUsed : GameEvent
     {

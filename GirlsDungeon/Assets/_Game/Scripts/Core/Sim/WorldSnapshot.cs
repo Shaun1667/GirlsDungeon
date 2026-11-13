@@ -20,7 +20,7 @@ namespace GirlsDungeon.Core.Sim
         /// 14: 고른 캐릭터 (2026-11-11). 15: 음파 공격 재사용 대기 (2026-11-12). 16: 이번 차례 이동 여부 → 걸은 칸 수 (2026-11-12).
         /// 17: 무기 파츠 — 든 무기 4칸 · 바닥 파츠 · 바닥 무기의 파츠 · 파츠가 더해 둔 몸 능력치 (2026-11-12, 3-4).
         /// </summary>
-        public const int Version = 21;
+        public const int Version = 22;
 
         public static byte[] Encode(World world)
         {
@@ -103,6 +103,7 @@ namespace GirlsDungeon.Core.Sim
                 foreach (var part in world.SpareParts) WritePart(writer, part);
                 writer.Write(world.Keys);
                 writer.Write(world.FloorKeyGiven);
+                writer.Write(world.EnemiesRevealed);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -206,6 +207,7 @@ namespace GirlsDungeon.Core.Sim
                 for (int i = 0; i < spareCount; i++) world.SpareParts.Add(ReadPart(reader));
                 world.Keys = reader.ReadInt32();
                 world.FloorKeyGiven = reader.ReadBoolean();
+                world.EnemiesRevealed = reader.ReadBoolean();
                 return world;
             }
         }

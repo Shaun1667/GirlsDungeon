@@ -139,6 +139,8 @@ namespace GirlsDungeon.Core.Map
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.StorehouseRack);
                 case SpecialRoomKind.Repair:
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.RepairStation);
+                case SpecialRoomKind.Observatory:
+                    return FloorDecor.TryPlaceAtCenter(map, room, TileType.ObservatoryConsole);
                 default:
                     return true;
             }
@@ -150,6 +152,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.Treasure) FloorDecor.RemoveTile(map, room, TileType.TreasureChest);
             if (kind == SpecialRoomKind.Storehouse) FloorDecor.RemoveTile(map, room, TileType.StorehouseRack);
             if (kind == SpecialRoomKind.Repair) FloorDecor.RemoveTile(map, room, TileType.RepairStation);
+            if (kind == SpecialRoomKind.Observatory) FloorDecor.RemoveTile(map, room, TileType.ObservatoryConsole);
         }
 
         /// <summary>문을 단 뒤에도 방 안 내용에 닿을 수 있는가 (작업대 옆 설 칸).</summary>
@@ -159,6 +162,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.Treasure) return FloorDecor.TileHasRoom(map, room, TileType.TreasureChest);
             if (kind == SpecialRoomKind.Storehouse) return FloorDecor.TileHasRoom(map, room, TileType.StorehouseRack);
             if (kind == SpecialRoomKind.Repair) return FloorDecor.TileHasRoom(map, room, TileType.RepairStation);
+            if (kind == SpecialRoomKind.Observatory) return FloorDecor.TileHasRoom(map, room, TileType.ObservatoryConsole);
             return true;
         }
     }

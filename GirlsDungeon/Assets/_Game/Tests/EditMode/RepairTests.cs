@@ -84,7 +84,7 @@ namespace GirlsDungeon.Tests
                     Assert.That(stations, Is.EqualTo(1), $"seed {seed}");
                 }
             }
-            Assert.That(floors, Is.GreaterThan(20), "random pool of two: most floors get both");
+            Assert.That(floors, Is.GreaterThan(10), "two of the random pool on each floor");
         }
     }
 }

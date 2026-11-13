@@ -150,7 +150,8 @@ namespace GirlsDungeon.Game
                 var unit = world.FindUnit(pair.Key);
                 // 규칙에서는 이미 쓰러졌지만 쓰러지는 사건이 아직 재생되지 않은 유닛은 지금 모습을 유지한다.
                 if (unit == null) continue;
-                bool shown = world.Combatants.Contains(unit.Id) || Vision.IsSet(visible, world.Map, CellOf(pair.Value));
+                // 관측실(3-14e)을 쓴 층은 적이 모두 보인다.
+                bool shown = world.Combatants.Contains(unit.Id) || world.EnemiesRevealed || Vision.IsSet(visible, world.Map, CellOf(pair.Value));
                 pair.Value.Object.SetActive(shown);
             }
         }

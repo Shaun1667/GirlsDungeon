@@ -31,6 +31,9 @@ namespace GirlsDungeon.Game
         [Tooltip("Repair station in a repair bay, ready and used (3-14d).")]
         [SerializeField] private Material repairMaterial;
         [SerializeField] private Material repairUsedMaterial;
+        [Tooltip("Observatory console, ready and used (3-14e).")]
+        [SerializeField] private Material consoleMaterial;
+        [SerializeField] private Material consoleUsedMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -58,6 +61,8 @@ namespace GirlsDungeon.Game
             var rackOpened = new MeshData();
             var repair = new MeshData();
             var repairUsed = new MeshData();
+            var console = new MeshData();
+            var consoleUsed = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -126,6 +131,15 @@ namespace GirlsDungeon.Game
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             repairUsed.AddBox(position, 0.42f, 0.42f, balance.LowCoverHeight * 0.4f);
                             break;
+                        case TileType.ObservatoryConsole:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            // 관측 콘솔: 좁고 높은 단 (AddBox의 윗면은 바닥 기준 높이라 겹쳐 쌓지 않는다).
+                            console.AddBox(position, 0.3f, 0.18f, balance.LowCoverHeight * 1.8f);
+                            break;
+                        case TileType.ObservatoryConsoleUsed:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            consoleUsed.AddBox(position, 0.3f, 0.18f, balance.LowCoverHeight * 1.8f);
+                            break;
                         case TileType.DoorOpen:
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             break;
@@ -160,6 +174,8 @@ namespace GirlsDungeon.Game
             AddPart("RackOpened", rackOpened, rackOpenedMaterial != null ? rackOpenedMaterial : coverMaterial);
             AddPart("Repair", repair, repairMaterial != null ? repairMaterial : coverMaterial);
             AddPart("RepairUsed", repairUsed, repairUsedMaterial != null ? repairUsedMaterial : coverMaterial);
+            AddPart("Console", console, consoleMaterial != null ? consoleMaterial : coverMaterial);
+            AddPart("ConsoleUsed", consoleUsed, consoleUsedMaterial != null ? consoleUsedMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>
