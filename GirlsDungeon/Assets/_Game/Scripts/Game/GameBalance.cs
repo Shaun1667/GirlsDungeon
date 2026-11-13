@@ -47,6 +47,15 @@ namespace GirlsDungeon.Game
         public SkillKind[] skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None };
     }
 
+    /// <summary>파츠 능력치 하나의 값 범위 (표 한 줄, BALANCE 17번).</summary>
+    [Serializable]
+    public sealed class PartStatEntry
+    {
+        public PartStat stat;
+        public int min;
+        public int max;
+    }
+
     /// <summary>무기 하나의 능력치와 규칙 (표 한 줄, BALANCE 12번).</summary>
     [Serializable]
     public sealed class WeaponEntry
@@ -77,6 +86,8 @@ namespace GirlsDungeon.Game
         public bool melee;
         [Tooltip("Rule: ignores the target's cover.")]
         public bool ignoresCover;
+        [Tooltip("Text table keys for the four part slot names (slot 1 = muzzle or blade tip).")]
+        public string[] partSlotKeys = { "part.slot.muzzle", "part.slot.sight", "part.slot.grip", "part.slot.handguard" };
     }
 
     /// <summary>게임 수치의 한 곳 (BALANCE.md와 함께 관리). 코드에 숫자를 직접 넣지 않는다.</summary>
@@ -239,17 +250,20 @@ namespace GirlsDungeon.Game
             {
                 kind = WeaponKind.Pistol, nameKey = "weapon.pistol.name", ruleKey = "weapon.pistol.rule",
                 attack = 7, attackRange = 6, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150, moveAfterShot = true,
+                partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.coupler", "part.slot.latch" },
             },
             new WeaponEntry
             {
                 kind = WeaponKind.Shotgun, nameKey = "weapon.shotgun.name", ruleKey = "weapon.shotgun.rule",
                 attack = 14, attackRange = 4, stabilityDamage = 3, critPercent = 15, critMultiplierPercent = 150,
                 falloffStartCells = 2, falloffPercentPerCell = 15,
+                partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.coupler", "part.slot.latch" },
             },
             new WeaponEntry
             {
                 kind = WeaponKind.Sniper, nameKey = "weapon.sniper.name", ruleKey = "weapon.sniper.rule",
                 attack = 13, attackRange = 12, stabilityDamage = 1, critPercent = 30, critMultiplierPercent = 150, noShotAfterMove = true,
+                partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.bipod", "part.slot.handguard" },
             },
             new WeaponEntry
             {
@@ -260,21 +274,56 @@ namespace GirlsDungeon.Game
             {
                 kind = WeaponKind.MachineGun, nameKey = "weapon.machine_gun.name", ruleKey = "weapon.machine_gun.rule",
                 attack = 9, attackRange = 8, stabilityDamage = 4, critPercent = 15, critMultiplierPercent = 150, moveRangeBonus = -2,
+                partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.bipod", "part.slot.handguard" },
             },
             new WeaponEntry
             {
                 kind = WeaponKind.Blade, nameKey = "weapon.blade.name", ruleKey = "weapon.blade.rule",
                 attack = 16, attackRange = 1, stabilityDamage = 3, critPercent = 20, critMultiplierPercent = 150, melee = true, ignoresCover = true,
+                partSlotKeys = new[] { "part.slot.blade_tip", "part.slot.tuning", "part.slot.coupler", "part.slot.latch" },
             },
         };
         [Tooltip("Chance (%) that winning a combat drops a weapon.")]
         [SerializeField] private int combatDropWeaponPercent = 30;
         [Tooltip("Chance (%) that winning a combat drops a medkit. The rest drops nothing.")]
         [SerializeField] private int combatDropMedkitPercent = 40;
-        [Tooltip("Chance (%) that a supply crate holds a weapon. The rest holds a medkit.")]
-        [SerializeField] private int crateWeaponPercent = 50;
+        [Tooltip("Chance (%) that a supply crate holds a weapon. Then the part range, the rest holds a medkit.")]
+        [SerializeField] private int crateWeaponPercent = 40;
         [Tooltip("Medkit heal (% of max HP).")]
         [SerializeField] private int medkitHealPercent = 40;
+
+        [Header("Weapon parts (BALANCE 17)")]
+        [Tooltip("Chance (%) that winning a combat drops a part (after the weapon and medkit ranges).")]
+        [SerializeField] private int combatDropPartPercent = 20;
+        [Tooltip("Chance (%) that a supply crate holds a part (after the weapon range). The rest holds a medkit.")]
+        [SerializeField] private int cratePartPercent = 30;
+        [Tooltip("Value range rolled for each part stat.")]
+        [SerializeField] private PartStatEntry[] partStats =
+        {
+            new PartStatEntry { stat = PartStat.Attack, min = 1, max = 2 },
+            new PartStatEntry { stat = PartStat.AttackRange, min = 1, max = 1 },
+            new PartStatEntry { stat = PartStat.CritPercent, min = 3, max = 6 },
+            new PartStatEntry { stat = PartStat.CritMultiplier, min = 10, max = 20 },
+            new PartStatEntry { stat = PartStat.StabilityDamage, min = 1, max = 1 },
+            new PartStatEntry { stat = PartStat.MaxHp, min = 5, max = 10 },
+            new PartStatEntry { stat = PartStat.Defense, min = 1, max = 1 },
+            new PartStatEntry { stat = PartStat.MoveRange, min = 1, max = 1 },
+            new PartStatEntry { stat = PartStat.MaxStability, min = 1, max = 1 },
+        };
+        [Tooltip("Stats that slot 1 (muzzle or blade tip) can roll.")]
+        [SerializeField] private PartStat[] partPrimaryStats = { PartStat.Attack, PartStat.AttackRange, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.StabilityDamage };
+        [Tooltip("Stats that slots 2 to 4 can roll (body stats included).")]
+        [SerializeField] private PartStat[] partSecondaryStats =
+        {
+            PartStat.Attack, PartStat.AttackRange, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.StabilityDamage,
+            PartStat.MaxHp, PartStat.Defense, PartStat.MoveRange, PartStat.MaxStability,
+        };
+        [Tooltip("Grade chance (%) in order: industrial, military, precision. Sum 100.")]
+        [SerializeField] private int[] partGradePercents = { 60, 30, 10 };
+        [Tooltip("Stat count on slot 1 by grade: industrial, military, precision.")]
+        [SerializeField] private int[] partPrimaryStatCounts = { 2, 3, 4 };
+        [Tooltip("Stat count on slots 2 to 4 by grade: industrial, military, precision.")]
+        [SerializeField] private int[] partSecondaryStatCounts = { 1, 2, 3 };
 
         [Header("Movement (BALANCE 2)")]
         [SerializeField] private int moveCostTicks = 1;
@@ -396,6 +445,11 @@ namespace GirlsDungeon.Game
                 CombatDropMedkitPercent = combatDropMedkitPercent,
                 CrateWeaponPercent = crateWeaponPercent,
                 MedkitHealPercent = medkitHealPercent,
+                CombatDropPartPercent = combatDropPartPercent,
+                CratePartPercent = cratePartPercent,
+                PartGradePercents = (int[])partGradePercents.Clone(),
+                PartPrimaryStatCounts = (int[])partPrimaryStatCounts.Clone(),
+                PartSecondaryStatCounts = (int[])partSecondaryStatCounts.Clone(),
             };
             foreach (var entry in weapons)
             {
@@ -449,6 +503,9 @@ namespace GirlsDungeon.Game
                     Skills = new System.Collections.Generic.List<SkillKind>(entry.skills ?? System.Array.Empty<SkillKind>()),
                 });
             }
+            foreach (var entry in partStats) settings.PartStatRanges.Add(new PartStatRange { Stat = entry.stat, Min = entry.min, Max = entry.max });
+            settings.PartPrimaryStats.AddRange(partPrimaryStats);
+            settings.PartSecondaryStats.AddRange(partSecondaryStats);
             return settings;
         }
 
@@ -515,6 +572,22 @@ namespace GirlsDungeon.Game
         {
             foreach (var entry in weapons) if (entry.kind == kind) return entry.ruleKey;
             return null;
+        }
+
+        /// <summary>그 무기의 파츠 칸 이름 키 (0 = 1번 칸). 표에 없으면 null.</summary>
+        public string PartSlotKey(WeaponKind kind, int slot)
+        {
+            foreach (var entry in weapons)
+                if (entry.kind == kind && entry.partSlotKeys != null && slot >= 0 && slot < entry.partSlotKeys.Length) return entry.partSlotKeys[slot];
+            return null;
+        }
+
+        /// <summary>무기 표의 파츠 칸 이름 키 전부 (텍스트 표 검사용).</summary>
+        public System.Collections.Generic.IEnumerable<string> PartSlotKeys()
+        {
+            foreach (var entry in weapons)
+                if (entry.partSlotKeys != null)
+                    foreach (var key in entry.partSlotKeys) yield return key;
         }
 
         public System.Collections.Generic.IEnumerable<string> WeaponTextKeys()

@@ -13,6 +13,8 @@ namespace GirlsDungeon.Game
     {
         [SerializeField] private Material weaponMaterial;
         [SerializeField] private Material medkitMaterial;
+        [Tooltip("Weapon part lying on the floor (3-4).")]
+        [SerializeField] private Material partMaterial;
 
         private readonly Dictionary<int, GameObject> views = new Dictionary<int, GameObject>();
         private IEventSource simulation;
@@ -85,9 +87,10 @@ namespace GirlsDungeon.Game
             Destroy(body.GetComponent<Collider>());
             body.transform.SetParent(transform, false);
             bool isWeapon = item.Kind == ItemKind.Weapon;
-            body.GetComponent<MeshRenderer>().sharedMaterial = isWeapon ? weaponMaterial : medkitMaterial;
-            // 무기 = 납작하고 긴 막대, 구급상자 = 작은 정육면체.
-            var size = isWeapon ? new Vector3(0.7f, 0.12f, 0.2f) : new Vector3(0.35f, 0.35f, 0.35f);
+            bool isPart = item.Kind == ItemKind.Part;
+            body.GetComponent<MeshRenderer>().sharedMaterial = isWeapon ? weaponMaterial : isPart ? partMaterial : medkitMaterial;
+            // 무기 = 납작하고 긴 막대, 파츠 = 작고 납작한 판, 구급상자 = 작은 정육면체.
+            var size = isWeapon ? new Vector3(0.7f, 0.12f, 0.2f) : isPart ? new Vector3(0.3f, 0.1f, 0.3f) : new Vector3(0.35f, 0.35f, 0.35f);
             body.transform.localScale = size;
             body.transform.position = GridSpace.ToWorld(item.Position) + Vector3.up * (size.y * 0.5f);
             if (isWeapon) body.transform.rotation = Quaternion.Euler(0f, 30f, 0f);

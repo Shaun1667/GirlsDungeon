@@ -73,13 +73,33 @@ namespace GirlsDungeon.Core.Sim
             var player = world.Player;
             if (player == null) return;
             var weapon = settings.WeaponFor(world.PlayerWeapon);
-            player.Attack = weapon.Attack;
-            player.AttackRange = weapon.AttackRange;
-            player.StabilityDamage = weapon.StabilityDamage;
-            player.CritPercent = weapon.CritPercent;
-            player.CritMultiplierPercent = weapon.CritMultiplierPercent;
+            // 무기 값 + 든 무기에 끼운 파츠 합 (3-4).
+            player.Attack = weapon.Attack + Parts.Sum(world, PartStat.Attack);
+            player.AttackRange = weapon.AttackRange + Parts.Sum(world, PartStat.AttackRange);
+            player.StabilityDamage = weapon.StabilityDamage + Parts.Sum(world, PartStat.StabilityDamage);
+            player.CritPercent = System.Math.Min(100, weapon.CritPercent + Parts.Sum(world, PartStat.CritPercent));
+            player.CritMultiplierPercent = weapon.CritMultiplierPercent + Parts.Sum(world, PartStat.CritMultiplier);
+
+            // 몸 능력치는 파츠 합이 바뀐 만큼만 더하고 뺀다 (캐릭터 · 유닛 표에서 정한 값은 그대로 두고). 최대 체력이 늘면 지금 체력도 같이 는다.
+            int hpBonus = Parts.Sum(world, PartStat.MaxHp);
+            int hpDelta = hpBonus - world.PartAppliedMaxHp;
+            player.MaxHp += hpDelta;
+            if (hpDelta > 0) player.Hp += hpDelta;
+            if (player.Hp > player.MaxHp) player.Hp = player.MaxHp;
+            world.PartAppliedMaxHp = hpBonus;
+
+            int defenseBonus = Parts.Sum(world, PartStat.Defense);
+            player.Defense += defenseBonus - world.PartAppliedDefense;
+            world.PartAppliedDefense = defenseBonus;
+
+            int stabilityBonus = Parts.Sum(world, PartStat.MaxStability);
+            int stabilityDelta = stabilityBonus - world.PartAppliedMaxStability;
+            player.MaxStability += stabilityDelta;
+            if (stabilityDelta > 0) player.Stability += stabilityDelta;
+            if (player.Stability > player.MaxStability) player.Stability = player.MaxStability;
+            world.PartAppliedMaxStability = stabilityBonus;
             // 이동 범위 = 캐릭터 값(없으면 유닛 표 값) + 무기 보정 (기관총 −2).
-            player.MoveRange = System.Math.Max(0, settings.PlayerBaseMoveRange(world.PlayerCharacter) + weapon.MoveRangeBonus);
+            player.MoveRange = System.Math.Max(0, settings.PlayerBaseMoveRange(world.PlayerCharacter) + weapon.MoveRangeBonus + Parts.Sum(world, PartStat.MoveRange));
         }
 
         /// <summary>이번 차례에 플레이어가 쏠 수 있는 횟수 (무기 규칙, 수치가 없으면 1).</summary>

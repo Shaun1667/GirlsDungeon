@@ -73,7 +73,7 @@ namespace GirlsDungeon.Tests
                 "eventPlayer", "skillBar", "combatFx", "barRoot", "shootCard", "slotCard2", "slotCard3", "slotCard4", "overwatchCard", "endTurnCard",
                 "tooltipPanel", "tooltipLabel", "tracerMaterial", "popupTemplate", "button", "background", "nameLabel", "keyLabel",
                 "cooldownOverlay", "cooldownLabel", "targetLine", "attackConfirmButton", "openLineMaterial", "coverLineMaterial", "selectedLineMaterial", "visuals", "fallbackBody", "hologramMaterial", "characterSelect", "chasmMaterial", "assaultMaterial", "resultLabel", "newRunButton", "floorLabel",
-                "itemsView", "weaponMaterial", "medkitMaterial", "supplyMaterial", "supplyOpenedMaterial", "weaponLabel", "weaponPanel", "weaponPanelLabel", "swapButton", "keepButton" };
+                "itemsView", "weaponMaterial", "medkitMaterial", "partMaterial", "supplyMaterial", "supplyOpenedMaterial", "weaponLabel", "weaponPanel", "weaponPanelLabel", "swapButton", "keepButton" };
 
             foreach (var field in fields)
             {

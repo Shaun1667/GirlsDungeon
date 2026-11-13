@@ -44,6 +44,7 @@ namespace GirlsDungeon.EditorTools
             var supplyOpenedMaterial = LoadOrCreateMaterial("GreyboxSupplyOpened", new Color(0.12f, 0.3f, 0.17f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
+            var partItemMaterial = LoadOrCreateMaterial("GreyboxPartItem", new Color(0.95f, 0.55f, 0.1f));
             var tracerMaterial = LoadOrCreateMaterial("GreyboxTracer", new Color(1f, 0.9f, 0.4f));
             tracerMaterial.SetColor("_EmissionColor", new Color(1f, 0.8f, 0.3f));
             tracerMaterial.EnableKeyword("_EMISSION");
@@ -239,7 +240,7 @@ namespace GirlsDungeon.EditorTools
             SetReferences(unitsView, ("enemyMaterial", enemyMaterial), ("assaultMaterial", assaultMaterial));
 
             var itemsView = new GameObject("ItemsView").AddComponent<ItemsView>();
-            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial));
+            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial), ("partMaterial", partItemMaterial));
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();

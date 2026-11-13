@@ -18,8 +18,9 @@ namespace GirlsDungeon.Core.Sim
         /// 7: 유닛 경계 · 감시 (2026-11-10). 8: 상자 · 낮은 벽 손상 (2026-11-10). 9: 밀치기 재사용 대기 (2026-11-10, 낭떠러지 칸은 TileType 값만 추가). 10: 유닛 밀기 칸 수 (2026-11-10). 11: 쓰러뜨린 적 수 (2026-11-10).
         /// 12: 든 무기 · 바닥 물건 (2026-11-10, 보급 상자 칸은 TileType 값만 추가). 13: 이번 차례 사격 수 (2026-11-11).
         /// 14: 고른 캐릭터 (2026-11-11). 15: 음파 공격 재사용 대기 (2026-11-12). 16: 이번 차례 이동 여부 → 걸은 칸 수 (2026-11-12).
+        /// 17: 무기 파츠 — 든 무기 4칸 · 바닥 파츠 · 바닥 무기의 파츠 · 파츠가 더해 둔 몸 능력치 (2026-11-12, 3-4).
         /// </summary>
-        public const int Version = 16;
+        public const int Version = 17;
 
         public static byte[] Encode(World world)
         {
@@ -86,9 +87,15 @@ namespace GirlsDungeon.Core.Sim
                     writer.Write((byte)item.Kind);
                     writer.Write((byte)item.Weapon);
                     WriteCell(writer, item.Position);
+                    WritePart(writer, item.Part);
+                    foreach (var part in item.Parts) WritePart(writer, part);
                 }
                 writer.Write((byte)world.PlayerCharacter);
                 writer.Write(world.SonicCooldown);
+                foreach (var part in world.PlayerParts) WritePart(writer, part);
+                writer.Write(world.PartAppliedMaxHp);
+                writer.Write(world.PartAppliedDefense);
+                writer.Write(world.PartAppliedMaxStability);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -175,12 +182,50 @@ namespace GirlsDungeon.Core.Sim
                     int id = reader.ReadInt32();
                     var kind = (ItemKind)reader.ReadByte();
                     var weapon = (WeaponKind)reader.ReadByte();
-                    world.Items.Add(new FloorItem(id, kind, weapon, ReadCell(reader)));
+                    var item = new FloorItem(id, kind, weapon, ReadCell(reader)) { Part = ReadPart(reader) };
+                    for (int slot = 0; slot < WeaponPart.SlotCount; slot++) item.Parts[slot] = ReadPart(reader);
+                    world.Items.Add(item);
                 }
                 world.PlayerCharacter = (CharacterKind)reader.ReadByte();
                 world.SonicCooldown = reader.ReadInt32();
+                for (int slot = 0; slot < WeaponPart.SlotCount; slot++) world.PlayerParts[slot] = ReadPart(reader);
+                world.PartAppliedMaxHp = reader.ReadInt32();
+                world.PartAppliedDefense = reader.ReadInt32();
+                world.PartAppliedMaxStability = reader.ReadInt32();
                 return world;
             }
+        }
+
+        /// <summary>파츠 하나 (없으면 0 한 바이트).</summary>
+        private static void WritePart(BinaryWriter writer, WeaponPart part)
+        {
+            writer.Write(part != null);
+            if (part == null) return;
+            writer.Write((byte)part.Weapon);
+            writer.Write((byte)part.Slot);
+            writer.Write((byte)part.Grade);
+            writer.Write((byte)part.Bonuses.Count);
+            foreach (var bonus in part.Bonuses)
+            {
+                writer.Write((byte)bonus.Stat);
+                writer.Write(bonus.Value);
+            }
+        }
+
+        private static WeaponPart ReadPart(BinaryReader reader)
+        {
+            if (!reader.ReadBoolean()) return null;
+            var weapon = (WeaponKind)reader.ReadByte();
+            int slot = reader.ReadByte();
+            var grade = (PartGrade)reader.ReadByte();
+            int count = reader.ReadByte();
+            var bonuses = new List<PartBonus>();
+            for (int i = 0; i < count; i++)
+            {
+                var stat = (PartStat)reader.ReadByte();
+                bonuses.Add(new PartBonus(stat, reader.ReadInt32()));
+            }
+            return new WeaponPart(weapon, slot, grade, bonuses);
         }
 
         private static void WriteMap(BinaryWriter writer, FloorMap map)

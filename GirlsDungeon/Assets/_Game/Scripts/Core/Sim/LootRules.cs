@@ -37,6 +37,17 @@ namespace GirlsDungeon.Core.Sim
             if (roll < settings.CombatDropWeaponPercent) DropWeapon(world, settings, random, lastKillCell, DropSource.Combat, events);
             else if (roll < settings.CombatDropWeaponPercent + settings.CombatDropMedkitPercent)
                 Drop(world, ItemKind.Medkit, default, lastKillCell, DropSource.Combat, events);
+            else if (roll < settings.CombatDropWeaponPercent + settings.CombatDropMedkitPercent + settings.CombatDropPartPercent)
+                DropPart(world, settings, random, lastKillCell, DropSource.Combat, events);
+        }
+
+        /// <summary>지금 든 무기에 맞는 새 파츠를 near 근처 빈 칸에 놓는다 (3-4 — 주우면 바로 끼울 수 있게 든 무기 기준).</summary>
+        private static void DropPart(World world, CombatSettings settings, IRandom random, GridPos near, DropSource source, List<GameEvent> events)
+        {
+            var part = Parts.Generate(settings, world.PlayerWeapon, random);
+            var cell = FreeCellNear(world, near) ?? world.Player.Position;
+            var item = world.AddPartItem(part, cell);
+            events.Add(new ItemDropped(item.Id, item.Kind, item.Weapon, item.Position, source));
         }
 
         /// <summary>
@@ -51,7 +62,9 @@ namespace GirlsDungeon.Core.Sim
             map.SetTile(cell, TileType.SupplyCrateOpened);
             events.Add(new SupplyCrateOpened(cell));
             var random = world.Random.Get(RandomPurpose.Item);
-            if (random.Range(0, 100) < settings.CrateWeaponPercent) DropWeapon(world, settings, random, cell, DropSource.SupplyCrate, events);
+            int roll = random.Range(0, 100);
+            if (roll < settings.CrateWeaponPercent) DropWeapon(world, settings, random, cell, DropSource.SupplyCrate, events);
+            else if (roll < settings.CrateWeaponPercent + settings.CratePartPercent) DropPart(world, settings, random, cell, DropSource.SupplyCrate, events);
             else Drop(world, ItemKind.Medkit, default, cell, DropSource.SupplyCrate, events);
             return true;
         }
@@ -84,6 +97,11 @@ namespace GirlsDungeon.Core.Sim
                     offered = true;
                     events.Add(new WeaponFound(item.Id, item.Weapon));
                 }
+                else if (item.Kind == ItemKind.Part && !offered)
+                {
+                    offered = true;
+                    events.Add(new PartFound(item.Id));
+                }
             }
         }
 
@@ -99,10 +117,14 @@ namespace GirlsDungeon.Core.Sim
             if (settings.TryWeapon(item.Weapon) == null) return false;
 
             var old = world.PlayerWeapon;
+            // 파츠는 무기에 붙어 다닌다 (결정 2026-11-12, 사용자): 내려놓는 무기는 지금 파츠를 가지고, 줍는 무기의 파츠를 든다.
+            var oldParts = (WeaponPart[])world.PlayerParts.Clone();
             world.Items.Remove(item);
             world.PlayerWeapon = item.Weapon;
+            for (int i = 0; i < WeaponPart.SlotCount; i++) world.PlayerParts[i] = item.Parts[i];
             Loadout.Apply(world, settings);
             var dropped = world.AddItem(ItemKind.Weapon, old, player.Position);
+            for (int i = 0; i < WeaponPart.SlotCount; i++) dropped.Parts[i] = oldParts[i];
             events.Add(new WeaponSwapped(old, item.Weapon, item.Id));
             events.Add(new ItemDropped(dropped.Id, dropped.Kind, dropped.Weapon, dropped.Position, DropSource.Swap));
             events.Add(new UnitStatsChanged(player.Id));

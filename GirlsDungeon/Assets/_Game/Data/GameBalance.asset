@@ -162,6 +162,11 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    partSlotKeys:
+    - part.slot.muzzle
+    - part.slot.sight
+    - part.slot.grip
+    - part.slot.handguard
   - kind: 1
     nameKey: weapon.pistol.name
     ruleKey: weapon.pistol.rule
@@ -178,6 +183,11 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    partSlotKeys:
+    - part.slot.muzzle
+    - part.slot.sight
+    - part.slot.coupler
+    - part.slot.latch
   - kind: 2
     nameKey: weapon.shotgun.name
     ruleKey: weapon.shotgun.rule
@@ -194,6 +204,11 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    partSlotKeys:
+    - part.slot.muzzle
+    - part.slot.sight
+    - part.slot.coupler
+    - part.slot.latch
   - kind: 3
     nameKey: weapon.sniper.name
     ruleKey: weapon.sniper.rule
@@ -210,6 +225,11 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    partSlotKeys:
+    - part.slot.muzzle
+    - part.slot.sight
+    - part.slot.bipod
+    - part.slot.handguard
   - kind: 4
     nameKey: weapon.smg.name
     ruleKey: weapon.smg.rule
@@ -226,6 +246,11 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    partSlotKeys:
+    - part.slot.muzzle
+    - part.slot.sight
+    - part.slot.grip
+    - part.slot.handguard
   - kind: 5
     nameKey: weapon.machine_gun.name
     ruleKey: weapon.machine_gun.rule
@@ -242,6 +267,11 @@ MonoBehaviour:
     moveRangeBonus: -2
     melee: 0
     ignoresCover: 0
+    partSlotKeys:
+    - part.slot.muzzle
+    - part.slot.sight
+    - part.slot.bipod
+    - part.slot.handguard
   - kind: 6
     nameKey: weapon.blade.name
     ruleKey: weapon.blade.rule
@@ -258,10 +288,50 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 1
     ignoresCover: 1
+    partSlotKeys:
+    - part.slot.blade_tip
+    - part.slot.tuning
+    - part.slot.coupler
+    - part.slot.latch
   combatDropWeaponPercent: 30
   combatDropMedkitPercent: 40
-  crateWeaponPercent: 50
+  crateWeaponPercent: 40
   medkitHealPercent: 40
+  combatDropPartPercent: 20
+  cratePartPercent: 30
+  partStats:
+  - stat: 0
+    min: 1
+    max: 2
+  - stat: 1
+    min: 1
+    max: 1
+  - stat: 2
+    min: 3
+    max: 6
+  - stat: 3
+    min: 10
+    max: 20
+  - stat: 4
+    min: 1
+    max: 1
+  - stat: 5
+    min: 5
+    max: 10
+  - stat: 6
+    min: 1
+    max: 1
+  - stat: 7
+    min: 1
+    max: 1
+  - stat: 8
+    min: 1
+    max: 1
+  partPrimaryStats: 0001020304
+  partSecondaryStats: 000102030405060708
+  partGradePercents: 3c0000001e0000000a000000
+  partPrimaryStatCounts: 020000000300000004000000
+  partSecondaryStatCounts: 010000000200000003000000
   moveCostTicks: 1
   stepSeconds: 0.14
   wallHeight: 1.2

@@ -80,6 +80,8 @@ namespace GirlsDungeon.Core.Sim
         Weapon = 0,
         /// <summary>구급상자. 밟으면 바로 회복 (체력이 가득이면 그대로 남는다).</summary>
         Medkit = 1,
+        /// <summary>무기 파츠 (3-4). 밟으면 비교 창 → 끼우기 / 두기. Weapon = 맞는 무기 종류.</summary>
+        Part = 2,
     }
 
     /// <summary>바닥에 놓인 물건. 다른 곳에서는 고유 ID로 참조한다.</summary>
@@ -90,6 +92,12 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>무기일 때 무기 종류.</summary>
         public WeaponKind Weapon { get; }
         public GridPos Position { get; }
+
+        /// <summary>파츠일 때 그 파츠.</summary>
+        public WeaponPart Part { get; set; }
+
+        /// <summary>무기일 때 그 무기에 끼워져 있는 파츠 4칸 (null = 빈 칸). 무기를 주우면 같이 들린다.</summary>
+        public WeaponPart[] Parts { get; } = new WeaponPart[WeaponPart.SlotCount];
 
         public FloorItem(int id, ItemKind kind, WeaponKind weapon, GridPos position)
         {
@@ -152,6 +160,16 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>플레이어가 든 무기 (하나만 든다). 능력치는 Loadout.Apply가 유닛에 맞춘다.</summary>
         public WeaponKind PlayerWeapon { get; set; }
 
+        /// <summary>든 무기에 끼운 파츠 4칸 (null = 빈 칸, 3-4). 무기를 바꾸면 내려놓는 무기에 붙어 바닥에 남는다.</summary>
+        public WeaponPart[] PlayerParts { get; } = new WeaponPart[WeaponPart.SlotCount];
+
+        /// <summary>
+        /// 파츠가 지금 플레이어 몸 능력치에 더해 둔 값 (최대 체력 · 방어 · 최대 안정지수). Loadout.Apply가 파츠 합이 바뀐 만큼만 더하고 빼려고 기억한다.
+        /// </summary>
+        public int PartAppliedMaxHp { get; set; }
+        public int PartAppliedDefense { get; set; }
+        public int PartAppliedMaxStability { get; set; }
+
         /// <summary>판을 시작할 때 고른 캐릭터 (None = 유닛 표의 플레이어 줄 그대로). 이동 범위 기준값 · 화면 그림 · 이름을 여기서 찾는다.</summary>
         public CharacterKind PlayerCharacter { get; set; }
 
@@ -197,6 +215,14 @@ namespace GirlsDungeon.Core.Sim
         {
             var item = new FloorItem(NextEntityId++, kind, weapon, position);
             Items.Add(item);
+            return item;
+        }
+
+        /// <summary>바닥에 파츠를 놓는다 (새 ID).</summary>
+        public FloorItem AddPartItem(WeaponPart part, GridPos position)
+        {
+            var item = AddItem(ItemKind.Part, part.Weapon, position);
+            item.Part = part;
             return item;
         }
 

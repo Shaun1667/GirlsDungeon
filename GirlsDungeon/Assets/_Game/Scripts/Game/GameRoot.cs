@@ -262,7 +262,48 @@ namespace GirlsDungeon.Game
         /// <summary>비교 창의 "바꾸기": 발밑 무기로 바꾼다.</summary>
         private void OnSwapPressed(int itemId)
         {
-            simulation.Execute(new SwapWeaponCommand(itemId, combatSettings));
+            // 비교 창은 무기 · 파츠가 같이 쓴다: 발밑 물건 종류에 따라 커맨드를 고른다.
+            var item = World?.FindItem(itemId);
+            if (item != null && item.Kind == ItemKind.Part) simulation.Execute(new EquipPartCommand(itemId, combatSettings));
+            else simulation.Execute(new SwapWeaponCommand(itemId, combatSettings));
+        }
+
+        /// <summary>[상태 변경] 플레이어 옆 빈 칸에 지금 든 무기용 새 파츠를 놓는다 (파츠 시험용). 놓은 칸, 못 놓으면 null.</summary>
+        public GridPos? DebugDropPart()
+        {
+            var world = World;
+            if (world == null) return null;
+            var player = world.Player.Position;
+            for (int dy = -1; dy <= 1; dy++)
+            {
+                for (int dx = -1; dx <= 1; dx++)
+                {
+                    var cell = new GridPos(player.X + dx, player.Y + dy);
+                    if ((dx == 0 && dy == 0) || !world.Map.IsWalkable(cell) || world.IsOccupied(cell) || world.ItemAt(cell) != null) continue;
+                    DebugUsed = true;
+                    return simulation.Execute(new DebugDropPartCommand(cell, combatSettings)) ? cell : (GridPos?)null;
+                }
+            }
+            return null;
+        }
+
+        /// <summary>든 무기 4칸 파츠 (디버그).</summary>
+        public string DebugPartsSummary()
+        {
+            var world = World;
+            if (world == null) return "Run not started";
+            var parts = new System.Collections.Generic.List<string>();
+            for (int i = 0; i < WeaponPart.SlotCount; i++)
+            {
+                var part = world.PlayerParts[i];
+                if (part == null) { parts.Add($"{i + 1}:-"); continue; }
+                var bonuses = new System.Collections.Generic.List<string>();
+                foreach (var bonus in part.Bonuses) bonuses.Add($"{bonus.Stat}+{bonus.Value}");
+                parts.Add($"{i + 1}:{part.Grade}({string.Join(",", bonuses)})");
+            }
+            var player = world.Player;
+            return $"Weapon={world.PlayerWeapon} [{string.Join(" ", parts)}] Atk {player.Attack} Range {player.AttackRange} Crit {player.CritPercent}%x{player.CritMultiplierPercent} "
+                + $"HP {player.Hp}/{player.MaxHp} Def {player.Defense} ST {player.Stability}/{player.MaxStability} Move {player.MoveRange}, Offer={hudView.OfferedItemId}";
         }
 
         /// <summary>[상태 변경] 보급 상자를 클릭한 것과 같다 (멀면 걸어가서 연다). 가장 가까운 닫힌 상자, 없거나 못 가면 false.</summary>

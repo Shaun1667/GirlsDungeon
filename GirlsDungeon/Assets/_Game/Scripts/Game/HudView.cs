@@ -161,6 +161,66 @@ namespace GirlsDungeon.Game
             Refresh();
         }
 
+        /// <summary>
+        /// 발밑 파츠 비교 창 (3-4): 새 파츠의 칸 · 등급 · 능력치와 지금 그 칸에 끼운 파츠. 든 무기에 맞지 않으면 "바꾸기"를 누를 수 없다.
+        /// "바꾸기" = SwapPressed(파츠 ID) → GameRoot가 EquipPartCommand를 낸다.
+        /// </summary>
+        private void OpenPartOffer(int itemId)
+        {
+            var world = simulation.World;
+            var item = world.FindItem(itemId);
+            if (item == null || item.Part == null) return;
+            var part = item.Part;
+            bool fits = Parts.Fits(world, part);
+            var current = fits ? world.PlayerParts[part.Slot] : null;
+            weaponPanelLabel.text = Text.Get("ui.part.compare", WeaponName(part.Weapon), PartSlotName(part.Weapon, part.Slot), GradeName(part.Grade),
+                PartStats(part), current != null ? Text.Get("ui.part.summary", GradeName(current.Grade), PartStats(current)) : Text.Get("ui.part.empty"));
+            if (!fits) weaponPanelLabel.text += "\n" + Text.Get("ui.part.not_fit", WeaponName(part.Weapon));
+            OfferedItemId = itemId;
+            weaponPanel.SetActive(true);
+            if (swapButton != null) swapButton.interactable = fits;
+        }
+
+        private string PartSlotName(WeaponKind weapon, int slot)
+        {
+            string key = balance.PartSlotKey(weapon, slot);
+            return key != null ? Text.Get(key) : (slot + 1).ToString();
+        }
+
+        private static string GradeName(PartGrade grade)
+        {
+            switch (grade)
+            {
+                case PartGrade.Precision: return Text.Get("part.grade.precision");
+                case PartGrade.Military: return Text.Get("part.grade.military");
+                default: return Text.Get("part.grade.industrial");
+            }
+        }
+
+        /// <summary>파츠 능력치 목록 (예: "공격 +2 · 체력 +8"). 항목마다 표의 글 하나, 사이는 구분점.</summary>
+        private static string PartStats(WeaponPart part)
+        {
+            var lines = new List<string>();
+            foreach (var bonus in part.Bonuses) lines.Add(Text.Get(StatKey(bonus.Stat), bonus.Value));
+            return string.Join(" · ", lines);
+        }
+
+        private static string StatKey(PartStat stat)
+        {
+            switch (stat)
+            {
+                case PartStat.Attack: return "part.stat.attack";
+                case PartStat.AttackRange: return "part.stat.range";
+                case PartStat.CritPercent: return "part.stat.crit";
+                case PartStat.CritMultiplier: return "part.stat.crit_multiplier";
+                case PartStat.StabilityDamage: return "part.stat.stability_damage";
+                case PartStat.MaxHp: return "part.stat.hp";
+                case PartStat.Defense: return "part.stat.defense";
+                case PartStat.MoveRange: return "part.stat.move";
+                default: return "part.stat.stability";
+            }
+        }
+
         /// <summary>비교 창의 "바꾸기"와 같다. 창이 없으면 false.</summary>
         public bool PressSwap()
         {
@@ -187,8 +247,14 @@ namespace GirlsDungeon.Game
                 current.Attack, next.Attack, current.AttackRange, next.AttackRange,
                 current.StabilityDamage, next.StabilityDamage, current.CritPercent, next.CritPercent,
                 WeaponRule(next.Kind));
+            // 파츠는 무기에 붙어 다닌다 — 바닥 무기에 끼워진 파츠 수를 알려 준다.
+            var item = simulation.World.FindItem(itemId);
+            int partCount = 0;
+            if (item != null) foreach (var part in item.Parts) if (part != null) partCount++;
+            if (partCount > 0) weaponPanelLabel.text += "\n" + Text.Get("ui.part.on_weapon", partCount);
             OfferedItemId = itemId;
             weaponPanel.SetActive(true);
+            if (swapButton != null) swapButton.interactable = true;
         }
 
         /// <summary>전투 중 보급 상자에 마우스를 올렸을 때.</summary>
@@ -346,9 +412,15 @@ namespace GirlsDungeon.Game
                         AddLog(Text.Get("ui.crate.log_open"));
                         break;
                     case ItemDropped dropped when dropped.Source == DropSource.Combat || dropped.Source == DropSource.SupplyCrate:
-                        AddLog(dropped.Kind == ItemKind.Weapon
-                            ? Text.Get("ui.loot.log_weapon_dropped", WeaponName(dropped.Weapon))
+                        AddLog(dropped.Kind == ItemKind.Weapon ? Text.Get("ui.loot.log_weapon_dropped", WeaponName(dropped.Weapon))
+                            : dropped.Kind == ItemKind.Part ? Text.Get("ui.loot.log_part_dropped", WeaponName(dropped.Weapon))
                             : Text.Get("ui.loot.log_medkit_dropped"));
+                        break;
+                    case PartFound partFound:
+                        OpenPartOffer(partFound.ItemId);
+                        break;
+                    case PartEquipped equipped:
+                        AddLog(Text.Get("ui.loot.log_part_equipped", PartSlotName(equipped.Weapon, equipped.Slot), GradeName(equipped.Grade)));
                         break;
                     case MedkitUsed medkit:
                         AddLog(Text.Get("ui.loot.log_medkit_used", medkit.Healed));

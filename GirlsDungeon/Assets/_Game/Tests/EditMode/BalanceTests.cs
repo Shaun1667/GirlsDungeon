@@ -187,6 +187,46 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void Parts_MatchBalanceTable17()
+        {
+            var combat = Load().CreateCombatSettings();
+            var expected = TestData.Combat();
+
+            Assert.That(combat.CrateWeaponPercent, Is.EqualTo(expected.CrateWeaponPercent));
+            Assert.That(combat.CratePartPercent, Is.EqualTo(expected.CratePartPercent));
+            Assert.That(combat.CombatDropPartPercent, Is.EqualTo(expected.CombatDropPartPercent));
+            Assert.That(combat.PartGradePercents, Is.EqualTo(expected.PartGradePercents));
+            Assert.That(combat.PartPrimaryStatCounts, Is.EqualTo(expected.PartPrimaryStatCounts));
+            Assert.That(combat.PartSecondaryStatCounts, Is.EqualTo(expected.PartSecondaryStatCounts));
+            Assert.That(combat.PartPrimaryStats, Is.EqualTo(expected.PartPrimaryStats));
+            Assert.That(combat.PartSecondaryStats, Is.EqualTo(expected.PartSecondaryStats));
+            Assert.That(combat.PartStatRanges.Count, Is.EqualTo(expected.PartStatRanges.Count));
+            foreach (var range in expected.PartStatRanges)
+            {
+                var actual = combat.PartRange(range.Stat);
+                Assert.That(new[] { actual.Min, actual.Max }, Is.EqualTo(new[] { range.Min, range.Max }), range.Stat.ToString());
+            }
+            // 사용자 결정 등급 표 (TASKS 3-4): 1번 칸 2 · 3 · 4개, 2 · 3 · 4번 칸 1 · 2 · 3개.
+            Assert.That(combat.PartPrimaryStatCounts, Is.EqualTo(new[] { 2, 3, 4 }));
+            Assert.That(combat.PartSecondaryStatCounts, Is.EqualTo(new[] { 1, 2, 3 }));
+        }
+
+        [Test]
+        public void PartTextKeys_ExistInTheTextTable()
+        {
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            var balance = Load();
+            foreach (var key in balance.PartSlotKeys()) Assert.That(table.Contains(key), Is.True, key);
+            foreach (var weapon in new[] { GirlsDungeon.Core.Sim.WeaponKind.AssaultRifle, GirlsDungeon.Core.Sim.WeaponKind.Blade })
+                for (int slot = 0; slot < 4; slot++) Assert.That(balance.PartSlotKey(weapon, slot), Is.Not.Null, weapon + " slot " + slot);
+            foreach (var key in new[] { "part.grade.industrial", "part.grade.military", "part.grade.precision", "ui.part.compare", "ui.part.summary",
+                "ui.part.empty", "ui.part.not_fit", "ui.part.on_weapon", "ui.loot.log_part_dropped", "ui.loot.log_part_equipped",
+                "part.stat.attack", "part.stat.range", "part.stat.crit", "part.stat.crit_multiplier", "part.stat.stability_damage",
+                "part.stat.hp", "part.stat.defense", "part.stat.move", "part.stat.stability" })
+                Assert.That(table.Contains(key), Is.True, key);
+        }
+
+        [Test]
         public void CharacterTextKeys_ExistInTheTextTable()
         {
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));

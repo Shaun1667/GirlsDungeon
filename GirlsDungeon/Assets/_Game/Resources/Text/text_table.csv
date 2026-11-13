@@ -153,3 +153,35 @@ ui.combat.preview_sonic,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
 Sonic damage {5} (ignores cover) · Stability −{6}"
 ui.combat.preview_sonic_not_ready,음파 공격 재사용 대기 {0}라운드,Sonic blast ready in {0} rounds
 ui.combat.preview_sonic_not_visible,{0} · 보이지 않아 음파 공격을 쓸 수 없음,{0} · Not visible for the sonic blast
+ui.part.compare,"{0} 파츠 · {1} ({2})
+새 파츠: {3}
+지금 끼운 것: {4}","{0} part · {1} ({2})
+New: {3}
+Equipped: {4}"
+ui.part.summary,{0} · {1},{0} · {1}
+ui.part.empty,없음,None
+ui.part.not_fit,지금 든 무기에는 맞지 않음 ({0} 전용),Does not fit the weapon you hold ({0} only)
+ui.part.on_weapon,끼워진 파츠 {0}개도 같이 들어옴,Comes with {0} attached parts
+ui.loot.log_part_dropped,{0} 파츠가 떨어졌다,A {0} part dropped
+ui.loot.log_part_equipped,{0} 파츠 장착 ({1}),Equipped {0} part ({1})
+part.grade.industrial,공업,Industrial
+part.grade.military,군용,Military
+part.grade.precision,정밀,Precision
+part.slot.muzzle,총구,Muzzle
+part.slot.sight,조준기,Sight
+part.slot.grip,그립,Grip
+part.slot.handguard,총열덮개,Handguard
+part.slot.coupler,이음쇠,Coupler
+part.slot.latch,걸쇠,Latch
+part.slot.bipod,양각대,Bipod
+part.slot.blade_tip,칼끝,Blade tip
+part.slot.tuning,튜닝,Tuning
+part.stat.attack,공격 +{0},Attack +{0}
+part.stat.range,사거리 +{0},Range +{0}
+part.stat.crit,치명 +{0}%,Crit +{0}%
+part.stat.crit_multiplier,치명 피해 +{0}%,Crit damage +{0}%
+part.stat.stability_damage,안정 피해 +{0},Stability damage +{0}
+part.stat.hp,체력 +{0},HP +{0}
+part.stat.defense,방어 +{0},Defense +{0}
+part.stat.move,이동 +{0},Move +{0}
+part.stat.stability,안정지수 +{0},Stability +{0}

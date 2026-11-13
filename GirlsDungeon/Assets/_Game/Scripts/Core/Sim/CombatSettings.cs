@@ -148,6 +148,30 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>구급상자 회복량 (최대 체력의 %).</summary>
         public int MedkitHealPercent;
 
+        // 무기 파츠 (BALANCE 17번, 3-4)
+        /// <summary>전투에서 이기면 파츠가 떨어질 확률 (%) — 무기 · 구급상자 다음 구간. 나머지는 아무것도 없음.</summary>
+        public int CombatDropPartPercent;
+        /// <summary>보급 상자에서 파츠가 나올 확률 (%) — 무기 다음 구간. 나머지는 구급상자.</summary>
+        public int CratePartPercent;
+        /// <summary>파츠 능력치 값 범위 (능력치마다 한 줄).</summary>
+        public List<PartStatRange> PartStatRanges = new List<PartStatRange>();
+        /// <summary>1번 칸(총구 · 칼끝)에 나올 수 있는 능력치.</summary>
+        public List<PartStat> PartPrimaryStats = new List<PartStat>();
+        /// <summary>2 · 3 · 4번 칸에 나올 수 있는 능력치.</summary>
+        public List<PartStat> PartSecondaryStats = new List<PartStat>();
+        /// <summary>등급이 나올 확률 (%), PartGrade 순서 (공업 · 군용 · 정밀). 합 100.</summary>
+        public int[] PartGradePercents = new int[3];
+        /// <summary>1번 칸 능력치 개수, PartGrade 순서 (공업 2 · 군용 3 · 정밀 4).</summary>
+        public int[] PartPrimaryStatCounts = new int[3];
+        /// <summary>2 · 3 · 4번 칸 능력치 개수, PartGrade 순서 (공업 1 · 군용 2 · 정밀 3).</summary>
+        public int[] PartSecondaryStatCounts = new int[3];
+
+        public PartStatRange PartRange(PartStat stat)
+        {
+            foreach (var range in PartStatRanges) if (range.Stat == stat) return range;
+            throw new ArgumentException($"No part range for {stat}.");
+        }
+
         public WeaponStats WeaponFor(WeaponKind kind)
         {
             var weapon = TryWeapon(kind);
@@ -248,6 +272,16 @@ namespace GirlsDungeon.Core.Sim
                 WeaponFor(character.StartWeapon);
                 if (character.Skills.Count > 3) throw new ArgumentException($"Character {character.Kind} has more than three skill slots.");
             }
+            if (CombatDropPartPercent < 0 || CratePartPercent < 0 || CrateWeaponPercent + CratePartPercent > 100
+                || CombatDropWeaponPercent + CombatDropMedkitPercent + CombatDropPartPercent > 100)
+                throw new ArgumentException("Part drop settings are invalid.");
+            if (PartGradePercents.Length != 3 || PartPrimaryStatCounts.Length != 3 || PartSecondaryStatCounts.Length != 3
+                || PartGradePercents[0] + PartGradePercents[1] + PartGradePercents[2] != 100)
+                throw new ArgumentException("Part grade settings are invalid.");
+            foreach (var stat in PartPrimaryStats) PartRange(stat);
+            foreach (var stat in PartSecondaryStats) PartRange(stat);
+            foreach (var range in PartStatRanges)
+                if (range.Min < 1 || range.Max < range.Min) throw new ArgumentException($"Part range for {range.Stat} is invalid.");
             if (CombatDropWeaponPercent < 0 || CombatDropMedkitPercent < 0 || CombatDropWeaponPercent + CombatDropMedkitPercent > 100
                 || CrateWeaponPercent < 0 || CrateWeaponPercent > 100 || MedkitHealPercent < 0)
                 throw new ArgumentException("Loot settings are invalid.");

@@ -324,8 +324,13 @@ namespace GirlsDungeon.Tests
                 StartWeapon = WeaponKind.AssaultRifle,
                 CombatDropWeaponPercent = 30,
                 CombatDropMedkitPercent = 40,
-                CrateWeaponPercent = 50,
+                CrateWeaponPercent = 40,
                 MedkitHealPercent = 40,
+                CombatDropPartPercent = 20,
+                CratePartPercent = 30,
+                PartGradePercents = new[] { 60, 30, 10 },
+                PartPrimaryStatCounts = new[] { 2, 3, 4 },
+                PartSecondaryStatCounts = new[] { 1, 2, 3 },
             };
             // BALANCE 12번 무기 표.
             settings.Weapons.Add(new WeaponStats
@@ -393,6 +398,25 @@ namespace GirlsDungeon.Tests
             {
                 Kind = CharacterKind.HeroC, MaxHp = 100, MaxStability = 6, VisionRange = 9, Defense = 4, MoveRange = 6, StartWeapon = WeaponKind.AssaultRifle,
                 Skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None },
+            });
+            // BALANCE 17번 파츠 표 (3-4).
+            settings.PartStatRanges.AddRange(new[]
+            {
+                new PartStatRange { Stat = PartStat.Attack, Min = 1, Max = 2 },
+                new PartStatRange { Stat = PartStat.AttackRange, Min = 1, Max = 1 },
+                new PartStatRange { Stat = PartStat.CritPercent, Min = 3, Max = 6 },
+                new PartStatRange { Stat = PartStat.CritMultiplier, Min = 10, Max = 20 },
+                new PartStatRange { Stat = PartStat.StabilityDamage, Min = 1, Max = 1 },
+                new PartStatRange { Stat = PartStat.MaxHp, Min = 5, Max = 10 },
+                new PartStatRange { Stat = PartStat.Defense, Min = 1, Max = 1 },
+                new PartStatRange { Stat = PartStat.MoveRange, Min = 1, Max = 1 },
+                new PartStatRange { Stat = PartStat.MaxStability, Min = 1, Max = 1 },
+            });
+            settings.PartPrimaryStats.AddRange(new[] { PartStat.Attack, PartStat.AttackRange, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.StabilityDamage });
+            settings.PartSecondaryStats.AddRange(new[]
+            {
+                PartStat.Attack, PartStat.AttackRange, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.StabilityDamage,
+                PartStat.MaxHp, PartStat.Defense, PartStat.MoveRange, PartStat.MaxStability,
             });
             return settings;
         }
