@@ -98,6 +98,18 @@ namespace GirlsDungeon.Core.Sim
         {
             int slot = random.Range(0, WeaponPart.SlotCount);
             var grade = RollGrade(settings, random);
+            return Build(settings, weapon, slot, grade, random);
+        }
+
+        /// <summary>등급을 정해 굴린다 (보물 상자 = 정밀, 3-14b). 칸 · 능력치 · 세트는 random에서.</summary>
+        public static WeaponPart GenerateWithGrade(CombatSettings settings, WeaponKind weapon, PartGrade grade, IRandom random)
+        {
+            int slot = random.Range(0, WeaponPart.SlotCount);
+            return Build(settings, weapon, slot, grade, random);
+        }
+
+        private static WeaponPart Build(CombatSettings settings, WeaponKind weapon, int slot, PartGrade grade, IRandom random)
+        {
             var pool = new List<PartStat>(slot == 0 ? settings.PartPrimaryStats : settings.PartSecondaryStats);
             int count = Math.Min(pool.Count, (slot == 0 ? settings.PartPrimaryStatCounts : settings.PartSecondaryStatCounts)[(int)grade]);
 

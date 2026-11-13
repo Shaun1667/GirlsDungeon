@@ -177,39 +177,28 @@ namespace GirlsDungeon.Core.Map
         }
 
         /// <summary>문을 단 뒤에도 작업대 바로 옆에 설 칸이 남았는가.</summary>
-        internal static bool BenchHasRoom(FloorMap map, RoomRect room)
+        internal static bool BenchHasRoom(FloorMap map, RoomRect room) => TileHasRoom(map, room, TileType.Workbench);
+
+        /// <summary>방 안의 그 칸 종류마다 바로 옆에 설 칸이 남았는가 (문을 단 뒤 확인).</summary>
+        internal static bool TileHasRoom(FloorMap map, RoomRect room, TileType tile)
         {
             for (int y = room.Y; y < room.Y + room.Height; y++)
                 for (int x = room.X; x < room.X + room.Width; x++)
                 {
                     var cell = new GridPos(x, y);
-                    if (map.Get(cell) == TileType.Workbench && !HasWalkableNeighbor(map, cell)) return false;
+                    if (map.Get(cell) == tile && !HasWalkableNeighbor(map, cell)) return false;
                 }
             return true;
         }
 
+        /// <summary>
+        /// 이 방의 문을 잠근 채로: 시작 칸에서 방 밖의 설 수 있는 칸에 모두 닿고, 방 안에는 닿지 않는가.
+        /// 이미 잠긴 다른 특수 방의 문은 "열 수 있는 길"로 친다 (특수 방이 여럿일 때, 3-14).
+        /// </summary>
         private static bool OutsideConnectedAndRoomSealed(FloorMap map, RoomRect room)
         {
-            var seen = new bool[map.Width * map.Height];
-            var frontier = new Queue<GridPos>();
-            seen[map.StartCell.X + map.StartCell.Y * map.Width] = true;
-            frontier.Enqueue(map.StartCell);
-            int reachedOutside = 0;
-            while (frontier.Count > 0)
-            {
-                var cell = frontier.Dequeue();
-                if (room.Contains(cell)) return false;
-                reachedOutside++;
-                foreach (var step in Steps)
-                {
-                    var next = new GridPos(cell.X + step.X, cell.Y + step.Y);
-                    if (!GridNavigation.CanStep(map, cell, next)) continue;
-                    int index = next.X + next.Y * map.Width;
-                    if (seen[index]) continue;
-                    seen[index] = true;
-                    frontier.Enqueue(next);
-                }
-            }
+            int reached = CountReachable(map, cell => map.IsWalkable(cell) || (map.IsLockedDoor(cell) && !room.Contains(cell)), out bool enteredRoom, room);
+            if (enteredRoom) return false;
             int walkableOutside = 0;
             for (int y = 0; y < map.Height; y++)
                 for (int x = 0; x < map.Width; x++)
@@ -217,7 +206,39 @@ namespace GirlsDungeon.Core.Map
                     var cell = new GridPos(x, y);
                     if (map.IsWalkable(cell) && !room.Contains(cell)) walkableOutside++;
                 }
-            return reachedOutside == walkableOutside;
+            return reached == walkableOutside;
+        }
+
+        /// <summary>
+        /// 시작 칸에서 passable 칸으로만 걸어 닿는 "설 수 있는 칸" 수 (8방향, 벽 모서리를 대각선으로 뚫지 못함 — GridNavigation.CanStep과 같은 규칙).
+        /// watch 방 안의 칸에 닿으면 enteredRoom = true.
+        /// </summary>
+        private static int CountReachable(FloorMap map, System.Func<GridPos, bool> passable, out bool enteredRoom, RoomRect? watch = null)
+        {
+            enteredRoom = false;
+            var seen = new bool[map.Width * map.Height];
+            var frontier = new Queue<GridPos>();
+            seen[map.StartCell.X + map.StartCell.Y * map.Width] = true;
+            frontier.Enqueue(map.StartCell);
+            int reached = 0;
+            while (frontier.Count > 0)
+            {
+                var cell = frontier.Dequeue();
+                if (watch.HasValue && watch.Value.Contains(cell)) enteredRoom = true;
+                if (map.IsWalkable(cell)) reached++;
+                foreach (var step in Steps)
+                {
+                    var next = new GridPos(cell.X + step.X, cell.Y + step.Y);
+                    if (!map.InBounds(next) || !passable(next)) continue;
+                    if (step.X != 0 && step.Y != 0
+                        && (!passable(new GridPos(cell.X + step.X, cell.Y)) || !passable(new GridPos(cell.X, cell.Y + step.Y)))) continue;
+                    int index = next.X + next.Y * map.Width;
+                    if (seen[index]) continue;
+                    seen[index] = true;
+                    frontier.Enqueue(next);
+                }
+            }
+            return reached;
         }
 
         internal static void RemoveTile(FloorMap map, RoomRect room, TileType tile)
@@ -241,7 +262,10 @@ namespace GirlsDungeon.Core.Map
             return false;
         }
 
-        internal static bool TryPlaceWorkbench(FloorMap map, RoomRect room)
+        internal static bool TryPlaceWorkbench(FloorMap map, RoomRect room) => TryPlaceAtCenter(map, room, TileType.Workbench);
+
+        /// <summary>방 가운데에 가까운 칸부터 그 칸 종류(작업대 · 보물 상자 등)를 하나 놓는다. 놓을 수 없으면 false.</summary>
+        internal static bool TryPlaceAtCenter(FloorMap map, RoomRect room, TileType tile)
         {
             // 가운데에서 가까운 칸 순서 (거리 같으면 행 순서) — 난수 없이 정해진다.
             var cells = new List<GridPos>();
@@ -264,11 +288,11 @@ namespace GirlsDungeon.Core.Map
                 {
                     var near = new GridPos(cell.X + step.X, cell.Y + step.Y);
                     // 보급 상자 바로 옆에도 놓지 않는다 — 상자 옆 설 칸을 막을 수 있다.
-                    if (near == map.StartCell || near == map.StairsCell || map.IsSupplyCrate(near)) nearKeyCell = true;
+                    if (near == map.StartCell || near == map.StairsCell || map.IsSupplyCrate(near) || map.IsTreasureChest(near)) nearKeyCell = true;
                 }
                 if (nearKeyCell) continue;
 
-                map.SetTile(cell, TileType.Workbench);
+                map.SetTile(cell, tile);
                 if (IsFullyConnected(map)) return true;
                 map.SetTile(cell, TileType.Floor);
             }
@@ -390,28 +414,12 @@ namespace GirlsDungeon.Core.Map
             return true;
         }
 
+        /// <summary>
+        /// 설 수 있는 칸이 모두 시작 칸에서 이어지는가. 잠긴 문은 "열 수 있는 길"로 친다 — 잠긴 특수 방 안도 문을 열면 닿으므로 (3-14).
+        /// </summary>
         private static bool IsFullyConnected(FloorMap map)
         {
-            var seen = new bool[map.Width * map.Height];
-            var frontier = new Queue<GridPos>();
-            seen[map.StartCell.X + map.StartCell.Y * map.Width] = true;
-            frontier.Enqueue(map.StartCell);
-            int reached = 0;
-
-            while (frontier.Count > 0)
-            {
-                var cell = frontier.Dequeue();
-                reached++;
-                foreach (var step in Steps)
-                {
-                    var next = new GridPos(cell.X + step.X, cell.Y + step.Y);
-                    if (!GridNavigation.CanStep(map, cell, next)) continue;
-                    int index = next.X + next.Y * map.Width;
-                    if (seen[index]) continue;
-                    seen[index] = true;
-                    frontier.Enqueue(next);
-                }
-            }
+            int reached = CountReachable(map, cell => map.IsWalkable(cell) || map.IsLockedDoor(cell), out _);
             return reached == map.CountWalkable();
         }
     }

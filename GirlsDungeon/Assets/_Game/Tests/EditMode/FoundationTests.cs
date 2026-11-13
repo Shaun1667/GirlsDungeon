@@ -284,6 +284,7 @@ namespace GirlsDungeon.Tests
                 MaxSupplyCrates = 3,
                 WorkshopsPerFloor = 1,
                 // BALANCE 1-21 ~ 1-24 특수 방 (방 내용은 3-14b부터 하나씩).
+                AlwaysSpecialRooms = { SpecialRoomKind.Treasure },
                 RandomSpecialRoomsPerFloor = 2,
                 MinNormalRooms = 2,
                 LockedSpecialRooms = { SpecialRoomKind.Workshop, SpecialRoomKind.Treasure, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar },
@@ -359,6 +360,9 @@ namespace GirlsDungeon.Tests
                 SpareSlots = 4,
                 // BALANCE 20번 잠긴 문 · 열쇠.
                 CombatDropKeyPercent = 10,
+                // BALANCE 21번 보물방.
+                TreasurePartGrade = PartGrade.Precision,
+                TreasureWeaponPercent = 50,
             };
             // BALANCE 12번 무기 표.
             settings.Weapons.Add(new WeaponStats

@@ -38,7 +38,7 @@ MonoBehaviour:
   minSupplyCrates: 2
   maxSupplyCrates: 3
   workshopsPerFloor: 1
-  alwaysSpecialRooms: 
+  alwaysSpecialRooms: 02
   randomSpecialRooms: 
   randomSpecialRoomsPerFloor: 2
   minNormalRooms: 2
@@ -364,6 +364,8 @@ MonoBehaviour:
   workshopSetCost: 3
   disassembleMaterials: 010000000200000003000000
   spareSlots: 4
+  treasurePartGrade: 2
+  treasureWeaponPercent: 50
   combatDropKeyPercent: 10
   moveCostTicks: 1
   stepSeconds: 0.14

@@ -16,7 +16,7 @@ namespace GirlsDungeon.Tests
         private static MapSettings Settings()
         {
             var map = TestData.Map();
-            map.AlwaysSpecialRooms.Add(SpecialRoomKind.Treasure);
+            if (!map.AlwaysSpecialRooms.Contains(SpecialRoomKind.Treasure)) map.AlwaysSpecialRooms.Add(SpecialRoomKind.Treasure);
             map.RandomSpecialRooms.AddRange(new[] { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Arena });
             return map;
         }
@@ -70,7 +70,8 @@ namespace GirlsDungeon.Tests
                 TestData.OpenAllDoors(map);
                 Assert.That(GridNavigation.FindPath(map, map.StartCell, map.StairsCell), Is.Not.Empty, $"seed {seed}");
             }
-            Assert.That(lockedFallbacks, Is.LessThanOrEqualTo(8), "locked rooms are almost always locked");
+            // 잠그는 방 80개 중 — 복도가 지나가는 방은 문 없이 둔다 (작업방 · 보물방 모두 잠기는 층은 약 70%).
+            Assert.That(lockedFallbacks, Is.LessThanOrEqualTo(30), "locked rooms are usually locked");
         }
 
         [Test]

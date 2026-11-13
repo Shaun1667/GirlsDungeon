@@ -22,6 +22,9 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material workbenchMaterial;
         [Tooltip("Locked door to a special room (3-4d).")]
         [SerializeField] private Material doorMaterial;
+        [Tooltip("Treasure chest in a treasure room, closed and opened (3-14b).")]
+        [SerializeField] private Material treasureMaterial;
+        [SerializeField] private Material treasureOpenedMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -43,6 +46,8 @@ namespace GirlsDungeon.Game
             var supplyOpened = new MeshData();
             var workbench = new MeshData();
             var doors = new MeshData();
+            var treasure = new MeshData();
+            var treasureOpened = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -84,6 +89,14 @@ namespace GirlsDungeon.Game
                             // 잠긴 문: 벽 높이의 판 (힘으로 열기에 실패한 문도 같게 — 글로 구분).
                             doors.AddBox(position, 0.45f, 0.45f, balance.WallHeight * 0.9f);
                             break;
+                        case TileType.TreasureChest:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            treasure.AddBox(position, balance.CrateSize * 0.5f, balance.CrateSize * 0.4f, balance.LowCoverHeight);
+                            break;
+                        case TileType.TreasureChestOpened:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            treasureOpened.AddBox(position, balance.CrateSize * 0.5f, balance.CrateSize * 0.4f, balance.LowCoverHeight * 0.6f);
+                            break;
                         case TileType.DoorOpen:
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             break;
@@ -112,6 +125,8 @@ namespace GirlsDungeon.Game
             AddPart("SupplyOpened", supplyOpened, supplyOpenedMaterial != null ? supplyOpenedMaterial : coverMaterial);
             AddPart("Workbench", workbench, workbenchMaterial != null ? workbenchMaterial : coverMaterial);
             AddPart("Doors", doors, doorMaterial != null ? doorMaterial : wallMaterial);
+            AddPart("Treasure", treasure, treasureMaterial != null ? treasureMaterial : coverMaterial);
+            AddPart("TreasureOpened", treasureOpened, treasureOpenedMaterial != null ? treasureOpenedMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>

@@ -55,11 +55,16 @@ namespace GirlsDungeon.Game
                 var kind = map.RoomKind(i);
                 if (kind == SpecialRoomKind.None) continue;
                 string name = Text.Get(NameKey(kind));
-                foreach (var cell in FloorDecor.Entrances(map, map.Rooms[i]))
+                // 붙어 있는 입구 칸(문 여러 칸)은 한 묶음 — 묶음마다 글 하나를 가운데에 (글이 겹치지 않게).
+                foreach (var group in Groups(FloorDecor.Entrances(map, map.Rooms[i])))
                 {
+                    var cell = group[group.Count / 2];
+                    var center = Vector3.zero;
+                    foreach (var member in group) center += GridSpace.ToWorld(member);
+                    center /= group.Count;
                     var view = new GameObject("RoomLabel " + kind);
                     view.transform.SetParent(transform, false);
-                    view.transform.position = GridSpace.ToWorld(cell) + Vector3.up * height;
+                    view.transform.position = center + Vector3.up * height;
                     var text = view.AddComponent<TextMesh>();
                     text.font = font;
                     text.text = name;
@@ -86,6 +91,27 @@ namespace GirlsDungeon.Game
                 if (view.activeSelf != seen) view.SetActive(seen);
                 if (seen && cameraTransform != null) view.transform.rotation = cameraTransform.rotation;
             }
+        }
+
+        /// <summary>8방향으로 붙은 칸끼리 묶는다 (행 순서를 지킨다).</summary>
+        private static List<List<GirlsDungeon.Core.Grid.GridPos>> Groups(List<GirlsDungeon.Core.Grid.GridPos> cells)
+        {
+            var groups = new List<List<GirlsDungeon.Core.Grid.GridPos>>();
+            var left = new List<GirlsDungeon.Core.Grid.GridPos>(cells);
+            while (left.Count > 0)
+            {
+                var group = new List<GirlsDungeon.Core.Grid.GridPos> { left[0] };
+                left.RemoveAt(0);
+                for (int i = 0; i < group.Count; i++)
+                    for (int j = left.Count - 1; j >= 0; j--)
+                        if (System.Math.Abs(left[j].X - group[i].X) <= 1 && System.Math.Abs(left[j].Y - group[i].Y) <= 1)
+                        {
+                            group.Add(left[j]);
+                            left.RemoveAt(j);
+                        }
+                groups.Add(group);
+            }
+            return groups;
         }
 
         /// <summary>방 종류 → 이름 키 (키를 통째로 — 이어 붙이면 키 검사가 못 찾는다).</summary>

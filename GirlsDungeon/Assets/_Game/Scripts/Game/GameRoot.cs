@@ -125,7 +125,7 @@ namespace GirlsDungeon.Game
         {
             foreach (var gameEvent in events)
             {
-                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened)) continue;
+                if (!(gameEvent is CoverDestroyed) && !(gameEvent is FloorChanged) && !(gameEvent is SupplyCrateOpened) && !(gameEvent is DoorOpened) && !(gameEvent is TreasureOpened)) continue;
                 floorView.Build(simulation.World.Map, balance);
                 return;
             }
@@ -352,6 +352,43 @@ namespace GirlsDungeon.Game
         }
 
         public DoorView DebugDoorView => doorView;
+
+        /// <summary>
+        /// [상태 변경] 그 종류의 특수 방 안으로 순간 이동한다 (문은 그대로 — 방 시험용). 방 안 내용(작업대 · 상자 등) 바로 옆 칸을 먼저 고른다. 없으면 false.
+        /// </summary>
+        public bool DebugGoToSpecialRoom(SpecialRoomKind kind)
+        {
+            var world = World;
+            if (world == null) return false;
+            var map = world.Map;
+            for (int i = 0; i < map.Rooms.Count; i++)
+            {
+                if (map.RoomKind(i) != kind) continue;
+                var room = map.Rooms[i];
+                GridPos? best = null;
+                for (int y = room.Y; y < room.Y + room.Height; y++)
+                    for (int x = room.X; x < room.X + room.Width; x++)
+                    {
+                        var cell = new GridPos(x, y);
+                        if (!map.IsWalkable(cell) || world.IsOccupied(cell)) continue;
+                        bool nextToContent = false;
+                        for (int dy = -1; dy <= 1; dy++)
+                            for (int dx = -1; dx <= 1; dx++)
+                            {
+                                var near = new GridPos(x + dx, y + dy);
+                                if (!map.InBounds(near)) continue;
+                                var tile = map.Get(near);
+                                if (tile == TileType.Workbench || tile == TileType.TreasureChest) nextToContent = true;
+                            }
+                        if (nextToContent) { best = cell; break; }
+                        if (best == null) best = cell;
+                    }
+                if (best == null) return false;
+                DebugUsed = true;
+                return simulation.Execute(new DebugTeleportCommand(world.PlayerId, best.Value));
+            }
+            return false;
+        }
 
         /// <summary>이 층의 특수 방 (디버그): 종류 · 자리 · 잠김.</summary>
         public string DebugRoomsSummary()

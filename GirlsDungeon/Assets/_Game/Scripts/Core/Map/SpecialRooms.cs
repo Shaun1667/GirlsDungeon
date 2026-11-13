@@ -133,6 +133,8 @@ namespace GirlsDungeon.Core.Map
             {
                 case SpecialRoomKind.Workshop:
                     return FloorDecor.TryPlaceWorkbench(map, room);
+                case SpecialRoomKind.Treasure:
+                    return FloorDecor.TryPlaceAtCenter(map, room, TileType.TreasureChest);
                 default:
                     return true;
             }
@@ -141,12 +143,14 @@ namespace GirlsDungeon.Core.Map
         private static void Undo(FloorMap map, RoomRect room, SpecialRoomKind kind)
         {
             if (kind == SpecialRoomKind.Workshop) FloorDecor.RemoveTile(map, room, TileType.Workbench);
+            if (kind == SpecialRoomKind.Treasure) FloorDecor.RemoveTile(map, room, TileType.TreasureChest);
         }
 
         /// <summary>문을 단 뒤에도 방 안 내용에 닿을 수 있는가 (작업대 옆 설 칸).</summary>
         private static bool ContentReachable(FloorMap map, RoomRect room, SpecialRoomKind kind)
         {
             if (kind == SpecialRoomKind.Workshop) return FloorDecor.BenchHasRoom(map, room);
+            if (kind == SpecialRoomKind.Treasure) return FloorDecor.TileHasRoom(map, room, TileType.TreasureChest);
             return true;
         }
     }

@@ -28,6 +28,10 @@ namespace GirlsDungeon.Core.Map
         DoorOpen = 10,
         /// <summary>잠긴 문인데 힘으로 열기를 이미 한 번 실패했다 (문당 1번). 열쇠로는 열 수 있다.</summary>
         DoorLockedForced = 11,
+        /// <summary>닫힌 보물 상자 (보물방, 3-14b). 보급 상자처럼 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 열면 TreasureChestOpened.</summary>
+        TreasureChest = 12,
+        /// <summary>연 보물 상자.</summary>
+        TreasureChestOpened = 13,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -169,6 +173,22 @@ namespace GirlsDungeon.Core.Map
             if (!InBounds(cell)) return false;
             var tile = Get(cell);
             return tile == TileType.Floor || tile == TileType.Stairs || tile == TileType.DoorOpen;
+        }
+
+        /// <summary>바로 옆에서 열 수 있는 닫힌 상자 (보급 상자 · 보물 상자).</summary>
+        public bool IsClosedChest(GridPos cell)
+        {
+            if (!InBounds(cell)) return false;
+            var tile = Get(cell);
+            return tile == TileType.SupplyCrate || tile == TileType.TreasureChest;
+        }
+
+        /// <summary>보물 상자 칸 (닫힘 · 열림).</summary>
+        public bool IsTreasureChest(GridPos cell)
+        {
+            if (!InBounds(cell)) return false;
+            var tile = Get(cell);
+            return tile == TileType.TreasureChest || tile == TileType.TreasureChestOpened;
         }
 
         /// <summary>잠긴 문 칸 (힘으로 열기를 실패한 문 포함).</summary>

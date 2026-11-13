@@ -410,7 +410,7 @@ namespace GirlsDungeon.Game
         {
             if (simulation == null || Busy) return false;
             var world = simulation.World;
-            if (!world.Map.InBounds(crate) || world.Map.Get(crate) != TileType.SupplyCrate || !IsKnown(crate)) return false;
+            if (!world.Map.IsClosedChest(crate) || !IsKnown(crate)) return false;
 
             var player = world.Player;
             if (Loadout.CellDistance(player.Position, crate) == 1)
@@ -592,7 +592,7 @@ namespace GirlsDungeon.Game
             var cell = mouse != null ? PointerCell(mouse.position.ReadValue()) : null;
             var map = simulation.World.Map;
             bool isWalkable = cell.HasValue && map.IsWalkable(cell.Value) && IsKnown(cell.Value);
-            bool isCrate = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.SupplyCrate && IsKnown(cell.Value);
+            bool isCrate = cell.HasValue && map.IsClosedChest(cell.Value) && IsKnown(cell.Value);
             bool isBench = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.Workbench && IsKnown(cell.Value);
             bool isDoor = cell.HasValue && map.IsLockedDoor(cell.Value) && IsKnown(cell.Value);
             SetHover(isWalkable || isCrate || isBench || isDoor ? cell : null);
@@ -697,7 +697,7 @@ namespace GirlsDungeon.Game
                 if (clicked) RequestAreaAttack(cell.Value);
                 return;
             }
-            if (aim == AimMode.None && world.Map.InBounds(cell.Value) && world.Map.Get(cell.Value) == TileType.SupplyCrate && IsKnown(cell.Value))
+            if (aim == AimMode.None && world.Map.IsClosedChest(cell.Value) && IsKnown(cell.Value))
             {
                 bool canOpen = !world.PlayerActed && Loadout.CellDistance(world.Player.Position, cell.Value) == 1;
                 hudView.ShowCratePreview(canOpen);

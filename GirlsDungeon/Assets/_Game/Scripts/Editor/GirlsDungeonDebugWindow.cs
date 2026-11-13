@@ -126,7 +126,19 @@ namespace GirlsDungeon.EditorTools
             if (GUILayout.Button("2 · 3 · 4번 칸에 끼우기 [상태 변경]")) root.DebugEquipSet(setToEquip);
             EditorGUILayout.EndHorizontal();
             if (GUILayout.Button("옆에 파츠 놓기 [상태 변경]")) root.DebugDropPart();
+
+            EditorGUILayout.LabelField("특수 방", root.DebugRoomsSummary(), EditorStyles.wordWrappedLabel);
+            EditorGUILayout.BeginHorizontal();
+            roomToVisit = (GirlsDungeon.Core.Map.SpecialRoomKind)EditorGUILayout.EnumPopup("방", roomToVisit);
+            if (GUILayout.Button("방 안으로 이동 [상태 변경]")) root.DebugGoToSpecialRoom(roomToVisit);
+            EditorGUILayout.EndHorizontal();
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("열쇠 +1 [상태 변경]")) root.DebugAddKeys(1);
+            if (GUILayout.Button("잠긴 문 앞으로 [상태 변경]")) root.DebugGoToLockedDoor();
+            EditorGUILayout.EndHorizontal();
         }
+
+        private GirlsDungeon.Core.Map.SpecialRoomKind roomToVisit = GirlsDungeon.Core.Map.SpecialRoomKind.Treasure;
 
         private GirlsDungeon.Core.Sim.PartSet setToEquip = GirlsDungeon.Core.Sim.PartSet.Assault;
 

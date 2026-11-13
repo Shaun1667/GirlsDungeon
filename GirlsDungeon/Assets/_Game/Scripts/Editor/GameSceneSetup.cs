@@ -47,6 +47,9 @@ namespace GirlsDungeon.EditorTools
             // 잠긴 문 · 열쇠 (3-4d): 문은 갈색, 열쇠는 노랑.
             var doorMaterial = LoadOrCreateMaterial("GreyboxDoor", new Color(0.5f, 0.3f, 0.15f));
             var keyItemMaterial = LoadOrCreateMaterial("GreyboxKeyItem", new Color(1f, 0.85f, 0.2f));
+            // 보물 상자 (3-14b): 금색, 연 뒤에는 어둡게.
+            var treasureMaterial = LoadOrCreateMaterial("GreyboxTreasure", new Color(0.95f, 0.75f, 0.15f));
+            var treasureOpenedMaterial = LoadOrCreateMaterial("GreyboxTreasureOpened", new Color(0.4f, 0.32f, 0.1f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
             var partItemMaterial = LoadOrCreateMaterial("GreyboxPartItem", new Color(0.95f, 0.55f, 0.1f));
@@ -294,7 +297,7 @@ namespace GirlsDungeon.EditorTools
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");

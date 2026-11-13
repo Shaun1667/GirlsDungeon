@@ -60,6 +60,7 @@ namespace GirlsDungeon.Core.Sim
         public static bool OpenCrate(World world, CombatSettings settings, GridPos cell, List<GameEvent> events)
         {
             var map = world.Map;
+            if (map.InBounds(cell) && map.Get(cell) == TileType.TreasureChest) return OpenTreasure(world, settings, cell, events);
             if (!map.InBounds(cell) || map.Get(cell) != TileType.SupplyCrate) return false;
 
             map.SetTile(cell, TileType.SupplyCrateOpened);
@@ -75,6 +76,23 @@ namespace GirlsDungeon.Core.Sim
                 world.FloorKeyGiven = true;
                 Drop(world, ItemKind.Key, default, cell, DropSource.SupplyCrate, events);
             }
+            return true;
+        }
+
+        /// <summary>
+        /// 보물 상자를 연다 (보물방, 3-14b): 정밀 파츠(든 무기용) 1개 확정 + TreasureWeaponPercent로 무기 1개 더. 아이템 난수.
+        /// 보장 열쇠(첫 보급 상자)와는 상관없다.
+        /// </summary>
+        private static bool OpenTreasure(World world, CombatSettings settings, GridPos cell, List<GameEvent> events)
+        {
+            world.Map.SetTile(cell, TileType.TreasureChestOpened);
+            events.Add(new TreasureOpened(cell));
+            var random = world.Random.Get(RandomPurpose.Item);
+            var part = Parts.GenerateWithGrade(settings, world.PlayerWeapon, settings.TreasurePartGrade, random);
+            var partCell = FreeCellNear(world, cell) ?? world.Player.Position;
+            var item = world.AddPartItem(part, partCell);
+            events.Add(new ItemDropped(item.Id, item.Kind, item.Weapon, item.Position, DropSource.SupplyCrate));
+            if (random.Range(0, 100) < settings.TreasureWeaponPercent) DropWeapon(world, settings, random, cell, DropSource.SupplyCrate, events);
             return true;
         }
 
@@ -307,6 +325,17 @@ namespace GirlsDungeon.Core.Sim
     }
 
     /// <summary>보급 상자를 열었다. 지형을 다시 그려야 한다. 나온 물건은 ItemDropped가 뒤따른다.</summary>
+    /// <summary>보물 상자를 열었다 (3-14b). 화면은 지형을 다시 그린다.</summary>
+    public sealed class TreasureOpened : GameEvent
+    {
+        public GridPos Cell { get; }
+
+        public TreasureOpened(GridPos cell)
+        {
+            Cell = cell;
+        }
+    }
+
     public sealed class SupplyCrateOpened : GameEvent
     {
         public GridPos Cell { get; }

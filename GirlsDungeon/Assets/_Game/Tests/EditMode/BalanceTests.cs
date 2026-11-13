@@ -281,9 +281,19 @@ namespace GirlsDungeon.Tests
                 GirlsDungeon.Core.Map.SpecialRoomKind.Workshop, GirlsDungeon.Core.Map.SpecialRoomKind.Treasure,
                 GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar,
             }));
-            // 1-24: 방 내용이 생기면 하나씩 넣는다 (3-14b ~).
-            Assert.That(map.AlwaysSpecialRooms, Is.Empty);
+            // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
+            Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
             Assert.That(map.RandomSpecialRooms, Is.Empty);
+        }
+
+        [Test]
+        public void Treasure_MatchesBalanceTable21()
+        {
+            var combat = Load().CreateCombatSettings();
+            Assert.That(combat.TreasurePartGrade, Is.EqualTo(GirlsDungeon.Core.Sim.PartGrade.Precision));
+            Assert.That(combat.TreasureWeaponPercent, Is.EqualTo(50));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            Assert.That(table.Contains("ui.treasure.log_open"), Is.True);
         }
 
         [Test]
