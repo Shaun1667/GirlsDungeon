@@ -14,6 +14,9 @@ namespace GirlsDungeon.Tests
         private static List<GameEvent> WalkToStairs(Simulation simulation)
         {
             var world = simulation.World;
+            // 결투장 · 함정 방(3-14i · 3-14j)은 적 없는 판에도 자기 적을 놓는다 — 계단 테스트이므로 치운다 (길에서 전투가 시작되지 않게).
+            world.Units.RemoveAll(unit => !unit.IsPlayer);
+            world.ArenaEnemies.Clear();
             var path = GridNavigation.FindPath(world.Map, world.Player.Position, world.Map.StairsCell);
             Assert.That(path.Count, Is.GreaterThan(0), "stairs are reachable");
             var events = new List<GameEvent>();
