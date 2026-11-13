@@ -309,10 +309,11 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void CrateContents_AreAboutHalfWeapons_NeverTheWeaponInHand()
+        public void CrateContents_AreWeapon40_Part30_Medkit30_NeverTheWeaponInHand()
         {
+            // 3-4 (2026-11-12): 무기 50 · 구급상자 50 → 무기 40 · 파츠 30 · 구급상자 30 (BALANCE 12-6).
             var combat = TestData.Combat();
-            int weapons = 0, total = 0;
+            int weapons = 0, parts = 0, total = 0;
             for (int seed = 1; seed <= 400; seed++)
             {
                 var world = new World(seed, new RandomStreams(seed)) { Map = TestData.Parse("S.") };
@@ -327,17 +328,24 @@ namespace GirlsDungeon.Tests
                     weapons++;
                     Assert.That(item.Weapon, Is.Not.EqualTo(world.PlayerWeapon));
                 }
+                if (item.Kind == ItemKind.Part)
+                {
+                    parts++;
+                    Assert.That(item.Part.Weapon, Is.EqualTo(world.PlayerWeapon), "parts fit the weapon in hand");
+                }
             }
-            Assert.That(weapons * 100.0 / total, Is.InRange(42.0, 58.0));
+            Assert.That(weapons * 100.0 / total, Is.InRange(32.0, 48.0));
+            Assert.That(parts * 100.0 / total, Is.InRange(22.0, 38.0));
         }
 
         // ---------- 전투 보상 ----------
 
         [Test]
-        public void WinningACombat_DropsWeapon30_Medkit40_Nothing30_AtTheLastKill()
+        public void WinningACombat_DropsWeapon30_Medkit40_Part20_Nothing10_AtTheLastKill()
         {
+            // 3-4 (2026-11-12): 없음 30 중 20을 파츠로 (BALANCE 12-5).
             var combat = TestData.Combat();
-            int weapons = 0, medkits = 0, nothing = 0;
+            int weapons = 0, medkits = 0, parts = 0, nothing = 0;
             for (int seed = 1; seed <= 600; seed++)
             {
                 var world = new World(seed, new RandomStreams(seed)) { Map = TestData.Parse("........") };
@@ -352,11 +360,13 @@ namespace GirlsDungeon.Tests
                 var item = world.Items.Single();
                 Assert.That(item.Position, Is.EqualTo(new GridPos(5, 0)), $"seed {seed}: on the enemy's cell");
                 if (item.Kind == ItemKind.Weapon) weapons++;
+                else if (item.Kind == ItemKind.Part) parts++;
                 else medkits++;
             }
             Assert.That(weapons / 6.0, Is.InRange(24.0, 36.0));
             Assert.That(medkits / 6.0, Is.InRange(34.0, 46.0));
-            Assert.That(nothing / 6.0, Is.InRange(24.0, 36.0));
+            Assert.That(parts / 6.0, Is.InRange(15.0, 25.0));
+            Assert.That(nothing / 6.0, Is.InRange(6.0, 14.0));
         }
 
         [Test]
