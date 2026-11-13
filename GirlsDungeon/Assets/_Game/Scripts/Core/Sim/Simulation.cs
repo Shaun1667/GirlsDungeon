@@ -148,6 +148,7 @@ namespace GirlsDungeon.Core.Sim
             world.ExchangeSold = 0;
             world.GalleryOffers.Clear();
             world.AltarOffers.Clear();
+            world.ArenaEnemies.Clear();
             FloorDecor.Apply(world.Map, mapSettings, world.Random.Get(RandomPurpose.Decor));
             // 보급 상자는 아이템 난수로 따로 — 지형 · 엄폐물 굴림에 영향을 주지 않는다.
             FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, world.Random.Get(RandomPurpose.Item));
@@ -209,6 +210,9 @@ namespace GirlsDungeon.Core.Sim
                 }
                 candidates.RemoveAt(index);
             }
+
+            // 결투장 무리는 일반 적 다음에 (3-14i — 일반 적 배치 굴림은 그대로).
+            Arena.Spawn(world, settings, random);
         }
 
         /// <summary>값 × 비율%, 반올림 (0.5 올림).</summary>

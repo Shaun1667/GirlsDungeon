@@ -31,7 +31,7 @@ namespace GirlsDungeon.Core.Map
     /// - 시작 · 계단 방은 쓰지 않고, 일반 방이 MinNormalRooms개 남도록 개수를 줄인다 (작업방 · 늘 나오는 방이 먼저).
     /// - 잠그는 종류(LockedSpecialRooms)는 FloorDecor.LockRoom으로 입구를 잠근다. 잠글 수 있는 방이 없으면 문 없이 둔다.
     /// - 보급 상자가 없는 방을 먼저 고른다. 굴림은 작업 난수(RandomPurpose.Workshop) — 보급 상자 다음에 부른다.
-    /// 특수 방에는 일반 적을 놓지 않는다 (EnemySpawner — 결투장 · 함정 방은 자기 적을 따로 놓는다).
+    /// 특수 방에는 일반 적을 놓지 않는다 (EnemySpawner — 결투장은 Arena.Spawn이, 함정 방은 자기 적을 따로 놓는다).
     /// </summary>
     public static class SpecialRoomLayout
     {

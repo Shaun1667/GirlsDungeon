@@ -497,6 +497,9 @@ namespace GirlsDungeon.Game
                     case AltarTraded traded:
                         AddLog(Text.Get("ui.altar.log_traded", Text.Get(StatNameKey(traded.CostStat)), traded.CostAmount, Text.Get(StatNameKey(traded.BoonStat)), traded.BoonAmount));
                         break;
+                    case ArenaCleared cleared:
+                        AddLog(Text.Get("ui.arena.log_cleared", GradeName(cleared.Grade)));
+                        break;
                     case GalleryPicked picked:
                         AddLog(Text.Get("ui.gallery.log_picked", SetName(picked.Set)));
                         break;

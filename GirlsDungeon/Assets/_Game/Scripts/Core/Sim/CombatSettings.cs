@@ -217,6 +217,14 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>제단 하나에 놓이는 거래 수 (표에서 서로 다르게).</summary>
         public int AltarOfferCount;
 
+        // 결투장 (BALANCE 28번, 3-14i — Arena)
+        /// <summary>결투장 하나에 놓는 적 수.</summary>
+        public int ArenaEnemyCount;
+        /// <summary>결투장 적의 체력 · 공격 추가 강화 (%, 층 강화에 더한다).</summary>
+        public int ArenaStatPercent;
+        /// <summary>결투장 무리를 모두 쓰러뜨리면 나오는 파츠 등급 (든 무기용, 확정 1개).</summary>
+        public PartGrade ArenaPartGrade;
+
         // 교환소 (BALANCE 25번, 3-14f — Exchange)
         public int ExchangeMedkitCost;
         public int ExchangePartCost;
@@ -357,6 +365,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Workshop settings are invalid.");
             if (SetGalleryPartGrade == PartGrade.Industrial)
                 throw new ArgumentException("Set gallery parts must be able to carry a set.");
+            if (ArenaEnemyCount < 0 || ArenaStatPercent < 0)
+                throw new ArgumentException("Arena settings are invalid.");
             if (AltarOfferCount < 0 || AltarOfferCount > AltarTrades.Count)
                 throw new ArgumentException("Altar offer count is invalid.");
             foreach (var trade in AltarTrades)

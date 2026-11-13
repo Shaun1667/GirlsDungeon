@@ -71,6 +71,8 @@ namespace GirlsDungeon.Core.Sim
             foreach (var gameEvent in events)
                 if (gameEvent is UnitDied died && died.Kind != UnitKind.Player) lastKill = died.Cell;
             if (settings != null && lastKill.HasValue) Loot.DropAfterCombat(world, settings, lastKill.Value, events);
+            // 결투장 무리를 모두 쓰러뜨렸으면 확정 보상 (3-14i).
+            if (settings != null && lastKill.HasValue) Arena.CheckCleared(world, settings, lastKill.Value, events);
 
             world.Mode = WorldMode.Exploration;
             world.Turn = TurnSide.Player;

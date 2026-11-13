@@ -156,7 +156,7 @@ namespace GirlsDungeon.Game
         [Tooltip("Special rooms on every floor, after the workshop.")]
         [SerializeField] private SpecialRoomKind[] alwaysSpecialRooms = { SpecialRoomKind.Treasure };
         [Tooltip("Pool of special rooms picked at random each floor (no repeats).")]
-        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar };
+        [SerializeField] private SpecialRoomKind[] randomSpecialRooms = { SpecialRoomKind.Storehouse, SpecialRoomKind.Repair, SpecialRoomKind.Observatory, SpecialRoomKind.Exchange, SpecialRoomKind.SetGallery, SpecialRoomKind.Altar, SpecialRoomKind.Arena };
         [SerializeField] private int randomSpecialRoomsPerFloor = 2;
         [Tooltip("Normal rooms kept on each floor besides the start and stairs rooms.")]
         [SerializeField] private int minNormalRooms = 2;
@@ -410,6 +410,14 @@ namespace GirlsDungeon.Game
         [Tooltip("Different trades offered by one altar.")]
         [SerializeField] private int altarOfferCount = 3;
 
+        [Header("Arena (BALANCE 28)")]
+        [Tooltip("Enemies placed in one arena room (awake, join combat when seen).")]
+        [SerializeField] private int arenaEnemyCount = 3;
+        [Tooltip("Extra HP and attack (%) for arena enemies, on top of the floor scaling.")]
+        [SerializeField] private int arenaStatPercent = 30;
+        [Tooltip("Grade of the part dropped when the whole arena group is defeated.")]
+        [SerializeField] private PartGrade arenaPartGrade = PartGrade.Precision;
+
         [Header("Exchange (BALANCE 25)")]
         [Tooltip("Materials paid at the exchange counter: medkit, part, key. Each offer once per floor.")]
         [SerializeField] private int exchangeMedkitCost = 2;
@@ -588,6 +596,9 @@ namespace GirlsDungeon.Game
                 RepairHealPercent = repairHealPercent,
                 SetGalleryPartGrade = setGalleryPartGrade,
                 AltarOfferCount = altarOfferCount,
+                ArenaEnemyCount = arenaEnemyCount,
+                ArenaStatPercent = arenaStatPercent,
+                ArenaPartGrade = arenaPartGrade,
                 ExchangeMedkitCost = exchangeMedkitCost,
                 ExchangePartCost = exchangePartCost,
                 ExchangePartGrade = exchangePartGrade,

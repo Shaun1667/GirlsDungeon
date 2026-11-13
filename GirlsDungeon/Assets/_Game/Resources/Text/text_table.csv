@@ -320,4 +320,5 @@ ui.altar.accept_1,1번 받기,Accept 1
 ui.altar.accept_2,2번 받기,Accept 2
 ui.altar.accept_3,3번 받기,Accept 3
 ui.altar.close,거절 · 닫기,Refuse · Close
+ui.arena.log_cleared,결투장 승리 — {0} 파츠를 얻었다,Arena won — got a {0} part
 ui.altar.log_traded,제단: {0} −{1} → {2} +{3},Altar: {0} −{1} → {2} +{3}

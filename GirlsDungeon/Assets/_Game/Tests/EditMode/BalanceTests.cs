@@ -284,7 +284,7 @@ namespace GirlsDungeon.Tests
             }));
             // 1-24: 방 내용이 생기면 하나씩 넣는다 — 보물방은 늘 (3-14b).
             Assert.That(map.AlwaysSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Treasure }));
-            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar }), "3-14c ~ 3-14h");
+            Assert.That(map.RandomSpecialRooms, Is.EqualTo(new[] { GirlsDungeon.Core.Map.SpecialRoomKind.Storehouse, GirlsDungeon.Core.Map.SpecialRoomKind.Repair, GirlsDungeon.Core.Map.SpecialRoomKind.Observatory, GirlsDungeon.Core.Map.SpecialRoomKind.Exchange, GirlsDungeon.Core.Map.SpecialRoomKind.SetGallery, GirlsDungeon.Core.Map.SpecialRoomKind.Altar, GirlsDungeon.Core.Map.SpecialRoomKind.Arena }), "3-14c ~ 3-14i");
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             Assert.That(table.Contains("ui.observatory.log_used"), Is.True);
         }
@@ -330,6 +330,19 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.ExchangeKeySellMaterials, Is.LessThan(combat.ExchangeKeyCost));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             foreach (var key in GirlsDungeon.Game.ExchangeView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
+        }
+
+        [Test]
+        public void Arena_MatchesBalanceTable28()
+        {
+            var combat = Load().CreateCombatSettings();
+            Assert.That(new[] { combat.ArenaEnemyCount, combat.ArenaStatPercent }, Is.EqualTo(new[] { 3, 30 }));
+            Assert.That(combat.ArenaPartGrade, Is.EqualTo(GirlsDungeon.Core.Sim.PartGrade.Precision));
+            // 검산: 1층 사격병 체력 × 130% (반올림) — 층 강화 0.
+            int hp = combat.StatsFor(GirlsDungeon.Core.Sim.UnitKind.Rifleman).MaxHp;
+            Assert.That(GirlsDungeon.Core.Sim.EnemySpawner.Scale(hp, 100 + combat.ArenaStatPercent), Is.EqualTo((hp * 130 + 50) / 100));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            Assert.That(table.Contains("ui.arena.log_cleared"), Is.True);
         }
 
         [Test]
