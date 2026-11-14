@@ -462,6 +462,8 @@ namespace GirlsDungeon.Tests
                 Kind = CharacterKind.HeroA, MaxHp = 110, MaxStability = 7, VisionRange = 8, Defense = 5, MoveRange = 8, StartWeapon = WeaponKind.Shotgun,
                 Skills = { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
                 WorkshopOptionPercent = 55, WorkshopSetPercent = 35, DoorForcePercent = 70,
+                // BALANCE 6-7: A의 수류탄은 마름모 반경 2.
+                GrenadeRadius = 2, GrenadeShape = AreaShape.Diamond,
             });
             settings.Characters.Add(new CharacterStats
             {

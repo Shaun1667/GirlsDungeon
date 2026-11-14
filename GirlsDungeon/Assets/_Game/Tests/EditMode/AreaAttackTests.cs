@@ -55,7 +55,7 @@ namespace GirlsDungeon.Tests
                 Map = TestData.Parse(".........", ".........", ".........", ".........", ".........", ".........", ".........", ".........", "........."),
             };
             var combat = TestData.Combat();
-            combat.Characters.Add(new CharacterStats { Kind = CharacterKind.HeroA, GrenadeRadius = 2, GrenadeShape = AreaShape.Diamond });
+            // 테스트 캐릭터 표의 A 줄 = BALANCE 6-7 (마름모 반경 2).
             world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(1, 1)).Id;
             var straight = world.AddUnit(combat.StatsFor(UnitKind.Rifleman), new GridPos(4, 6));
             var diagonal = world.AddUnit(combat.StatsFor(UnitKind.Rifleman), new GridPos(5, 5));
