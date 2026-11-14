@@ -760,6 +760,31 @@ namespace GirlsDungeon.Game
             return skillBar.EndTurn();
         }
 
+        /// <summary>
+        /// [상태 변경] 플레이어가 서 있는 방의 적을 모두 쓰러뜨린다 (2026-11-14). 방 밖(복도)이면 지금 전투 중인 적 모두.
+        /// 하나씩 DebugDefeatCommand로 — 마지막 적이 쓰러지면 보통 전투처럼 끝나고 보상(결투장 정밀 파츠 포함)이 나온다. 쓰러뜨린 수.
+        /// </summary>
+        public int DebugDefeatEnemiesInRoom()
+        {
+            var world = World;
+            if (world == null || world.Player == null) return 0;
+            var map = world.Map;
+            int roomIndex = map.RoomIndexAt(world.Player.Position);
+            var targets = new System.Collections.Generic.List<int>();
+            foreach (var unit in world.Units)
+            {
+                if (unit.IsPlayer) continue;
+                bool hit = roomIndex >= 0 ? map.Rooms[roomIndex].Contains(unit.Position) : world.Combatants.Contains(unit.Id);
+                if (hit) targets.Add(unit.Id);
+            }
+            if (targets.Count == 0) return 0;
+            DebugUsed = true;
+            int defeated = 0;
+            foreach (int id in targets)
+                if (simulation.Execute(new DebugDefeatCommand(id))) defeated++;
+            return defeated;
+        }
+
         /// <summary>[상태 변경] 전투 중인 적(없으면 가장 가까운 적) 하나를 쓰러뜨린다. 쓰러뜨린 적이 없으면 false.</summary>
         public bool DebugDefeatEnemy()
         {

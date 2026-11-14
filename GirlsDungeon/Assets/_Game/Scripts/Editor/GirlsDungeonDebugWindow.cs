@@ -14,6 +14,7 @@ namespace GirlsDungeon.EditorTools
         private Vector2 scroll;
         private int seedInput;
         private Vector2Int moveTarget;
+        private int lastDefeated = -1;
 
         [MenuItem("GirlsDungeon/Debug/Debug Window")]
         private static void Open()
@@ -95,6 +96,9 @@ namespace GirlsDungeon.EditorTools
             if (GUILayout.Button("적 하나 처치 [상태 변경]")) root.DebugDefeatEnemy();
             if (GUILayout.Button("첫 적 사격 [상태 변경]")) root.DebugShootFirstCombatant();
             EditorGUILayout.EndHorizontal();
+            // 서 있는 방의 적 모두 (복도면 전투 중인 적 모두) — 2026-11-14.
+            if (GUILayout.Button("현재 방의 적 모두 처치 [상태 변경]")) lastDefeated = root.DebugDefeatEnemiesInRoom();
+            if (lastDefeated >= 0) EditorGUILayout.LabelField("방금 처치", lastDefeated + "명");
             if (GUILayout.Button("위 '칸'으로 전투 이동 · 사격 [상태 변경]")) root.DebugCombatAction(new GridPos(moveTarget.x, moveTarget.y));
             if (GUILayout.Button("위 '칸'에 수류탄 [상태 변경]")) root.DebugThrowGrenade(new GridPos(moveTarget.x, moveTarget.y));
             if (GUILayout.Button("감시 걸기 [상태 변경]")) root.DebugOverwatch();
