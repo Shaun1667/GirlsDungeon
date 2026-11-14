@@ -36,9 +36,12 @@ namespace GirlsDungeon.Tests
                 int candidates = map.Rooms.Count(r => !r.Contains(map.StartCell) && !r.Contains(map.StairsCell));
                 int budget = candidates - settings.MinNormalRooms;
 
-                Assert.That(kinds.Count, Is.EqualTo(System.Math.Max(0, System.Math.Min(budget, 1 + 1 + settings.RandomSpecialRoomsPerFloor))), $"seed {seed}");
+                // 1층은 구역의 첫 층이라 작업방 다음에 상점이 하나 더 (3-15).
+                int shops = SpecialRoomLayout.IsShopFloor(settings, world.FloorIndex) ? settings.ShopsPerZone : 0;
+                Assert.That(kinds.Count, Is.EqualTo(System.Math.Max(0, System.Math.Min(budget, 1 + shops + 1 + settings.RandomSpecialRoomsPerFloor))), $"seed {seed}");
                 Assert.That(kinds.Count(k => k == SpecialRoomKind.Workshop), Is.EqualTo(budget >= 1 ? 1 : 0), $"seed {seed}");
-                if (budget >= 2) Assert.That(kinds.Count(k => k == SpecialRoomKind.Treasure), Is.EqualTo(1), $"seed {seed}");
+                if (budget >= 1 + shops) Assert.That(kinds.Count(k => k == SpecialRoomKind.Shop), Is.EqualTo(shops), $"seed {seed}");
+                if (budget >= 2 + shops) Assert.That(kinds.Count(k => k == SpecialRoomKind.Treasure), Is.EqualTo(1), $"seed {seed}");
                 Assert.That(kinds.Distinct().Count(), Is.EqualTo(kinds.Count), $"seed {seed}: no repeats");
                 foreach (var index in SpecialIndices(map))
                 {

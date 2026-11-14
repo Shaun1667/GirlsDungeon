@@ -291,8 +291,8 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.ShopPartPrices, Is.EqualTo(new[] { 20, 45, 80 }));
             Assert.That(combat.ShopSellPercent, Is.EqualTo(35));
             Assert.That(combat.ShopMaterialSellPrice, Is.EqualTo(3));
-            // 검산: 1층 적 4~6 × 5 + 보급 상자 2~3 × 15 + 보물 상자 40 = 100 ~ 115 골드 → 정밀 파츠(80) 하나 또는 군용 파츠 + 구급상자(70).
-            Assert.That(4 * combat.GoldPerKill + 2 * combat.CrateGold + combat.TreasureGold, Is.EqualTo(100));
+            // 검산 (BALANCE 31번): 1층 적 4 × 5 + 보급 상자 2 × 15 + 보물 상자 40 = 90 골드 → 정밀 파츠(80) 하나 또는 군용 파츠 + 구급상자(70).
+            Assert.That(4 * combat.GoldPerKill + 2 * combat.CrateGold + combat.TreasureGold, Is.EqualTo(90));
             Assert.That(GirlsDungeon.Core.Sim.Shop.SellValue(combat, combat.ShopKeyPrice), Is.EqualTo(12));
         }
 

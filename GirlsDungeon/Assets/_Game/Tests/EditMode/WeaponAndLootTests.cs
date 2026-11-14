@@ -458,6 +458,7 @@ namespace GirlsDungeon.Tests
         public void WeaponAndItems_SurviveTheSnapshot()
         {
             var world = TestData.NewRun(51);
+            world.Items.Clear(); // 1층 상점 진열(3-15)은 이 테스트와 상관없다.
             world.PlayerWeapon = WeaponKind.Sniper;
             var a = world.AddItem(ItemKind.Weapon, WeaponKind.Shotgun, world.Map.StartCell);
             var b = world.AddItem(ItemKind.Medkit, default, world.Map.StairsCell);

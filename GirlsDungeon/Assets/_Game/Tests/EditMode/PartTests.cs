@@ -59,6 +59,7 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = TestData.NewRun(1);
+            world.Items.Clear(); // 1층 상점 진열(3-15)은 이 테스트와 상관없다.
             var rifle = combat.WeaponFor(world.PlayerWeapon);
             var item = world.AddPartItem(MakePart(world.PlayerWeapon, 0, (PartStat.Attack, 2), (PartStat.CritPercent, 5), (PartStat.AttackRange, 1)), world.Player.Position);
 
@@ -76,6 +77,7 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = TestData.NewRun(1);
+            world.Items.Clear(); // 1층 상점 진열(3-15)은 이 테스트와 상관없다.
             var player = world.Player;
             int baseHp = player.MaxHp, baseDefense = player.Defense, baseMove = player.MoveRange;
             player.Hp = baseHp - 20;
@@ -102,6 +104,7 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = TestData.NewRun(1);
+            world.Items.Clear(); // 1층 상점 진열(3-15)은 이 테스트와 상관없다.
             var item = world.AddPartItem(MakePart(WeaponKind.Sniper, 1, (PartStat.Attack, 2)), world.Player.Position);
             Assert.That(world.PlayerWeapon, Is.Not.EqualTo(WeaponKind.Sniper));
             Assert.That(Parts.Equip(world, combat, item.Id, new List<GameEvent>()), Is.False);
@@ -113,6 +116,7 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = TestData.NewRun(1);
+            world.Items.Clear(); // 1층 상점 진열(3-15)은 이 테스트와 상관없다.
             var start = world.PlayerWeapon;
             var partItem = world.AddPartItem(MakePart(start, 0, (PartStat.Attack, 2)), world.Player.Position);
             Assert.That(Parts.Equip(world, combat, partItem.Id, new List<GameEvent>()), Is.True);
@@ -156,6 +160,7 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = TestData.NewRun(2);
+            world.Items.Clear(); // 1층 상점 진열(3-15)은 이 테스트와 상관없다.
             var equipped = world.AddPartItem(MakePart(world.PlayerWeapon, 3, (PartStat.MaxHp, 6), (PartStat.MaxStability, 1)), world.Player.Position);
             Assert.That(Parts.Equip(world, combat, equipped.Id, new List<GameEvent>()), Is.True);
             world.AddPartItem(MakePart(WeaponKind.Blade, 0, (PartStat.CritMultiplier, 15)), world.Player.Position);
