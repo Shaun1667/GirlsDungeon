@@ -35,6 +35,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private DoorView doorView;
         [Tooltip("Special room names over their entrances (3-14).")]
         [SerializeField] private RoomLabelsView roomLabels;
+        [Tooltip("Shop buy window (stepping on a shop item) and sell window (next to the shopkeeper counter), 3-15.")]
+        [SerializeField] private ShopView shopView;
         [Tooltip("Exchange window shown next to an exchange counter (3-14f).")]
         [SerializeField] private ExchangeView exchangeView;
         [Tooltip("Set gallery window shown next to a display case (3-14g).")]
@@ -131,6 +133,9 @@ namespace GirlsDungeon.Game
             if (galleryView != null) galleryView.Bind(simulation, combatSettings, balance);
             moveController.GalleryReached -= OnGalleryReached;
             moveController.GalleryReached += OnGalleryReached;
+            if (shopView != null) shopView.Bind(simulation, eventPlayer, combatSettings, hudView);
+            moveController.ShopReached -= OnShopReached;
+            moveController.ShopReached += OnShopReached;
             if (altarView != null) altarView.Bind(simulation, combatSettings);
             moveController.AltarReached -= OnAltarReached;
             moveController.AltarReached += OnAltarReached;
@@ -324,6 +329,32 @@ namespace GirlsDungeon.Game
 
         public ExchangeView DebugExchangeView => exchangeView;
 
+        /// <summary>상인 계산대 옆에 섰다: 팔기 창을 연다 (3-15).</summary>
+        private void OnShopReached()
+        {
+            if (shopView != null) shopView.OpenSell();
+        }
+
+        public ShopView DebugShopView => shopView;
+
+        /// <summary>[상태 변경] 사르디스 골드를 더한다 (상점 시험용).</summary>
+        public void DebugAddGold(int amount)
+        {
+            DebugUsed = true;
+            simulation.Execute(new DebugAddGoldCommand(amount));
+        }
+
+        /// <summary>상점 요약: 가진 골드 · 이 층 진열 물건(값).</summary>
+        public string DebugShopSummary()
+        {
+            var world = World;
+            if (world == null) return "-";
+            var lines = new System.Collections.Generic.List<string> { $"Gold={world.Gold}, ShopFloor={SpecialRoomLayout.IsShopFloor(mapSettings, world.FloorIndex)}" };
+            foreach (var item in world.Items)
+                if (item.Price > 0) lines.Add($"#{item.Id} {item.Kind}{(item.Kind == ItemKind.Weapon || item.Kind == ItemKind.Part ? " " + item.Weapon : "")}{(item.Part != null ? " " + item.Part.Grade : "")} {item.Position} {item.Price}G");
+            return string.Join("\n", lines);
+        }
+
         /// <summary>진열장 옆에 섰다: 진열 창을 연다 (3-14g).</summary>
         private void OnGalleryReached()
         {
@@ -351,7 +382,8 @@ namespace GirlsDungeon.Game
             // 작업 화면 · 문 창이 떠 있는 동안 지도 클릭을 받지 않는다.
             if (moveController != null)
                 moveController.Blocked = (workshopView != null && workshopView.IsOpen) || (doorView != null && doorView.IsOpen)
-                    || (exchangeView != null && exchangeView.IsOpen) || (galleryView != null && galleryView.IsOpen) || (altarView != null && altarView.IsOpen);
+                    || (exchangeView != null && exchangeView.IsOpen) || (galleryView != null && galleryView.IsOpen) || (altarView != null && altarView.IsOpen)
+                    || (shopView != null && shopView.IsSellOpen);
         }
 
         /// <summary>[상태 변경] 가장 가까운 잠긴 문 옆으로 순간 이동하고 문 창을 연다 (문 시험용). 없으면 false.</summary>
@@ -424,7 +456,7 @@ namespace GirlsDungeon.Game
                                 var near = new GridPos(x + dx, y + dy);
                                 if (!map.InBounds(near)) continue;
                                 var tile = map.Get(near);
-                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter || tile == TileType.SetGalleryCase || tile == TileType.Altar || tile == TileType.GambleChest || tile == TileType.ArchiveTerminal) nextToContent = true;
+                                if (tile == TileType.Workbench || tile == TileType.TreasureChest || tile == TileType.StorehouseRack || tile == TileType.RepairStation || tile == TileType.ObservatoryConsole || tile == TileType.ExchangeCounter || tile == TileType.SetGalleryCase || tile == TileType.Altar || tile == TileType.GambleChest || tile == TileType.ArchiveTerminal || tile == TileType.ShopCounter) nextToContent = true;
                             }
                         if (nextToContent) { best = cell; break; }
                         if (best == null) best = cell;

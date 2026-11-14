@@ -79,6 +79,9 @@ namespace GirlsDungeon.EditorTools
             var gambleUsedMaterial = LoadOrCreateMaterial("GreyboxGambleUsed", new Color(0.22f, 0.14f, 0.3f));
             var archiveMaterial = LoadOrCreateMaterial("GreyboxArchive", new Color(0.2f, 0.75f, 0.55f));
             var archiveUsedMaterial = LoadOrCreateMaterial("GreyboxArchiveUsed", new Color(0.12f, 0.25f, 0.2f));
+            // 상점 (3-15): 금빛 계산대 · 진열대.
+            var shopMaterial = LoadOrCreateMaterial("GreyboxShop", new Color(0.85f, 0.65f, 0.15f));
+            var shopStandMaterial = LoadOrCreateMaterial("GreyboxShopStand", new Color(0.4f, 0.3f, 0.12f));
             var weaponItemMaterial = LoadOrCreateMaterial("GreyboxWeaponItem", new Color(0.15f, 0.85f, 0.95f));
             var medkitMaterial = LoadOrCreateMaterial("GreyboxMedkit", new Color(0.95f, 0.95f, 0.95f));
             var partItemMaterial = LoadOrCreateMaterial("GreyboxPartItem", new Color(0.95f, 0.55f, 0.1f));
@@ -262,6 +265,41 @@ namespace GirlsDungeon.EditorTools
             var exchangeView = canvas.gameObject.AddComponent<ExchangeView>();
             SetReferences(exchangeView, exchangeRefs.ToArray());
 
+            // 상점 (3-15): 사기 창 (진열 물건을 밟으면, 위쪽 가운데) · 팔기 창 (상인 계산대 옆, 가운데).
+            var shopBuyPanel = CreatePanel(canvas.transform, "ShopBuyPanel", new Vector2(0.5f, 0.5f), new Vector2(0f, 300f),
+                new Vector2(1000f, 240f), new Color(0.14f, 0.11f, 0.04f, 0.96f));
+            var shopBuyLabel = CreateLabel(shopBuyPanel.transform, "Label", font, 30, new Vector2(0.5f, 1f), new Vector2(0f, -20f), TextAnchor.UpperCenter);
+            shopBuyLabel.rectTransform.sizeDelta = new Vector2(940f, 130f);
+            var shopBuyButton = CreateButton(shopBuyPanel.transform, "BuyButton", font, "ui.shop.buy", new Vector2(0.5f, 0f), new Vector2(-160f, 20f));
+            var shopLeaveButton = CreateButton(shopBuyPanel.transform, "LeaveButton", font, "ui.shop.leave", new Vector2(0.5f, 0f), new Vector2(160f, 20f));
+            shopBuyPanel.SetActive(false);
+            var shopSellPanel = CreatePanel(canvas.transform, "ShopSellPanel", new Vector2(0.5f, 0.5f), new Vector2(0f, 80f),
+                new Vector2(1300f, 560f), new Color(0.14f, 0.11f, 0.04f, 0.96f));
+            var shopSellLabel = CreateLabel(shopSellPanel.transform, "Label", font, 30, new Vector2(0.5f, 1f), new Vector2(0f, -24f), TextAnchor.UpperLeft);
+            shopSellLabel.rectTransform.sizeDelta = new Vector2(1220f, 300f);
+            var shopSellRefs = new System.Collections.Generic.List<(string, Object)>
+            {
+                ("buyPanel", shopBuyPanel), ("buyLabel", shopBuyLabel), ("buyButton", shopBuyButton), ("leaveButton", shopLeaveButton),
+                ("sellPanel", shopSellPanel), ("sellLabel", shopSellLabel),
+            };
+            var shopSellButtons = new[]
+            {
+                ("previousPartButton", "ui.shop.previous_part"), ("nextPartButton", "ui.shop.next_part"), ("sellPartButton", "ui.shop.sell_part_button"),
+                ("sellKeyButton", "ui.shop.sell_key_button"), ("sellMaterialButton", "ui.shop.sell_material_button"),
+            };
+            for (int i = 0; i < shopSellButtons.Length; i++)
+            {
+                var button = CreateButton(shopSellPanel.transform, shopSellButtons[i].Item1, font, shopSellButtons[i].Item2,
+                    new Vector2(0.5f, 0f), new Vector2(-500f + i * 250f, 130f));
+                button.GetComponent<RectTransform>().sizeDelta = new Vector2(236f, 84f);
+                button.GetComponentInChildren<UnityEngine.UI.Text>().fontSize = 26;
+                shopSellRefs.Add((shopSellButtons[i].Item1, button));
+            }
+            shopSellRefs.Add(("closeButton", CreateButton(shopSellPanel.transform, "CloseButton", font, "ui.shop.close", new Vector2(0.5f, 0f), new Vector2(0f, 24f))));
+            shopSellPanel.SetActive(false);
+            var shopView = canvas.gameObject.AddComponent<ShopView>();
+            SetReferences(shopView, shopSellRefs.ToArray());
+
             // 진열 창 (3-14g): 진열장 옆에 서면 뜬다. 파츠 3개 중 하나 고르기 + 닫기.
             var galleryPanel = CreatePanel(canvas.transform, "GalleryPanel", new Vector2(0.5f, 0.5f), new Vector2(0f, 80f),
                 new Vector2(1300f, 560f), new Color(0.12f, 0.06f, 0.1f, 0.96f));
@@ -377,11 +415,11 @@ namespace GirlsDungeon.EditorTools
 
             // 특수 방 이름 글(RoomLabelsView)은 씬에 두지 않는다 (2026-11-14 사용자 "특수방마다 이름 뜨는거 없애주고"). 이름 키는 기록실 예고가 쓴다.
             var itemsView = new GameObject("ItemsView").AddComponent<ItemsView>();
-            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial), ("partMaterial", partItemMaterial), ("keyMaterial", keyItemMaterial));
+            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial), ("partMaterial", partItemMaterial), ("keyMaterial", keyItemMaterial), ("standMaterial", shopStandMaterial));
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
-            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("rackMaterial", rackMaterial), ("rackOpenedMaterial", rackOpenedMaterial), ("repairMaterial", repairMaterial), ("repairUsedMaterial", repairUsedMaterial), ("consoleMaterial", consoleMaterial), ("consoleUsedMaterial", consoleUsedMaterial), ("counterMaterial", counterMaterial), ("galleryMaterial", galleryMaterial), ("galleryUsedMaterial", galleryUsedMaterial), ("altarMaterial", altarMaterial), ("altarUsedMaterial", altarUsedMaterial), ("gambleMaterial", gambleMaterial), ("gambleUsedMaterial", gambleUsedMaterial), ("archiveMaterial", archiveMaterial), ("archiveUsedMaterial", archiveUsedMaterial), ("fogMaterial", fogMaterial));
+            SetReferences(floorView, ("floorMaterial", floorMaterial), ("wallMaterial", wallMaterial), ("stairsMaterial", stairsMaterial), ("coverMaterial", coverMaterial), ("chasmMaterial", chasmMaterial), ("supplyMaterial", supplyMaterial), ("supplyOpenedMaterial", supplyOpenedMaterial), ("workbenchMaterial", workbenchMaterial), ("doorMaterial", doorMaterial), ("treasureMaterial", treasureMaterial), ("treasureOpenedMaterial", treasureOpenedMaterial), ("rackMaterial", rackMaterial), ("rackOpenedMaterial", rackOpenedMaterial), ("repairMaterial", repairMaterial), ("repairUsedMaterial", repairUsedMaterial), ("consoleMaterial", consoleMaterial), ("consoleUsedMaterial", consoleUsedMaterial), ("counterMaterial", counterMaterial), ("galleryMaterial", galleryMaterial), ("galleryUsedMaterial", galleryUsedMaterial), ("altarMaterial", altarMaterial), ("altarUsedMaterial", altarUsedMaterial), ("gambleMaterial", gambleMaterial), ("gambleUsedMaterial", gambleUsedMaterial), ("archiveMaterial", archiveMaterial), ("archiveUsedMaterial", archiveUsedMaterial), ("shopMaterial", shopMaterial), ("fogMaterial", fogMaterial));
             var fogView = floorObject.AddComponent<FogView>();
 
             var playerObject = new GameObject("PlayerView");
@@ -438,6 +476,7 @@ namespace GirlsDungeon.EditorTools
                 ("workshopView", workshopView),
                 ("doorView", doorView),
                 ("exchangeView", exchangeView),
+                ("shopView", shopView),
                 ("galleryView", galleryView),
                 ("altarView", altarView),
                 ("visuals", visuals),

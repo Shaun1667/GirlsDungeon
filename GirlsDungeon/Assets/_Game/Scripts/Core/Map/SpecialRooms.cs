@@ -23,6 +23,8 @@ namespace GirlsDungeon.Core.Map
         Gamble = 10,
         Observatory = 11,
         Archive = 12,
+        /// <summary>상점 (3-15b) — 구역의 첫 층에만 (MapSettings.FloorsPerZone · ShopsPerZone).</summary>
+        Shop = 13,
     }
 
     /// <summary>
@@ -35,7 +37,8 @@ namespace GirlsDungeon.Core.Map
     /// </summary>
     public static class SpecialRoomLayout
     {
-        public static void Place(FloorMap map, MapSettings settings, IRandom random)
+        /// <param name="floorIndex">지금 층 (0 = 1층). 구역의 첫 층(floorIndex % FloorsPerZone == 0)이면 상점을 놓는다 (3-15b).</param>
+        public static void Place(FloorMap map, MapSettings settings, IRandom random, int floorIndex = 0)
         {
             var candidates = new List<int>();
             for (int i = 0; i < map.Rooms.Count; i++)
@@ -47,6 +50,8 @@ namespace GirlsDungeon.Core.Map
 
             var kinds = new List<SpecialRoomKind>();
             for (int i = 0; i < settings.WorkshopsPerFloor; i++) kinds.Add(SpecialRoomKind.Workshop);
+            if (IsShopFloor(settings, floorIndex))
+                for (int i = 0; i < settings.ShopsPerZone; i++) kinds.Add(SpecialRoomKind.Shop);
             kinds.AddRange(settings.AlwaysSpecialRooms);
             var pool = new List<SpecialRoomKind>(settings.RandomSpecialRooms);
             for (int i = 0; i < settings.RandomSpecialRoomsPerFloor && pool.Count > 0; i++)
@@ -61,6 +66,12 @@ namespace GirlsDungeon.Core.Map
                 if (budget <= 0) break;
                 if (PlaceOne(map, settings, kind, random)) budget--;
             }
+        }
+
+        /// <summary>상점이 나오는 층인가: 구역의 첫 층 (결정 2026-11-14 사용자 "구역 하나당 초기에 상점 방").</summary>
+        public static bool IsShopFloor(MapSettings settings, int floorIndex)
+        {
+            return settings.FloorsPerZone > 0 && floorIndex >= 0 && floorIndex % settings.FloorsPerZone == 0;
         }
 
         /// <summary>
@@ -165,6 +176,9 @@ namespace GirlsDungeon.Core.Map
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.Altar);
                 case SpecialRoomKind.Archive:
                     return FloorDecor.TryPlaceAtCenter(map, room, TileType.ArchiveTerminal);
+                case SpecialRoomKind.Shop:
+                    // 상인 계산대만 놓는다. 진열 물건은 세계 상태라 층을 만든 뒤 Shop.Stock이 놓는다.
+                    return FloorDecor.TryPlaceAtCenter(map, room, TileType.ShopCounter);
                 case SpecialRoomKind.Gamble:
                     return FloorDecor.TryPlaceGambleChests(map, room, settings.GambleChests);
                 case SpecialRoomKind.Trap:
@@ -188,6 +202,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.Trap) FloorDecor.RemoveTile(map, room, TileType.TreasureChest);
             if (kind == SpecialRoomKind.Gamble) FloorDecor.RemoveTile(map, room, TileType.GambleChest);
             if (kind == SpecialRoomKind.Archive) FloorDecor.RemoveTile(map, room, TileType.ArchiveTerminal);
+            if (kind == SpecialRoomKind.Shop) FloorDecor.RemoveTile(map, room, TileType.ShopCounter);
         }
 
         /// <summary>문을 단 뒤에도 방 안 내용에 닿을 수 있는가 (작업대 옆 설 칸).</summary>
@@ -204,6 +219,7 @@ namespace GirlsDungeon.Core.Map
             if (kind == SpecialRoomKind.Trap) return FloorDecor.TileHasRoom(map, room, TileType.TreasureChest);
             if (kind == SpecialRoomKind.Gamble) return FloorDecor.TileHasRoom(map, room, TileType.GambleChest);
             if (kind == SpecialRoomKind.Archive) return FloorDecor.TileHasRoom(map, room, TileType.ArchiveTerminal);
+            if (kind == SpecialRoomKind.Shop) return FloorDecor.TileHasRoom(map, room, TileType.ShopCounter);
             return true;
         }
     }

@@ -65,6 +65,12 @@ namespace GirlsDungeon.Core.Map
         /// <summary>도박실의 도박 상자 수 (그중 하나만 열 수 있다).</summary>
         public int GambleChests;
 
+        // 상점 (BALANCE 31번, 3-15b — SpecialRoomLayout.IsShopFloor)
+        /// <summary>구역 하나의 층 수 (BALANCE 11-8). 구역의 첫 층 = floorIndex % FloorsPerZone == 0.</summary>
+        public int FloorsPerZone;
+        /// <summary>구역의 첫 층에 놓는 상점 수 (작업방 다음 순서, 열린 방, 적 없음).</summary>
+        public int ShopsPerZone;
+
         public void Validate()
         {
             if (Width < MaxRoomSize + 2 || Height < MaxRoomSize + 2)
@@ -88,6 +94,8 @@ namespace GirlsDungeon.Core.Map
                 throw new ArgumentException("Workshop settings are invalid.");
             if (RandomSpecialRoomsPerFloor < 0 || MinNormalRooms < 0 || AlwaysSpecialRooms.Contains(SpecialRoomKind.None) || RandomSpecialRooms.Contains(SpecialRoomKind.None))
                 throw new ArgumentException("Special room settings are invalid.");
+            if (FloorsPerZone < 1 || ShopsPerZone < 0)
+                throw new ArgumentException("Shop settings are invalid.");
             if (GambleChests < 1)
                 throw new ArgumentException("Gamble room settings are invalid.");
             if (TrapChasmPercent < 0 || TrapChasmPercent > 100 || TrapCrates < 0)

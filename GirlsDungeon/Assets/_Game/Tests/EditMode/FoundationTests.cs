@@ -294,6 +294,9 @@ namespace GirlsDungeon.Tests
                 TrapCrates = 3,
                 // BALANCE 30번 도박실.
                 GambleChests = 3,
+                // BALANCE 32번 상점: 구역 5층, 구역의 첫 층에 상점 1.
+                FloorsPerZone = 5,
+                ShopsPerZone = 1,
             };
         }
 
@@ -404,6 +407,20 @@ namespace GirlsDungeon.Tests
                 ExchangePartGrade = PartGrade.Military,
                 ExchangeKeyCost = 5,
                 ExchangeKeySellMaterials = 3,
+                // BALANCE 31번 사르디스 골드 · 32번 상점.
+                GoldPerKill = 5,
+                CrateGold = 15,
+                TreasureGold = 40,
+                ShopMedkits = 2,
+                ShopKeys = 1,
+                ShopWeapons = 1,
+                ShopPartGrades = { PartGrade.Military, PartGrade.Precision },
+                ShopMedkitPrice = 25,
+                ShopKeyPrice = 35,
+                ShopWeaponPrice = 60,
+                ShopPartPrices = { 20, 45, 80 },
+                ShopSellPercent = 35,
+                ShopMaterialSellPrice = 3,
             };
             // BALANCE 12번 무기 표.
             settings.Weapons.Add(new WeaponStats

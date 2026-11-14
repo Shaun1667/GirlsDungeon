@@ -70,6 +70,7 @@ namespace GirlsDungeon.Core.Sim
 
             map.SetTile(cell, TileType.SupplyCrateOpened);
             events.Add(new SupplyCrateOpened(cell));
+            Gold.Gain(world, settings.CrateGold, GoldSource.SupplyCrate, events);
             var random = world.Random.Get(RandomPurpose.Item);
             int roll = random.Range(0, 100);
             if (roll < settings.CrateWeaponPercent) DropWeapon(world, settings, random, cell, DropSource.SupplyCrate, events);
@@ -92,6 +93,7 @@ namespace GirlsDungeon.Core.Sim
         {
             world.Map.SetTile(cell, TileType.TreasureChestOpened);
             events.Add(new TreasureOpened(cell));
+            Gold.Gain(world, settings.TreasureGold, GoldSource.Treasure, events);
             var random = world.Random.Get(RandomPurpose.Item);
             var part = Parts.GenerateWithGrade(settings, world.PlayerWeapon, settings.TreasurePartGrade, random);
             var partCell = FreeCellNear(world, cell) ?? world.Player.Position;
@@ -161,34 +163,47 @@ namespace GirlsDungeon.Core.Sim
             foreach (var item in world.Items.ToArray())
             {
                 if (item.Position != player.Position) continue;
-                if (item.Kind == ItemKind.Key)
+                // 상점 진열 물건 (3-15b): 값을 내기 전에는 줍지 않고 사기 창만 띄운다.
+                if (item.Price > 0)
                 {
-                    world.Items.Remove(item);
-                    world.Keys++;
-                    events.Add(new KeyPickedUp(item.Id, world.Keys));
+                    if (!offered) events.Add(new ShopItemOffered(item.Id, item.Price));
+                    offered = true;
                     continue;
                 }
-                if (item.Kind == ItemKind.Medkit)
-                {
-                    if (player.Hp >= player.MaxHp) continue;
-                    int healed = System.Math.Min(MedkitHeal(player.MaxHp, settings.MedkitHealPercent), player.MaxHp - player.Hp);
-                    player.Hp += healed;
-                    world.Items.Remove(item);
-                    // 응급 정비 세트 (3-4b): 이 구급상자로 체력이 가득 차면 안정지수도 오른다.
-                    if (player.Hp >= player.MaxHp) SetEffects.OnMedkitFilledHp(world, settings, player);
-                    events.Add(new MedkitUsed(item.Id, healed));
-                    events.Add(new UnitStatsChanged(player.Id));
-                }
-                else if (item.Kind == ItemKind.Weapon && !offered)
-                {
-                    offered = true;
-                    events.Add(new WeaponFound(item.Id, item.Weapon));
-                }
-                else if (item.Kind == ItemKind.Part && !offered)
-                {
-                    offered = true;
-                    events.Add(new PartFound(item.Id));
-                }
+                PickUp(world, settings, player, item, ref offered, events);
+            }
+        }
+
+        /// <summary>발밑 물건 하나를 줍는다 (열쇠 · 구급상자는 바로, 무기 · 파츠는 비교 창 사건). 상점에서 산 물건도 이 길로 (Shop.Buy).</summary>
+        internal static void PickUp(World world, CombatSettings settings, Unit player, FloorItem item, ref bool offered, List<GameEvent> events)
+        {
+            if (item.Kind == ItemKind.Key)
+            {
+                world.Items.Remove(item);
+                world.Keys++;
+                events.Add(new KeyPickedUp(item.Id, world.Keys));
+                return;
+            }
+            if (item.Kind == ItemKind.Medkit)
+            {
+                if (player.Hp >= player.MaxHp) return;
+                int healed = System.Math.Min(MedkitHeal(player.MaxHp, settings.MedkitHealPercent), player.MaxHp - player.Hp);
+                player.Hp += healed;
+                world.Items.Remove(item);
+                // 응급 정비 세트 (3-4b): 이 구급상자로 체력이 가득 차면 안정지수도 오른다.
+                if (player.Hp >= player.MaxHp) SetEffects.OnMedkitFilledHp(world, settings, player);
+                events.Add(new MedkitUsed(item.Id, healed));
+                events.Add(new UnitStatsChanged(player.Id));
+            }
+            else if (item.Kind == ItemKind.Weapon && !offered)
+            {
+                offered = true;
+                events.Add(new WeaponFound(item.Id, item.Weapon));
+            }
+            else if (item.Kind == ItemKind.Part && !offered)
+            {
+                offered = true;
+                events.Add(new PartFound(item.Id));
             }
         }
 

@@ -243,6 +243,29 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>함정 방에 놓는 감시 중인 사격병 수 (입구에서 먼 칸).</summary>
         public int TrapEnemyCount;
 
+        // 사르디스 골드 (BALANCE 31번, 3-15a — Gold)
+        /// <summary>적 하나를 쓰러뜨리면 얻는 골드.</summary>
+        public int GoldPerKill;
+        /// <summary>보급 상자를 열면 얻는 골드 (원래 물건과 함께).</summary>
+        public int CrateGold;
+        /// <summary>보물 상자를 열면 얻는 골드.</summary>
+        public int TreasureGold;
+
+        // 상점 (BALANCE 32번, 3-15b · 3-15c — Shop)
+        /// <summary>진열 수: 구급상자 · 열쇠 · 무기(든 것과 다른 무기). 파츠는 ShopPartGrades 하나마다 하나 (든 무기용).</summary>
+        public int ShopMedkits;
+        public int ShopKeys;
+        public int ShopWeapons;
+        public List<PartGrade> ShopPartGrades = new List<PartGrade>();
+        /// <summary>값 (골드). 파츠는 등급 순서(공업 · 군용 · 정밀)로 ShopPartPrices.</summary>
+        public int ShopMedkitPrice;
+        public int ShopKeyPrice;
+        public int ShopWeaponPrice;
+        public List<int> ShopPartPrices = new List<int>();
+        /// <summary>상인에게 팔 때 받는 값 = 사는 값 × 이 비율% (반올림). 재료는 하나에 ShopMaterialSellPrice.</summary>
+        public int ShopSellPercent;
+        public int ShopMaterialSellPrice;
+
         // 교환소 (BALANCE 25번, 3-14f — Exchange)
         public int ExchangeMedkitCost;
         public int ExchangePartCost;
@@ -409,6 +432,11 @@ namespace GirlsDungeon.Core.Sim
             foreach (var trade in AltarTrades)
                 if (trade == null || trade.CostAmount <= 0 || trade.BoonAmount <= 0 || trade.CostStat == trade.BoonStat)
                     throw new ArgumentException("Altar trade is invalid.");
+            if (GoldPerKill < 0 || CrateGold < 0 || TreasureGold < 0)
+                throw new ArgumentException("Gold settings are invalid.");
+            if (ShopMedkits < 0 || ShopKeys < 0 || ShopWeapons < 0 || ShopMedkitPrice < 1 || ShopKeyPrice < 1 || ShopWeaponPrice < 1
+                || ShopPartPrices.Count < 3 || ShopPartPrices.Exists(price => price < 1) || ShopSellPercent < 0 || ShopSellPercent > 100 || ShopMaterialSellPrice < 0)
+                throw new ArgumentException("Shop settings are invalid.");
             if (ExchangeMedkitCost < 0 || ExchangePartCost < 0 || ExchangeKeyCost < 0 || ExchangeKeySellMaterials < 0)
                 throw new ArgumentException("Exchange settings are invalid.");
             if (RepairHealPercent < 0 || RepairHealPercent > 100)

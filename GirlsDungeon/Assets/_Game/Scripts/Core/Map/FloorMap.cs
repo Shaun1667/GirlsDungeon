@@ -62,6 +62,8 @@ namespace GirlsDungeon.Core.Map
         ArchiveTerminal = 27,
         /// <summary>쓴 기록 단말.</summary>
         ArchiveTerminalUsed = 28,
+        /// <summary>상인 계산대 (상점, 3-15b). 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 팔기 창을 연다 (쓰고 나도 그대로).</summary>
+        ShopCounter = 29,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -227,7 +229,8 @@ namespace GirlsDungeon.Core.Map
                 || tile == TileType.SetGalleryCase || tile == TileType.SetGalleryCaseUsed
                 || tile == TileType.Altar || tile == TileType.AltarUsed
                 || tile == TileType.GambleChest || tile == TileType.GambleChestOpened
-                || tile == TileType.ArchiveTerminal || tile == TileType.ArchiveTerminalUsed;
+                || tile == TileType.ArchiveTerminal || tile == TileType.ArchiveTerminalUsed
+                || tile == TileType.ShopCounter;
         }
 
         /// <summary>보물 상자 칸 (닫힘 · 열림).</summary>

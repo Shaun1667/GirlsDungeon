@@ -20,7 +20,7 @@ namespace GirlsDungeon.Core.Sim
         /// 14: 고른 캐릭터 (2026-11-11). 15: 음파 공격 재사용 대기 (2026-11-12). 16: 이번 차례 이동 여부 → 걸은 칸 수 (2026-11-12).
         /// 17: 무기 파츠 — 든 무기 4칸 · 바닥 파츠 · 바닥 무기의 파츠 · 파츠가 더해 둔 몸 능력치 (2026-11-12, 3-4).
         /// </summary>
-        public const int Version = 27;
+        public const int Version = 28;
 
         public static byte[] Encode(World world)
         {
@@ -89,6 +89,7 @@ namespace GirlsDungeon.Core.Sim
                     WriteCell(writer, item.Position);
                     WritePart(writer, item.Part);
                     foreach (var part in item.Parts) WritePart(writer, part);
+                    writer.Write(item.Price);
                 }
                 writer.Write((byte)world.PlayerCharacter);
                 writer.Write(world.SonicCooldown);
@@ -118,6 +119,7 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write(world.ArenaEnemies.Count);
                 foreach (int id in world.ArenaEnemies) writer.Write(id);
                 writer.Write(world.ArchiveRead);
+                writer.Write(world.Gold);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -206,6 +208,7 @@ namespace GirlsDungeon.Core.Sim
                     var weapon = (WeaponKind)reader.ReadByte();
                     var item = new FloorItem(id, kind, weapon, ReadCell(reader)) { Part = ReadPart(reader) };
                     for (int slot = 0; slot < WeaponPart.SlotCount; slot++) item.Parts[slot] = ReadPart(reader);
+                    item.Price = reader.ReadInt32();
                     world.Items.Add(item);
                 }
                 world.PlayerCharacter = (CharacterKind)reader.ReadByte();
@@ -236,6 +239,7 @@ namespace GirlsDungeon.Core.Sim
                 int arenaCount = reader.ReadInt32();
                 for (int i = 0; i < arenaCount; i++) world.ArenaEnemies.Add(reader.ReadInt32());
                 world.ArchiveRead = reader.ReadBoolean();
+                world.Gold = reader.ReadInt32();
                 return world;
             }
         }

@@ -136,6 +136,9 @@ namespace GirlsDungeon.EditorTools
             roomToVisit = (GirlsDungeon.Core.Map.SpecialRoomKind)EditorGUILayout.EnumPopup("방", roomToVisit);
             if (GUILayout.Button("방 안으로 이동 [상태 변경]")) root.DebugGoToSpecialRoom(roomToVisit);
             EditorGUILayout.EndHorizontal();
+            // 상점 · 사르디스 골드 (3-15).
+            EditorGUILayout.LabelField("상점", root.DebugShopSummary(), EditorStyles.wordWrappedLabel);
+            if (GUILayout.Button("사르디스 골드 +100 [상태 변경]")) root.DebugAddGold(100);
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("열쇠 +1 [상태 변경]")) root.DebugAddKeys(1);
             if (GUILayout.Button("잠긴 문 앞으로 [상태 변경]")) root.DebugGoToLockedDoor();

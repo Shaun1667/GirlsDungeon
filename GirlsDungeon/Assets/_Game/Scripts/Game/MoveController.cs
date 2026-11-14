@@ -79,6 +79,9 @@ namespace GirlsDungeon.Game
         /// <summary>제단 바로 옆에 섰다 — GameRoot가 제단 창(AltarView)을 연다 (3-14h).</summary>
         public event System.Action AltarReached;
 
+        /// <summary>상인 계산대 바로 옆에 섰다 — GameRoot가 팔기 창(ShopView)을 연다 (3-15).</summary>
+        public event System.Action ShopReached;
+
         /// <summary>걸음이 끝나면 문 창을 연다 (탐험 중 먼 잠긴 문을 클릭했을 때, 3-4d).</summary>
         private GridPos? pendingDoor;
 
@@ -568,7 +571,7 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             if (world.Mode != WorldMode.Exploration || !world.Map.InBounds(counter) || !IsKnown(counter)) return false;
             var tile = world.Map.Get(counter);
-            if (tile != TileType.ExchangeCounter && tile != TileType.SetGalleryCase && tile != TileType.Altar) return false;
+            if (tile != TileType.ExchangeCounter && tile != TileType.SetGalleryCase && tile != TileType.Altar && tile != TileType.ShopCounter) return false;
             if (Loadout.CellDistance(world.Player.Position, counter) == 1)
             {
                 ReachStation(tile);
@@ -593,6 +596,7 @@ namespace GirlsDungeon.Game
             if (tile == TileType.ExchangeCounter && Exchange.AtCounter(world)) CounterReached?.Invoke();
             if (tile == TileType.SetGalleryCase && SetGallery.AtCase(world)) GalleryReached?.Invoke();
             if (tile == TileType.Altar && Altar.AtAltar(world)) AltarReached?.Invoke();
+            if (tile == TileType.ShopCounter && Shop.AtCounter(world)) ShopReached?.Invoke();
         }
 
         /// <summary>
@@ -708,8 +712,13 @@ namespace GirlsDungeon.Game
             bool isBench = cell.HasValue && map.InBounds(cell.Value) && map.Get(cell.Value) == TileType.Workbench && IsKnown(cell.Value);
             bool isDoor = cell.HasValue && map.IsLockedDoor(cell.Value) && IsKnown(cell.Value);
             bool isCounter = cell.HasValue && map.InBounds(cell.Value) && IsKnown(cell.Value)
-                && (map.Get(cell.Value) == TileType.ExchangeCounter || map.Get(cell.Value) == TileType.SetGalleryCase || map.Get(cell.Value) == TileType.Altar);
+                && (map.Get(cell.Value) == TileType.ExchangeCounter || map.Get(cell.Value) == TileType.SetGalleryCase || map.Get(cell.Value) == TileType.Altar
+                    || map.Get(cell.Value) == TileType.ShopCounter);
             SetHover(isWalkable || isCrate || isBench || isDoor || isCounter ? cell : null);
+            // 상점 진열 물건 위에 마우스를 올리면 이름 · 값 (3-15).
+            var shopItem = isWalkable ? simulation.World.ItemAt(cell.Value) : null;
+            if (shopItem != null && shopItem.Price > 0) hudView.ShowShopItemPreview(shopItem);
+            else hudView.ClearShopItemPreview();
 
             bool clicked = mouse != null && leftClick.Clicked && !IsPointerOverUi();
             if (isWalkable && clicked) RequestMove(cell.Value);

@@ -18,6 +18,8 @@ namespace GirlsDungeon.Core.Random
         Door = 8,
         /// <summary>층 만들기 — 보급 상자 · 특수 방 배치 (3-14l). 층을 진행하는 동안에는 쓰지 않는다 — 기록실 예고(Archive.Forecast)가 실제 다음 층과 같도록.</summary>
         Floor = 9,
+        /// <summary>상점 진열 물건 (파츠 굴림 · 무기 고르기, 3-15b). 층을 만들 때만 쓴다.</summary>
+        Shop = 10,
     }
 
     /// <summary>시드 하나에서 용도별 난수를 만든다. 상태는 세계 스냅샷에 저장된다.</summary>

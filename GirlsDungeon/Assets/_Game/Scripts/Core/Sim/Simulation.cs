@@ -48,6 +48,7 @@ namespace GirlsDungeon.Core.Sim
 
             for (int i = 0; i < command.CostTicks; i++) RunTick();
             CombatFlow.AfterAction(World, settings, pending);
+            if (settings != null) Gold.CheckKills(World, settings, pending);
             if (settings != null) Loot.CheckPickup(World, settings, pending);
             if (settings != null && mapSettings != null) FloorFlow.CheckStairs(World, mapSettings, settings, pending);
             Publish();
@@ -126,6 +127,7 @@ namespace GirlsDungeon.Core.Sim
                 world.Keys = CountLockedRooms(world.Map);
             }
             else EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
+            Shop.Stock(world, combatSettings);
             VisionSystem.Update(world, null);
             return world;
         }
@@ -157,6 +159,7 @@ namespace GirlsDungeon.Core.Sim
             world.Explored = null;
 
             EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
+            Shop.Stock(world, combatSettings);
             events?.Add(new FloorChanged(world.FloorIndex, world.Map.StartCell));
             VisionSystem.Update(world, events);
         }
@@ -187,7 +190,7 @@ namespace GirlsDungeon.Core.Sim
             // 기록실 예고가 실제 다음 층과 같다 (Map · Decor · Floor · Spawn · EnemyKind는 층을 만들 때만 쓴다).
             var floorRandom = world.Random.Get(RandomPurpose.Floor);
             FloorDecor.PlaceSupplyCrates(world.Map, mapSettings, floorRandom);
-            SpecialRoomLayout.Place(world.Map, mapSettings, floorRandom);
+            SpecialRoomLayout.Place(world.Map, mapSettings, floorRandom, world.FloorIndex);
         }
 
         /// <summary>층마다 새로 시작하는 상태 (새 층을 만들 때).</summary>

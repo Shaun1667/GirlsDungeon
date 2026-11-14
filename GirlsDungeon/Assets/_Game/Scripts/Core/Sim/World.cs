@@ -101,6 +101,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>무기일 때 그 무기에 끼워져 있는 파츠 4칸 (null = 빈 칸). 무기를 주우면 같이 들린다.</summary>
         public WeaponPart[] Parts { get; } = new WeaponPart[WeaponPart.SlotCount];
 
+        /// <summary>상점 진열 물건의 값 (사르디스 골드, 3-15b). 0 = 그냥 줍는 물건. 값이 있으면 밟아도 줍지 않고 사기 창(ShopItemOffered)만 뜬다.</summary>
+        public int Price { get; set; }
+
         public FloorItem(int id, ItemKind kind, WeaponKind weapon, GridPos position)
         {
             Id = id;
@@ -180,6 +183,9 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>가진 열쇠 (층을 넘어가도 남는다, 3-4d). 잠긴 문 하나(그 방 전체)에 1개.</summary>
         public int Keys { get; set; }
+
+        /// <summary>사르디스 골드 (3-15a — 상점 화폐, 결정 2026-11-14 사용자). 층을 넘어 유지된다.</summary>
+        public int Gold { get; set; }
 
         /// <summary>세트 진열실 진열장에 놓인 파츠 (처음 열 때 만들고, 하나를 고르면 비운다, 3-14g). 층을 새로 만들 때 비운다.</summary>
         public List<WeaponPart> GalleryOffers { get; } = new List<WeaponPart>();

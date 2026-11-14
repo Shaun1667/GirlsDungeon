@@ -345,6 +345,35 @@ namespace GirlsDungeon.Game
         }
 
         /// <summary>전투 중 보급 상자에 마우스를 올렸을 때.</summary>
+        private bool showingShopItem;
+
+        /// <summary>탐험 중 상점 진열 물건 위에 마우스: 이름 · 값 (3-15).</summary>
+        public void ShowShopItemPreview(FloorItem item)
+        {
+            previewLabel.text = Text.Get("ui.shop.preview", ItemName(item), item.Price, simulation.World.Gold);
+            previewLabel.gameObject.SetActive(true);
+            showingShopItem = true;
+        }
+
+        public void ClearShopItemPreview()
+        {
+            if (!showingShopItem) return;
+            showingShopItem = false;
+            ClearPreview();
+        }
+
+        /// <summary>바닥 물건 이름 (상점 창 · 미리보기): 무기 이름 · "{무기} {등급} 파츠" · 구급상자 · 열쇠.</summary>
+        internal string ItemName(FloorItem item)
+        {
+            switch (item.Kind)
+            {
+                case ItemKind.Weapon: return WeaponName(item.Weapon);
+                case ItemKind.Part: return item.Part != null ? Text.Get("ui.shop.item_part", WeaponName(item.Part.Weapon), GradeName(item.Part.Grade)) : WeaponName(item.Weapon);
+                case ItemKind.Key: return Text.Get("ui.shop.item_key");
+                default: return Text.Get("ui.shop.item_medkit");
+            }
+        }
+
         public void ShowCratePreview(bool canOpen)
         {
             previewLabel.text = canOpen ? Text.Get("ui.crate.preview_open") : Text.Get("ui.crate.preview_too_far");
@@ -545,6 +574,12 @@ namespace GirlsDungeon.Game
                     case PartEquipped equipped:
                         AddLog(Text.Get("ui.loot.log_part_equipped", PartSlotName(equipped.Weapon, equipped.Slot), GradeName(equipped.Grade)));
                         break;
+                    case GoldGained gold when gold.Source != GoldSource.Kill:
+                        AddLog(Text.Get("ui.gold.log_gain", gold.Amount, gold.Total));
+                        break;
+                    case ShopItemBought bought:
+                        AddLog(Text.Get("ui.shop.log_bought", bought.Price, bought.GoldNow));
+                        break;
                     case KeyPickedUp key:
                         AddLog(Text.Get("ui.door.log_key", key.Keys));
                         break;
@@ -645,6 +680,8 @@ namespace GirlsDungeon.Game
                 stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
                 // 표시 값 = 실제 값: 무기 표가 아니라 유닛에 적용된 값(Loadout.Apply 결과)을 읽는다.
                 weaponLabel.text = Text.Get("ui.hud.weapon", WeaponName(world.PlayerWeapon), player.Attack, player.AttackRange);
+                // 사르디스 골드 (3-15): 늘 보인다.
+                weaponLabel.text += "\n" + Text.Get("ui.hud.gold", world.Gold);
                 // 열쇠 (3-4d): 하나라도 있을 때만.
                 if (world.Keys > 0) weaponLabel.text += "\n" + Text.Get("ui.hud.keys", world.Keys);
                 // 재료 · 보관함 (3-4c): 하나라도 있을 때만.

@@ -131,6 +131,7 @@ namespace GirlsDungeon.Game
                 case SpecialRoomKind.Gamble: return "room.kind.gamble.name";
                 case SpecialRoomKind.Observatory: return "room.kind.observatory.name";
                 case SpecialRoomKind.Archive: return "room.kind.archive.name";
+                case SpecialRoomKind.Shop: return "room.kind.shop.name";
                 default: return "room.kind.workshop.name";
             }
         }

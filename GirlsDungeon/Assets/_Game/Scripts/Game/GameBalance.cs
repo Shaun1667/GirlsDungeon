@@ -443,6 +443,30 @@ namespace GirlsDungeon.Game
         [Tooltip("Grade of the part dropped when the whole arena group is defeated.")]
         [SerializeField] private PartGrade arenaPartGrade = PartGrade.Precision;
 
+        [Header("Sardis gold (BALANCE 31)")]
+        [Tooltip("Gold gained per enemy defeated, per supply crate opened and per treasure chest opened.")]
+        [SerializeField] private int goldPerKill = 5;
+        [SerializeField] private int crateGold = 15;
+        [SerializeField] private int treasureGold = 40;
+
+        [Header("Shop (BALANCE 32)")]
+        [Tooltip("Zone length in floors. The shop is on the first floor of each zone.")]
+        [SerializeField] private int floorsPerZone = 5;
+        [SerializeField] private int shopsPerZone = 1;
+        [Tooltip("Items on display: medkits, keys, weapons (other than the one in hand) and one part per grade listed (for the weapon in hand).")]
+        [SerializeField] private int shopMedkits = 2;
+        [SerializeField] private int shopKeys = 1;
+        [SerializeField] private int shopWeapons = 1;
+        [SerializeField] private PartGrade[] shopPartGrades = { PartGrade.Military, PartGrade.Precision };
+        [Tooltip("Prices in gold. Part prices by grade: industrial, military, precision.")]
+        [SerializeField] private int shopMedkitPrice = 25;
+        [SerializeField] private int shopKeyPrice = 35;
+        [SerializeField] private int shopWeaponPrice = 60;
+        [SerializeField] private int[] shopPartPrices = { 20, 45, 80 };
+        [Tooltip("Selling to the shopkeeper pays this share (%) of the buying price. Materials sell for a flat price each.")]
+        [SerializeField] private int shopSellPercent = 35;
+        [SerializeField] private int shopMaterialSellPrice = 3;
+
         [Header("Exchange (BALANCE 25)")]
         [Tooltip("Materials paid at the exchange counter: medkit, part, key. Each offer once per floor.")]
         [SerializeField] private int exchangeMedkitCost = 2;
@@ -630,6 +654,19 @@ namespace GirlsDungeon.Game
                 ArenaEnemyCount = arenaEnemyCount,
                 ArenaStatPercent = arenaStatPercent,
                 ArenaPartGrade = arenaPartGrade,
+                GoldPerKill = goldPerKill,
+                CrateGold = crateGold,
+                TreasureGold = treasureGold,
+                ShopMedkits = shopMedkits,
+                ShopKeys = shopKeys,
+                ShopWeapons = shopWeapons,
+                ShopPartGrades = new System.Collections.Generic.List<PartGrade>(shopPartGrades ?? Array.Empty<PartGrade>()),
+                ShopMedkitPrice = shopMedkitPrice,
+                ShopKeyPrice = shopKeyPrice,
+                ShopWeaponPrice = shopWeaponPrice,
+                ShopPartPrices = new System.Collections.Generic.List<int>(shopPartPrices ?? Array.Empty<int>()),
+                ShopSellPercent = shopSellPercent,
+                ShopMaterialSellPrice = shopMaterialSellPrice,
                 ExchangeMedkitCost = exchangeMedkitCost,
                 ExchangePartCost = exchangePartCost,
                 ExchangePartGrade = exchangePartGrade,
@@ -829,6 +866,8 @@ namespace GirlsDungeon.Game
                 TrapChasmPercent = trapChasmPercent,
                 TrapCrates = trapCrates,
                 GambleChests = gambleChests,
+                FloorsPerZone = floorsPerZone,
+                ShopsPerZone = shopsPerZone,
             };
         }
     }

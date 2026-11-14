@@ -271,6 +271,32 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void GoldAndShop_MatchBalanceTables31And32()
+        {
+            var balance = Load();
+            var combat = balance.CreateCombatSettings();
+            var map = balance.CreateMapSettings();
+            Assert.That(combat.GoldPerKill, Is.EqualTo(5));
+            Assert.That(combat.CrateGold, Is.EqualTo(15));
+            Assert.That(combat.TreasureGold, Is.EqualTo(40));
+            Assert.That(map.FloorsPerZone, Is.EqualTo(5));
+            Assert.That(map.ShopsPerZone, Is.EqualTo(1));
+            Assert.That(combat.ShopMedkits, Is.EqualTo(2));
+            Assert.That(combat.ShopKeys, Is.EqualTo(1));
+            Assert.That(combat.ShopWeapons, Is.EqualTo(1));
+            Assert.That(combat.ShopPartGrades, Is.EqualTo(new[] { GirlsDungeon.Core.Sim.PartGrade.Military, GirlsDungeon.Core.Sim.PartGrade.Precision }));
+            Assert.That(combat.ShopMedkitPrice, Is.EqualTo(25));
+            Assert.That(combat.ShopKeyPrice, Is.EqualTo(35));
+            Assert.That(combat.ShopWeaponPrice, Is.EqualTo(60));
+            Assert.That(combat.ShopPartPrices, Is.EqualTo(new[] { 20, 45, 80 }));
+            Assert.That(combat.ShopSellPercent, Is.EqualTo(35));
+            Assert.That(combat.ShopMaterialSellPrice, Is.EqualTo(3));
+            // 검산: 1층 적 4~6 × 5 + 보급 상자 2~3 × 15 + 보물 상자 40 = 100 ~ 115 골드 → 정밀 파츠(80) 하나 또는 군용 파츠 + 구급상자(70).
+            Assert.That(4 * combat.GoldPerKill + 2 * combat.CrateGold + combat.TreasureGold, Is.EqualTo(100));
+            Assert.That(GirlsDungeon.Core.Sim.Shop.SellValue(combat, combat.ShopKeyPrice), Is.EqualTo(12));
+        }
+
+        [Test]
         public void GrenadeAreas_MatchBalanceTable6_7()
         {
             var combat = Load().CreateCombatSettings();
@@ -349,6 +375,7 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.ExchangeKeySellMaterials, Is.LessThan(combat.ExchangeKeyCost));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             foreach (var key in GirlsDungeon.Game.ExchangeView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
+            foreach (var key in GirlsDungeon.Game.ShopView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
         }
 
         [Test]

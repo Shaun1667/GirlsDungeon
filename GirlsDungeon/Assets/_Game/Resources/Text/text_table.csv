@@ -329,3 +329,30 @@ ui.gamble.log_empty,도박 상자: 비어 있다 (다른 상자는 닫혔다),Ga
 ui.gamble.log_ambush,도박 상자: 함정이다! 적이 튀어나왔다 (다른 상자는 닫혔다),Gamble chest: a trap! Enemies burst out (the other chests sealed)
 ui.arena.log_cleared,결투장 승리 — {0} 파츠를 얻었다,Arena won — got a {0} part
 ui.altar.log_traded,제단: {0} −{1} → {2} +{3},Altar: {0} −{1} → {2} +{3}
+room.kind.shop.name,상점,Shop
+ui.hud.gold,사르디스 골드 {0},Sardis Gold {0}
+ui.gold.log_gain,사르디스 골드 +{0} (가진 골드 {1}),Sardis Gold +{0} (now {1})
+ui.shop.preview,{0} · {1} 사르디스 골드 (가진 골드 {2}) · 밟으면 사기 창,{0} · {1} Sardis Gold (you have {2}) · step on it to buy
+ui.shop.item_part,{0} {1} 파츠,{0} {1} part
+ui.shop.item_key,열쇠,Key
+ui.shop.item_medkit,구급상자,Medkit
+ui.shop.log_bought,샀다 — {0} 골드 (남은 골드 {1}),Bought — {0} gold ({1} left)
+ui.shop.buy_title,"상점 — {0}
+값 {1} 사르디스 골드 · 가진 골드 {2}","Shop — {0}
+Price {1} Sardis Gold · you have {2}"
+ui.shop.not_enough,골드가 모자랍니다,Not enough gold
+ui.shop.buy,사기,Buy
+ui.shop.leave,두기,Leave it
+ui.shop.sell_title,상인 — 팔기 (가진 사르디스 골드 {0}),Shopkeeper — sell (Sardis Gold {0})
+ui.shop.sell_part,예비 파츠 {0}/{1}: {2} {3} 파츠 → {4} 골드,Spare part {0}/{1}: {2} {3} part → {4} gold
+ui.shop.sell_part_none,예비 파츠 없음,No spare parts
+ui.shop.sell_key,열쇠 {0}개 · 하나에 {1} 골드,Keys {0} · {1} gold each
+ui.shop.sell_material,재료 {0}개 · 하나에 {1} 골드,Materials {0} · {1} gold each
+ui.shop.result_sold,팔았다 — +{0} 골드,Sold — +{0} gold
+ui.shop.result_nothing,팔 것이 없습니다,Nothing to sell
+ui.shop.previous_part,◀ 이전 파츠,◀ Previous
+ui.shop.next_part,다음 파츠 ▶,Next ▶
+ui.shop.sell_part_button,파츠 팔기,Sell part
+ui.shop.sell_key_button,열쇠 팔기,Sell key
+ui.shop.sell_material_button,재료 팔기,Sell material
+ui.shop.close,닫기,Close

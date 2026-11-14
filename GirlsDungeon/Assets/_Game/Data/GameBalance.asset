@@ -405,6 +405,21 @@ MonoBehaviour:
   arenaEnemyCount: 3
   arenaStatPercent: 30
   arenaPartGrade: 2
+  goldPerKill: 5
+  crateGold: 15
+  treasureGold: 40
+  floorsPerZone: 5
+  shopsPerZone: 1
+  shopMedkits: 2
+  shopKeys: 1
+  shopWeapons: 1
+  shopPartGrades: 0102
+  shopMedkitPrice: 25
+  shopKeyPrice: 35
+  shopWeaponPrice: 60
+  shopPartPrices: 140000002d00000050000000
+  shopSellPercent: 35
+  shopMaterialSellPrice: 3
   exchangeMedkitCost: 2
   exchangePartCost: 4
   exchangePartGrade: 1

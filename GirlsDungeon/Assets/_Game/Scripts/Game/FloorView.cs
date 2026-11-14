@@ -48,6 +48,8 @@ namespace GirlsDungeon.Game
         [Tooltip("Archive terminal, ready and used (3-14l).")]
         [SerializeField] private Material archiveMaterial;
         [SerializeField] private Material archiveUsedMaterial;
+        [Tooltip("Shopkeeper counter in a shop (3-15).")]
+        [SerializeField] private Material shopMaterial;
         [Tooltip("Second pass that darkens unexplored / out-of-sight cells (GirlsDungeon/FogOverlay).")]
         [SerializeField] private Material fogMaterial;
 
@@ -86,6 +88,7 @@ namespace GirlsDungeon.Game
             var gambleUsed = new MeshData();
             var archive = new MeshData();
             var archiveUsed = new MeshData();
+            var shop = new MeshData();
             WallCellCount = 0;
 
             for (int y = 0; y < map.Height; y++)
@@ -192,6 +195,12 @@ namespace GirlsDungeon.Game
                             // 기록 단말: 얇고 높은 책장 모양.
                             archive.AddBox(position, 0.45f, 0.2f, balance.LowCoverHeight * 1.5f);
                             break;
+                        case TileType.ShopCounter:
+                            floor.AddTop(position, 0.5f, 0.5f, 0f);
+                            // 상인 계산대: 낮은 탁자 위에 상인 자리 (좁고 높은 기둥).
+                            shop.AddBox(position, 0.46f, 0.46f, balance.LowCoverHeight * 0.9f);
+                            shop.AddBox(position, 0.16f, 0.16f, balance.LowCoverHeight * 2.2f);
+                            break;
                         case TileType.ArchiveTerminalUsed:
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
                             archiveUsed.AddBox(position, 0.45f, 0.2f, balance.LowCoverHeight * 1.5f);
@@ -249,6 +258,7 @@ namespace GirlsDungeon.Game
             AddPart("GambleUsed", gambleUsed, gambleUsedMaterial != null ? gambleUsedMaterial : coverMaterial);
             AddPart("Archive", archive, archiveMaterial != null ? archiveMaterial : coverMaterial);
             AddPart("ArchiveUsed", archiveUsed, archiveUsedMaterial != null ? archiveUsedMaterial : coverMaterial);
+            AddPart("Shop", shop, shopMaterial != null ? shopMaterial : coverMaterial);
         }
 
         /// <summary>낭떠러지: 바닥면 없이 깊이 depth 아래의 바닥과, 낭떠러지가 아닌 이웃 쪽 안벽.</summary>

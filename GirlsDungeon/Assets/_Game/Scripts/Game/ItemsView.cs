@@ -17,6 +17,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material partMaterial;
         [Tooltip("Key lying on the floor (3-4d).")]
         [SerializeField] private Material keyMaterial;
+        [Tooltip("Display stand under a shop item that is not bought yet (3-15).")]
+        [SerializeField] private Material standMaterial;
 
         private readonly Dictionary<int, GameObject> views = new Dictionary<int, GameObject>();
         private IEventSource simulation;
@@ -71,6 +73,9 @@ namespace GirlsDungeon.Game
                 }
                 bool known = world.Explored != null && Vision.IsSet(world.Explored, world.Map, item.Position);
                 view.SetActive(known);
+                // 상점 물건은 값을 낼 때까지 진열대 위에 (3-15).
+                var stand = view.transform.Find("Stand");
+                if (stand != null) stand.gameObject.SetActive(item.Price > 0);
             }
 
             var gone = new List<int>();
@@ -98,6 +103,20 @@ namespace GirlsDungeon.Game
             body.transform.localScale = size;
             body.transform.position = GridSpace.ToWorld(item.Position) + Vector3.up * (size.y * 0.5f);
             if (isWeapon || isKey) body.transform.rotation = Quaternion.Euler(0f, 30f, 0f);
+            if (item.Price > 0)
+            {
+                // 진열대: 물건 아래 낮고 넓은 판. 물건을 그만큼 띄운다. 산 뒤에는 숨긴다 (Sync).
+                var stand = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                stand.name = "Stand";
+                Destroy(stand.GetComponent<Collider>());
+                stand.GetComponent<MeshRenderer>().sharedMaterial = standMaterial != null ? standMaterial : medkitMaterial;
+                stand.transform.SetParent(body.transform, false);
+                const float standHeight = 0.12f;
+                body.transform.position += Vector3.up * standHeight;
+                stand.transform.position = GridSpace.ToWorld(item.Position) + Vector3.up * (standHeight * 0.5f);
+                stand.transform.rotation = Quaternion.identity;
+                stand.transform.localScale = new Vector3(0.8f / size.x, standHeight / size.y, 0.8f / size.z);
+            }
             return body;
         }
     }
