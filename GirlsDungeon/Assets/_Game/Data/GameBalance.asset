@@ -105,7 +105,7 @@ MonoBehaviour:
     defense: 4
     moveRange: 6
     attackRange: 6
-    stabilityDamage: 2
+    stabilityDamage: 3
     critPercent: 20
     critMultiplierPercent: 150
     pushOnHit: 0
@@ -181,6 +181,31 @@ MonoBehaviour:
   sonicDamagePercent: 60
   sonicStabilityDamage: 3
   sonicCooldownRounds: 2
+  keeperSkills:
+    basicPercent: 80
+    stackMax: 6
+    stackDamageTakenPercent: 10
+    hpFloorPercent: 10
+    heartHpCostPercent: 30
+    heartStacks: 2
+    heartDamagePercent: 120
+    heartStabilityDamage: 4
+    heartCooldown: 2
+    orderHpCostPercent: 40
+    orderStacks: 3
+    orderDamagePercent: 100
+    orderStabilityDamage: 2
+    orderCooldown: 2
+    orderRange: 6
+    orderRadius: 2
+    burnDamage: 4
+    burnTurns: 2
+    finalCost: 6
+    finalStacks: 6
+    shieldPercent: 50
+    shieldTurns: 3
+    stacksPerExtraAttack: 3
+    extraDamagePercentPerStack: 4
   assaultPercent: 30
   fallDamagePercent: 50
   floorCount: 5

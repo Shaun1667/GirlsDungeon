@@ -84,8 +84,10 @@ namespace GirlsDungeon.Core.Sim
             // 세트 효과 (3-4b): 적 차례에 플레이어가 쏘는 것은 감시 사격.
             var source = attacker.IsPlayer && world.Mode == WorldMode.Combat && world.Turn == TurnSide.Enemies ? DamageSource.Overwatch : DamageSource.Shot;
             int setPercent = SetEffects.DamagePercent(world, settings, attacker, target, source);
-            int damage = Damage(attacker.Attack, target.Defense, 100, reduction, settings.MinDamage, 100 - falloff, setPercent);
-            int critDamage = Damage(attacker.Attack, target.Defense, attacker.CritMultiplierPercent, reduction, settings.MinDamage, 100 - falloff, setPercent);
+            // 상점 주인의 일반 공격은 공격력 배율이 따로 있다 (KeeperSkills, 3-15f). 그 밖에는 100.
+            int power = KeeperSkills.BasicPercentFor(settings, attacker);
+            int damage = Damage(attacker.Attack, target.Defense, power, reduction, settings.MinDamage, 100 - falloff, setPercent);
+            int critDamage = Damage(attacker.Attack, target.Defense, attacker.CritMultiplierPercent * power / 100, reduction, settings.MinDamage, 100 - falloff, setPercent);
             bool breaksCover = cover != CoverLevel.None
                 && CoverBreak.AnyBreaksOnNextHit(map, settings, CoverBreak.Facing(map, target.Position, from));
             return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, attacker.StabilityDamage, breaksCover, falloff, setPercent);
@@ -124,7 +126,7 @@ namespace GirlsDungeon.Core.Sim
             if (!preview.CanAttack) return false;
 
             bool crit = world.Random.Get(RandomPurpose.Combat).Range(0, 100) < preview.CritPercent;
-            int damage = crit ? preview.CritDamage : preview.Damage;
+            int damage = KeeperSkills.AfterShield(world, target, crit ? preview.CritDamage : preview.Damage, events);
             int stabilityBefore = target.Stability;
 
             target.Hp -= damage;

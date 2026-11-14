@@ -580,6 +580,18 @@ namespace GirlsDungeon.Game
                     case ShopkeeperAngered _:
                         AddLog(Text.Get("ui.shop.log_angered"));
                         break;
+                    case KeeperSkillUsed skill:
+                        // 키는 통째로 쓴다 (이어 붙이면 키 검사가 못 찾는다).
+                        if (skill.Skill == KeeperSkill.Heart) AddLog(Text.Get("ui.keeper.log_heart", skill.HpCost, skill.Stacks));
+                        else if (skill.Skill == KeeperSkill.Order) AddLog(Text.Get("ui.keeper.log_order", skill.HpCost, skill.Stacks));
+                        else AddLog(Text.Get("ui.keeper.log_final", skill.Stacks, skill.Shield));
+                        break;
+                    case KeeperShieldAbsorbed absorbed:
+                        AddLog(Text.Get("ui.keeper.log_shield", absorbed.Absorbed, absorbed.Left));
+                        break;
+                    case BurnTicked burn:
+                        AddLog(Text.Get("ui.keeper.log_burn", burn.Damage, burn.TurnsLeft));
+                        break;
                     case ShopkeeperDefeated defeated:
                         AddLog(Text.Get("ui.shop.log_defeated", defeated.Freed));
                         break;

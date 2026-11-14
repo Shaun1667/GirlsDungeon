@@ -151,6 +151,8 @@ namespace GirlsDungeon.Game
                 case OverwatchSet _:
                 case AreaExploded _:
                 case PushUsed _:
+                case KeeperSkillUsed _:
+                case BurnTicked _:
                     return balance.ActionPauseSeconds;
                 case UnitDied _:
                     return balance.ActionPauseSeconds;

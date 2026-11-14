@@ -198,8 +198,9 @@ namespace GirlsDungeon.Core.Sim
             foreach (var hit in preview.Hits)
             {
                 var target = hit.Target;
-                target.Hp -= hit.Damage;
-                events.Add(new UnitAttacked(attacker, target, hit.Damage, false, CoverLevel.None, false, false));
+                int dealt = KeeperSkills.AfterShield(world, target, hit.Damage, events);
+                target.Hp -= dealt;
+                events.Add(new UnitAttacked(attacker, target, dealt, false, CoverLevel.None, false, false));
                 Alert.Wake(world, target, events);
 
                 ApplySlide(world, settings, attacker, target, hit.Slide, hit.CollisionDamage, events);
@@ -240,7 +241,7 @@ namespace GirlsDungeon.Core.Sim
             if (slide.Path.Count > 0 || slide.Collides)
                 events.Add(new UnitPushed(target.Id, target.Kind, from, slide.End, slide.Falls, collisionDamage));
 
-            target.Hp -= collisionDamage;
+            target.Hp -= KeeperSkills.AfterShield(world, target, collisionDamage, events);
             events.Add(new UnitStatsChanged(target.Id));
 
             if (target.IsPlayer)

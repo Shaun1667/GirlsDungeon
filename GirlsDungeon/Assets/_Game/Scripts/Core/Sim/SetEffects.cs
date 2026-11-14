@@ -88,6 +88,12 @@ namespace GirlsDungeon.Core.Sim
         /// </summary>
         public static int DamagePercent(World world, CombatSettings settings, Unit attacker, Unit target, DamageSource source)
         {
+            // 상점 주인의 밑천(스택)은 받는 피해를 줄인다 (KeeperSkills, 3-15f) — 모든 피해 미리보기가 이 함수를 거친다.
+            return SetPercent(world, settings, attacker, target, source) - KeeperSkills.DamageTakenReduction(world, settings, target);
+        }
+
+        private static int SetPercent(World world, CombatSettings settings, Unit attacker, Unit target, DamageSource source)
+        {
             if (world.Player == null) return 0;
             var set = Active(world, settings);
             if (set == PartSet.None) return 0;

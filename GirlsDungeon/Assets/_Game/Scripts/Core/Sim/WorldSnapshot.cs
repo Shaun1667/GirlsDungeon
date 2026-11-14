@@ -19,8 +19,9 @@ namespace GirlsDungeon.Core.Sim
         /// 12: 든 무기 · 바닥 물건 (2026-11-10, 보급 상자 칸은 TileType 값만 추가). 13: 이번 차례 사격 수 (2026-11-11).
         /// 14: 고른 캐릭터 (2026-11-11). 15: 음파 공격 재사용 대기 (2026-11-12). 16: 이번 차례 이동 여부 → 걸은 칸 수 (2026-11-12).
         /// 17: 무기 파츠 — 든 무기 4칸 · 바닥 파츠 · 바닥 무기의 파츠 · 파츠가 더해 둔 몸 능력치 (2026-11-12, 3-4).
+        /// 30: 상점 주인 스킬 상태 — 밑천 · 재사용 대기 · 기세 · 방벽 · 플레이어 화상 (2026-11-14, 3-15f).
         /// </summary>
-        public const int Version = 29;
+        public const int Version = 30;
 
         public static byte[] Encode(World world)
         {
@@ -121,6 +122,13 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write(world.ArchiveRead);
                 writer.Write(world.Gold);
                 writer.Write(world.ShopHostile);
+                writer.Write(world.KeeperStacks);
+                writer.Write(world.KeeperHeartCooldown);
+                writer.Write(world.KeeperOrderCooldown);
+                writer.Write(world.KeeperRemold);
+                writer.Write(world.KeeperShield);
+                writer.Write(world.KeeperShieldTurns);
+                writer.Write(world.PlayerBurnTurns);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -242,6 +250,13 @@ namespace GirlsDungeon.Core.Sim
                 world.ArchiveRead = reader.ReadBoolean();
                 world.Gold = reader.ReadInt32();
                 world.ShopHostile = reader.ReadBoolean();
+                world.KeeperStacks = reader.ReadInt32();
+                world.KeeperHeartCooldown = reader.ReadInt32();
+                world.KeeperOrderCooldown = reader.ReadInt32();
+                world.KeeperRemold = reader.ReadInt32();
+                world.KeeperShield = reader.ReadInt32();
+                world.KeeperShieldTurns = reader.ReadInt32();
+                world.PlayerBurnTurns = reader.ReadInt32();
                 return world;
             }
         }

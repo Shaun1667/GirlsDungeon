@@ -114,6 +114,7 @@ namespace GirlsDungeon.Core.Sim
             world.PushCooldown = 0;
             world.SonicCooldown = 0;
             SetEffects.OnCombatEnded(world);
+            KeeperSkills.Reset(world);
             player.Overwatching = false;
             if (player.Stability != player.MaxStability)
             {
@@ -169,6 +170,8 @@ namespace GirlsDungeon.Core.Sim
             SetEffects.OnPlayerTurnStarted(world);
             world.Player.Overwatching = false;
             events.Add(new TurnStarted(TurnSide.Player, world.Round));
+            // 화상 (상점 주인 화염탄, 3-15f): 차례를 시작할 때 피해.
+            KeeperSkills.OnPlayerTurnStarted(world, settings, events);
         }
     }
 
@@ -191,6 +194,9 @@ namespace GirlsDungeon.Core.Sim
                 if (enemy == null || player == null || enemy.Guarding) continue;
 
                 enemy.Overwatching = false;
+                // 상점 주인은 스킬을 쓴다 (KeeperSkills, 3-15f): 행동 시작 처리 → 이동 → 스킬 또는 일반 공격.
+                bool keeper = KeeperSkills.Uses(settings, enemy);
+                if (keeper) KeeperSkills.StartAction(world, settings, enemy);
                 var destination = ChooseCell(world, settings, enemy, player);
                 if (destination != enemy.Position)
                 {
@@ -198,7 +204,8 @@ namespace GirlsDungeon.Core.Sim
                     if (!CombatMovement.Walk(world, settings, enemy, path, events)) continue;
                 }
 
-                if (CombatRules.Resolve(world, settings, enemy, player, events)) continue;
+                if (keeper ? KeeperSkills.Act(world, settings, enemy, player, events) : CombatRules.Resolve(world, settings, enemy, player, events)) continue;
+                if (world.Mode != WorldMode.Combat) return;
                 // 근접(밀기) 적은 감시를 걸지 않는다 — 반응으로 밀면 걷던 경로가 꼬인다.
                 if (enemy.PushOnHit > 0) continue;
                 enemy.Overwatching = true;

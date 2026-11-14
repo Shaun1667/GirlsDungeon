@@ -189,6 +189,23 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>이 층 상점 주인이 적대했다 (피해를 받음, 3-15b). 적대하면 사기 · 팔기가 닫히고 전투에 들어온다. 층을 새로 만들 때 false.</summary>
         public bool ShopHostile { get; set; }
 
+        /// <summary>상점 주인의 밑천 (스택, 3-15f — KeeperSkills). 1개마다 받는 피해가 줄고, 행동을 시작할 때 절반이 줄어든다.</summary>
+        public int KeeperStacks { get; set; }
+
+        /// <summary>상점 주인 강공격 · 화염탄 재사용 대기 (상점 주인 행동 수).</summary>
+        public int KeeperHeartCooldown { get; set; }
+        public int KeeperOrderCooldown { get; set; }
+
+        /// <summary>상점 주인의 기세 (행동을 끝낼 때마다 1, 차면 결전기).</summary>
+        public int KeeperRemold { get; set; }
+
+        /// <summary>상점 주인 방벽이 더 막을 수 있는 피해와 남은 차례 수.</summary>
+        public int KeeperShield { get; set; }
+        public int KeeperShieldTurns { get; set; }
+
+        /// <summary>플레이어 화상이 남은 차례 수 (차례를 시작할 때마다 피해).</summary>
+        public int PlayerBurnTurns { get; set; }
+
         /// <summary>사르디스 골드 (3-15a — 상점 화폐, 결정 2026-11-14 사용자). 층을 넘어 유지된다.</summary>
         public int Gold { get; set; }
 

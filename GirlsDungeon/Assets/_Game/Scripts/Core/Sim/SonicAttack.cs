@@ -70,9 +70,10 @@ namespace GirlsDungeon.Core.Sim
             if (!preview.CanUse) return false;
 
             int stabilityBefore = target.Stability;
-            target.Hp -= preview.Damage;
+            int dealt = KeeperSkills.AfterShield(world, target, preview.Damage, events);
+            target.Hp -= dealt;
             target.Stability = Math.Max(0, target.Stability - preview.StabilityDamage);
-            events.Add(new UnitAttacked(attacker, target, preview.Damage, false, CoverLevel.None, false, stabilityBefore > 0 && target.Stability == 0));
+            events.Add(new UnitAttacked(attacker, target, dealt, false, CoverLevel.None, false, stabilityBefore > 0 && target.Stability == 0));
             events.Add(new UnitStatsChanged(target.Id));
             Alert.Wake(world, target, events);
             if (target.Hp <= 0) CombatFlow.Kill(world, target, events);

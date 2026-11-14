@@ -358,4 +358,9 @@ ui.shop.sell_material_button,재료 팔기,Sell material
 ui.shop.close,닫기,Close
 unit.shopkeeper.name,상점 주인,Shopkeeper
 ui.shop.log_angered,상점 주인이 적대했다! 사기 · 팔기가 닫혔다,The shopkeeper turns hostile! The shop is closed
+ui.keeper.log_heart,상점 주인: 손해 감수 사격 — 체력 {0} 소모 · 밑천 {1},Shopkeeper: Loss Leader Shot — spent {0} HP · stake {1}
+ui.keeper.log_order,상점 주인: 화염 재고 처분 — 체력 {0} 소모 · 밑천 {1} · 화상,Shopkeeper: Fire Sale — spent {0} HP · stake {1} · burn
+ui.keeper.log_final,상점 주인: 마감 세일 — 밑천 {0} · 방벽 {1},Shopkeeper: Closing Sale — stake {0} · barrier {1}
+ui.keeper.log_shield,상점 주인의 방벽이 피해 {0}을 막았다 (남은 방벽 {1}),The shopkeeper's barrier blocks {0} damage (barrier left {1})
+ui.keeper.log_burn,화상 피해 {0} (남은 {1}턴),Burn damage {0} ({1} turns left)
 ui.shop.log_defeated,상점 주인을 쓰러뜨렸다 — 진열 물건 {0}개가 공짜,Shopkeeper defeated — {0} items are free

@@ -128,6 +128,9 @@ namespace GirlsDungeon.Core.Sim
         public int SonicStabilityDamage;
         public int SonicCooldownRounds;
 
+        /// <summary>상점 주인 스킬 (BALANCE 33번, 3-15f). null이면 스킬 없이 사격병처럼 싸운다.</summary>
+        public KeeperSkillSettings Keeper;
+
         // 돌격병 · 낙하 (BALANCE 10번)
         /// <summary>적마다 돌격병으로 나올 확률 (나머지는 사격병).</summary>
         public int AssaultPercent;
@@ -388,6 +391,7 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Push settings are invalid.");
             if (SonicRange < 1 || SonicDamagePercent < 0 || SonicStabilityDamage < 0 || SonicCooldownRounds < 0)
                 throw new ArgumentException("Sonic settings are invalid.");
+            Keeper?.Validate();
             if (AssaultPercent < 0 || AssaultPercent > 100 || FallDamagePercent < 0)
                 throw new ArgumentException("Assault / fall settings are invalid.");
             if (FloorCount < 1 || EnemiesPerFloorStep < 0 || AssaultPercentPerFloor < 0 || GuardPercentDropPerFloor < 0 || EnemyStatPercentPerFloor < 0)

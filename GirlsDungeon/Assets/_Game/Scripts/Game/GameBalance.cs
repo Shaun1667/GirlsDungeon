@@ -67,6 +67,47 @@ namespace GirlsDungeon.Game
     }
 
     /// <summary>파츠 능력치 하나의 값 범위 (표 한 줄, BALANCE 17번).</summary>
+    /// <summary>상점 주인 스킬 수치 (BALANCE 33번, 3-15f). Core.Sim.KeeperSkillSettings로 옮겨진다.</summary>
+    [Serializable]
+    public sealed class KeeperSkillsEntry
+    {
+        [Tooltip("Attack multiplier (%) of the basic shot.")]
+        public int basicPercent = 80;
+        [Tooltip("Most stacks held.")]
+        public int stackMax = 6;
+        [Tooltip("Damage taken reduced per stack (%p).")]
+        public int stackDamageTakenPercent = 10;
+        [Tooltip("Hp (% of max) a skill cost never goes below.")]
+        public int hpFloorPercent = 10;
+        [Tooltip("Single skill: hp cost (% of max).")]
+        public int heartHpCostPercent = 30;
+        public int heartStacks = 2;
+        public int heartDamagePercent = 120;
+        public int heartStabilityDamage = 4;
+        public int heartCooldown = 2;
+        [Tooltip("Area skill: hp cost (% of max).")]
+        public int orderHpCostPercent = 40;
+        public int orderStacks = 3;
+        public int orderDamagePercent = 100;
+        public int orderStabilityDamage = 2;
+        public int orderCooldown = 2;
+        public int orderRange = 6;
+        public int orderRadius = 2;
+        [Tooltip("Burn: fixed damage at the start of each player turn.")]
+        public int burnDamage = 4;
+        public int burnTurns = 2;
+        [Tooltip("Final skill: momentum needed (1 per action).")]
+        public int finalCost = 6;
+        public int finalStacks = 6;
+        [Tooltip("Shield amount (% of max hp).")]
+        public int shieldPercent = 50;
+        public int shieldTurns = 3;
+        [Tooltip("One extra attack per this many stacks after an active skill.")]
+        public int stacksPerExtraAttack = 3;
+        [Tooltip("Extra attack damage = stacks x this (%) x max hp.")]
+        public int extraDamagePercentPerStack = 4;
+    }
+
     [Serializable]
     public sealed class PartStatEntry
     {
@@ -212,7 +253,7 @@ namespace GirlsDungeon.Game
             new UnitStatsEntry
             {
                 kind = UnitKind.Shopkeeper, nameKey = "unit.shopkeeper.name", visualId = "shopkeeper", maxHp = 80, maxStability = 8, visionRange = 10,
-                attack = 9, defense = 4, moveRange = 6, attackRange = 6, stabilityDamage = 2, critPercent = 20, critMultiplierPercent = 150,
+                attack = 9, defense = 4, moveRange = 6, attackRange = 6, stabilityDamage = 3, critPercent = 20, critMultiplierPercent = 150,
             },
         };
 
@@ -285,6 +326,9 @@ namespace GirlsDungeon.Game
         [SerializeField] private int sonicDamagePercent = 60;
         [SerializeField] private int sonicStabilityDamage = 3;
         [SerializeField] private int sonicCooldownRounds = 2;
+
+        [Header("Shopkeeper skills (BALANCE 33)")]
+        [SerializeField] private KeeperSkillsEntry keeperSkills = new KeeperSkillsEntry();
 
         [Header("Assault and falling (BALANCE 10)")]
         [Tooltip("Chance (%) that each spawned enemy is an assault unit instead of a rifleman.")]
@@ -609,6 +653,33 @@ namespace GirlsDungeon.Game
                 SonicDamagePercent = sonicDamagePercent,
                 SonicStabilityDamage = sonicStabilityDamage,
                 SonicCooldownRounds = sonicCooldownRounds,
+                Keeper = new KeeperSkillSettings
+                {
+                    BasicPercent = keeperSkills.basicPercent,
+                    StackMax = keeperSkills.stackMax,
+                    StackDamageTakenPercent = keeperSkills.stackDamageTakenPercent,
+                    HpFloorPercent = keeperSkills.hpFloorPercent,
+                    HeartHpCostPercent = keeperSkills.heartHpCostPercent,
+                    HeartStacks = keeperSkills.heartStacks,
+                    HeartDamagePercent = keeperSkills.heartDamagePercent,
+                    HeartStabilityDamage = keeperSkills.heartStabilityDamage,
+                    HeartCooldown = keeperSkills.heartCooldown,
+                    OrderHpCostPercent = keeperSkills.orderHpCostPercent,
+                    OrderStacks = keeperSkills.orderStacks,
+                    OrderDamagePercent = keeperSkills.orderDamagePercent,
+                    OrderStabilityDamage = keeperSkills.orderStabilityDamage,
+                    OrderCooldown = keeperSkills.orderCooldown,
+                    OrderRange = keeperSkills.orderRange,
+                    OrderRadius = keeperSkills.orderRadius,
+                    BurnDamage = keeperSkills.burnDamage,
+                    BurnTurns = keeperSkills.burnTurns,
+                    FinalCost = keeperSkills.finalCost,
+                    FinalStacks = keeperSkills.finalStacks,
+                    ShieldPercent = keeperSkills.shieldPercent,
+                    ShieldTurns = keeperSkills.shieldTurns,
+                    StacksPerExtraAttack = keeperSkills.stacksPerExtraAttack,
+                    ExtraDamagePercentPerStack = keeperSkills.extraDamagePercentPerStack,
+                },
                 AssaultPercent = assaultPercent,
                 FallDamagePercent = fallDamagePercent,
                 FloorCount = floorCount,

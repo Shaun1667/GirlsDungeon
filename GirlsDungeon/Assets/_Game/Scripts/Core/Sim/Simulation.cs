@@ -205,6 +205,7 @@ namespace GirlsDungeon.Core.Sim
             world.ArenaEnemies.Clear();
             world.ArchiveRead = false;
             world.ShopHostile = false;
+            KeeperSkills.Reset(world);
         }
     }
 

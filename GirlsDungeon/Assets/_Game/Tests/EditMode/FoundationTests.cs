@@ -331,6 +331,33 @@ namespace GirlsDungeon.Tests
                 SonicDamagePercent = 60,
                 SonicStabilityDamage = 3,
                 SonicCooldownRounds = 2,
+                Keeper = new KeeperSkillSettings
+                {
+                    BasicPercent = 80,
+                    StackMax = 6,
+                    StackDamageTakenPercent = 10,
+                    HpFloorPercent = 10,
+                    HeartHpCostPercent = 30,
+                    HeartStacks = 2,
+                    HeartDamagePercent = 120,
+                    HeartStabilityDamage = 4,
+                    HeartCooldown = 2,
+                    OrderHpCostPercent = 40,
+                    OrderStacks = 3,
+                    OrderDamagePercent = 100,
+                    OrderStabilityDamage = 2,
+                    OrderCooldown = 2,
+                    OrderRange = 6,
+                    OrderRadius = 2,
+                    BurnDamage = 4,
+                    BurnTurns = 2,
+                    FinalCost = 6,
+                    FinalStacks = 6,
+                    ShieldPercent = 50,
+                    ShieldTurns = 3,
+                    StacksPerExtraAttack = 3,
+                    ExtraDamagePercentPerStack = 4,
+                },
                 AssaultPercent = 30,
                 FallDamagePercent = 50,
                 FloorCount = 5,
@@ -477,7 +504,7 @@ namespace GirlsDungeon.Tests
             settings.Units.Add(new UnitStats
             {
                 Kind = UnitKind.Shopkeeper, MaxHp = 80, MaxStability = 8, VisionRange = 10,
-                Attack = 9, Defense = 4, MoveRange = 6, AttackRange = 6, StabilityDamage = 2, CritPercent = 20, CritMultiplierPercent = 150,
+                Attack = 9, Defense = 4, MoveRange = 6, AttackRange = 6, StabilityDamage = 3, CritPercent = 20, CritMultiplierPercent = 150,
             });
             // BALANCE 13번 캐릭터 표. 캐릭터를 고르지 않은 판(NewRun 기본)은 위 플레이어 줄을 그대로 쓴다.
             settings.Characters.Add(new CharacterStats
