@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 namespace GirlsDungeon.Game
 {
     /// <summary>
-    /// 화면 오른쪽 아래의 스킬 바 (3-16 배치): 사격(1) · 스킬 칸 2 · 3 · 4(캐릭터마다 다름, 3-12) · 감시(5), 그 위 오른쪽에 턴 종료(Z), 왼쪽에 리몰딩 게이지.
+    /// 화면 오른쪽 아래의 스킬 바 (3-16 배치): 사격(1) · 스킬 칸 2 · 3 · 4(캐릭터마다 다름, 3-12) · 감시(5, 지금은 숨김 — showOverwatch), 그 위 오른쪽에 턴 종료(Z), 왼쪽에 리몰딩 게이지.
     /// 리몰딩을 쓰는 스킬은 카드 아래에 소모 칸을 그린다 (값 · 쓸 수 있는지는 Core.Sim.Remold 한 곳).
     /// 스킬 칸에 무엇이 들어가는지는 규칙의 캐릭터 표(CombatSettings.SkillSlots)에서 읽는다 — 빈 칸은 숨긴다.
     /// 쓸 수 없으면 어둡게, 재사용 대기는 덮개와 남은 라운드, 마우스를 올리면 설명 창 (수치는 규칙 · 무기 값에서 읽는다).
@@ -23,6 +23,8 @@ namespace GirlsDungeon.Game
         [Tooltip("Skill slot 4.")]
         [SerializeField] private SkillCardView slotCard4;
         [SerializeField] private SkillCardView overwatchCard;
+        [Tooltip("Show the overwatch card and its 5 key. Off for now (2026-11-14 user: take overwatch out of the bar).")]
+        [SerializeField] private bool showOverwatch;
         [SerializeField] private SkillCardView endTurnCard;
         [Tooltip("Remold gauge (shown only for characters with Remold).")]
         [SerializeField] private GameObject remoldGauge;
@@ -49,6 +51,7 @@ namespace GirlsDungeon.Game
         public string TooltipText => tooltipLabel.text;
         public SkillCardView ShootCard => shootCard;
         public SkillCardView OverwatchCard => overwatchCard;
+        public bool OverwatchShown => showOverwatch;
         public SkillCardView EndTurnCard => endTurnCard;
         public bool RemoldGaugeShown => remoldGauge != null && remoldGauge.activeSelf;
         public string RemoldText => remoldLabel != null ? remoldLabel.text : string.Empty;
@@ -137,7 +140,7 @@ namespace GirlsDungeon.Game
             return true;
         }
 
-        public bool PressOverwatch() => Ready && moveController.RequestOverwatch();
+        public bool PressOverwatch() => showOverwatch && Ready && moveController.RequestOverwatch();
 
         /// <summary>턴 종료 카드 (Z). 지금 내 차례가 아니면 false.</summary>
         public bool EndTurn()
@@ -211,6 +214,9 @@ namespace GirlsDungeon.Game
                 card.SetCost(Remold.Cost(world, settings, skill), skillReady, remoldFilledColor, remoldEmptyColor);
             }
             RefreshRemoldGauge(world);
+            // 감시 카드는 지금 바에서 뺐다 (2026-11-14 사용자 "감시 스킬 일단 빼줘") — 규칙(OverwatchCommand)은 그대로.
+            overwatchCard.gameObject.SetActive(showOverwatch);
+            if (!showOverwatch && hovered == overwatchCard) hovered = null;
             overwatchCard.SetState(ready && inCombat && !acted, false, 0, normalColor, selectedColor, disabledColor);
             endTurnCard.SetState(ready && inCombat, false, 0, normalColor, selectedColor, disabledColor);
 
@@ -241,7 +247,7 @@ namespace GirlsDungeon.Game
             else if (keyboard.digit2Key.wasPressedThisFrame) PressSlot(0);
             else if (keyboard.digit3Key.wasPressedThisFrame) PressSlot(1);
             else if (keyboard.digit4Key.wasPressedThisFrame) PressSlot(2);
-            else if (keyboard.digit5Key.wasPressedThisFrame) PressOverwatch();
+            else if (showOverwatch && keyboard.digit5Key.wasPressedThisFrame) PressOverwatch();
             else if (keyboard.zKey.wasPressedThisFrame) EndTurn();
         }
 

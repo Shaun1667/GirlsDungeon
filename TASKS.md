@@ -522,6 +522,12 @@
   - 테스트 작성, 실행 안 함: `ShopkeeperSkillTests`에 리몰딩 규칙 1개 더 · 첫 행동 기대값 고침(리몰딩 1 → 3), `BalanceTests` 33-10, 테스트 수치 모음.
   - 확인 방법: 테스트 씬 플레이 → 상점 → 상인 공격 → 턴을 넘기면 3번째쯤 기록 줄에 "마감 세일"이 뜬다.
 
+- [x] **3-16c. 스킬 바에서 감시 카드 빼기** — 플레이 확인 대기 (2026-11-14 사용자 "스킬 칸에서 감시 스킬 일단 빼줘봐")
+  - 구현: `SkillBarView.showOverwatch`(기본 꺼짐) — 감시 카드를 숨기고 5번 키 · `PressOverwatch`를 막음. 규칙(`OverwatchCommand` · 적 감시)은 그대로. Setup은 바를 카드 4장 너비로 줄이고 감시 카드는 바 밖에 숨겨 둠, 리몰딩 게이지 칸 34 → 26 (턴 종료 버튼과 겹쳐서). 조작 안내 글 "1~5 스킬" → "1~4 스킬".
+  - 정한 것 (Claude, 확인 필요): "일단"이라 카드 · 규칙을 지우지 않고 숨김 스위치로 — 다시 넣으려면 `showOverwatch`를 켜고 Setup의 바 너비를 5장으로 되돌린다.
+  - 확인: 컴파일 오류 0 · Setup 두 씬 · 플레이 (메인 씬, 대원 A, 전투): 바에 사격 · 넉백 · 음파 · 수류탄 4장만, 감시 카드 꺼짐 · `PressOverwatch` false · 게이지와 턴 종료 버튼 안 겹침 · 캡처 2장.
+  - 확인 못 함: 실제 5번 키 입력. 테스트는 더하지 않음 (화면 코드).
+
 - [x] **3-16. 리몰딩 지수 · 대원 A 특성 · 스킬 바 정리** — 플레이 확인 대기 (2026-11-14 사용자 "리몰딩 지수 시스템을 넣을거야 … 스킬 UI 도 사진 자료와 같이 정리해줘")
   - 결정 (2026-11-14, 사용자): 대원 A에만 — 리몰딩 최대 6, 행동 시작 시 +1, 피해를 1회 줄 때마다 +1, 이동 디버프를 가진 적에게 피해 +20%, 5칸 이상 이동한 경우 공격 전에 대상에게 이동 감소Ⅱ 2턴 / 음파 1 · 수류탄 4 소모, 재사용 대기 없앰 / 넉백은 재사용 대기 그대로 / 판 내내 유지.
   - 구현: Core `Remold.cs`(`Max` · `Cost` · `Cooldown` · `IsReady` · `Pay` · `OnPlayerTurnStarted` · `OnDamageDealt` · 이동 감소 `MoveRangeOf` · `OnEnemyActed` · `SlowsBeforeAttack` · `SlowedDamagePercent` · `BeforeAttack` · `OnCombatEnded`, 사건 `UnitSlowed`, 디버그 `DebugFillRemoldCommand`) · `World.PlayerRemold` · `Unit.SlowAmount/SlowTurns` (스냅샷 31) · 캐릭터 줄 리몰딩 · 이동 감소 수치 10개 · 스킬 미리보기 3곳의 "못 씀"과 값 치르기를 `Remold` 한 곳으로 · 체력 깎는 곳(사격 · 수류탄 · 음파 · 넉백)에 이동 감소 · 지수 얻기 · 피해 증가는 `SetEffects.DamagePercent`(사격 미리보기는 예약 칸까지 걸음을 셈) · 적 이동 칸 `Remold.MoveRangeOf`(`EnemyTurn`). Game 스킬 바 오른쪽 아래 정사각 카드 5장 · 위 줄 턴 종료(Z) · 리몰딩 게이지(6칸) · 카드 아래 소모 칸(`SkillCardView.SetCost`) · 설명 창의 "리몰딩 n 소모" · 미리보기 "리몰딩이 모자람" · 기록 줄 이동 감소 · 사격 확인 버튼은 바 왼쪽으로 · 디버그 창 리몰딩 줄. 글 5줄 + 설명 창 3줄 수정.

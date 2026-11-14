@@ -135,7 +135,7 @@ namespace GirlsDungeon.EditorTools
                 new Vector2(0.5f, 0.5f), new Vector2(0f, -220f));
             var floorLabel = CreateLabel(canvas.transform, "FloorLabel", font, 30,
                 new Vector2(1f, 1f), new Vector2(-24f, -20f), TextAnchor.UpperRight);
-            // 스킬 바 (3-16 배치 — 사용자 사진 자료): 오른쪽 아래에 정사각 카드 5장 (사격 · 스킬 칸 2 · 3 · 4 · 감시),
+            // 스킬 바 (3-16 배치 — 사용자 사진 자료): 오른쪽 아래에 정사각 카드 4장 (사격 · 스킬 칸 2 · 3 · 4, 감시는 숨김),
             // 그 위 오른쪽에 턴 종료(Z), 왼쪽에 리몰딩 게이지. 카드 아래에 리몰딩 소모 칸.
             var skillBarObject = new GameObject("SkillBar", typeof(RectTransform));
             skillBarObject.transform.SetParent(canvas.transform, false);
@@ -154,6 +154,7 @@ namespace GirlsDungeon.EditorTools
             var slotCard2 = CreateCard(barRoot.transform, "SkillSlot2Card", font, 1);
             var slotCard3 = CreateCard(barRoot.transform, "SkillSlot3Card", font, 2);
             var slotCard4 = CreateCard(barRoot.transform, "SkillSlot4Card", font, 3);
+            // 감시 카드는 만들어 두되 바 밖(오른쪽)에 둔다 — SkillBarView.showOverwatch가 꺼져 있어 숨는다 (2026-11-14 사용자 "감시 스킬 일단 빼줘").
             var overwatchCard = CreateCard(barRoot.transform, "OverwatchCard", font, 4);
             var endTurnCard = CreateCard(barRoot.transform, "EndTurnCard", font, 0);
             var endTurnRect = endTurnCard.GetComponent<RectTransform>();
@@ -181,7 +182,7 @@ namespace GirlsDungeon.EditorTools
             var remoldLabel = CreateLabel(remoldGauge.transform, "Label", font, 20, new Vector2(0f, 1f), Vector2.zero, TextAnchor.UpperLeft);
             remoldLabel.rectTransform.sizeDelta = new Vector2(BarWidth - EndTurnWidth - 16f, 26f);
             remoldLabel.raycastTarget = false;
-            var remoldPips = CreatePipRow(remoldGauge.transform, "Pips", RemoldPipCount, new Vector2(34f, 14f), 6f, TextAnchor.LowerLeft);
+            var remoldPips = CreatePipRow(remoldGauge.transform, "Pips", RemoldPipCount, new Vector2(26f, 14f), 6f, TextAnchor.LowerLeft);
             var remoldPipsRect = remoldPips.root.GetComponent<RectTransform>();
             remoldPipsRect.anchorMin = remoldPipsRect.anchorMax = remoldPipsRect.pivot = new Vector2(0f, 0f);
             remoldPipsRect.anchoredPosition = new Vector2(0f, 2f);
@@ -558,7 +559,7 @@ namespace GirlsDungeon.EditorTools
         private const float CardWidth = 96f;
         private const float CardHeight = 96f;
         private const float CardGap = 10f;
-        private const float BarWidth = 5 * CardWidth + 4 * CardGap;
+        private const float BarWidth = 4 * CardWidth + 3 * CardGap;
         private const float BarMargin = 24f;
         private const float BarBottom = 34f;
         private const float UpperRowGap = 14f;
