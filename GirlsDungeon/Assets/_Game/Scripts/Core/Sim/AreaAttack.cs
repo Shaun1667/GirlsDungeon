@@ -192,13 +192,11 @@ namespace GirlsDungeon.Core.Sim
 
         public bool TryApply(World world, List<GameEvent> events)
         {
-            if (!TurnFlow.IsPlayerTurn(world) || world.PlayerActed) return false;
+            if (!CombatFlow.CanUseSkill(world)) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Grenade)) return false;
             if (!AreaAttack.Resolve(world, settings, world.Player, center, events)) return false;
             SetEffects.OnSkillUsed(world, settings);
-
-            world.PlayerActed = true;
-            if (world.Mode == WorldMode.Combat && world.Combatants.Count > 0) TurnFlow.EndPlayerTurn(world, settings, events);
+            CombatFlow.AfterSkill(world, settings, events);
             return true;
         }
     }

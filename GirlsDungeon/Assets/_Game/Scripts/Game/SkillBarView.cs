@@ -89,7 +89,8 @@ namespace GirlsDungeon.Game
         }
 
         /// <summary>내 차례이고 화면 재생이 끝나 입력을 받을 수 있다.</summary>
-        public bool Ready => simulation != null && TurnFlow.IsPlayerTurn(simulation.World) && !eventPlayer.IsPlaying && !playerView.IsMoving;
+        public bool Ready => simulation != null && (TurnFlow.IsPlayerTurn(simulation.World) || simulation.World.Mode == WorldMode.Exploration)
+            && !eventPlayer.IsPlaying && !playerView.IsMoving;
 
         /// <summary>
         /// 사격 카드 (1): 대상을 골라 두었으면 그 대상을 쏜다 (확인). 아니면 조준 중인 스킬을 끄고 적 클릭 = 대상 고르기 상태로 돌아간다.
@@ -164,9 +165,11 @@ namespace GirlsDungeon.Game
         {
             if (simulation == null) return;
             var world = simulation.World;
+            // 탐험 중에도 보인다 — 스킬을 탐험 중에도 쓸 수 있다 (2026-11-14 사용자). 사격 · 감시 · 턴 종료는 전투 중에만 켜진다.
             bool inCombat = world.Mode == WorldMode.Combat;
-            barRoot.SetActive(inCombat);
-            if (!inCombat)
+            bool shown = inCombat || world.Mode == WorldMode.Exploration;
+            barRoot.SetActive(shown);
+            if (!shown)
             {
                 tooltipPanel.SetActive(false);
                 hovered = null;
@@ -197,8 +200,8 @@ namespace GirlsDungeon.Game
                 card.SetName(Text.Get(NameKey(skill)));
                 card.SetState(ready && !acted && cooldown == 0, aim == AimOf(skill), cooldown, normalColor, selectedColor, disabledColor);
             }
-            overwatchCard.SetState(ready && !acted, false, 0, normalColor, selectedColor, disabledColor);
-            endTurnCard.SetState(ready, false, 0, normalColor, selectedColor, disabledColor);
+            overwatchCard.SetState(ready && inCombat && !acted, false, 0, normalColor, selectedColor, disabledColor);
+            endTurnCard.SetState(ready && inCombat, false, 0, normalColor, selectedColor, disabledColor);
 
             ReadHotkeys();
             RefreshTooltip();

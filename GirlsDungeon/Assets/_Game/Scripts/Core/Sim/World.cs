@@ -12,6 +12,8 @@ namespace GirlsDungeon.Core.Sim
         Rifleman = 1,
         /// <summary>돌격병: 바로 옆에서 근접 공격하고 맞은 상대를 1칸 민다.</summary>
         Assault = 2,
+        /// <summary>상점 주인 (3-15b, 결정 2026-11-14 사용자): 계산대 옆에 서 있는 중립 유닛. 피해를 받으면 적대해 보스 급으로 싸운다 (World.ShopHostile).</summary>
+        Shopkeeper = 3,
     }
 
     /// <summary>탐험과 턴 전투. 저장에 정수로 들어가므로 끝에만 추가한다.</summary>
@@ -183,6 +185,9 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>가진 열쇠 (층을 넘어가도 남는다, 3-4d). 잠긴 문 하나(그 방 전체)에 1개.</summary>
         public int Keys { get; set; }
+
+        /// <summary>이 층 상점 주인이 적대했다 (피해를 받음, 3-15b). 적대하면 사기 · 팔기가 닫히고 전투에 들어온다. 층을 새로 만들 때 false.</summary>
+        public bool ShopHostile { get; set; }
 
         /// <summary>사르디스 골드 (3-15a — 상점 화폐, 결정 2026-11-14 사용자). 층을 넘어 유지된다.</summary>
         public int Gold { get; set; }

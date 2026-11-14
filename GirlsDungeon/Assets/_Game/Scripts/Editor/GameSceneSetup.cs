@@ -411,7 +411,7 @@ namespace GirlsDungeon.EditorTools
 
             var unitsObject = new GameObject("UnitsView");
             var unitsView = unitsObject.AddComponent<UnitsView>();
-            SetReferences(unitsView, ("enemyMaterial", enemyMaterial), ("assaultMaterial", assaultMaterial));
+            SetReferences(unitsView, ("enemyMaterial", enemyMaterial), ("assaultMaterial", assaultMaterial), ("shopkeeperMaterial", shopMaterial));
 
             // 특수 방 이름 글(RoomLabelsView)은 씬에 두지 않는다 (2026-11-14 사용자 "특수방마다 이름 뜨는거 없애주고"). 이름 키는 기록실 예고가 쓴다.
             var itemsView = new GameObject("ItemsView").AddComponent<ItemsView>();

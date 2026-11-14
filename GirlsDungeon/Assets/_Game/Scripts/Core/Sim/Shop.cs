@@ -37,6 +37,7 @@ namespace GirlsDungeon.Core.Sim
             foreach (var item in world.Items) if (item.Price > 0) return;
 
             var room = map.Rooms[roomIndex];
+            PlaceKeeper(world, settings, room);
             var random = world.Random.Get(RandomPurpose.Shop);
             var stock = new List<(ItemKind kind, PartGrade grade)>();
             for (int i = 0; i < settings.ShopMedkits; i++) stock.Add((ItemKind.Medkit, default));
@@ -66,6 +67,68 @@ namespace GirlsDungeon.Core.Sim
                     item = world.AddItem(kind, default, cells[i]);
                     item.Price = kind == ItemKind.Key ? settings.ShopKeyPrice : settings.ShopMedkitPrice;
                 }
+            }
+        }
+
+        /// <summary>상점 주인을 계산대 바로 옆(위 → 아래 → 왼쪽 → 오른쪽 → 대각) 첫 빈 칸에 세운다. 유닛 표에 줄이 없으면(옛 테스트 수치) 두지 않는다.</summary>
+        private static void PlaceKeeper(World world, CombatSettings settings, RoomRect room)
+        {
+            if (!settings.Units.Exists(stats => stats.Kind == UnitKind.Shopkeeper)) return;
+            var map = world.Map;
+            GridPos? counter = null;
+            for (int y = room.Y; y < room.Y + room.Height && !counter.HasValue; y++)
+                for (int x = room.X; x < room.X + room.Width; x++)
+                    if (map.Get(new GridPos(x, y)) == TileType.ShopCounter) { counter = new GridPos(x, y); break; }
+            if (!counter.HasValue) return;
+            var steps = new[] { new GridPos(0, -1), new GridPos(0, 1), new GridPos(-1, 0), new GridPos(1, 0), new GridPos(-1, -1), new GridPos(1, -1), new GridPos(-1, 1), new GridPos(1, 1) };
+            foreach (var step in steps)
+            {
+                var cell = new GridPos(counter.Value.X + step.X, counter.Value.Y + step.Y);
+                if (!room.Contains(cell) || !map.IsWalkable(cell) || map.Get(cell) == TileType.Stairs || world.IsOccupied(cell)) continue;
+                var keeper = world.AddUnit(settings.StatsFor(UnitKind.Shopkeeper), cell);
+                keeper.Guarding = false;
+                return;
+            }
+        }
+
+        /// <summary>이 층의 상점 주인 (없거나 쓰러졌으면 null).</summary>
+        public static Unit Keeper(World world)
+        {
+            foreach (var unit in world.Units) if (unit.Kind == UnitKind.Shopkeeper) return unit;
+            return null;
+        }
+
+        /// <summary>아직 적대하지 않은 상점 주인 — 전투에 들어오지 않고 행동하지 않는다.</summary>
+        public static bool IsNeutral(World world, Unit unit) => unit != null && unit.Kind == UnitKind.Shopkeeper && !world.ShopHostile;
+
+        /// <summary>
+        /// 이번 커맨드의 사건을 보고 (Simulation · 스킬 커맨드가 부른다): 상점 주인이 공격 · 밀치기에 맞았으면 적대한다 (어떤 피해든 — 결정 2026-11-14 사용자).
+        /// 상점 주인이 쓰러졌으면 진열 물건이 모두 공짜가 된다 (값 0 — 밟으면 보통 줍기). 몇 번 불러도 같다.
+        /// </summary>
+        public static void CheckHostility(World world, List<GameEvent> events)
+        {
+            foreach (var gameEvent in events)
+            {
+                if (!(gameEvent is UnitDied died) || died.Kind != UnitKind.Shopkeeper) continue;
+                int freed = 0;
+                foreach (var item in world.Items)
+                    if (item.Price > 0) { item.Price = 0; freed++; }
+                if (freed > 0 || !world.ShopHostile) events.Add(new ShopkeeperDefeated(freed));
+                world.ShopHostile = true;
+                return;
+            }
+
+            var keeper = Keeper(world);
+            if (keeper == null || world.ShopHostile) return;
+            foreach (var gameEvent in events)
+            {
+                bool hit = (gameEvent is UnitAttacked attacked && attacked.TargetId == keeper.Id)
+                    || (gameEvent is UnitPushed pushed && pushed.UnitId == keeper.Id);
+                if (!hit) continue;
+                world.ShopHostile = true;
+                keeper.Guarding = false;
+                events.Add(new ShopkeeperAngered(keeper.Id));
+                return;
             }
         }
 
@@ -121,6 +184,7 @@ namespace GirlsDungeon.Core.Sim
             var player = world.Player;
             var item = world.FindItem(itemId);
             if (player == null || item == null || item.Price <= 0 || item.Position != player.Position || world.Gold < item.Price) return false;
+            if (world.ShopHostile) return false;
 
             int price = item.Price;
             world.Gold -= price;
@@ -169,7 +233,8 @@ namespace GirlsDungeon.Core.Sim
 
         public static bool CanSell(World world, CombatSettings settings, ShopSale sale, int index = 0)
         {
-            return AtCounter(world) && SaleValue(world, settings, sale, index) > 0;
+            // 상점 주인이 적대했거나 쓰러졌으면 팔 수 없다 (3-15b).
+            return AtCounter(world) && !world.ShopHostile && Keeper(world) != null && SaleValue(world, settings, sale, index) > 0;
         }
 
         /// <summary>상인에게 판다 (계산대 옆 · 탐험 중). 못 팔면 아무것도 바꾸지 않고 false.</summary>
@@ -237,6 +302,28 @@ namespace GirlsDungeon.Core.Sim
         {
             ItemId = itemId;
             Price = price;
+        }
+    }
+
+    /// <summary>상점 주인이 적대했다 (3-15b). 사기 · 팔기가 닫히고, 보이면 전투에 들어온다.</summary>
+    public sealed class ShopkeeperAngered : GameEvent
+    {
+        public int UnitId { get; }
+
+        public ShopkeeperAngered(int unitId)
+        {
+            UnitId = unitId;
+        }
+    }
+
+    /// <summary>상점 주인을 쓰러뜨렸다 (3-15b). 진열 물건 Freed개가 공짜가 됐다.</summary>
+    public sealed class ShopkeeperDefeated : GameEvent
+    {
+        public int Freed { get; }
+
+        public ShopkeeperDefeated(int freed)
+        {
+            Freed = freed;
         }
     }
 

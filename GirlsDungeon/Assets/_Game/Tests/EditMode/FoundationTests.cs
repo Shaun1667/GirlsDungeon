@@ -473,6 +473,12 @@ namespace GirlsDungeon.Tests
                 Attack = 6, Defense = 1, MoveRange = 8, AttackRange = 1, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
                 PushOnHit = 1,
             });
+            // BALANCE 32-6 상점 주인 (보스 급).
+            settings.Units.Add(new UnitStats
+            {
+                Kind = UnitKind.Shopkeeper, MaxHp = 80, MaxStability = 8, VisionRange = 10,
+                Attack = 9, Defense = 4, MoveRange = 5, AttackRange = 7, StabilityDamage = 2, CritPercent = 20, CritMultiplierPercent = 150,
+            });
             // BALANCE 13번 캐릭터 표. 캐릭터를 고르지 않은 판(NewRun 기본)은 위 플레이어 줄을 그대로 쓴다.
             settings.Characters.Add(new CharacterStats
             {

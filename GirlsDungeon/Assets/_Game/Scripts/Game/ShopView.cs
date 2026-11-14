@@ -113,7 +113,8 @@ namespace GirlsDungeon.Game
 
         public void OpenSell()
         {
-            if (simulation == null || !Shop.AtCounter(simulation.World)) return;
+            // 상점 주인이 적대했거나 쓰러졌으면 팔기 창을 열지 않는다 (3-15b).
+            if (simulation == null || !Shop.AtCounter(simulation.World) || simulation.World.ShopHostile || Shop.Keeper(simulation.World) == null) return;
             lastResult = string.Empty;
             partIndex = 0;
             sellPanel.SetActive(true);
@@ -207,6 +208,7 @@ namespace GirlsDungeon.Game
                 "ui.shop.previous_part", "ui.shop.next_part", "ui.shop.sell_part_button", "ui.shop.sell_key_button", "ui.shop.sell_material_button", "ui.shop.close",
                 "ui.shop.preview", "ui.shop.item_part", "ui.shop.item_key", "ui.shop.item_medkit", "ui.shop.log_bought",
                 "ui.gold.log_gain", "ui.hud.gold", "room.kind.shop.name",
+                "ui.shop.log_angered", "ui.shop.log_defeated", "unit.shopkeeper.name",
             };
         }
     }

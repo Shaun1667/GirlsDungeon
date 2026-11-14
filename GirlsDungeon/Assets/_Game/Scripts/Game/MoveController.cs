@@ -251,7 +251,7 @@ namespace GirlsDungeon.Game
         /// <summary>그 적에게 음파 공격을 쓴다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 쓰면 false (조준 모드는 그대로).</summary>
         public bool RequestSonic(int targetId)
         {
-            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
+            if (simulation == null || !CombatFlow.CanUseSkill(simulation.World) || Busy) return false;
             var preview = PreviewWorld();
             if (preview == null || !SonicAttack.Preview(preview, settings, preview.Player, preview.FindUnit(targetId)).CanUse) return false;
             if (!RunAfterPlannedMove(new SonicAttackCommand(targetId, settings))) return false;
@@ -269,7 +269,8 @@ namespace GirlsDungeon.Game
             }
             var world = simulation?.World;
             // 그 캐릭터의 스킬 칸에 있는 스킬만 조준할 수 있다 (판정은 규칙 CombatSettings.HasSkill).
-            bool canAim = world != null && TurnFlow.IsPlayerTurn(world) && !world.PlayerActed && settings.HasSkill(world.PlayerCharacter, SkillOf(mode));
+            // 탐험 중에도 쓸 수 있다 (2026-11-14 사용자 — 판정은 규칙 CombatFlow.CanUseSkill).
+            bool canAim = world != null && CombatFlow.CanUseSkill(world) && settings.HasSkill(world.PlayerCharacter, SkillOf(mode));
             SetAiming(aim != mode && canAim ? mode : AimMode.None);
         }
 
@@ -287,7 +288,7 @@ namespace GirlsDungeon.Game
         /// <summary>마우스 칸 쪽으로 밀치기를 쓴다 (방향 · 옆 줄은 Push.Aim). 못 쓰면 false.</summary>
         public bool RequestPush(GridPos pointer)
         {
-            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
+            if (simulation == null || !CombatFlow.CanUseSkill(simulation.World) || Busy) return false;
             // 방향 · 옆 줄은 쓰는 자리(예약이 있으면 예약 칸) 기준.
             Push.Aim(Origin(simulation.World), pointer, out var direction, out int side);
             var preview = PreviewWorld();
@@ -300,7 +301,7 @@ namespace GirlsDungeon.Game
         /// <summary>수류탄을 그 칸에 던진다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 던지면 false (조준 모드는 그대로).</summary>
         public bool RequestAreaAttack(GridPos center)
         {
-            if (simulation == null || !TurnFlow.IsPlayerTurn(simulation.World) || Busy) return false;
+            if (simulation == null || !CombatFlow.CanUseSkill(simulation.World) || Busy) return false;
             var preview = PreviewWorld();
             if (preview == null || !AreaAttack.Preview(preview, settings, preview.Player, center).CanThrow) return false;
             if (!RunAfterPlannedMove(new AreaAttackCommand(center, settings))) return false;
@@ -686,7 +687,7 @@ namespace GirlsDungeon.Game
                 pendingCounter = null;
                 pendingDoor = null;
             }
-            if (aim != AimMode.None && (!TurnFlow.IsPlayerTurn(simulation.World) || simulation.World.PlayerActed)) SetAiming(AimMode.None);
+            if (aim != AimMode.None && !CombatFlow.CanUseSkill(simulation.World)) SetAiming(AimMode.None);
 
             if (mode == WorldMode.Combat) HandleCombat();
             else
@@ -696,10 +697,42 @@ namespace GirlsDungeon.Game
                 RefreshTargetLines(simulation.World, false);
                 rangeView.Hide();
                 reachableKey = null;
-                if (mode == WorldMode.Exploration) HandleExploration();
+                if (mode == WorldMode.Exploration && aim != AimMode.None) HandleExplorationAim();
+                else if (mode == WorldMode.Exploration) HandleExploration();
                 else SetHover(null);
             }
             AdvanceSteps();
+        }
+
+        /// <summary>
+        /// 탐험 중 스킬 조준 (2026-11-14 사용자 "어디서나 탐험 중 스킬"): 전투 때와 같은 조준 · 대상 고르기 · 확인(Space · 공격 버튼 · 같은 카드), 이동 예약은 없다.
+        /// 쓰면 맞은 적 · 보이는 적과 전투가 시작되고 그 스킬이 첫 행동이 된다 (규칙 CombatFlow.AfterSkill). 조준하는 동안은 걷지 않는다.
+        /// </summary>
+        private void HandleExplorationAim()
+        {
+            var world = simulation.World;
+            var mouse = Mouse.current;
+            var keyboard = Keyboard.current;
+            pendingSteps.Clear();
+            if (!Busy)
+            {
+                bool cancel = (mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame);
+                bool confirm = keyboard != null && keyboard.spaceKey.wasPressedThisFrame;
+                if (cancel)
+                {
+                    if (HasSkillTarget) ClearSkillTarget();
+                    else SetAiming(AimMode.None);
+                    if (aim == AimMode.None)
+                    {
+                        hudView.ShowAttackConfirm(false, false);
+                        hudView.ClearPreview();
+                        return;
+                    }
+                }
+                else if (confirm && HasSkillTarget && ConfirmSkill()) return;
+            }
+            var cell = mouse != null && !Busy ? PointerCell(mouse.position.ReadValue()) : null;
+            HandleSkillAim(world, cell, cell.HasValue && leftClick.Clicked && !IsPointerOverUi(), false);
         }
 
         private void HandleExploration()

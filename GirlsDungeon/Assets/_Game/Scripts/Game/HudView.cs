@@ -577,6 +577,12 @@ namespace GirlsDungeon.Game
                     case GoldGained gold when gold.Source != GoldSource.Kill:
                         AddLog(Text.Get("ui.gold.log_gain", gold.Amount, gold.Total));
                         break;
+                    case ShopkeeperAngered _:
+                        AddLog(Text.Get("ui.shop.log_angered"));
+                        break;
+                    case ShopkeeperDefeated defeated:
+                        AddLog(Text.Get("ui.shop.log_defeated", defeated.Freed));
+                        break;
                     case ShopItemBought bought:
                         AddLog(Text.Get("ui.shop.log_bought", bought.Price, bought.GoldNow));
                         break;

@@ -356,3 +356,6 @@ ui.shop.sell_part_button,파츠 팔기,Sell part
 ui.shop.sell_key_button,열쇠 팔기,Sell key
 ui.shop.sell_material_button,재료 팔기,Sell material
 ui.shop.close,닫기,Close
+unit.shopkeeper.name,상점 주인,Shopkeeper
+ui.shop.log_angered,상점 주인이 적대했다! 사기 · 팔기가 닫혔다,The shopkeeper turns hostile! The shop is closed
+ui.shop.log_defeated,상점 주인을 쓰러뜨렸다 — 진열 물건 {0}개가 공짜,Shopkeeper defeated — {0} items are free

@@ -14,6 +14,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material enemyMaterial;
         [Tooltip("Material for assault units (melee pushers).")]
         [SerializeField] private Material assaultMaterial;
+        [Tooltip("Shopkeeper (3-15b) — neutral until hit, then a boss-level enemy.")]
+        [SerializeField] private Material shopkeeperMaterial;
         [SerializeField] private float bodyHeight = 1f;
 
         private sealed class Body
@@ -82,7 +84,8 @@ namespace GirlsDungeon.Game
             var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             body.name = $"Unit {unit.Id} {unit.Kind}";
             Destroy(body.GetComponent<Collider>());
-            body.GetComponent<MeshRenderer>().sharedMaterial = unit.Kind == UnitKind.Assault && assaultMaterial != null ? assaultMaterial : enemyMaterial;
+            body.GetComponent<MeshRenderer>().sharedMaterial = unit.Kind == UnitKind.Assault && assaultMaterial != null ? assaultMaterial
+                : unit.Kind == UnitKind.Shopkeeper && shopkeeperMaterial != null ? shopkeeperMaterial : enemyMaterial;
             body.transform.SetParent(transform, false);
             var position = CellPosition(unit.Position);
             body.transform.position = position;

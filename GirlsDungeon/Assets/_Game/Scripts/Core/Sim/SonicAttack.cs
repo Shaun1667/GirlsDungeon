@@ -47,7 +47,10 @@ namespace GirlsDungeon.Core.Sim
         public static SonicPreview Preview(World world, CombatSettings settings, Unit attacker, Unit target)
         {
             if (world.SonicCooldown > 0) return new SonicPreview(SonicBlock.NotReady, target, 0, 0);
-            if (target == null || target.IsPlayer || !world.Combatants.Contains(target.Id)) return new SonicPreview(SonicBlock.NoTarget, target, 0, 0);
+            // 대상: 전투 중인 적, 탐험 중이면 보이는 아무 적, 중립 상점 주인 (치면 적대 — 3-15b).
+            bool validTarget = target != null && !target.IsPlayer
+                && (world.Combatants.Contains(target.Id) || world.Mode == WorldMode.Exploration || Shop.IsNeutral(world, target));
+            if (!validTarget) return new SonicPreview(SonicBlock.NoTarget, target, 0, 0);
 
             int dx = target.Position.X - attacker.Position.X;
             int dy = target.Position.Y - attacker.Position.Y;
@@ -96,13 +99,11 @@ namespace GirlsDungeon.Core.Sim
 
         public bool TryApply(World world, List<GameEvent> events)
         {
-            if (!TurnFlow.IsPlayerTurn(world) || world.PlayerActed) return false;
+            if (!CombatFlow.CanUseSkill(world)) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Sonic)) return false;
             if (!SonicAttack.Resolve(world, settings, world.Player, world.FindUnit(targetId), events)) return false;
             SetEffects.OnSkillUsed(world, settings);
-
-            world.PlayerActed = true;
-            if (world.Mode == WorldMode.Combat && world.Combatants.Count > 0) TurnFlow.EndPlayerTurn(world, settings, events);
+            CombatFlow.AfterSkill(world, settings, events);
             return true;
         }
     }

@@ -161,6 +161,115 @@ namespace GirlsDungeon.Tests
             Assert.That(world.Gold, Is.EqualTo(65));
         }
 
+        // ---------- 상점 주인 (3-15b) ----------
+
+        [Test]
+        public void TheShopkeeper_StandsNextToTheCounter_Neutral()
+        {
+            for (int seed = 1; seed <= 20; seed++)
+            {
+                var world = TestData.NewRun(seed, 6);
+                var keeper = Shop.Keeper(world);
+                Assert.That(keeper, Is.Not.Null, $"seed {seed}");
+                Assert.That(keeper.MaxHp, Is.EqualTo(80));
+                Assert.That(world.Map.SpecialRoomAt(keeper.Position), Is.EqualTo(SpecialRoomKind.Shop));
+                bool nextToCounter = false;
+                for (int dy = -1; dy <= 1; dy++)
+                    for (int dx = -1; dx <= 1; dx++)
+                    {
+                        var near = new GridPos(keeper.Position.X + dx, keeper.Position.Y + dy);
+                        if (world.Map.InBounds(near) && world.Map.Get(near) == TileType.ShopCounter) nextToCounter = true;
+                    }
+                Assert.That(nextToCounter, Is.True, $"seed {seed}");
+                Assert.That(Shop.IsNeutral(world, keeper), Is.True);
+                Assert.That(world.Combatants, Has.No.Member(keeper.Id));
+            }
+        }
+
+        /// <summary>열린 방 (1,1) ~ (10,5), 계산대 (6,3), 상점 주인 (6,2), 진열 열쇠 (2,5) 35골드, 플레이어 (2,3). 상점 방으로 표시.</summary>
+        private static (Simulation simulation, World world, Unit keeper, FloorItem key, CombatSettings combat) KeeperWorld()
+        {
+            var combat = TestData.Combat();
+            var room = new RoomRect(1, 1, 10, 5);
+            var world = new World(1, new RandomStreams(1))
+            {
+                Map = TestData.ParseWithRooms(new[] { room },
+                    "############",
+                    "#..........#",
+                    "#..........#",
+                    "#..........#",
+                    "#..........#",
+                    "#..........#",
+                    "############"),
+            };
+            world.Map.SetRoomKind(0, SpecialRoomKind.Shop);
+            world.Map.SetTile(new GridPos(6, 3), TileType.ShopCounter);
+            world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(2, 3)).Id;
+            var keeper = world.AddUnit(combat.StatsFor(UnitKind.Shopkeeper), new GridPos(6, 2));
+            Loadout.Apply(world, combat);
+            var key = world.AddItem(ItemKind.Key, default, new GridPos(2, 5));
+            key.Price = 35;
+            var simulation = new Simulation(world, combat);
+            simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(3, 3), 1));
+            return (simulation, world, keeper, key, combat);
+        }
+
+        [Test]
+        public void SeeingTheNeutralShopkeeper_DoesNotStartCombat()
+        {
+            var (_, world, keeper, _, _) = KeeperWorld();
+            Assert.That(world.Mode, Is.EqualTo(WorldMode.Exploration));
+            Assert.That(world.Combatants, Is.Empty);
+            Assert.That(Shop.IsNeutral(world, keeper), Is.True);
+        }
+
+        [Test]
+        public void ASkillWhileExploring_AngersTheShopkeeper_StartsCombat_AndClosesTheShop()
+        {
+            var (simulation, world, keeper, key, combat) = KeeperWorld();
+            world.Gold = 100;
+            Assert.That(simulation.Execute(new AreaAttackCommand(keeper.Position, combat)), Is.True, "grenade while exploring");
+
+            Assert.That(world.ShopHostile, Is.True);
+            Assert.That(keeper.Hp, Is.LessThan(keeper.MaxHp));
+            Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
+            Assert.That(world.Combatants, Has.Member(keeper.Id));
+            Assert.That(world.Round, Is.EqualTo(2), "the grenade was the first action — the shopkeeper already took his turn");
+            Assert.That(TurnFlow.IsPlayerTurn(world), Is.True);
+
+            world.Player.Position = key.Position;
+            Assert.That(Shop.Buy(world, combat, key.Id, new List<GameEvent>()), Is.False, "no buying while hostile");
+        }
+
+        [Test]
+        public void DefeatingTheShopkeeper_MakesEveryItemFree()
+        {
+            var (simulation, world, keeper, key, combat) = KeeperWorld();
+            Assert.That(simulation.Execute(new AreaAttackCommand(keeper.Position, combat)), Is.True);
+            Assert.That(simulation.Execute(new DebugDefeatCommand(keeper.Id)), Is.True);
+
+            Assert.That(Shop.Keeper(world), Is.Null);
+            Assert.That(key.Price, Is.EqualTo(0));
+            Assert.That(world.Mode, Is.EqualTo(WorldMode.Exploration));
+            int keys = world.Keys;
+            Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(2, 4), 1)), Is.True);
+            Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, key.Position, 1)), Is.True);
+            Assert.That(world.Keys, Is.EqualTo(keys + 1), "picked up for free");
+        }
+
+        [Test]
+        public void ASkillWithNoEnemyInSight_StaysInExploration_WithoutCooldown()
+        {
+            var combat = TestData.Combat();
+            var world = new World(1, new RandomStreams(1)) { Map = TestData.Parse("..........", "..........", "..........") };
+            world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(1, 1)).Id;
+            Loadout.Apply(world, combat);
+            var simulation = new Simulation(world, combat);
+            Assert.That(simulation.Execute(new AreaAttackCommand(new GridPos(5, 1), combat)), Is.True);
+            Assert.That(world.Mode, Is.EqualTo(WorldMode.Exploration));
+            Assert.That(world.GrenadeCooldown, Is.EqualTo(0));
+        }
+
         [Test]
         public void Snapshot_KeepsGoldAndPrices()
         {

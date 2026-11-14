@@ -47,6 +47,7 @@ namespace GirlsDungeon.Core.Sim
             if (!command.TryApply(World, pending)) return false;
 
             for (int i = 0; i < command.CostTicks; i++) RunTick();
+            Shop.CheckHostility(World, pending);
             CombatFlow.AfterAction(World, settings, pending);
             if (settings != null) Gold.CheckKills(World, settings, pending);
             if (settings != null) Loot.CheckPickup(World, settings, pending);
@@ -203,6 +204,7 @@ namespace GirlsDungeon.Core.Sim
             world.AltarOffers.Clear();
             world.ArenaEnemies.Clear();
             world.ArchiveRead = false;
+            world.ShopHostile = false;
         }
     }
 

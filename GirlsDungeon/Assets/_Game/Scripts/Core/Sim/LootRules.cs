@@ -166,7 +166,7 @@ namespace GirlsDungeon.Core.Sim
                 // 상점 진열 물건 (3-15b): 값을 내기 전에는 줍지 않고 사기 창만 띄운다.
                 if (item.Price > 0)
                 {
-                    if (!offered) events.Add(new ShopItemOffered(item.Id, item.Price));
+                    if (!offered && !world.ShopHostile) events.Add(new ShopItemOffered(item.Id, item.Price));
                     offered = true;
                     continue;
                 }

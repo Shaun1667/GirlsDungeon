@@ -23,6 +23,34 @@ namespace GirlsDungeon.Core.Sim
                 EndCombat(world, settings, player, events);
         }
 
+        /// <summary>
+        /// 스킬(수류탄 · 넉백 · 음파)을 지금 쓸 수 있는 때: 전투 중 내 차례에 아직 행동하지 않았을 때, 또는 탐험 중 (결정 2026-11-14 사용자 "어디서나 탐험 중 스킬").
+        /// </summary>
+        public static bool CanUseSkill(World world) => world.Mode == WorldMode.Exploration || (TurnFlow.IsPlayerTurn(world) && !world.PlayerActed);
+
+        /// <summary>
+        /// 스킬을 쓴 뒤 (스킬 커맨드가 부른다): 맞은 상점 주인이 적대하는지 보고, 보이는 적을 전투에 넣은 뒤
+        /// 전투 중이면 그 스킬을 이번 차례 행동으로 치고 적 차례로 넘긴다. 탐험 중에 써서 적이 보이면 전투가 시작되고 그 스킬이 첫 행동이 된다(적이 먼저 움직인다).
+        /// 탐험 중에 써서 전투가 시작되지 않았으면 재사용 대기를 비운다 (전투 밖의 재사용 대기는 의미가 없다 — 전투가 끝날 때와 같게).
+        /// </summary>
+        public static void AfterSkill(World world, CombatSettings settings, List<GameEvent> events)
+        {
+            Shop.CheckHostility(world, events);
+            var visible = VisionSystem.Update(world, events);
+            JoinVisibleEnemies(world, visible, events);
+            if (world.Mode == WorldMode.Combat)
+            {
+                world.PlayerActed = true;
+                if (world.Combatants.Count > 0) TurnFlow.EndPlayerTurn(world, settings, events);
+            }
+            else if (world.Mode == WorldMode.Exploration)
+            {
+                world.GrenadeCooldown = 0;
+                world.PushCooldown = 0;
+                world.SonicCooldown = 0;
+            }
+        }
+
         /// <summary>유닛을 쓰러뜨린다. 맵에서 빠지고 전투 명단에서도 빠진다.</summary>
         public static void Kill(World world, Unit unit, List<GameEvent> events)
         {
@@ -38,6 +66,8 @@ namespace GirlsDungeon.Core.Sim
             foreach (var unit in world.Units)
             {
                 if (unit.IsPlayer || world.Combatants.Contains(unit.Id)) continue;
+                // 중립 상점 주인은 보여도 전투에 들어오지 않는다 (적대하면 들어온다 — Shop.CheckHostility, 3-15b).
+                if (Shop.IsNeutral(world, unit)) continue;
                 if (!Vision.IsSet(visible, world.Map, unit.Position)) continue;
 
                 if (joined == null) joined = new List<int>();
