@@ -70,7 +70,7 @@ namespace GirlsDungeon.Tests
                     // 결투장 · 함정 방은 자기 적을 따로 놓는다 (ArenaTests · TrapTests).
                     if (kind == SpecialRoomKind.Arena || kind == SpecialRoomKind.Trap) continue;
                     foreach (var unit in world.Units)
-                        if (!unit.IsPlayer) Assert.That(room.Contains(unit.Position), Is.False, $"seed {seed}: enemy in {kind}");
+                        if (!unit.IsPlayer && unit.Kind != UnitKind.Shopkeeper) Assert.That(room.Contains(unit.Position), Is.False, $"seed {seed}: enemy in {kind}");
                 }
                 // 문을 모두 열면 지도는 하나로 이어진다.
                 TestData.OpenAllDoors(map);

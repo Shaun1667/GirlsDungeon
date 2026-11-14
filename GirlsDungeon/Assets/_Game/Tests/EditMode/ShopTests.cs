@@ -27,7 +27,7 @@ namespace GirlsDungeon.Tests
                 var map = world.Map;
                 int shops = Enumerable.Range(0, map.Rooms.Count).Count(i => map.RoomKind(i) == SpecialRoomKind.Shop);
                 Assert.That(shops, Is.EqualTo(1), $"seed {seed}");
-                Assert.That(world.Units.Any(u => !u.IsPlayer && map.SpecialRoomAt(u.Position) == SpecialRoomKind.Shop), Is.False, $"seed {seed} enemy in shop");
+                Assert.That(world.Units.Any(u => !u.IsPlayer && u.Kind != UnitKind.Shopkeeper && map.SpecialRoomAt(u.Position) == SpecialRoomKind.Shop), Is.False, $"seed {seed} enemy in shop");
 
                 RunFactory.NextFloor(world, TestData.Map(), TestData.Combat(6), null);
                 Assert.That(Enumerable.Range(0, world.Map.Rooms.Count).Any(i => world.Map.RoomKind(i) == SpecialRoomKind.Shop), Is.False, $"seed {seed} floor 2");
@@ -62,13 +62,14 @@ namespace GirlsDungeon.Tests
             }
         }
 
-        /// <summary>바닥 3줄, 계산대 (4,1), 플레이어 (1,1), 발밑 (2,1)에 진열 열쇠 35 · (2,0)에 정밀 파츠 80.</summary>
+        /// <summary>바닥 3줄, 계산대 (4,1) · 상점 주인 (5,1), 플레이어 (1,1), 발밑 (2,1)에 진열 열쇠 35 · (2,0)에 정밀 파츠 80.</summary>
         private static (World world, FloorItem key, FloorItem part) ShopWorld()
         {
             var combat = TestData.Combat();
             var world = new World(1, new RandomStreams(1)) { Map = TestData.Parse("......", "......", "......") };
             world.Map.SetTile(new GridPos(4, 1), TileType.ShopCounter);
             world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(1, 1)).Id;
+            world.AddUnit(combat.StatsFor(UnitKind.Shopkeeper), new GridPos(5, 1));
             Loadout.Apply(world, combat);
             var key = world.AddItem(ItemKind.Key, default, new GridPos(2, 1));
             key.Price = 35;

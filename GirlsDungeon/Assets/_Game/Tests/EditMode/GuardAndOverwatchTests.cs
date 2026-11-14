@@ -16,7 +16,8 @@ namespace GirlsDungeon.Tests
             int guarding = 0, total = 0;
             for (int seed = 1; seed <= 200; seed++)
             {
-                foreach (var enemy in TestData.NewRun(seed, 5).Units.Where(u => !u.IsPlayer))
+                // 상점 주인(3-15b)은 적이 아니다 — 경계하지 않는 중립 유닛.
+                foreach (var enemy in TestData.NewRun(seed, 5).Units.Where(u => !u.IsPlayer && u.Kind != UnitKind.Shopkeeper))
                 {
                     total++;
                     if (enemy.Guarding) guarding++;

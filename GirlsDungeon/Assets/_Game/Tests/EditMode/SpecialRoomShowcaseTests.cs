@@ -32,8 +32,8 @@ namespace GirlsDungeon.Tests
                 int locked = Enumerable.Range(0, map.Rooms.Count).Count(i => FloorDecor.Entrances(map, map.Rooms[i]).Any(map.IsLockedDoor));
                 Assert.That(world.Keys, Is.EqualTo(locked), $"seed {seed}: a key per locked room");
 
-                // 일반 적은 없다 — 결투장 · 함정 방의 자기 적만.
-                foreach (var unit in world.Units.Where(u => !u.IsPlayer))
+                // 일반 적은 없다 — 결투장 · 함정 방의 자기 적만 (상점 주인은 적이 아니다, 3-15b).
+                foreach (var unit in world.Units.Where(u => !u.IsPlayer && u.Kind != UnitKind.Shopkeeper))
                 {
                     var kind = map.SpecialRoomAt(unit.Position);
                     Assert.That(kind == SpecialRoomKind.Arena || kind == SpecialRoomKind.Trap, Is.True, $"seed {seed}: enemy in {kind}");
