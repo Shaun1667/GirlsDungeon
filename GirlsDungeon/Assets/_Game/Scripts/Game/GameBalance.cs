@@ -212,7 +212,7 @@ namespace GirlsDungeon.Game
             new UnitStatsEntry
             {
                 kind = UnitKind.Shopkeeper, nameKey = "unit.shopkeeper.name", visualId = "shopkeeper", maxHp = 80, maxStability = 8, visionRange = 10,
-                attack = 9, defense = 4, moveRange = 5, attackRange = 7, stabilityDamage = 2, critPercent = 20, critMultiplierPercent = 150,
+                attack = 9, defense = 4, moveRange = 6, attackRange = 6, stabilityDamage = 2, critPercent = 20, critMultiplierPercent = 150,
             },
         };
 

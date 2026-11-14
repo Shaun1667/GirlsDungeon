@@ -477,7 +477,7 @@ namespace GirlsDungeon.Tests
             settings.Units.Add(new UnitStats
             {
                 Kind = UnitKind.Shopkeeper, MaxHp = 80, MaxStability = 8, VisionRange = 10,
-                Attack = 9, Defense = 4, MoveRange = 5, AttackRange = 7, StabilityDamage = 2, CritPercent = 20, CritMultiplierPercent = 150,
+                Attack = 9, Defense = 4, MoveRange = 6, AttackRange = 6, StabilityDamage = 2, CritPercent = 20, CritMultiplierPercent = 150,
             });
             // BALANCE 13번 캐릭터 표. 캐릭터를 고르지 않은 판(NewRun 기본)은 위 플레이어 줄을 그대로 쓴다.
             settings.Characters.Add(new CharacterStats
