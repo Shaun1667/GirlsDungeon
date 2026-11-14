@@ -610,12 +610,12 @@ namespace GirlsDungeon.EditorTools
         private const string VisualsPath = "Assets/_Game/Data/UnitVisuals.asset";
 
         /// <summary>
-        /// 그림 목록 에셋을 만들거나 불러온다. 유닛 그림 ID(player · rifleman · assault)와 캐릭터 그림 ID(캐릭터 표) 줄이 없으면 빈 줄을 더하고,
+        /// 그림 목록 에셋을 만들거나 불러온다. 유닛 그림 ID(player · rifleman · assault · shopkeeper)와 캐릭터 그림 ID(캐릭터 표) 줄이 없으면 빈 줄을 더하고,
         /// 이미 넣어 둔 프리팹 · 크기 · 높이는 건드리지 않는다 (멱등).
         /// </summary>
         private static UnitVisualCatalog LoadOrCreateVisuals(GameBalance balance)
         {
-            var ids = new System.Collections.Generic.List<string> { "player", "rifleman", "assault" };
+            var ids = new System.Collections.Generic.List<string> { "player", "rifleman", "assault", "shopkeeper" };
             foreach (var id in balance.CharacterVisualIds()) if (!string.IsNullOrEmpty(id) && !ids.Contains(id)) ids.Add(id);
             var catalog = AssetDatabase.LoadAssetAtPath<UnitVisualCatalog>(VisualsPath);
             if (catalog == null)

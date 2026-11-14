@@ -8,6 +8,8 @@ namespace GirlsDungeon.Game
     /// <summary>
     /// 플레이어가 아닌 유닛을 그린다. 지금 보이는 칸(Vision)에 있거나 전투에 들어온 적만 화면에 나타난다.
     /// 사건 재생기(EventPlayer)에서 사건을 하나씩 받아 칸 사이를 걸어서 옮긴다 (한 칸 = 걸음 시간).
+    /// 모습: 그림 목록(UnitVisualCatalog)에서 그 유닛 그림 ID의 프리팹이 있으면 모델을, 없으면 그레이박스 캡슐을 그린다 (3-15c).
+    /// 모델은 걷는 동안 걷는 방향을, 서 있을 때는 플레이어를 바라본다.
     /// </summary>
     public sealed class UnitsView : MonoBehaviour
     {
@@ -17,6 +19,8 @@ namespace GirlsDungeon.Game
         [Tooltip("Shopkeeper (3-15b) — neutral until hit, then a boss-level enemy.")]
         [SerializeField] private Material shopkeeperMaterial;
         [SerializeField] private float bodyHeight = 1f;
+        [Tooltip("How fast a model turns to its facing (higher = snappier).")]
+        [SerializeField] private float turnSharpness = 12f;
 
         private sealed class Body
         {
@@ -25,11 +29,18 @@ namespace GirlsDungeon.Game
             public Vector3 To;
             public float Elapsed;
             public float ShakeLeft;
+            // 모델을 쓰는 유닛만 (캡슐이면 null).
+            public Transform Model;
+            public float YawOffset;
+            public Animator Animator;
+            public int SpeedHash;
+            public bool HasSpeed;
         }
 
         private readonly Dictionary<int, Body> views = new Dictionary<int, Body>();
         private IEventSource source;
         private GameBalance balance;
+        private UnitVisualCatalog visuals;
         private bool[] visible;
 
         public int VisibleCount
@@ -51,11 +62,15 @@ namespace GirlsDungeon.Game
             if (views.TryGetValue(unitId, out var body)) body.ShakeLeft = balance.ShakeSeconds;
         }
 
-        public void Bind(IEventSource newSource, GameBalance newBalance)
+        /// <summary>그 유닛이 모델로 그려지는지 (캡슐이면 false). 디버그 · 확인용.</summary>
+        public bool UsesModel(int unitId) => views.TryGetValue(unitId, out var body) && body.Model != null;
+
+        public void Bind(IEventSource newSource, GameBalance newBalance, UnitVisualCatalog newVisuals)
         {
             Unbind();
             source = newSource;
             balance = newBalance;
+            visuals = newVisuals;
             source.EventsPublished += HandleEvents;
 
             var world = source.World;
@@ -81,15 +96,65 @@ namespace GirlsDungeon.Game
 
         private void CreateView(Unit unit)
         {
-            var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            var visual = visuals != null ? visuals.Find(balance.VisualId(unit.Kind)) : null;
+            var view = new Body { Elapsed = 1f };
+            GameObject body;
+            if (visual != null && visual.prefab != null)
+            {
+                // 뿌리는 캡슐과 같은 높이(몸 가운데)에 두고, 모델은 그 아래 바닥에 발을 맞춘다 — 카메라 · 탄도 · 흔들림이 같은 점을 쓴다.
+                body = new GameObject();
+                var model = Instantiate(visual.prefab, body.transform, false);
+                model.transform.localPosition = new Vector3(0f, visual.heightOffset - bodyHeight, 0f);
+                model.transform.localRotation = Quaternion.identity;
+                model.transform.localScale = Vector3.one * visual.scale;
+                foreach (var collider in model.GetComponentsInChildren<Collider>()) collider.enabled = false;
+                view.Model = body.transform;
+                view.YawOffset = visual.yawOffset;
+                view.Animator = model.GetComponentInChildren<Animator>();
+                if (view.Animator != null && view.Animator.runtimeAnimatorController != null)
+                {
+                    foreach (var parameter in view.Animator.parameters)
+                    {
+                        if (parameter.type != AnimatorControllerParameterType.Float || parameter.name != visual.speedParameter) continue;
+                        view.SpeedHash = parameter.nameHash;
+                        view.HasSpeed = true;
+                    }
+                }
+            }
+            else
+            {
+                body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+                Destroy(body.GetComponent<Collider>());
+                body.GetComponent<MeshRenderer>().sharedMaterial = unit.Kind == UnitKind.Assault && assaultMaterial != null ? assaultMaterial
+                    : unit.Kind == UnitKind.Shopkeeper && shopkeeperMaterial != null ? shopkeeperMaterial : enemyMaterial;
+            }
             body.name = $"Unit {unit.Id} {unit.Kind}";
-            Destroy(body.GetComponent<Collider>());
-            body.GetComponent<MeshRenderer>().sharedMaterial = unit.Kind == UnitKind.Assault && assaultMaterial != null ? assaultMaterial
-                : unit.Kind == UnitKind.Shopkeeper && shopkeeperMaterial != null ? shopkeeperMaterial : enemyMaterial;
             body.transform.SetParent(transform, false);
             var position = CellPosition(unit.Position);
             body.transform.position = position;
-            views.Add(unit.Id, new Body { Object = body, From = position, To = position, Elapsed = 1f });
+            view.Object = body;
+            view.From = position;
+            view.To = position;
+            if (view.Model != null && TryFacing(view, out var facing)) view.Model.rotation = facing;
+            views.Add(unit.Id, view);
+        }
+
+        /// <summary>모델이 바라볼 방향: 걷는 중이면 걷는 방향, 서 있으면 플레이어 쪽.</summary>
+        private bool TryFacing(Body view, out Quaternion facing)
+        {
+            facing = Quaternion.identity;
+            Vector3 direction;
+            if (view.Elapsed < 1f) direction = view.To - view.From;
+            else
+            {
+                var player = source != null ? source.World.Player : null;
+                if (player == null) return false;
+                direction = GridSpace.ToWorld(player.Position) - view.To;
+            }
+            direction.y = 0f;
+            if (direction.sqrMagnitude < 0.0001f) return false;
+            facing = Quaternion.LookRotation(direction) * Quaternion.Euler(0f, view.YawOffset, 0f);
+            return true;
         }
 
         private Vector3 CellPosition(Core.Grid.GridPos cell) => GridSpace.ToWorld(cell) + Vector3.up * bodyHeight;
@@ -139,6 +204,10 @@ namespace GirlsDungeon.Game
                     position += new Vector3(side, 0f, -side);
                 }
                 view.Object.transform.position = position;
+                if (view.Model == null) continue;
+                if (TryFacing(view, out var facing))
+                    view.Model.rotation = Quaternion.Slerp(view.Model.rotation, facing, 1f - Mathf.Exp(-turnSharpness * Time.deltaTime));
+                if (view.HasSpeed) view.Animator.SetFloat(view.SpeedHash, view.Elapsed < 1f ? 1f : 0f);
             }
         }
 

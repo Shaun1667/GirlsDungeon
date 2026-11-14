@@ -106,7 +106,7 @@ namespace GirlsDungeon.Game
             fogView.Bind(simulation, balance);
             // 플레이어 모습: 고른 캐릭터의 그림 ID — 그림 목록에 그 ID의 프리팹이 있으면 모델, 없으면 캡슐.
             playerView.Bind(eventPlayer, balance, visuals != null ? visuals.Find(balance.PlayerVisualId(simulation.World.PlayerCharacter)) : null);
-            unitsView.Bind(eventPlayer, balance);
+            unitsView.Bind(eventPlayer, balance, visuals);
             itemsView.Bind(eventPlayer);
             if (roomLabels != null) roomLabels.Bind(eventPlayer);
             hudView.Bind(eventPlayer, combatSettings, balance);

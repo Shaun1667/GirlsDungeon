@@ -12,7 +12,7 @@
 - 모델 Animator Controller가 위 값 세 개를 쓰면 대기 · 달리기 · 엄폐(낮음 / 높음) · 사격이 바뀐다. 예: 상태 Idle(기본) · Run(Speed > 0.5) · CoverCrouch(Cover = 1) · CoverStand(Cover = 2) · Fire(아무 상태 → Fire 트리거, 끝나면 Idle).
 - 동작 파일은 Humanoid로 임포트하고, 위치 · 회전은 코드가 옮기므로 루트 회전 · 높이 · 수평 위치를 고정(Bake Into Pose)한다. 달리기 · 걷기는 제자리(In Place)로 받는다.
 - 개인 테스트 동작: Mixamo 소총 동작 5개(Rifle Idle · Rifle Run · Taking Cover Idle · Cover Idle · Firing Rifle)와 컨트롤러 `PlayerRifle.controller`를 `Assets/_Local/Animations/`에 두었다 (git 제외 — Mixamo 동작은 Adobe 계정으로 받은 것, 게임에 넣을지 · 라이선스는 정식 에셋을 정할 때 따로 확인).
-- 지금은 플레이어(`player`)만 모델을 쓴다 (`PlayerView`). 적(`rifleman` · `assault`)은 줄만 있고 아직 도형 (`UnitsView`는 3-x에서).
+- 플레이어는 `PlayerView`, 플레이어가 아닌 유닛(`rifleman` · `assault` · `shopkeeper`)은 `UnitsView`가 그린다 (3-15c): 그 그림 ID 줄에 프리팹이 있으면 모델, 없으면 도형. `UnitsView`의 모델은 걷는 동안 걷는 방향을, 서 있을 때는 플레이어를 바라보고, Animator에는 속도 `Speed`만 넣는다 (엄폐 · 사격 값은 아직 플레이어만).
 - 모델은 걷는 방향을 바라본다. 클릭 판정은 바닥 평면이라 모델 콜라이더는 끈다.
 
 ### 직접 넣어 보기 (어떤 모델이든 같은 순서)
@@ -35,4 +35,5 @@
 | hero_c | 캐릭터 C (`characters[HeroC]`, 3-8) | 분홍 캡슐 | 오리지널 캐릭터 모델 (외형 미정) | — | 미정 |
 | rifleman | 사격병 (`UnitsView`) | 빨강 캡슐 | — | — | 미정 |
 | assault | 돌격병 (`UnitsView`) | 주황 캡슐 | — | — | 미정 |
+| shopkeeper | 상점 주인 (`UnitsView`, 3-15b · 3-15c) | 금색 캡슐 | 오리지널 상인 모델 (외형 미정) | — | 미정 |
 | (지형 · 상자 · 보급 상자 · 작업대 · 잠긴 문 · 무기 · 구급상자 · 열쇠) | `FloorView` · `ItemsView` | 그레이박스 도형 | — | — | 미정 |
