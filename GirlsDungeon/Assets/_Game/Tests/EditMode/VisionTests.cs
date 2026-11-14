@@ -41,8 +41,26 @@ namespace GirlsDungeon.Tests
 
             Assert.That(Vision.IsSet(visible, map, new GridPos(7, 2)), Is.True);
             Assert.That(Vision.IsSet(visible, map, new GridPos(6, 2)), Is.True, "distance 3 is in range");
-            Assert.That(Vision.IsSet(visible, map, new GridPos(5, 2)), Is.False, "distance 4 is out of range");
+            // (5,2)는 기둥 — 보이는 바닥 (6,2) 바로 옆이라 보인다 (2026-11-14). 거리 밖은 바닥 칸으로 본다.
+            Assert.That(Vision.IsSet(visible, map, new GridPos(5, 2)), Is.True, "a pillar beside visible floor");
+            Assert.That(Vision.IsSet(visible, map, new GridPos(4, 2)), Is.False, "floor at distance 5 is out of range");
             Assert.That(Vision.IsSet(visible, map, new GridPos(1, 1)), Is.False);
+        }
+
+        [Test]
+        public void InALongCorridor_TheWallsBesideEveryVisibleCellAreVisibleToo()
+        {
+            // 1칸 폭 곧은 복도 (1,1) ~ (18,1). 사선만 보면 옆 벽은 가까이만 보여 안개가 복도까지 번졌다 (2026-11-14 사용자).
+            var map = TestData.Parse("####################", "#..................#", "####################");
+            var visible = Vision.Compute(map, new GridPos(9, 1), 8);
+            for (int x = 1; x <= 17; x++)
+            {
+                Assert.That(Vision.IsSet(visible, map, new GridPos(x, 1)), Is.True, $"floor ({x},1) within 8");
+                Assert.That(Vision.IsSet(visible, map, new GridPos(x, 0)), Is.True, $"wall above ({x},0)");
+                Assert.That(Vision.IsSet(visible, map, new GridPos(x, 2)), Is.True, $"wall below ({x},2)");
+            }
+            Assert.That(Vision.IsSet(visible, map, new GridPos(18, 1)), Is.False, "floor at distance 9 is out of range");
+            Assert.That(Vision.IsSet(visible, map, new GridPos(19, 0)), Is.False, "a wall beside nothing visible stays hidden");
         }
 
         [Test]

@@ -134,18 +134,23 @@ namespace GirlsDungeon.Game
                 {
                     float px = (tx + 0.5f) / r - 1f;
                     int cx = Mathf.FloorToInt(px);
-                    float d = Darkness(cx, cy);
+                    // 부드러운 경계는 밝은 칸에서 어두운 칸 쪽으로 번진다 (2026-11-14 — 전에는 반대라서 1칸 폭 복도처럼
+                    // 둘레가 안 보이는 칸이면 보이는 칸까지 어두워졌다). 보이는 칸은 늘 맑고, 본 칸이 가장자리에서 밝아진다.
+                    // 안 본 칸(검정)은 밝히지 않는다 — 벽 너머 들어가 보지 않은 방의 물건이 비치지 않게.
+                    float own = Darkness(cx, cy);
+                    float d = own;
+                    if (own < 1f)
                     for (int oy = -reach; oy <= reach; oy++)
                     {
                         for (int ox = -reach; ox <= reach; ox++)
                         {
                             if (ox == 0 && oy == 0) continue;
                             float v = Darkness(cx + ox, cy + oy);
-                            if (v <= d) continue;
+                            if (v >= own) continue;
                             float dx = Mathf.Max(0f, Mathf.Max(cx + ox - px, px - (cx + ox + 1)));
                             float dy = Mathf.Max(0f, Mathf.Max(cy + oy - py, py - (cy + oy + 1)));
                             float k = 1f - Mathf.Sqrt(dx * dx + dy * dy) / softCells;
-                            if (k > 0f) d = Mathf.Max(d, v * k * k * (3f - 2f * k));
+                            if (k > 0f) d = Mathf.Min(d, Mathf.Lerp(own, v, k * k * (3f - 2f * k)));
                         }
                     }
                     pixels[tx + ty * w] = new Color32(0, 0, 0, (byte)Mathf.RoundToInt(Mathf.Clamp01(d) * 255f));
