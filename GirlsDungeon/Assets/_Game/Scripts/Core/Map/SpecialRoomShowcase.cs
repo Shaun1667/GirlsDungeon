@@ -8,19 +8,22 @@ namespace GirlsDungeon.Core.Map
     /// <summary>
     /// 특수 방 모음 층 (테스트용, 2026-11-14 사용자 "씬 하나 새로 만들어서 특수방들만 다 모아줘").
     /// SpecialRoomKind의 모든 종류(None 제외)를 방 하나씩 — 새 종류를 enum에 더하면 자동으로 방이 하나 늘어난다.
-    /// 모양: 위 · 아래 두 줄의 같은 크기 방, 가운데 가로 복도, 방마다 복도로 난 입구 1칸. 맨 왼쪽 위 방이 시작 방(계단 포함).
+    /// 모양: 위 · 아래 두 줄의 같은 크기 방, 가운데 가로 복도, 방마다 복도로 난 입구 1칸. 맨 왼쪽 위 방이 시작 방(계단 포함), 그 오른쪽이 상점.
     /// 방 안 내용 · 잠금은 실제 게임과 같은 길(SpecialRoomLayout.PlaceInRoom — Prepare · LockRoom · ContentReachable). 엄폐물은 FloorDecor.ApplyCover (꾸미기 낭떠러지는 없음 — 함정 방만 자기 낭떠러지).
     /// 방 크기는 (MinRoomSize + MaxRoomSize) / 2.
     /// </summary>
     public static class SpecialRoomShowcase
     {
-        /// <summary>모음 층에 놓는 종류 (enum 순서, None 제외).</summary>
+        /// <summary>
+        /// 모음 층에 놓는 종류 (None 제외). 상점을 맨 앞(시작 방 바로 옆)에 두고 나머지는 enum 순서 (2026-11-14 사용자 "상점 방을 제일 앞으로").
+        /// </summary>
         public static List<SpecialRoomKind> Kinds()
         {
             var kinds = new List<SpecialRoomKind>();
             foreach (SpecialRoomKind kind in Enum.GetValues(typeof(SpecialRoomKind)))
                 if (kind != SpecialRoomKind.None) kinds.Add(kind);
             kinds.Sort();
+            if (kinds.Remove(SpecialRoomKind.Shop)) kinds.Insert(0, SpecialRoomKind.Shop);
             return kinds;
         }
 

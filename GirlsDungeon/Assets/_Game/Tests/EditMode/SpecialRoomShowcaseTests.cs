@@ -14,7 +14,10 @@ namespace GirlsDungeon.Tests
         public void Kinds_AreEveryKindButNone_SoNewKindsJoinAutomatically()
         {
             var all = System.Enum.GetValues(typeof(SpecialRoomKind)).Cast<SpecialRoomKind>().Where(k => k != SpecialRoomKind.None);
-            Assert.That(SpecialRoomShowcase.Kinds(), Is.EqualTo(all.OrderBy(k => k)));
+            // 상점이 맨 앞(시작 방 옆), 나머지는 enum 순서 (2026-11-14 사용자).
+            var kinds = SpecialRoomShowcase.Kinds();
+            Assert.That(kinds[0], Is.EqualTo(SpecialRoomKind.Shop));
+            Assert.That(kinds.Skip(1), Is.EqualTo(all.Where(k => k != SpecialRoomKind.Shop).OrderBy(k => k)));
         }
 
         [Test]
@@ -26,7 +29,8 @@ namespace GirlsDungeon.Tests
                 var world = RunFactory.NewShowcaseRun(seed, TestData.Map(), TestData.Combat(5), CharacterKind.None);
                 var map = world.Map;
                 var placed = Enumerable.Range(0, map.Rooms.Count).Select(map.RoomKind).Where(k => k != SpecialRoomKind.None).OrderBy(k => k).ToList();
-                Assert.That(placed, Is.EqualTo(kinds), $"seed {seed}: one room per kind");
+                Assert.That(placed, Is.EqualTo(kinds.OrderBy(k => k)), $"seed {seed}: one room per kind");
+                Assert.That(map.RoomKind(1), Is.EqualTo(SpecialRoomKind.Shop), "the shop is next to the start room");
                 Assert.That(map.Rooms[0].Contains(map.StartCell) && map.Rooms[0].Contains(map.StairsCell), Is.True, "start room holds the stairs");
 
                 int locked = Enumerable.Range(0, map.Rooms.Count).Count(i => FloorDecor.Entrances(map, map.Rooms[i]).Any(map.IsLockedDoor));
