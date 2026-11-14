@@ -24,7 +24,9 @@ namespace GirlsDungeon.Game
     /// 전투(내 차례): 남은 이동 범위 표시(이동만 했으면 남은 칸만큼 또 걸을 수 있다 — 3-13) · 범위 안 칸 클릭 = 이동 예약(홀로그램, 바로 걷지 않음 — 3-10), 적 클릭 = 사격 대상 고르기(노란 선 · 미리보기 · 확인 버튼).
     /// 예약이 있으면 선 · 미리보기는 예약 칸에서 계산한다. 확인(버튼 · Enter · 사격 카드) = 예약 칸으로 CombatMoveCommand 뒤 AttackCommand를 한 번에,
     /// 대상 없이 Enter 또는 예약 칸을 다시 클릭 = 이동만. 오른쪽 클릭 · Esc = 대상 → 예약 순으로 취소. 마우스를 올리면 미리보기.
-    /// 조준 모드: 수류탄 = 칸 클릭으로 AreaAttackCommand, 밀치기 = 마우스 쪽 방향 · 옆 줄로 PushCommand.
+    /// 조준 모드 (2026-11-14 사용자 "스킬도 기본 사격처럼"): 이동 범위는 계속 보이고, 클릭은 바로 쓰지 않고 대상만 고른다 — 확인(버튼 · Enter · 그 스킬 카드)에 쓴다.
+    /// 수류탄 · 밀치기(범위 스킬) = 클릭한 칸으로 범위가 옮겨짐 → AreaAttackCommand · PushCommand. 음파(대상 스킬) = 사격과 같이 적 클릭 = 대상, 파란 칸 = 이동 예약 → SonicAttackCommand.
+    /// 오른쪽 클릭 · Esc = 스킬 대상 → 조준 → 예약 순 취소.
     /// </summary>
     public sealed class MoveController : MonoBehaviour
     {
@@ -155,7 +157,8 @@ namespace GirlsDungeon.Game
         /// <summary>전투 이동 칸을 예약한다 (홀로그램). 지금 갈 수 있는 칸이 아니면 false.</summary>
         public bool PlanMove(GridPos cell)
         {
-            if (simulation == null || Busy || aim != AimMode.None) return false;
+            // 범위 스킬 조준 중의 클릭은 범위 옮기기라 예약하지 않는다. 음파(대상 스킬)는 사격처럼 예약할 수 있다.
+            if (simulation == null || Busy || (aim != AimMode.None && aim != AimMode.Sonic)) return false;
             var world = simulation.World;
             if (world.Mode != WorldMode.Combat || !Loadout.CanCombatMove(world, settings)) return false;
             RefreshRange(true);
@@ -255,6 +258,12 @@ namespace GirlsDungeon.Game
 
         private void ToggleAim(AimMode mode)
         {
+            // 대상을 골라 둔 스킬 카드를 다시 누르면 확인 (사격 카드와 같다).
+            if (aim == mode && HasSkillTarget)
+            {
+                ConfirmSkill();
+                return;
+            }
             var world = simulation?.World;
             // 그 캐릭터의 스킬 칸에 있는 스킬만 조준할 수 있다 (판정은 규칙 CombatSettings.HasSkill).
             bool canAim = world != null && TurnFlow.IsPlayerTurn(world) && !world.PlayerActed && settings.HasSkill(world.PlayerCharacter, SkillOf(mode));
@@ -350,11 +359,61 @@ namespace GirlsDungeon.Game
         /// <summary>조준 중인 스킬을 끈다 (스킬 바 "사격" · 턴 종료).</summary>
         public void CancelAim() => SetAiming(AimMode.None);
 
+        /// <summary>
+        /// 스킬 대상 (2026-11-14 사용자 "스킬도 기본 사격처럼"): 조준 중 클릭은 바로 쓰지 않고 대상만 고른다 — 확인(버튼 · Enter · 그 스킬 카드)에 쓴다.
+        /// 범위 스킬(수류탄 · 넉백) = 누른 칸으로 범위가 옮겨진다 (skillCell). 대상 스킬(음파) = 사격처럼 적 클릭 = 대상, 파란 칸 클릭 = 이동 예약 (skillTargetId).
+        /// </summary>
+        private GridPos? skillCell;
+        private int skillTargetId = -1;
+
+        public bool HasSkillTarget => aim == AimMode.Sonic ? skillTargetId >= 0 : aim != AimMode.None && skillCell.HasValue;
+        public GridPos? SkillCell => skillCell;
+        public int SkillTargetId => skillTargetId;
+
+        private void ClearSkillTarget()
+        {
+            skillCell = null;
+            skillTargetId = -1;
+        }
+
+        /// <summary>고른 스킬 대상에 스킬을 쓴다 (예약이 있으면 예약 칸으로 걸은 뒤). 대상이 없거나 못 쓰면 false.</summary>
+        public bool ConfirmSkill()
+        {
+            if (aim == AimMode.Grenade && skillCell.HasValue) return RequestAreaAttack(skillCell.Value);
+            if (aim == AimMode.Push && skillCell.HasValue) return RequestPush(skillCell.Value);
+            if (aim == AimMode.Sonic && skillTargetId >= 0) return RequestSonic(skillTargetId);
+            return false;
+        }
+
+        /// <summary>확인 버튼 · Enter: 스킬 조준 중이면 스킬, 아니면 사격.</summary>
+        public bool Confirm() => aim != AimMode.None ? ConfirmSkill() : ConfirmAttack();
+
+        /// <summary>[상태 변경 없음] 스킬 대상 고르기 (조준 중 클릭과 같다 — 디버그 · 테스트용). 고를 수 없으면 false.</summary>
+        public bool SelectSkillTarget(GridPos cell)
+        {
+            if (simulation == null || Busy || aim == AimMode.None) return false;
+            var world = simulation.World;
+            var skillWorld = PreviewWorld();
+            if (skillWorld == null) return false;
+            if (aim == AimMode.Sonic)
+            {
+                var under = world.UnitAt(cell);
+                var target = under != null && !under.IsPlayer ? skillWorld.FindUnit(under.Id) : null;
+                if (target == null || !SonicAttack.Preview(skillWorld, settings, skillWorld.Player, target).CanUse) return false;
+                skillTargetId = under.Id;
+                return true;
+            }
+            if (!world.Map.InBounds(cell)) return false;
+            skillCell = cell;
+            return true;
+        }
+
         /// <summary>화면이 사건을 재생하는 중(적 차례 연출)이거나 플레이어가 걷는 중이면 입력을 받지 않는다.</summary>
         private bool Busy => playerView.IsMoving || (eventPlayer != null && eventPlayer.IsPlaying);
 
         private void SetAiming(AimMode mode)
         {
+            if (aim != mode) ClearSkillTarget();
             aim = mode;
             // 스킬을 조준하면 고른 사격 대상은 푼다. 이동 예약은 남는다 — 스킬도 예약 칸으로 걸은 뒤 쓴다.
             if (mode != AimMode.None) ClearTarget();
@@ -664,15 +723,27 @@ namespace GirlsDungeon.Game
         {
             var world = simulation.World;
             // 권총은 쏜 뒤에도 이동할 수 있다 — 판정은 규칙(Loadout.CanCombatMove) 한 곳.
-            bool canMove = Loadout.CanCombatMove(world, settings) && !Busy && aim == AimMode.None;
-            RefreshRange(canMove);
+            // 이동 범위는 스킬 조준 중에도 보인다 (2026-11-14 사용자). 예약 클릭은 조준 없음 · 음파 조준 때만.
+            bool canMove = Loadout.CanCombatMove(world, settings) && !Busy && (aim == AimMode.None || aim == AimMode.Sonic);
+            RefreshRange(Loadout.CanCombatMove(world, settings) && !Busy);
 
             var mouse = Mouse.current;
             var keyboard = Keyboard.current;
             var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !Busy ? PointerCell(mouse.position.ReadValue()) : null;
-            // 오른쪽 클릭 한 번은 한 단계만 취소한다: 스킬 조준 → 고른 대상 → 이동 예약.
-            bool aimCancelled = aim != AimMode.None && mouse != null && mouse.rightButton.wasPressedThisFrame;
-            if (aimCancelled) SetAiming(AimMode.None);
+            // 오른쪽 클릭 · Esc 한 번은 한 단계만 취소한다: 스킬 대상 → 스킬 조준 → 고른 사격 대상 → 이동 예약.
+            bool cancelPressed = (mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame);
+            bool confirmPressed = keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame);
+            bool aimCancelled = false;
+            if (aim != AimMode.None && !Busy)
+            {
+                if (cancelPressed)
+                {
+                    if (HasSkillTarget) ClearSkillTarget();
+                    else SetAiming(AimMode.None);
+                    aimCancelled = true;
+                }
+                else if (confirmPressed && HasSkillTarget && ConfirmSkill()) return;
+            }
 
             // 이동 예약은 지금 이동할 수 있고 그 칸이 아직 범위 안일 때만 남는다 (적 차례 · 이미 이동함 등이면 푼다).
             // 스킬 조준 중에는 범위 칸을 숨기지만 예약은 남는다 (스킬도 예약 칸에서 쓴다).
@@ -683,8 +754,8 @@ namespace GirlsDungeon.Game
             var selected = RefreshSelection(world);
             if (!Busy && !aimCancelled && aim == AimMode.None && (selected != null || plannedCell.HasValue))
             {
-                bool cancel = (mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame);
-                bool confirm = keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame);
+                bool cancel = cancelPressed;
+                bool confirm = confirmPressed;
                 if (cancel)
                 {
                     if (selected != null) ClearTarget();
@@ -697,8 +768,13 @@ namespace GirlsDungeon.Game
             var origin = Origin(world);
             RefreshTargetLines(world, TurnFlow.IsPlayerTurn(world) && !Busy && aim == AimMode.None && Loadout.CanShoot(world, settings));
             var selectedPreview = selected != null ? CombatRules.Preview(world, settings, world.Player, origin, selected) : default;
+            if (aim != AimMode.None)
+            {
+                HandleSkillAim(world, cell, cell.HasValue && leftClick.Clicked && !IsPointerOverUi(), canMove);
+                return;
+            }
             hudView.ShowAttackConfirm(selected != null, selected != null && selectedPreview.CanAttack && !Busy);
-            RefreshGhost(world, selected);
+            RefreshGhost(world, selected != null ? GridSpace.ToWorld(selected.Position) : (Vector3?)null);
 
             if (!cell.HasValue)
             {
@@ -711,49 +787,7 @@ namespace GirlsDungeon.Game
 
             var target = world.UnitAt(cell.Value);
             bool clicked = leftClick.Clicked && !IsPointerOverUi();
-            // 스킬 미리보기: 예약이 있으면 예약 칸으로 걸어 본 복제 세계에서 계산한다 (확인 때와 같은 결과).
-            if (aim != AimMode.None)
-            {
-                var skillWorld = PreviewWorld();
-                SetHover(cell);
-                if (skillWorld == null)
-                {
-                    areaView.Hide();
-                    pushAreaView.Hide();
-                    hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(plannedCell ?? world.Player.Position));
-                    return;
-                }
-                if (aim == AimMode.Push)
-                {
-                    Push.Aim(skillWorld.Player.Position, cell.Value, out var direction, out int side);
-                    var push = Push.Preview(skillWorld, settings, skillWorld.Player, direction, side);
-                    pushAreaView.Show(push.Cells);
-                    hudView.ShowPushPreview(push);
-                    if (clicked) RequestPush(cell.Value);
-                    return;
-                }
-                if (aim == AimMode.Sonic)
-                {
-                    areaView.Hide();
-                    pushAreaView.Hide();
-                    // 마우스 아래 적 (복제 세계에서는 같은 ID로 찾는다).
-                    var under = world.UnitAt(cell.Value);
-                    var sonicTarget = under != null && !under.IsPlayer ? skillWorld.FindUnit(under.Id) : null;
-                    if (sonicTarget == null) hudView.ShowSonicHint();
-                    else
-                    {
-                        hudView.ShowSonicPreview(SonicAttack.Preview(skillWorld, settings, skillWorld.Player, sonicTarget));
-                        if (clicked) RequestSonic(sonicTarget.Id);
-                    }
-                    return;
-                }
-                var area = AreaAttack.Preview(skillWorld, settings, skillWorld.Player, cell.Value);
-                areaView.Show(area.Cells);
-                hudView.ShowAreaPreview(area);
-                if (clicked) RequestAreaAttack(cell.Value);
-                return;
-            }
-            if (aim == AimMode.None && world.Map.IsClosedChest(cell.Value) && IsKnown(cell.Value))
+            if (world.Map.IsClosedChest(cell.Value) && IsKnown(cell.Value))
             {
                 bool canOpen = !world.PlayerActed && Loadout.CellDistance(world.Player.Position, cell.Value) == 1;
                 hudView.ShowCratePreview(canOpen);
@@ -801,8 +835,107 @@ namespace GirlsDungeon.Game
             else hudView.ClearPreview();
         }
 
-        /// <summary>이동 예약 칸에 홀로그램을 세운다. 고른 대상이 있으면 그쪽을, 없으면 걸어갈 방향을 바라본다.</summary>
-        private void RefreshGhost(World world, Unit selected)
+        /// <summary>
+        /// 스킬 조준 중 입력 (2026-11-14 사용자). 미리보기는 예약이 있으면 예약 칸으로 걸어 본 복제 세계에서 계산한다 (확인 때와 같은 결과).
+        /// 범위 스킬(수류탄 · 넉백): 클릭 = 그 칸으로 범위를 옮긴다 (고르기 전에는 마우스를 따라다님). 이동 범위는 보이기만 한다.
+        /// 대상 스킬(음파): 사격과 같다 — 적 클릭 = 대상 고르기, 파란 칸 클릭 = 이동 예약 (예약 칸 다시 클릭 = 이동만).
+        /// 쓰기는 확인(버튼 · Enter · 그 스킬 카드)으로.
+        /// </summary>
+        private void HandleSkillAim(World world, GridPos? cell, bool clicked, bool canMove)
+        {
+            var skillWorld = PreviewWorld();
+            if (aim == AimMode.Sonic)
+            {
+                HandleSonicAim(world, skillWorld, cell, clicked, canMove);
+                return;
+            }
+
+            if (clicked && skillWorld != null && world.Map.InBounds(cell.Value)) skillCell = cell.Value;
+            SetHover(cell);
+            var at = skillCell ?? cell;
+            bool usable = false;
+            if (skillWorld == null || !at.HasValue)
+            {
+                areaView.Hide();
+                pushAreaView.Hide();
+                if (skillWorld == null) hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(plannedCell ?? world.Player.Position));
+                else ShowIdlePreview(null, default);
+            }
+            else if (aim == AimMode.Push)
+            {
+                Push.Aim(skillWorld.Player.Position, at.Value, out var direction, out int side);
+                var push = Push.Preview(skillWorld, settings, skillWorld.Player, direction, side);
+                pushAreaView.Show(push.Cells);
+                hudView.ShowPushPreview(push);
+                usable = push.CanPush;
+            }
+            else
+            {
+                var area = AreaAttack.Preview(skillWorld, settings, skillWorld.Player, at.Value);
+                areaView.Show(area.Cells);
+                hudView.ShowAreaPreview(area);
+                usable = area.CanThrow;
+            }
+            hudView.ShowAttackConfirm(skillCell.HasValue, skillCell.HasValue && usable && !Busy);
+            RefreshGhost(world, at.HasValue ? GridSpace.ToWorld(at.Value) : (Vector3?)null);
+        }
+
+        private void HandleSonicAim(World world, World skillWorld, GridPos? cell, bool clicked, bool canMove)
+        {
+            areaView.Hide();
+            pushAreaView.Hide();
+            bool handled = false;
+            if (cell.HasValue)
+            {
+                var under = world.UnitAt(cell.Value);
+                if (under != null && !under.IsPlayer)
+                {
+                    // 마우스 아래 적 (복제 세계에서는 같은 ID로 찾는다).
+                    var target = skillWorld?.FindUnit(under.Id);
+                    SetHover(cell);
+                    if (target == null) hudView.ShowSonicHint();
+                    else
+                    {
+                        var preview = SonicAttack.Preview(skillWorld, settings, skillWorld.Player, target);
+                        hudView.ShowSonicPreview(preview);
+                        if (clicked && preview.CanUse) skillTargetId = under.Id;
+                    }
+                    handled = true;
+                }
+                else if (canMove && reachable != null && reachable.ContainsKey(cell.Value) && cell.Value != world.Player.Position)
+                {
+                    bool isPlanned = plannedCell.HasValue && plannedCell.Value == cell.Value;
+                    if (isPlanned) hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(cell.Value));
+                    else hudView.ShowMovePreview(WeakestCoverAgainstCombatants(cell.Value));
+                    SetHover(cell);
+                    if (clicked)
+                    {
+                        if (isPlanned) ConfirmMove();
+                        else PlanMove(cell.Value);
+                    }
+                    handled = true;
+                }
+                else if (clicked && cell.Value == world.Player.Position && plannedCell.HasValue) ClearPlan();
+            }
+
+            // 예약을 바꿨으면 복제 세계도 바뀐다.
+            skillWorld = PreviewWorld();
+            var locked = skillTargetId >= 0 && skillWorld != null ? skillWorld.FindUnit(skillTargetId) : null;
+            var lockedPreview = locked != null ? SonicAttack.Preview(skillWorld, settings, skillWorld.Player, locked) : default;
+            if (!handled)
+            {
+                SetHover(null);
+                if (locked != null) hudView.ShowSonicPreview(lockedPreview);
+                else if (plannedCell.HasValue) hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(plannedCell.Value));
+                else hudView.ShowSonicHint();
+            }
+            hudView.ShowAttackConfirm(skillTargetId >= 0, locked != null && lockedPreview.CanUse && !Busy);
+            var lockedUnit = skillTargetId >= 0 ? world.FindUnit(skillTargetId) : null;
+            RefreshGhost(world, lockedUnit != null ? GridSpace.ToWorld(lockedUnit.Position) : (Vector3?)null);
+        }
+
+        /// <summary>이동 예약 칸에 홀로그램을 세운다. 바라볼 곳(고른 대상)이 있으면 그쪽을, 없으면 걸어갈 방향을 바라본다.</summary>
+        private void RefreshGhost(World world, Vector3? lookAt)
         {
             if (!plannedCell.HasValue || Busy)
             {
@@ -810,7 +943,7 @@ namespace GirlsDungeon.Game
                 return;
             }
             var at = GridSpace.ToWorld(plannedCell.Value);
-            var look = selected != null ? GridSpace.ToWorld(selected.Position) : at + (at - GridSpace.ToWorld(world.Player.Position));
+            var look = lookAt ?? at + (at - GridSpace.ToWorld(world.Player.Position));
             var direction = look - at;
             float yaw = direction.sqrMagnitude > 0.0001f ? Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg : playerView.FacingYaw;
             playerView.ShowGhost(at, yaw);

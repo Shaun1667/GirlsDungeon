@@ -231,7 +231,8 @@ namespace GirlsDungeon.Game
 
         private void OnAttackConfirmPressed()
         {
-            moveController.ConfirmAttack();
+            // 스킬 조준 중이면 고른 스킬 대상에 쓴다 (2026-11-14).
+            moveController.Confirm();
         }
 
         /// <summary>[상태 변경] 적 클릭과 같다: 그 적을 사격 대상으로 고른다 (노란 선 · 확인 버튼). 못 고르면 false.</summary>

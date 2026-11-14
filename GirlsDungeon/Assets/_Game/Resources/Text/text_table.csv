@@ -103,14 +103,14 @@ ui.skill.shoot_tip,"사격 · 적을 클릭해 고른 뒤 확인 (공격 버튼 
 {3}","Shoot · click an enemy, then confirm (Attack button · Enter · 1)
 {0} · Attack {1} · Range {2} · {4} shot(s) per turn
 {3}"
-ui.skill.grenade_tip,"수류탄 · 칸을 클릭해 던짐 (오른쪽 클릭 취소)
+ui.skill.grenade_tip,"수류탄 · 칸을 클릭해 범위를 옮긴 뒤 확인 (공격 버튼 · Enter · 2, 오른쪽 클릭 취소)
 던지는 거리 {0}칸 · 반경 {1}칸 · 피해 {2}% · 안정 −{3}
-재사용 대기 {4}라운드 · 쓰면 차례 끝","Grenade · click a cell to throw (right-click cancels)
+재사용 대기 {4}라운드 · 쓰면 차례 끝","Grenade · click a cell to move the blast, then confirm (Attack button · Enter · 2, right-click cancels)
 Throw range {0} · Radius {1} · Damage {2}% · Stability −{3}
 Cooldown {4} rounds · Ends your turn"
-ui.skill.push_tip,"넉백 공격 · 마우스 쪽으로 앞 너비 {0} × 길이 {1}
+ui.skill.push_tip,"넉백 공격 · 칸을 클릭해 방향을 고른 뒤 확인 · 앞 너비 {0} × 길이 {1}
 피해 {2}% · 부딪히면 {3} · 낭떠러지로 밀린 적은 떨어짐
-재사용 대기 {4}라운드 · 쓰면 차례 끝","Knockback · width {0} × length {1} toward the pointer
+재사용 대기 {4}라운드 · 쓰면 차례 끝","Knockback · click a cell to aim, then confirm · width {0} × length {1}
 Damage {2}% · Collision {3} · Enemies pushed into a chasm fall
 Cooldown {4} rounds · Ends your turn"
 ui.skill.overwatch_tip,"감시 · 사격 대신 걸고 차례 끝
@@ -142,12 +142,12 @@ ui.combat.preview_planned_move,"이동 예정 · 엄폐: {0}
 적 클릭 → 공격 · 스킬(2~4): 이동 후 사용 · 같은 칸 다시 클릭 / Enter: 이동만 · 오른쪽 클릭: 취소","Planned move · Cover: {0}
 Click enemy → Attack · Skills (2-4): used after moving · Click again / Enter: move only · Right-click: cancel"
 ui.skill.sonic,음파 공격,Sonic blast
-ui.skill.sonic_tip,"음파 공격 · 적을 클릭 (사거리 {0}칸, 보이는 적 하나)
+ui.skill.sonic_tip,"음파 공격 · 적을 클릭해 고른 뒤 확인 (사거리 {0}칸, 보이는 적 하나)
 피해 {1}% · 엄폐 무시 · 안정 −{2}
-재사용 대기 {3}라운드 · 쓰면 차례 끝","Sonic blast · click an enemy (range {0}, one visible enemy)
+재사용 대기 {3}라운드 · 쓰면 차례 끝","Sonic blast · click an enemy, then confirm (range {0}, one visible enemy)
 Damage {1}% · Ignores cover · Stability −{2}
 Cooldown {3} rounds · Ends your turn"
-ui.combat.preview_sonic_hint,음파 공격 · 적을 클릭 (오른쪽 클릭 취소),Sonic blast · click an enemy (right-click to cancel)
+ui.combat.preview_sonic_hint,음파 공격 · 적 클릭 = 대상 · 파란 칸 = 이동 예약 (오른쪽 클릭 취소),Sonic blast · click an enemy to target · blue cell to plan a move (right-click cancels)
 ui.combat.preview_sonic,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
 음파 피해 {5} (엄폐 무시) · 안정 −{6}","{0} · HP {1}/{2} · Stability {3}/{4}
 Sonic damage {5} (ignores cover) · Stability −{6}"
