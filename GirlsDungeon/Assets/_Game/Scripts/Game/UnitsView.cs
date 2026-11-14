@@ -9,7 +9,7 @@ namespace GirlsDungeon.Game
     /// 플레이어가 아닌 유닛을 그린다. 지금 보이는 칸(Vision)에 있거나 전투에 들어온 적만 화면에 나타난다.
     /// 사건 재생기(EventPlayer)에서 사건을 하나씩 받아 칸 사이를 걸어서 옮긴다 (한 칸 = 걸음 시간).
     /// 모습: 그림 목록(UnitVisualCatalog)에서 그 유닛 그림 ID의 프리팹이 있으면 모델을, 없으면 그레이박스 캡슐을 그린다 (3-15c).
-    /// 모델은 걷는 동안 걷는 방향을, 서 있을 때는 플레이어를 바라본다.
+    /// 모델은 걷는 동안 걷는 방향을, 서 있을 때는 플레이어를 바라본다. 쏘는 사건(UnitAttacked)이 오면 대상을 바라보고 사격 트리거를 켠다.
     /// </summary>
     public sealed class UnitsView : MonoBehaviour
     {
@@ -21,6 +21,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private float bodyHeight = 1f;
         [Tooltip("How fast a model turns to its facing (higher = snappier).")]
         [SerializeField] private float turnSharpness = 12f;
+        [Tooltip("Seconds a model keeps its walking pose and facing after a step, so steps in a row do not flicker to idle.")]
+        [SerializeField] private float walkHoldSeconds = 0.2f;
 
         private sealed class Body
         {
@@ -35,6 +37,10 @@ namespace GirlsDungeon.Game
             public Animator Animator;
             public int SpeedHash;
             public bool HasSpeed;
+            public int FireHash;
+            public bool HasFire;
+            // 마지막 걸음이 끝난 뒤 지난 시간 — 걸음 사이의 짧은 틈에는 걷는 자세 · 방향을 유지한다.
+            public float StillFor = 999f;
         }
 
         private readonly Dictionary<int, Body> views = new Dictionary<int, Body>();
@@ -115,9 +121,16 @@ namespace GirlsDungeon.Game
                 {
                     foreach (var parameter in view.Animator.parameters)
                     {
-                        if (parameter.type != AnimatorControllerParameterType.Float || parameter.name != visual.speedParameter) continue;
-                        view.SpeedHash = parameter.nameHash;
-                        view.HasSpeed = true;
+                        if (parameter.type == AnimatorControllerParameterType.Float && parameter.name == visual.speedParameter)
+                        {
+                            view.SpeedHash = parameter.nameHash;
+                            view.HasSpeed = true;
+                        }
+                        if (parameter.type == AnimatorControllerParameterType.Trigger && parameter.name == visual.fireTrigger)
+                        {
+                            view.FireHash = parameter.nameHash;
+                            view.HasFire = true;
+                        }
                     }
                 }
             }
@@ -145,6 +158,7 @@ namespace GirlsDungeon.Game
             facing = Quaternion.identity;
             Vector3 direction;
             if (view.Elapsed < 1f) direction = view.To - view.From;
+            else if (view.StillFor < walkHoldSeconds) return false;
             else
             {
                 var player = source != null ? source.World.Player : null;
@@ -170,6 +184,18 @@ namespace GirlsDungeon.Game
                         view.From = view.Object.transform.position;
                         view.To = CellPosition(moved.To);
                         view.Elapsed = 0f;
+                        break;
+                    case UnitAttacked attacked when views.TryGetValue(attacked.AttackerId, out var shooter) && shooter.Model != null:
+                        // 쏘는 순간 대상을 바로 바라보고 사격 동작을 켠다.
+                        var target = attacked.TargetId == source.World.PlayerId ? source.World.Player : source.World.FindUnit(attacked.TargetId);
+                        if (target != null)
+                        {
+                            var toTarget = GridSpace.ToWorld(target.Position) - shooter.To;
+                            toTarget.y = 0f;
+                            if (toTarget.sqrMagnitude > 0.0001f)
+                                shooter.Model.rotation = Quaternion.LookRotation(toTarget) * Quaternion.Euler(0f, shooter.YawOffset, 0f);
+                        }
+                        if (shooter.HasFire) shooter.Animator.SetTrigger(shooter.FireHash);
                         break;
                     case UnitDied died when views.TryGetValue(died.UnitId, out var deadView):
                         Destroy(deadView.Object);
@@ -205,9 +231,10 @@ namespace GirlsDungeon.Game
                 }
                 view.Object.transform.position = position;
                 if (view.Model == null) continue;
+                view.StillFor = view.Elapsed < 1f ? 0f : view.StillFor + Time.deltaTime;
                 if (TryFacing(view, out var facing))
                     view.Model.rotation = Quaternion.Slerp(view.Model.rotation, facing, 1f - Mathf.Exp(-turnSharpness * Time.deltaTime));
-                if (view.HasSpeed) view.Animator.SetFloat(view.SpeedHash, view.Elapsed < 1f ? 1f : 0f);
+                if (view.HasSpeed) view.Animator.SetFloat(view.SpeedHash, view.StillFor < walkHoldSeconds ? 1f : 0f);
             }
         }
 
