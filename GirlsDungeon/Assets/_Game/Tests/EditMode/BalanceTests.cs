@@ -271,6 +271,25 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void GrenadeAreas_MatchBalanceTable6_7()
+        {
+            var combat = Load().CreateCombatSettings();
+            // 사용자 결정 (2026-11-14): A = 마름모 반경 2 (13칸), 나머지는 6-2 (반경 1 정사각형 = 9칸).
+            Assert.That(combat.GrenadeRadiusFor(GirlsDungeon.Core.Sim.CharacterKind.HeroA), Is.EqualTo(2));
+            Assert.That(combat.GrenadeShapeFor(GirlsDungeon.Core.Sim.CharacterKind.HeroA), Is.EqualTo(GirlsDungeon.Core.Sim.AreaShape.Diamond));
+            foreach (var kind in new[] { GirlsDungeon.Core.Sim.CharacterKind.HeroB, GirlsDungeon.Core.Sim.CharacterKind.HeroC, GirlsDungeon.Core.Sim.CharacterKind.None })
+            {
+                Assert.That(combat.GrenadeRadiusFor(kind), Is.EqualTo(1), kind.ToString());
+                Assert.That(combat.GrenadeShapeFor(kind), Is.EqualTo(GirlsDungeon.Core.Sim.AreaShape.Square), kind.ToString());
+            }
+            int diamond = 0;
+            for (int dy = -2; dy <= 2; dy++)
+                for (int dx = -2; dx <= 2; dx++)
+                    if (GirlsDungeon.Core.Sim.AreaAttack.InArea(dx, dy, 2, GirlsDungeon.Core.Sim.AreaShape.Diamond)) diamond++;
+            Assert.That(diamond, Is.EqualTo(13));
+        }
+
+        [Test]
         public void SpecialRooms_MatchBalanceTable1_21To1_24()
         {
             var map = Load().CreateMapSettings();

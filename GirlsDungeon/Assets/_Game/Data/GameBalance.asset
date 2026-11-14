@@ -109,6 +109,8 @@ MonoBehaviour:
     workshopOptionPercent: 55
     workshopSetPercent: 35
     doorForcePercent: 70
+    grenadeRadius: 2
+    grenadeShape: 1
   - kind: 2
     nameKey: character.hero_b.name
     visualId: hero_b
@@ -122,6 +124,8 @@ MonoBehaviour:
     workshopOptionPercent: 70
     workshopSetPercent: 50
     doorForcePercent: 0
+    grenadeRadius: 0
+    grenadeShape: 0
   - kind: 3
     nameKey: character.hero_c.name
     visualId: hero_c
@@ -135,6 +139,8 @@ MonoBehaviour:
     workshopOptionPercent: 70
     workshopSetPercent: 50
     doorForcePercent: 0
+    grenadeRadius: 0
+    grenadeShape: 0
   minEnemiesPerFloor: 4
   maxEnemiesPerFloor: 6
   enemyMinDistanceFromStart: 8

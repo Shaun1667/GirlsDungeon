@@ -112,6 +112,7 @@
 |---|---|---|---|
 | 6-1 | 던지기 사거리 | 6칸 (직선 거리, 지금 보이는 칸만) | `grenadeThrowRange` |
 | 6-2 | 폭발 범위 | 반경 1칸 = 3 × 3 (플레이어도 맞음) | `grenadeRadius` |
+| 6-7 | 캐릭터별 폭발 범위 (2026-11-14, 사용자) | A = 마름모 반경 2칸 = 13칸 (가로 + 세로 거리 합 2 이하: 1 · 3 · 5 · 3 · 1줄). B · C · 고르지 않은 판 = 6-2 그대로 | `characters[].grenadeRadius` (0 = 6-2) · `grenadeShape` (Square · Diamond) |
 | 6-3 | 피해 배율 | 70% (치명 없음) | `grenadeDamagePercent` |
 | 6-4 | 안정 피해 | 2 (맞은 유닛마다) | `grenadeStabilityDamage` |
 | 6-5 | 재사용 대기 | 3라운드 (던진 라운드 + 2라운드 쉬고 4라운드에 다시) · 전투가 끝나면 초기화 | `grenadeCooldownRounds` |

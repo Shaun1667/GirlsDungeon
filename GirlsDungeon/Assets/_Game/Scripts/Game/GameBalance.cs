@@ -60,6 +60,10 @@ namespace GirlsDungeon.Game
         public int workshopSetPercent = 50;
         [Tooltip("Chance (%) to force a locked door open, one try per door. 0 = cannot force.")]
         public int doorForcePercent;
+        [Tooltip("Grenade radius for this character (0 = the shared grenade radius, square).")]
+        public int grenadeRadius;
+        [Tooltip("Grenade area shape, used only when grenadeRadius is above 0.")]
+        public AreaShape grenadeShape;
     }
 
     /// <summary>파츠 능력치 하나의 값 범위 (표 한 줄, BALANCE 17번).</summary>
@@ -218,6 +222,7 @@ namespace GirlsDungeon.Game
                 skills = new[] { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
                 workshopOptionPercent = 55, workshopSetPercent = 35,
                 doorForcePercent = 70,
+                grenadeRadius = 2, grenadeShape = AreaShape.Diamond,
             },
             new CharacterEntry
             {
@@ -687,6 +692,8 @@ namespace GirlsDungeon.Game
                     WorkshopOptionPercent = entry.workshopOptionPercent,
                     WorkshopSetPercent = entry.workshopSetPercent,
                     DoorForcePercent = entry.doorForcePercent,
+                    GrenadeRadius = entry.grenadeRadius,
+                    GrenadeShape = entry.grenadeShape,
                 });
             }
             foreach (var entry in partStats) settings.PartStatRanges.Add(new PartStatRange { Stat = entry.stat, Min = entry.min, Max = entry.max });

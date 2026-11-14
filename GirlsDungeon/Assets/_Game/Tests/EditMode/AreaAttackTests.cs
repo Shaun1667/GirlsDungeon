@@ -47,6 +47,35 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void CharacterRow_CanMakeTheBlastADiamond_OthersKeepTheSquare()
+        {
+            // BALANCE 6-7 (2026-11-14 사용자): A = 마름모 반경 2 = 13칸. 열린 9 × 9, 폭심지 (4,4).
+            var world = new World(1, new GirlsDungeon.Core.Random.RandomStreams(1))
+            {
+                Map = TestData.Parse(".........", ".........", ".........", ".........", ".........", ".........", ".........", ".........", "........."),
+            };
+            var combat = TestData.Combat();
+            combat.Characters.Add(new CharacterStats { Kind = CharacterKind.HeroA, GrenadeRadius = 2, GrenadeShape = AreaShape.Diamond });
+            world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(1, 1)).Id;
+            var straight = world.AddUnit(combat.StatsFor(UnitKind.Rifleman), new GridPos(4, 6));
+            var diagonal = world.AddUnit(combat.StatsFor(UnitKind.Rifleman), new GridPos(5, 5));
+            var outside = world.AddUnit(combat.StatsFor(UnitKind.Rifleman), new GridPos(6, 5));
+
+            world.PlayerCharacter = CharacterKind.HeroA;
+            var diamond = AreaAttack.Preview(world, combat, world.Player, new GridPos(4, 4));
+            Assert.That(diamond.CanThrow, Is.True);
+            Assert.That(diamond.Cells.Count, Is.EqualTo(13));
+            Assert.That(diamond.Cells, Has.Member(new GridPos(4, 2)));
+            Assert.That(diamond.Cells, Has.No.Member(new GridPos(6, 6)), "corner of the 5 x 5 is outside");
+            CollectionAssert.AreEquivalent(new[] { straight.Id, diagonal.Id }, diamond.Hits.Select(h => h.Target.Id));
+
+            world.PlayerCharacter = CharacterKind.None;
+            var square = AreaAttack.Preview(world, combat, world.Player, new GridPos(4, 4));
+            Assert.That(square.Cells.Count, Is.EqualTo(9));
+            CollectionAssert.AreEquivalent(new[] { diagonal.Id }, square.Hits.Select(h => h.Target.Id));
+        }
+
+        [Test]
         public void Cover_IsJudgedFromTheBlast_NotFromTheThrower()
         {
             // 상자 (4,0) · 적 (5,0). 플레이어 (0,0) 쪽에서 보면 상자 뒤지만, 폭심지 (6,0)은 반대편이라 엄폐가 없다.

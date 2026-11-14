@@ -14,6 +14,15 @@ namespace GirlsDungeon.Core.Sim
         NotVisible = 3,
     }
 
+    /// <summary>수류탄 범위 모양 (캐릭터 줄 GrenadeShape, 2026-11-14). 끝에만 추가.</summary>
+    public enum AreaShape
+    {
+        /// <summary>정사각형: 가로 · 세로 · 대각 반경 칸 (반경 1 = 3 × 3).</summary>
+        Square = 0,
+        /// <summary>마름모: 가로 + 세로 거리 합이 반경 이하 (반경 2 = 13칸).</summary>
+        Diamond = 1,
+    }
+
     /// <summary>범위 공격 한 대상의 미리보기.</summary>
     public readonly struct AreaHit
     {
@@ -65,7 +74,7 @@ namespace GirlsDungeon.Core.Sim
     /// <summary>
     /// 범위 공격(수류탄 스킬)의 한 곳 (BALANCE 6번).
     /// - 던질 수 있는 칸: 사거리 안이고 지금 보이는 칸 (Vision). 높은 엄폐 너머로도 던질 수 있다.
-    /// - 범위: 폭심지에서 가로 · 세로 · 대각 Radius칸 (반경 1 = 3 × 3). 플레이어도 맞는다.
+    /// - 범위: 폭심지에서 반경 · 모양(CombatSettings.GrenadeRadiusFor · GrenadeShapeFor — 캐릭터 줄, 없으면 기본 정사각형 GrenadeRadius). 플레이어도 맞는다.
     /// - 피해: 공격력 공식 × 피해 배율, 엄폐는 폭심지 기준이고 안정지수의 감소(StabilityGuard)는 무시한다. 치명타 없음.
     /// </summary>
     public static class AreaAttack
@@ -85,17 +94,20 @@ namespace GirlsDungeon.Core.Sim
                     block = AreaBlock.NotVisible;
             }
 
+            var character = attacker.IsPlayer ? world.PlayerCharacter : CharacterKind.None;
+            int radius = settings.GrenadeRadiusFor(character);
+            var shape = settings.GrenadeShapeFor(character);
             var cells = new List<GridPos>();
-            for (int y = center.Y - settings.GrenadeRadius; y <= center.Y + settings.GrenadeRadius; y++)
-                for (int x = center.X - settings.GrenadeRadius; x <= center.X + settings.GrenadeRadius; x++)
-                    if (map.InBounds(new GridPos(x, y))) cells.Add(new GridPos(x, y));
+            for (int y = center.Y - radius; y <= center.Y + radius; y++)
+                for (int x = center.X - radius; x <= center.X + radius; x++)
+                    if (map.InBounds(new GridPos(x, y)) && InArea(x - center.X, y - center.Y, radius, shape)) cells.Add(new GridPos(x, y));
 
             var hits = new List<AreaHit>();
             bool hitsPlayer = false;
             foreach (var unit in world.Units)
             {
                 var position = unit.Position;
-                if (Math.Max(Math.Abs(position.X - center.X), Math.Abs(position.Y - center.Y)) > settings.GrenadeRadius) continue;
+                if (!InArea(position.X - center.X, position.Y - center.Y, radius, shape)) continue;
 
                 var cover = Cover.Against(map, position, center);
                 int reduction = cover == CoverLevel.Full ? settings.FullCoverReductionPercent
@@ -111,6 +123,14 @@ namespace GirlsDungeon.Core.Sim
                 if (CoverBreak.BreaksOnNextHit(map, settings, piece)) coverBreaks++;
 
             return new AreaPreview(block, center, cells, hits, hitsPlayer, coverBreaks);
+        }
+
+        /// <summary>폭심지에서 (dx, dy) 떨어진 칸이 범위 안인지.</summary>
+        public static bool InArea(int dx, int dy, int radius, AreaShape shape)
+        {
+            dx = Math.Abs(dx);
+            dy = Math.Abs(dy);
+            return shape == AreaShape.Diamond ? dx + dy <= radius : Math.Max(dx, dy) <= radius;
         }
 
         /// <summary>폭발을 처리한다. 던질 수 없으면 아무것도 바꾸지 않고 false.</summary>

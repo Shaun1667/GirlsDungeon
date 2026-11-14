@@ -70,6 +70,10 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>잠긴 문을 힘으로 열 확률 (%, 문당 1번, 0 = 못 함 — BALANCE 20번, 3-4d).</summary>
         public int DoorForcePercent;
+
+        /// <summary>수류탄 반경 (0 = 기본 CombatSettings.GrenadeRadius) · 모양 (BALANCE 6번, 2026-11-14).</summary>
+        public int GrenadeRadius;
+        public AreaShape GrenadeShape;
     }
 
     /// <summary>전투 수치 (BALANCE 4번 · 5번).</summary>
@@ -313,6 +317,20 @@ namespace GirlsDungeon.Core.Sim
             return false;
         }
 
+        /// <summary>수류탄 반경: 캐릭터 줄 값(0이 아니면), 없으면 기본 GrenadeRadius (BALANCE 6번).</summary>
+        public int GrenadeRadiusFor(CharacterKind kind)
+        {
+            var character = TryCharacter(kind);
+            return character != null && character.GrenadeRadius > 0 ? character.GrenadeRadius : GrenadeRadius;
+        }
+
+        /// <summary>수류탄 모양: 캐릭터 줄의 반경을 쓸 때만 그 줄의 모양, 아니면 정사각형.</summary>
+        public AreaShape GrenadeShapeFor(CharacterKind kind)
+        {
+            var character = TryCharacter(kind);
+            return character != null && character.GrenadeRadius > 0 ? character.GrenadeShape : AreaShape.Square;
+        }
+
         /// <summary>무기 보정 전 플레이어 이동 범위: 캐릭터 줄이 있으면 그 값, 없으면 유닛 표의 플레이어 줄.</summary>
         public int PlayerBaseMoveRange(CharacterKind kind)
         {
@@ -401,6 +419,9 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Treasure settings are invalid.");
             if (CombatDropKeyPercent < 0 || CombatDropKeyPercent > 100)
                 throw new ArgumentException("Key settings are invalid.");
+            foreach (var character in Characters)
+                if (character.GrenadeRadius < 0 || !Enum.IsDefined(typeof(AreaShape), character.GrenadeShape))
+                    throw new ArgumentException($"Grenade area for {character.Kind} is invalid.");
             foreach (var character in Characters)
                 if (character.DoorForcePercent < 0 || character.DoorForcePercent > 100)
                     throw new ArgumentException($"Door force chance for {character.Kind} is invalid.");

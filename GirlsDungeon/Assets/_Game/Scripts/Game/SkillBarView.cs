@@ -251,7 +251,7 @@ namespace GirlsDungeon.Game
             switch (skill)
             {
                 case SkillKind.Grenade:
-                    return Text.Get("ui.skill.grenade_tip", settings.GrenadeThrowRange, settings.GrenadeRadius, settings.GrenadeDamagePercent,
+                    return Text.Get("ui.skill.grenade_tip", settings.GrenadeThrowRange, settings.GrenadeRadiusFor(simulation.World.PlayerCharacter), settings.GrenadeDamagePercent,
                         settings.GrenadeStabilityDamage, settings.GrenadeCooldownRounds);
                 case SkillKind.Push:
                     return Text.Get("ui.skill.push_tip", settings.PushWidth, settings.PushLength, settings.PushDamagePercent,
