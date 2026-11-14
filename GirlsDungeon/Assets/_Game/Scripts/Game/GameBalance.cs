@@ -64,6 +64,23 @@ namespace GirlsDungeon.Game
         public int grenadeRadius;
         [Tooltip("Grenade area shape, used only when grenadeRadius is above 0.")]
         public AreaShape grenadeShape;
+        [Tooltip("Remold gauge maximum (0 = this character has no Remold).")]
+        public int remoldMax;
+        [Tooltip("Remold gained when the player's turn starts.")]
+        public int remoldPerAction;
+        [Tooltip("Remold gained each time the player deals damage.")]
+        public int remoldPerHit;
+        [Tooltip("Remold cost of each skill (0 = the skill uses its cooldown instead).")]
+        public int grenadeRemoldCost;
+        public int pushRemoldCost;
+        public int sonicRemoldCost;
+        [Tooltip("Bonus damage (%) against enemies with a movement debuff.")]
+        public int slowedDamagePercent;
+        [Tooltip("After walking at least this many cells this turn, attacks slow the target first (0 = never).")]
+        public int slowAfterMoveCells;
+        [Tooltip("Movement debuff: cells removed and enemy turns it lasts.")]
+        public int slowAmount;
+        public int slowTurns;
     }
 
     /// <summary>파츠 능력치 하나의 값 범위 (표 한 줄, BALANCE 17번).</summary>
@@ -269,6 +286,8 @@ namespace GirlsDungeon.Game
                 workshopOptionPercent = 55, workshopSetPercent = 35,
                 doorForcePercent = 70,
                 grenadeRadius = 2, grenadeShape = AreaShape.Diamond,
+                remoldMax = 6, remoldPerAction = 1, remoldPerHit = 1, grenadeRemoldCost = 4, sonicRemoldCost = 1,
+                slowedDamagePercent = 20, slowAfterMoveCells = 5, slowAmount = 2, slowTurns = 2,
             },
             new CharacterEntry
             {
@@ -807,6 +826,16 @@ namespace GirlsDungeon.Game
                     DoorForcePercent = entry.doorForcePercent,
                     GrenadeRadius = entry.grenadeRadius,
                     GrenadeShape = entry.grenadeShape,
+                    RemoldMax = entry.remoldMax,
+                    RemoldPerAction = entry.remoldPerAction,
+                    RemoldPerHit = entry.remoldPerHit,
+                    GrenadeRemoldCost = entry.grenadeRemoldCost,
+                    PushRemoldCost = entry.pushRemoldCost,
+                    SonicRemoldCost = entry.sonicRemoldCost,
+                    SlowedDamagePercent = entry.slowedDamagePercent,
+                    SlowAfterMoveCells = entry.slowAfterMoveCells,
+                    SlowAmount = entry.slowAmount,
+                    SlowTurns = entry.slowTurns,
                 });
             }
             foreach (var entry in partStats) settings.PartStatRanges.Add(new PartStatRange { Stat = entry.stat, Min = entry.min, Max = entry.max });

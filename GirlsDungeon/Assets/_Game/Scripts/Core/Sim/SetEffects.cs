@@ -86,10 +86,12 @@ namespace GirlsDungeon.Core.Sim
         /// 세트 효과로 바뀌는 피해 (%p). 100에 더해 곱한다 (+12 → ×1.12, −20 → ×0.8).
         /// 주는 쪽 효과는 플레이어가 때릴 때만, 받는 쪽 효과(방호 태세)는 플레이어가 맞을 때만.
         /// </summary>
-        public static int DamagePercent(World world, CombatSettings settings, Unit attacker, Unit target, DamageSource source)
+        public static int DamagePercent(World world, CombatSettings settings, Unit attacker, Unit target, DamageSource source, GridPos? from = null)
         {
             // 상점 주인의 밑천(스택)은 받는 피해를 줄인다 (KeeperSkills, 3-15f) — 모든 피해 미리보기가 이 함수를 거친다.
-            return SetPercent(world, settings, attacker, target, source) - KeeperSkills.DamageTakenReduction(world, settings, target);
+            // 이동 감소를 가진 적에게 주는 피해 증가 (Remold, 3-16 — from = 이동 예약 칸에서 쏘는 미리보기).
+            return SetPercent(world, settings, attacker, target, source) - KeeperSkills.DamageTakenReduction(world, settings, target)
+                + Remold.SlowedDamagePercent(world, settings, attacker, target, from);
         }
 
         private static int SetPercent(World world, CombatSettings settings, Unit attacker, Unit target, DamageSource source)

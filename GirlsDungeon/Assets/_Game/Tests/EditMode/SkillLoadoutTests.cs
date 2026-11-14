@@ -65,9 +65,11 @@ namespace GirlsDungeon.Tests
                 Assert.That(hp - enemy.Hp, Is.EqualTo(preview.Damage));
                 Assert.That(enemy.Stability, Is.EqualTo(System.Math.Max(0, stability - preview.StabilityDamage)));
             }
-            // 쓰면 차례가 끝나고 적 차례 뒤 내 차례가 오며 한 라운드 줄어든다 (적은 한 방에 쓰러지지 않는다: 10 × 10 ÷ 12 × 60% = 5).
+            // 쓰면 차례가 끝나고 적 차례 뒤 내 차례가 온다 (적은 한 방에 쓰러지지 않는다: 10 × 10 ÷ 12 × 60% = 5).
+            // A의 음파는 재사용 대기 대신 리몰딩 1 (3-16): 전투 시작 1 − 1 + 피해 1 + 다음 차례 1 = 2.
             Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
-            Assert.That(world.SonicCooldown, Is.EqualTo(combat.SonicCooldownRounds - 1));
+            Assert.That(world.SonicCooldown, Is.EqualTo(0));
+            Assert.That(world.PlayerRemold, Is.EqualTo(2));
         }
 
         [Test]
@@ -89,7 +91,8 @@ namespace GirlsDungeon.Tests
         [Test]
         public void Sonic_OnCooldown_IsBlocked()
         {
-            var (_, world, enemy, combat) = StartCombat(CharacterKind.HeroA);
+            // 리몰딩이 없는 판(캐릭터 없음)은 재사용 대기를 쓴다.
+            var (_, world, enemy, combat) = StartCombat(CharacterKind.None);
             world.SonicCooldown = 1;
             Assert.That(SonicAttack.Preview(world, combat, world.Player, enemy).Block, Is.EqualTo(SonicBlock.NotReady));
         }
@@ -98,6 +101,7 @@ namespace GirlsDungeon.Tests
         public void HeroA_StillThrowsTheGrenadeFromSlot4()
         {
             var (simulation, world, enemy, combat) = StartCombat(CharacterKind.HeroA);
+            world.PlayerRemold = 4;
             Assert.That(simulation.Execute(new AreaAttackCommand(enemy.Position, combat)), Is.True);
         }
 

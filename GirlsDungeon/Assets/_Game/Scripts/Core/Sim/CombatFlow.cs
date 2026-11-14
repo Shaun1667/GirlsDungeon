@@ -16,7 +16,7 @@ namespace GirlsDungeon.Core.Sim
             if (player == null || world.Mode == WorldMode.Defeat) return;
 
             var visible = VisionSystem.Update(world, events);
-            JoinVisibleEnemies(world, visible, events);
+            JoinVisibleEnemies(world, settings, visible, events);
             Alert.CheckZones(world, settings, events);
 
             if (world.Mode == WorldMode.Combat && world.Combatants.Count == 0)
@@ -37,7 +37,7 @@ namespace GirlsDungeon.Core.Sim
         {
             Shop.CheckHostility(world, events);
             var visible = VisionSystem.Update(world, events);
-            JoinVisibleEnemies(world, visible, events);
+            JoinVisibleEnemies(world, settings, visible, events);
             if (world.Mode == WorldMode.Combat)
             {
                 world.PlayerActed = true;
@@ -60,7 +60,7 @@ namespace GirlsDungeon.Core.Sim
             events.Add(new UnitDied(unit.Id, unit.Kind, unit.Position));
         }
 
-        private static void JoinVisibleEnemies(World world, bool[] visible, List<GameEvent> events)
+        private static void JoinVisibleEnemies(World world, CombatSettings settings, bool[] visible, List<GameEvent> events)
         {
             List<int> joined = null;
             foreach (var unit in world.Units)
@@ -87,6 +87,7 @@ namespace GirlsDungeon.Core.Sim
                 world.PlayerShots = 0;
                 events.Add(new CombatStarted(joined));
                 events.Add(new TurnStarted(TurnSide.Player, world.Round));
+                Remold.OnPlayerTurnStarted(world, settings);
             }
             else
             {
@@ -115,6 +116,7 @@ namespace GirlsDungeon.Core.Sim
             world.SonicCooldown = 0;
             SetEffects.OnCombatEnded(world);
             KeeperSkills.Reset(world);
+            Remold.OnCombatEnded(world);
             player.Overwatching = false;
             if (player.Stability != player.MaxStability)
             {
@@ -170,6 +172,7 @@ namespace GirlsDungeon.Core.Sim
             SetEffects.OnPlayerTurnStarted(world);
             world.Player.Overwatching = false;
             events.Add(new TurnStarted(TurnSide.Player, world.Round));
+            Remold.OnPlayerTurnStarted(world, settings);
             // 화상 (상점 주인 화염탄, 3-15f): 차례를 시작할 때 피해.
             KeeperSkills.OnPlayerTurnStarted(world, settings, events);
         }
@@ -197,10 +200,13 @@ namespace GirlsDungeon.Core.Sim
                 // 상점 주인은 스킬을 쓴다 (KeeperSkills, 3-15f): 행동 시작 처리 → 이동 → 스킬 또는 일반 공격.
                 bool keeper = KeeperSkills.Uses(settings, enemy);
                 if (keeper) KeeperSkills.StartAction(world, settings, enemy);
-                var destination = ChooseCell(world, settings, enemy, player);
+                // 이동 감소 (Remold, 3-16): 이번 행동의 이동 칸을 정한 뒤 남은 차례를 줄인다.
+                int moveRange = Remold.MoveRangeOf(enemy);
+                Remold.OnEnemyActed(enemy);
+                var destination = ChooseCell(world, settings, enemy, player, moveRange);
                 if (destination != enemy.Position)
                 {
-                    var path = CombatMovement.Path(world, enemy, destination, enemy.MoveRange);
+                    var path = CombatMovement.Path(world, enemy, destination, moveRange);
                     if (!CombatMovement.Walk(world, settings, enemy, path, events)) continue;
                 }
 
@@ -213,9 +219,9 @@ namespace GirlsDungeon.Core.Sim
             }
         }
 
-        private static Grid.GridPos ChooseCell(World world, CombatSettings settings, Unit enemy, Unit player)
+        private static Grid.GridPos ChooseCell(World world, CombatSettings settings, Unit enemy, Unit player, int moveRange)
         {
-            var reachable = CombatMovement.Reachable(world, enemy, enemy.MoveRange);
+            var reachable = CombatMovement.Reachable(world, enemy, moveRange);
             var best = enemy.Position;
             int bestScore = int.MinValue;
 

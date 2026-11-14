@@ -62,6 +62,7 @@ namespace GirlsDungeon.Tests
             var outside = world.AddUnit(combat.StatsFor(UnitKind.Rifleman), new GridPos(6, 5));
 
             world.PlayerCharacter = CharacterKind.HeroA;
+            world.PlayerRemold = 4; // A의 수류탄은 리몰딩 4 소모 (3-16)
             var diamond = AreaAttack.Preview(world, combat, world.Player, new GridPos(4, 4));
             Assert.That(diamond.CanThrow, Is.True);
             Assert.That(diamond.Cells.Count, Is.EqualTo(13));

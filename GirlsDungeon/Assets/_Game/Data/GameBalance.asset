@@ -125,6 +125,16 @@ MonoBehaviour:
     doorForcePercent: 70
     grenadeRadius: 2
     grenadeShape: 1
+    remoldMax: 6
+    remoldPerAction: 1
+    remoldPerHit: 1
+    grenadeRemoldCost: 4
+    pushRemoldCost: 0
+    sonicRemoldCost: 1
+    slowedDamagePercent: 20
+    slowAfterMoveCells: 5
+    slowAmount: 2
+    slowTurns: 2
   - kind: 2
     nameKey: character.hero_b.name
     visualId: hero_b
@@ -140,6 +150,16 @@ MonoBehaviour:
     doorForcePercent: 0
     grenadeRadius: 0
     grenadeShape: 0
+    remoldMax: 0
+    remoldPerAction: 0
+    remoldPerHit: 0
+    grenadeRemoldCost: 0
+    pushRemoldCost: 0
+    sonicRemoldCost: 0
+    slowedDamagePercent: 0
+    slowAfterMoveCells: 0
+    slowAmount: 0
+    slowTurns: 0
   - kind: 3
     nameKey: character.hero_c.name
     visualId: hero_c
@@ -155,6 +175,16 @@ MonoBehaviour:
     doorForcePercent: 0
     grenadeRadius: 0
     grenadeShape: 0
+    remoldMax: 0
+    remoldPerAction: 0
+    remoldPerHit: 0
+    grenadeRemoldCost: 0
+    pushRemoldCost: 0
+    sonicRemoldCost: 0
+    slowedDamagePercent: 0
+    slowAfterMoveCells: 0
+    slowAmount: 0
+    slowTurns: 0
   minEnemiesPerFloor: 4
   maxEnemiesPerFloor: 6
   enemyMinDistanceFromStart: 8

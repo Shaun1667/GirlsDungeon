@@ -160,7 +160,7 @@ namespace GirlsDungeon.Core.Sim
                 hits.Add(hit);
             }
 
-            var block = world.PushCooldown > 0 ? PushBlock.NotReady : hits.Count == 0 ? PushBlock.NoTarget : PushBlock.None;
+            var block = attacker.IsPlayer && !Remold.IsReady(world, settings, SkillKind.Push) ? PushBlock.NotReady : hits.Count == 0 ? PushBlock.NoTarget : PushBlock.None;
             return new PushPreview(block, direction, cells, hits);
         }
 
@@ -194,19 +194,20 @@ namespace GirlsDungeon.Core.Sim
             var preview = Preview(world, settings, attacker, direction, side);
             if (!preview.CanPush) return false;
 
+            if (attacker.IsPlayer) Remold.Pay(world, settings, SkillKind.Push);
             events.Add(new PushUsed(attacker.Id, attacker.Kind, direction, preview.Cells));
             foreach (var hit in preview.Hits)
             {
                 var target = hit.Target;
+                Remold.BeforeAttack(world, settings, attacker, target, events);
                 int dealt = KeeperSkills.AfterShield(world, target, hit.Damage, events);
                 target.Hp -= dealt;
+                Remold.OnDamageDealt(world, settings, attacker, target, dealt);
                 events.Add(new UnitAttacked(attacker, target, dealt, false, CoverLevel.None, false, false));
                 Alert.Wake(world, target, events);
 
                 ApplySlide(world, settings, attacker, target, hit.Slide, hit.CollisionDamage, events);
             }
-
-            world.PushCooldown = settings.PushCooldownRounds;
             return true;
         }
 

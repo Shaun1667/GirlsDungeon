@@ -324,6 +324,24 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void Remold_MatchesBalanceTable34()
+        {
+            var combat = Load().CreateCombatSettings();
+            var a = combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroA);
+            Assert.That(new[] { a.RemoldMax, a.RemoldPerAction, a.RemoldPerHit, a.SonicRemoldCost, a.GrenadeRemoldCost, a.PushRemoldCost },
+                Is.EqualTo(new[] { 6, 1, 1, 1, 4, 0 }));
+            Assert.That(new[] { a.SlowedDamagePercent, a.SlowAfterMoveCells, a.SlowAmount, a.SlowTurns }, Is.EqualTo(new[] { 20, 5, 2, 2 }));
+            foreach (var kind in new[] { GirlsDungeon.Core.Sim.CharacterKind.HeroB, GirlsDungeon.Core.Sim.CharacterKind.HeroC })
+                Assert.That(combat.TryCharacter(kind).RemoldMax, Is.EqualTo(0), kind.ToString());
+            // 검산 (34): A 산탄총 14 → 방어 2, 이동 감소면 +20% → 12 → 15.
+            Assert.That(GirlsDungeon.Core.Sim.CombatRules.Damage(14, 2, 100, 0, 1), Is.EqualTo(12));
+            Assert.That(GirlsDungeon.Core.Sim.CombatRules.Damage(14, 2, 100, 0, 1, 100, 20), Is.EqualTo(15));
+            var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
+            foreach (var key in new[] { "ui.skill.cost_cooldown", "ui.skill.cost_remold", "ui.remold.gauge", "ui.remold.not_enough", "ui.remold.log_slowed" })
+                Assert.That(table.Contains(key), Is.True, key);
+        }
+
+        [Test]
         public void GrenadeAreas_MatchBalanceTable6_7()
         {
             var combat = Load().CreateCombatSettings();

@@ -74,6 +74,25 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>수류탄 반경 (0 = 기본 CombatSettings.GrenadeRadius) · 모양 (BALANCE 6번, 2026-11-14).</summary>
         public int GrenadeRadius;
         public AreaShape GrenadeShape;
+
+        /// <summary>
+        /// 리몰딩 지수 (BALANCE 34번, 3-16 — 대원 A): 최대치(0 = 이 캐릭터는 리몰딩 없음) · 행동(차례) 시작마다 · 피해를 1회 줄 때마다 얻는 양.
+        /// 스킬 소모가 0보다 크면 그 스킬은 재사용 대기 대신 리몰딩을 쓴다.
+        /// </summary>
+        public int RemoldMax;
+        public int RemoldPerAction;
+        public int RemoldPerHit;
+        public int GrenadeRemoldCost;
+        public int PushRemoldCost;
+        public int SonicRemoldCost;
+
+        /// <summary>이동 감소를 가진 적에게 주는 피해 (+%p, 0 = 없음).</summary>
+        public int SlowedDamagePercent;
+
+        /// <summary>이번 차례에 이만큼 이상 걸었으면 공격 전에 대상에게 이동 감소(SlowAmount칸 · SlowTurns차례)를 건다 (0 = 없음).</summary>
+        public int SlowAfterMoveCells;
+        public int SlowAmount;
+        public int SlowTurns;
     }
 
     /// <summary>전투 수치 (BALANCE 4번 · 5번).</summary>
@@ -412,6 +431,11 @@ namespace GirlsDungeon.Core.Sim
                     throw new ArgumentException($"Stats for character {character.Kind} are invalid.");
                 WeaponFor(character.StartWeapon);
                 if (character.Skills.Count > 3) throw new ArgumentException($"Character {character.Kind} has more than three skill slots.");
+                if (character.RemoldMax < 0 || character.RemoldPerAction < 0 || character.RemoldPerHit < 0
+                    || character.GrenadeRemoldCost < 0 || character.PushRemoldCost < 0 || character.SonicRemoldCost < 0
+                    || character.GrenadeRemoldCost > character.RemoldMax || character.PushRemoldCost > character.RemoldMax || character.SonicRemoldCost > character.RemoldMax
+                    || character.SlowAfterMoveCells < 0 || character.SlowAmount < 0 || character.SlowTurns < 0)
+                    throw new ArgumentException($"Remold settings for character {character.Kind} are invalid.");
             }
             if (CombatDropPartPercent < 0 || CratePartPercent < 0 || CrateWeaponPercent + CratePartPercent > 100
                 || CombatDropWeaponPercent + CombatDropMedkitPercent + CombatDropPartPercent > 100)

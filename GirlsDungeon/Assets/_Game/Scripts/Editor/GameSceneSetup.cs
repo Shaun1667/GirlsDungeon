@@ -135,10 +135,11 @@ namespace GirlsDungeon.EditorTools
                 new Vector2(0.5f, 0.5f), new Vector2(0f, -220f));
             var floorLabel = CreateLabel(canvas.transform, "FloorLabel", font, 30,
                 new Vector2(1f, 1f), new Vector2(-24f, -20f), TextAnchor.UpperRight);
-            // 스킬 바: 아래 가운데에 카드 5장 (사격 · 수류탄 · 밀치기 · 감시 · 턴 종료). 전투 중에만 보인다.
+            // 스킬 바 (3-16 배치 — 사용자 사진 자료): 오른쪽 아래에 정사각 카드 5장 (사격 · 스킬 칸 2 · 3 · 4 · 감시),
+            // 그 위 오른쪽에 턴 종료(Z), 왼쪽에 리몰딩 게이지. 카드 아래에 리몰딩 소모 칸.
             var skillBarObject = new GameObject("SkillBar", typeof(RectTransform));
             skillBarObject.transform.SetParent(canvas.transform, false);
-            // 화면 전체로 늘려야 자식(카드 · 설명 창)이 화면 아래 가운데에 붙는다.
+            // 화면 전체로 늘려야 자식(카드 · 설명 창)이 화면 오른쪽 아래에 붙는다.
             var skillBarRect = skillBarObject.GetComponent<RectTransform>();
             skillBarRect.anchorMin = Vector2.zero;
             skillBarRect.anchorMax = Vector2.one;
@@ -146,17 +147,48 @@ namespace GirlsDungeon.EditorTools
             var barRoot = new GameObject("Cards", typeof(RectTransform));
             barRoot.transform.SetParent(skillBarObject.transform, false);
             var barRect = barRoot.GetComponent<RectTransform>();
-            barRect.anchorMin = barRect.anchorMax = barRect.pivot = new Vector2(0.5f, 0f);
-            barRect.anchoredPosition = new Vector2(0f, 24f);
-            // 카드 6장 (3-12): 사격 · 스킬 칸 2 · 3 · 4(캐릭터마다 다름) · 감시 · 턴 종료.
-            barRect.sizeDelta = new Vector2(6 * CardWidth + 5 * CardGap, CardHeight);
+            barRect.anchorMin = barRect.anchorMax = barRect.pivot = new Vector2(1f, 0f);
+            barRect.anchoredPosition = new Vector2(-BarMargin, BarBottom);
+            barRect.sizeDelta = new Vector2(BarWidth, CardHeight);
             var shootCard = CreateCard(barRoot.transform, "ShootCard", font, 0);
             var slotCard2 = CreateCard(barRoot.transform, "SkillSlot2Card", font, 1);
             var slotCard3 = CreateCard(barRoot.transform, "SkillSlot3Card", font, 2);
             var slotCard4 = CreateCard(barRoot.transform, "SkillSlot4Card", font, 3);
             var overwatchCard = CreateCard(barRoot.transform, "OverwatchCard", font, 4);
-            var endTurnCard = CreateCard(barRoot.transform, "EndTurnCard", font, 5);
-            var tooltipPanel = CreatePanel(skillBarObject.transform, "Tooltip", new Vector2(0.5f, 0f), new Vector2(0f, CardHeight + 40f),
+            var endTurnCard = CreateCard(barRoot.transform, "EndTurnCard", font, 0);
+            var endTurnRect = endTurnCard.GetComponent<RectTransform>();
+            endTurnRect.sizeDelta = new Vector2(EndTurnWidth, UpperRowHeight);
+            endTurnRect.anchoredPosition = new Vector2(BarWidth - EndTurnWidth, CardHeight + UpperRowGap);
+            // 턴 종료는 이름을 왼쪽 가운데, 단축키(Z)를 오른쪽에 둔다 — 사진처럼 가로로 긴 버튼.
+            var endTurnName = endTurnCard.transform.Find("Name").GetComponent<UnityEngine.UI.Text>();
+            endTurnName.rectTransform.anchorMin = endTurnName.rectTransform.anchorMax = endTurnName.rectTransform.pivot = new Vector2(0.5f, 0.5f);
+            endTurnName.rectTransform.anchoredPosition = new Vector2(-14f, 0f);
+            endTurnName.rectTransform.sizeDelta = new Vector2(EndTurnWidth - 50f, UpperRowHeight);
+            endTurnName.fontSize = 22;
+            var endTurnKey = endTurnCard.transform.Find("Key").GetComponent<RectTransform>();
+            endTurnKey.anchorMin = endTurnKey.anchorMax = endTurnKey.pivot = new Vector2(1f, 0.5f);
+            endTurnKey.anchoredPosition = new Vector2(-10f, 0f);
+            var endTurnCooldown = endTurnCard.transform.Find("Cooldown").GetComponent<RectTransform>();
+            endTurnCooldown.sizeDelta = new Vector2(EndTurnWidth, UpperRowHeight);
+
+            // 리몰딩 게이지: 턴 종료 왼쪽, 글("리몰딩 4/6") 아래에 칸 6개.
+            var remoldGauge = new GameObject("RemoldGauge", typeof(RectTransform));
+            remoldGauge.transform.SetParent(barRoot.transform, false);
+            var gaugeRect = remoldGauge.GetComponent<RectTransform>();
+            gaugeRect.anchorMin = gaugeRect.anchorMax = gaugeRect.pivot = new Vector2(0f, 0f);
+            gaugeRect.anchoredPosition = new Vector2(0f, CardHeight + UpperRowGap);
+            gaugeRect.sizeDelta = new Vector2(BarWidth - EndTurnWidth - 16f, UpperRowHeight);
+            var remoldLabel = CreateLabel(remoldGauge.transform, "Label", font, 20, new Vector2(0f, 1f), Vector2.zero, TextAnchor.UpperLeft);
+            remoldLabel.rectTransform.sizeDelta = new Vector2(BarWidth - EndTurnWidth - 16f, 26f);
+            remoldLabel.raycastTarget = false;
+            var remoldPips = CreatePipRow(remoldGauge.transform, "Pips", RemoldPipCount, new Vector2(34f, 14f), 6f, TextAnchor.LowerLeft);
+            var remoldPipsRect = remoldPips.root.GetComponent<RectTransform>();
+            remoldPipsRect.anchorMin = remoldPipsRect.anchorMax = remoldPipsRect.pivot = new Vector2(0f, 0f);
+            remoldPipsRect.anchoredPosition = new Vector2(0f, 2f);
+            remoldGauge.SetActive(false);
+
+            var tooltipPanel = CreatePanel(skillBarObject.transform, "Tooltip", new Vector2(1f, 0f),
+                new Vector2(-BarMargin, BarBottom + CardHeight + UpperRowGap + UpperRowHeight + 16f),
                 new Vector2(900f, 140f), new Color(0.06f, 0.07f, 0.1f, 0.95f));
             tooltipPanel.GetComponent<Image>().raycastTarget = false;
             var tooltipLabel = CreateLabel(tooltipPanel.transform, "Label", font, 24, new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
@@ -164,12 +196,14 @@ namespace GirlsDungeon.EditorTools
             tooltipPanel.SetActive(false);
             var skillBar = skillBarObject.AddComponent<SkillBarView>();
             SetReferences(skillBar, ("barRoot", barRoot), ("shootCard", shootCard), ("slotCard2", slotCard2), ("slotCard3", slotCard3),
-                ("slotCard4", slotCard4), ("overwatchCard", overwatchCard), ("endTurnCard", endTurnCard), ("tooltipPanel", tooltipPanel), ("tooltipLabel", tooltipLabel));
+                ("slotCard4", slotCard4), ("overwatchCard", overwatchCard), ("endTurnCard", endTurnCard), ("tooltipPanel", tooltipPanel), ("tooltipLabel", tooltipLabel),
+                ("remoldGauge", remoldGauge), ("remoldLabel", remoldLabel));
+            SetImageArray(skillBar, "remoldPips", remoldPips.pips);
 
-            // 사격 확인 버튼: 적을 골랐을 때만 스킬 바 오른쪽(오른쪽 아래)에 뜬다 — 화면 가운데의 플레이어를 가리지 않게.
+            // 사격 확인 버튼: 적을 골랐을 때만 스킬 바 왼쪽에 뜬다 — 화면 가운데의 플레이어를 가리지 않게.
             var attackConfirmButton = CreateButton(canvas.transform, "AttackConfirmButton", font, "ui.combat.confirm_attack",
-                new Vector2(1f, 0f), new Vector2(-40f, 24f));
-            attackConfirmButton.GetComponent<RectTransform>().sizeDelta = new Vector2(300f, CardHeight);
+                new Vector2(1f, 0f), new Vector2(-(BarMargin + BarWidth + 20f), BarBottom));
+            attackConfirmButton.GetComponent<RectTransform>().sizeDelta = new Vector2(260f, CardHeight);
             attackConfirmButton.GetComponent<Image>().color = new Color(0.75f, 0.18f, 0.16f, 0.95f);
             attackConfirmButton.gameObject.SetActive(false);
 
@@ -520,11 +554,19 @@ namespace GirlsDungeon.EditorTools
             return buttonObject.GetComponent<Button>();
         }
 
-        private const float CardWidth = 170f;
-        private const float CardHeight = 110f;
-        private const float CardGap = 12f;
+        // 스킬 바 크기 (3-16): 정사각 카드 · 위 줄(턴 종료 · 리몰딩 게이지).
+        private const float CardWidth = 96f;
+        private const float CardHeight = 96f;
+        private const float CardGap = 10f;
+        private const float BarWidth = 5 * CardWidth + 4 * CardGap;
+        private const float BarMargin = 24f;
+        private const float BarBottom = 34f;
+        private const float UpperRowGap = 14f;
+        private const float UpperRowHeight = 52f;
+        private const float EndTurnWidth = 200f;
+        private const int RemoldPipCount = 6;
 
-        /// <summary>스킬 바 카드: 배경 · 이름(가운데) · 단축키(왼쪽 위) · 재사용 대기 덮개와 숫자. 글은 SkillBarView가 채운다.</summary>
+        /// <summary>스킬 바 카드: 배경 · 이름(가운데) · 단축키(오른쪽 아래) · 재사용 대기 덮개와 숫자 · 아래 리몰딩 소모 칸. 글은 SkillBarView가 채운다.</summary>
         private static SkillCardView CreateCard(Transform parent, string objectName, Font font, int index)
         {
             var cardObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
@@ -537,23 +579,66 @@ namespace GirlsDungeon.EditorTools
             image.sprite = AssetDatabase.GetBuiltinExtraResource<Sprite>("UI/Skin/UISprite.psd");
             image.type = Image.Type.Sliced;
 
-            var nameLabel = CreateLabel(cardObject.transform, "Name", font, 28, new Vector2(0.5f, 0.5f), new Vector2(0f, -10f), TextAnchor.MiddleCenter);
-            nameLabel.rectTransform.sizeDelta = new Vector2(CardWidth - 10f, 50f);
-            var keyLabel = CreateLabel(cardObject.transform, "Key", font, 20, new Vector2(0f, 1f), new Vector2(10f, -6f), TextAnchor.UpperLeft);
-            keyLabel.rectTransform.sizeDelta = new Vector2(CardWidth - 20f, 30f);
-            keyLabel.color = new Color(1f, 1f, 1f, 0.7f);
+            var nameLabel = CreateLabel(cardObject.transform, "Name", font, 20, new Vector2(0.5f, 0.5f), new Vector2(0f, 6f), TextAnchor.MiddleCenter);
+            nameLabel.rectTransform.sizeDelta = new Vector2(CardWidth - 8f, 60f);
+            var keyLabel = CreateLabel(cardObject.transform, "Key", font, 18, new Vector2(1f, 0f), new Vector2(-6f, 4f), TextAnchor.LowerRight);
+            keyLabel.rectTransform.sizeDelta = new Vector2(30f, 24f);
+            keyLabel.color = new Color(1f, 1f, 1f, 0.75f);
 
             var overlay = CreatePanel(cardObject.transform, "Cooldown", new Vector2(0.5f, 0.5f), Vector2.zero,
                 new Vector2(CardWidth, CardHeight), new Color(0f, 0f, 0f, 0.65f));
             overlay.GetComponent<Image>().raycastTarget = false;
-            var cooldownLabel = CreateLabel(overlay.transform, "Rounds", font, 44, new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
+            var cooldownLabel = CreateLabel(overlay.transform, "Rounds", font, 40, new Vector2(0.5f, 0.5f), Vector2.zero, TextAnchor.MiddleCenter);
             cooldownLabel.rectTransform.sizeDelta = new Vector2(CardWidth, CardHeight);
             overlay.SetActive(false);
 
+            // 리몰딩 소모 칸: 카드 바로 아래 가운데 (켜진 칸만 보이고 가운데로 모인다).
+            var cost = CreatePipRow(cardObject.transform, "Cost", RemoldPipCount, new Vector2(10f, 8f), 4f, TextAnchor.MiddleCenter);
+            var costRect = cost.root.GetComponent<RectTransform>();
+            costRect.anchorMin = costRect.anchorMax = new Vector2(0.5f, 0f);
+            costRect.pivot = new Vector2(0.5f, 1f);
+            costRect.anchoredPosition = new Vector2(0f, -6f);
+            costRect.sizeDelta = new Vector2(CardWidth, 10f);
+            cost.root.SetActive(false);
+
             var card = cardObject.AddComponent<SkillCardView>();
             SetReferences(card, ("button", cardObject.GetComponent<Button>()), ("background", image), ("nameLabel", nameLabel),
-                ("keyLabel", keyLabel), ("cooldownOverlay", overlay), ("cooldownLabel", cooldownLabel));
+                ("keyLabel", keyLabel), ("cooldownOverlay", overlay), ("cooldownLabel", cooldownLabel), ("costRoot", cost.root));
+            SetImageArray(card, "costPips", cost.pips);
             return card;
+        }
+
+        /// <summary>작은 칸(이미지) 한 줄. 꺼진 칸은 자리를 차지하지 않는다 (가로 정렬 그룹).</summary>
+        private static (GameObject root, Image[] pips) CreatePipRow(Transform parent, string objectName, int count, Vector2 pipSize, float gap, TextAnchor alignment)
+        {
+            var root = new GameObject(objectName, typeof(RectTransform), typeof(HorizontalLayoutGroup));
+            root.transform.SetParent(parent, false);
+            var rootRect = root.GetComponent<RectTransform>();
+            rootRect.sizeDelta = new Vector2(count * (pipSize.x + gap), pipSize.y);
+            var layout = root.GetComponent<HorizontalLayoutGroup>();
+            layout.spacing = gap;
+            layout.childAlignment = alignment;
+            layout.childControlWidth = layout.childControlHeight = false;
+            layout.childForceExpandWidth = layout.childForceExpandHeight = false;
+            var pips = new Image[count];
+            for (int i = 0; i < count; i++)
+            {
+                var pip = new GameObject("Pip" + i, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                pip.transform.SetParent(root.transform, false);
+                pip.GetComponent<RectTransform>().sizeDelta = pipSize;
+                pips[i] = pip.GetComponent<Image>();
+                pips[i].raycastTarget = false;
+            }
+            return (root, pips);
+        }
+
+        private static void SetImageArray(Object target, string field, Image[] images)
+        {
+            var serialized = new SerializedObject(target);
+            var property = serialized.FindProperty(field);
+            property.arraySize = images.Length;
+            for (int i = 0; i < images.Length; i++) property.GetArrayElementAtIndex(i).objectReferenceValue = images[i];
+            serialized.ApplyModifiedPropertiesWithoutUndo();
         }
 
         private static GameObject CreatePanel(Transform parent, string objectName, Vector2 corner, Vector2 offset, Vector2 size, Color color)

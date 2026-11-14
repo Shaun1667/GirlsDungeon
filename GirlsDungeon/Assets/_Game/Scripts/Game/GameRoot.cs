@@ -344,6 +344,24 @@ namespace GirlsDungeon.Game
             simulation.Execute(new DebugAddGoldCommand(amount));
         }
 
+        /// <summary>리몰딩 지수를 최대로 (3-16). 리몰딩이 없는 캐릭터면 아무것도 하지 않는다.</summary>
+        public void DebugFillRemold()
+        {
+            DebugUsed = true;
+            simulation.Execute(new DebugFillRemoldCommand(combatSettings));
+        }
+
+        /// <summary>리몰딩 · 이동 감소 요약.</summary>
+        public string DebugRemoldSummary()
+        {
+            var world = World;
+            if (world == null) return "-";
+            var slowed = new System.Collections.Generic.List<string>();
+            foreach (var unit in world.Units)
+                if (Remold.IsSlowed(unit)) slowed.Add($"{unit.Kind}#{unit.Id} -{unit.SlowAmount}x{unit.SlowTurns}");
+            return $"Remold={world.PlayerRemold}/{Remold.Max(world, combatSettings)}, Moved={world.PlayerMoveUsed}, Slowed=[{string.Join(", ", slowed)}]";
+        }
+
         /// <summary>상점 요약: 가진 골드 · 이 층 진열 물건(값).</summary>
         public string DebugShopSummary()
         {

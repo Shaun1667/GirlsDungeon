@@ -65,6 +65,10 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>감시 중. 상대가 사거리 · 사선 안에서 움직이면 한 번 반응 사격한다.</summary>
         public bool Overwatching { get; set; }
 
+        /// <summary>이동 감소 (3-16, Remold): 남은 차례 수 동안 이동 칸이 SlowAmount만큼 준다. 0 = 없음.</summary>
+        public int SlowAmount { get; set; }
+        public int SlowTurns { get; set; }
+
         public bool IsPlayer => Kind == UnitKind.Player;
 
         public Unit(int id, UnitKind kind, GridPos position)
@@ -205,6 +209,9 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>플레이어 화상이 남은 차례 수 (차례를 시작할 때마다 피해).</summary>
         public int PlayerBurnTurns { get; set; }
+
+        /// <summary>리몰딩 지수 (3-16 — 캐릭터 줄 RemoldMax가 있는 캐릭터만, Remold). 판 내내 유지된다.</summary>
+        public int PlayerRemold { get; set; }
 
         /// <summary>사르디스 골드 (3-15a — 상점 화폐, 결정 2026-11-14 사용자). 층을 넘어 유지된다.</summary>
         public int Gold { get; set; }

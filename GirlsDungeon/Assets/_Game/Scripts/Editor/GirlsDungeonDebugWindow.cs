@@ -139,6 +139,9 @@ namespace GirlsDungeon.EditorTools
             // 상점 · 사르디스 골드 (3-15).
             EditorGUILayout.LabelField("상점", root.DebugShopSummary(), EditorStyles.wordWrappedLabel);
             if (GUILayout.Button("사르디스 골드 +100 [상태 변경]")) root.DebugAddGold(100);
+            // 리몰딩 지수 · 이동 감소 (3-16).
+            EditorGUILayout.LabelField("리몰딩", root.DebugRemoldSummary(), EditorStyles.wordWrappedLabel);
+            if (GUILayout.Button("리몰딩 지수 최대 [상태 변경]")) root.DebugFillRemold();
             EditorGUILayout.BeginHorizontal();
             if (GUILayout.Button("열쇠 +1 [상태 변경]")) root.DebugAddKeys(1);
             if (GUILayout.Button("잠긴 문 앞으로 [상태 변경]")) root.DebugGoToLockedDoor();

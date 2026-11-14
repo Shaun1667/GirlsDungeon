@@ -105,14 +105,14 @@ ui.skill.shoot_tip,"사격 · 적을 클릭해 고른 뒤 확인 (공격 버튼 
 {3}"
 ui.skill.grenade_tip,"수류탄 · 칸을 클릭해 범위를 옮긴 뒤 확인 (공격 버튼 · Space · 2, 오른쪽 클릭 취소)
 던지는 거리 {0}칸 · 반경 {1}칸 · 피해 {2}% · 안정 −{3}
-재사용 대기 {4}라운드 · 쓰면 차례 끝","Grenade · click a cell to move the blast, then confirm (Attack button · Space · 2, right-click cancels)
+{4} · 쓰면 차례 끝","Grenade · click a cell to move the blast, then confirm (Attack button · Space · 2, right-click cancels)
 Throw range {0} · Radius {1} · Damage {2}% · Stability −{3}
-Cooldown {4} rounds · Ends your turn"
+{4} · Ends your turn"
 ui.skill.push_tip,"넉백 공격 · 칸을 클릭해 방향을 고른 뒤 확인 · 앞 너비 {0} × 길이 {1}
 피해 {2}% · 부딪히면 {3} · 낭떠러지로 밀린 적은 떨어짐
-재사용 대기 {4}라운드 · 쓰면 차례 끝","Knockback · click a cell to aim, then confirm · width {0} × length {1}
+{4} · 쓰면 차례 끝","Knockback · click a cell to aim, then confirm · width {0} × length {1}
 Damage {2}% · Collision {3} · Enemies pushed into a chasm fall
-Cooldown {4} rounds · Ends your turn"
+{4} · Ends your turn"
 ui.skill.overwatch_tip,"감시 · 사격 대신 걸고 차례 끝
 적이 사거리 {0}칸 · 사선 안에서 움직이면 한 번 반응 사격","Overwatch · instead of shooting, ends your turn
 Fires once when an enemy moves within range {0} and line of fire"
@@ -144,9 +144,9 @@ Click enemy → Attack · Skills (2-4): used after moving · Click again / Space
 ui.skill.sonic,음파 공격,Sonic blast
 ui.skill.sonic_tip,"음파 공격 · 적을 클릭해 고른 뒤 확인 (사거리 {0}칸, 보이는 적 하나)
 피해 {1}% · 엄폐 무시 · 안정 −{2}
-재사용 대기 {3}라운드 · 쓰면 차례 끝","Sonic blast · click an enemy, then confirm (range {0}, one visible enemy)
+{3} · 쓰면 차례 끝","Sonic blast · click an enemy, then confirm (range {0}, one visible enemy)
 Damage {1}% · Ignores cover · Stability −{2}
-Cooldown {3} rounds · Ends your turn"
+{3} · Ends your turn"
 ui.combat.preview_sonic_hint,음파 공격 · 적 클릭 = 대상 · 파란 칸 = 이동 예약 (오른쪽 클릭 취소),Sonic blast · click an enemy to target · blue cell to plan a move (right-click cancels)
 ui.combat.preview_sonic,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
 음파 피해 {5} (엄폐 무시) · 안정 −{6}","{0} · HP {1}/{2} · Stability {3}/{4}
@@ -364,3 +364,8 @@ ui.keeper.log_final,상점 주인: 마감 세일 — 밑천 {0} · 방벽 {1},Sh
 ui.keeper.log_shield,상점 주인의 방벽이 피해 {0}을 막았다 (남은 방벽 {1}),The shopkeeper's barrier blocks {0} damage (barrier left {1})
 ui.keeper.log_burn,화상 피해 {0} (남은 {1}턴),Burn damage {0} ({1} turns left)
 ui.shop.log_defeated,상점 주인을 쓰러뜨렸다 — 진열 물건 {0}개가 공짜,Shopkeeper defeated — {0} items are free
+ui.skill.cost_cooldown,재사용 대기 {0}라운드,Cooldown {0} rounds
+ui.skill.cost_remold,리몰딩 {0} 소모,Uses {0} Remold
+ui.remold.gauge,리몰딩 {0}/{1},Remold {0}/{1}
+ui.remold.not_enough,리몰딩이 모자람 (지금 {1} · 필요 {0}),Not enough Remold (have {1} · need {0})
+ui.remold.log_slowed,{0}에게 이동 감소Ⅱ (이동 −{1}칸 · {2}차례),{0} is slowed II (move −{1} · {2} turns)

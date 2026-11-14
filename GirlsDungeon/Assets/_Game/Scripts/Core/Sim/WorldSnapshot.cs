@@ -21,7 +21,7 @@ namespace GirlsDungeon.Core.Sim
         /// 17: 무기 파츠 — 든 무기 4칸 · 바닥 파츠 · 바닥 무기의 파츠 · 파츠가 더해 둔 몸 능력치 (2026-11-12, 3-4).
         /// 30: 상점 주인 스킬 상태 — 밑천 · 재사용 대기 · 기세 · 방벽 · 플레이어 화상 (2026-11-14, 3-15f).
         /// </summary>
-        public const int Version = 30;
+        public const int Version = 31;
 
         public static byte[] Encode(World world)
         {
@@ -63,6 +63,8 @@ namespace GirlsDungeon.Core.Sim
                     writer.Write(unit.PushOnHit);
                     writer.Write(unit.Guarding);
                     writer.Write(unit.Overwatching);
+                    writer.Write(unit.SlowAmount);
+                    writer.Write(unit.SlowTurns);
                 }
 
                 writer.Write((byte)world.Mode);
@@ -129,6 +131,7 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write(world.KeeperShield);
                 writer.Write(world.KeeperShieldTurns);
                 writer.Write(world.PlayerBurnTurns);
+                writer.Write(world.PlayerRemold);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -190,6 +193,8 @@ namespace GirlsDungeon.Core.Sim
                         PushOnHit = reader.ReadInt32(),
                         Guarding = reader.ReadBoolean(),
                         Overwatching = reader.ReadBoolean(),
+                        SlowAmount = reader.ReadInt32(),
+                        SlowTurns = reader.ReadInt32(),
                     });
                 }
 
@@ -257,6 +262,7 @@ namespace GirlsDungeon.Core.Sim
                 world.KeeperShield = reader.ReadInt32();
                 world.KeeperShieldTurns = reader.ReadInt32();
                 world.PlayerBurnTurns = reader.ReadInt32();
+                world.PlayerRemold = reader.ReadInt32();
                 return world;
             }
         }

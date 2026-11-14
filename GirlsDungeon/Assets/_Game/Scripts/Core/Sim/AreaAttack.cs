@@ -83,7 +83,7 @@ namespace GirlsDungeon.Core.Sim
         {
             var map = world.Map;
             var block = AreaBlock.None;
-            if (world.GrenadeCooldown > 0) block = AreaBlock.NotReady;
+            if (attacker.IsPlayer && !Remold.IsReady(world, settings, SkillKind.Grenade)) block = AreaBlock.NotReady;
             else
             {
                 int dx = center.X - attacker.Position.X;
@@ -139,14 +139,17 @@ namespace GirlsDungeon.Core.Sim
             var preview = Preview(world, settings, attacker, center);
             if (!preview.CanThrow) return false;
 
+            if (attacker.IsPlayer) Remold.Pay(world, settings, SkillKind.Grenade);
             events.Add(new AreaExploded(attacker.Id, attacker.Kind, center, preview.Cells));
             var downed = new List<Unit>();
             foreach (var hit in preview.Hits)
             {
                 var target = hit.Target;
+                Remold.BeforeAttack(world, settings, attacker, target, events);
                 int stabilityBefore = target.Stability;
                 int dealt = KeeperSkills.AfterShield(world, target, hit.Damage, events);
                 target.Hp -= dealt;
+                Remold.OnDamageDealt(world, settings, attacker, target, dealt);
                 target.Stability = Math.Max(0, target.Stability - hit.StabilityDamage);
                 events.Add(new UnitAttacked(attacker, target, dealt, false, hit.Cover, false, stabilityBefore > 0 && target.Stability == 0));
                 events.Add(new UnitStatsChanged(target.Id));
@@ -170,8 +173,6 @@ namespace GirlsDungeon.Core.Sim
                     CombatFlow.Kill(world, target, events);
                 }
             }
-
-            world.GrenadeCooldown = settings.GrenadeCooldownRounds;
             return true;
         }
     }

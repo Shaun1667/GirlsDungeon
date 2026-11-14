@@ -5,7 +5,8 @@ using UnityEngine.InputSystem;
 namespace GirlsDungeon.Game
 {
     /// <summary>
-    /// 전투 중 화면 아래 가운데의 스킬 바: 사격(1) · 스킬 칸 2 · 3 · 4(캐릭터마다 다름, 3-12) · 감시(5) · 턴 종료(Z).
+    /// 화면 오른쪽 아래의 스킬 바 (3-16 배치): 사격(1) · 스킬 칸 2 · 3 · 4(캐릭터마다 다름, 3-12) · 감시(5), 그 위 오른쪽에 턴 종료(Z), 왼쪽에 리몰딩 게이지.
+    /// 리몰딩을 쓰는 스킬은 카드 아래에 소모 칸을 그린다 (값 · 쓸 수 있는지는 Core.Sim.Remold 한 곳).
     /// 스킬 칸에 무엇이 들어가는지는 규칙의 캐릭터 표(CombatSettings.SkillSlots)에서 읽는다 — 빈 칸은 숨긴다.
     /// 쓸 수 없으면 어둡게, 재사용 대기는 덮개와 남은 라운드, 마우스를 올리면 설명 창 (수치는 규칙 · 무기 값에서 읽는다).
     /// 적 차례 재생 중(EventPlayer.IsPlaying)에는 누를 수 없다. 누르면 MoveController · 커맨드로만 잇는다.
@@ -23,6 +24,12 @@ namespace GirlsDungeon.Game
         [SerializeField] private SkillCardView slotCard4;
         [SerializeField] private SkillCardView overwatchCard;
         [SerializeField] private SkillCardView endTurnCard;
+        [Tooltip("Remold gauge (shown only for characters with Remold).")]
+        [SerializeField] private GameObject remoldGauge;
+        [SerializeField] private UnityEngine.UI.Text remoldLabel;
+        [SerializeField] private UnityEngine.UI.Image[] remoldPips = new UnityEngine.UI.Image[0];
+        [SerializeField] private Color remoldFilledColor = new Color(0.98f, 0.55f, 0.2f, 1f);
+        [SerializeField] private Color remoldEmptyColor = new Color(1f, 1f, 1f, 0.18f);
         [SerializeField] private GameObject tooltipPanel;
         [SerializeField] private UnityEngine.UI.Text tooltipLabel;
         [SerializeField] private Color normalColor = new Color(0.16f, 0.18f, 0.24f, 0.95f);
@@ -43,6 +50,19 @@ namespace GirlsDungeon.Game
         public SkillCardView ShootCard => shootCard;
         public SkillCardView OverwatchCard => overwatchCard;
         public SkillCardView EndTurnCard => endTurnCard;
+        public bool RemoldGaugeShown => remoldGauge != null && remoldGauge.activeSelf;
+        public string RemoldText => remoldLabel != null ? remoldLabel.text : string.Empty;
+
+        /// <summary>게이지에서 켜진(채워진) 칸 수 — 확인용.</summary>
+        public int RemoldPipsFilled
+        {
+            get
+            {
+                int filled = 0;
+                foreach (var pip in remoldPips) if (pip.gameObject.activeSelf && pip.color == remoldFilledColor) filled++;
+                return filled;
+            }
+        }
 
         /// <summary>스킬 칸 카드 (0 = 2번 칸).</summary>
         public SkillCardView SlotCard(int index) => index == 0 ? slotCard2 : index == 1 ? slotCard3 : index == 2 ? slotCard4 : null;
@@ -107,7 +127,7 @@ namespace GirlsDungeon.Game
         public bool PressSlot(int index)
         {
             var skill = SlotSkill(index);
-            if (!Ready || skill == SkillKind.None || Cooldown(skill) > 0) return false;
+            if (!Ready || skill == SkillKind.None || !Remold.IsReady(simulation.World, settings, skill)) return false;
             switch (skill)
             {
                 case SkillKind.Grenade: moveController.ToggleAim(); break;
@@ -125,18 +145,6 @@ namespace GirlsDungeon.Game
             if (!Ready) return false;
             moveController.CancelAim();
             return simulation.Execute(new EndTurnCommand(settings));
-        }
-
-        private int Cooldown(SkillKind skill)
-        {
-            var world = simulation.World;
-            switch (skill)
-            {
-                case SkillKind.Grenade: return world.GrenadeCooldown;
-                case SkillKind.Push: return world.PushCooldown;
-                case SkillKind.Sonic: return world.SonicCooldown;
-                default: return 0;
-            }
         }
 
         private static AimMode AimOf(SkillKind skill)
@@ -196,15 +204,33 @@ namespace GirlsDungeon.Game
                     if (hovered == card) hovered = null;
                     continue;
                 }
-                int cooldown = Cooldown(skill);
+                int cooldown = Remold.Cooldown(world, settings, skill);
+                bool skillReady = Remold.IsReady(world, settings, skill);
                 card.SetName(Text.Get(NameKey(skill)));
-                card.SetState(ready && !acted && cooldown == 0, aim == AimOf(skill), cooldown, normalColor, selectedColor, disabledColor);
+                card.SetState(ready && !acted && skillReady, aim == AimOf(skill), cooldown, normalColor, selectedColor, disabledColor);
+                card.SetCost(Remold.Cost(world, settings, skill), skillReady, remoldFilledColor, remoldEmptyColor);
             }
+            RefreshRemoldGauge(world);
             overwatchCard.SetState(ready && inCombat && !acted, false, 0, normalColor, selectedColor, disabledColor);
             endTurnCard.SetState(ready && inCombat, false, 0, normalColor, selectedColor, disabledColor);
 
             ReadHotkeys();
             RefreshTooltip();
+        }
+
+        /// <summary>리몰딩 게이지: 최대치만큼 칸, 지금 지수만큼 채움. 리몰딩이 없는 캐릭터는 숨긴다.</summary>
+        private void RefreshRemoldGauge(World world)
+        {
+            if (remoldGauge == null) return;
+            int max = Remold.Max(world, settings);
+            remoldGauge.SetActive(max > 0);
+            if (max <= 0) return;
+            remoldLabel.text = Text.Get("ui.remold.gauge", world.PlayerRemold, max);
+            for (int i = 0; i < remoldPips.Length; i++)
+            {
+                remoldPips[i].gameObject.SetActive(i < max);
+                remoldPips[i].color = i < world.PlayerRemold ? remoldFilledColor : remoldEmptyColor;
+            }
         }
 
         private void ReadHotkeys()
@@ -233,6 +259,13 @@ namespace GirlsDungeon.Game
             tooltipLabel.text = TooltipFor(hovered);
         }
 
+        /// <summary>설명 창의 값 줄: 리몰딩 소모 또는 재사용 대기.</summary>
+        private string CostText(SkillKind skill, int cooldownRounds)
+        {
+            int cost = Remold.Cost(simulation.World, settings, skill);
+            return cost > 0 ? Text.Get("ui.skill.cost_remold", cost) : Text.Get("ui.skill.cost_cooldown", cooldownRounds);
+        }
+
         /// <summary>설명 글. 수치는 지금 유닛 · 무기 · 수치 표에서 읽는다 (표시 값 = 실제 값).</summary>
         private string TooltipFor(SkillCardView card)
         {
@@ -255,13 +288,13 @@ namespace GirlsDungeon.Game
             {
                 case SkillKind.Grenade:
                     return Text.Get("ui.skill.grenade_tip", settings.GrenadeThrowRange, settings.GrenadeRadiusFor(simulation.World.PlayerCharacter), settings.GrenadeDamagePercent,
-                        settings.GrenadeStabilityDamage, settings.GrenadeCooldownRounds);
+                        settings.GrenadeStabilityDamage, CostText(skill, settings.GrenadeCooldownRounds));
                 case SkillKind.Push:
                     return Text.Get("ui.skill.push_tip", settings.PushWidth, settings.PushLength, settings.PushDamagePercent,
-                        settings.PushCollisionDamage, settings.PushCooldownRounds);
+                        settings.PushCollisionDamage, CostText(skill, settings.PushCooldownRounds));
                 case SkillKind.Sonic:
                     return Text.Get("ui.skill.sonic_tip", settings.SonicRange, settings.SonicDamagePercent,
-                        settings.SonicStabilityDamage, settings.SonicCooldownRounds);
+                        settings.SonicStabilityDamage, CostText(skill, settings.SonicCooldownRounds));
                 default:
                     return string.Empty;
             }

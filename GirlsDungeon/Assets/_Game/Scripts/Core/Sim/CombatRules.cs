@@ -83,7 +83,7 @@ namespace GirlsDungeon.Core.Sim
             int falloff = Loadout.FalloffPercent(weapon, from, target.Position);
             // 세트 효과 (3-4b): 적 차례에 플레이어가 쏘는 것은 감시 사격.
             var source = attacker.IsPlayer && world.Mode == WorldMode.Combat && world.Turn == TurnSide.Enemies ? DamageSource.Overwatch : DamageSource.Shot;
-            int setPercent = SetEffects.DamagePercent(world, settings, attacker, target, source);
+            int setPercent = SetEffects.DamagePercent(world, settings, attacker, target, source, from);
             // 상점 주인의 일반 공격은 공격력 배율이 따로 있다 (KeeperSkills, 3-15f). 그 밖에는 100.
             int power = KeeperSkills.BasicPercentFor(settings, attacker);
             int damage = Damage(attacker.Attack, target.Defense, power, reduction, settings.MinDamage, 100 - falloff, setPercent);
@@ -126,10 +126,13 @@ namespace GirlsDungeon.Core.Sim
             if (!preview.CanAttack) return false;
 
             bool crit = world.Random.Get(RandomPurpose.Combat).Range(0, 100) < preview.CritPercent;
+            // 대원 A 특성: 많이 걸었으면 맞히기 전에 이동 감소 (피해 증가는 미리보기에 이미 들어 있다 — Remold).
+            Remold.BeforeAttack(world, settings, attacker, target, events);
             int damage = KeeperSkills.AfterShield(world, target, crit ? preview.CritDamage : preview.Damage, events);
             int stabilityBefore = target.Stability;
 
             target.Hp -= damage;
+            Remold.OnDamageDealt(world, settings, attacker, target, damage);
             target.Stability = System.Math.Max(0, target.Stability - preview.StabilityDamage);
             bool stabilityBroken = stabilityBefore > 0 && target.Stability == 0;
 

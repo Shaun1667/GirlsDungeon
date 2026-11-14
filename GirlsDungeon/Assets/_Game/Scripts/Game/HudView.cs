@@ -90,13 +90,21 @@ namespace GirlsDungeon.Game
             Refresh();
         }
 
+        /// <summary>스킬을 못 쓰는 이유: 리몰딩을 쓰는 스킬이면 모자란 지수, 아니면 재사용 대기 (Remold 한 곳에서 읽는다, 3-16).</summary>
+        private string NotReadyText(SkillKind skill, string cooldownKey)
+        {
+            var world = simulation.World;
+            int cost = Remold.Cost(world, settings, skill);
+            return cost > 0 ? Text.Get("ui.remold.not_enough", cost, world.PlayerRemold) : Text.Get(cooldownKey, Remold.Cooldown(world, settings, skill));
+        }
+
         public void ShowPushPreview(PushPreview preview)
         {
             var lines = new List<string>();
             switch (preview.Block)
             {
                 case PushBlock.NotReady:
-                    lines.Add(Text.Get("ui.combat.preview_push_not_ready", simulation.World.PushCooldown));
+                    lines.Add(NotReadyText(SkillKind.Push, "ui.combat.preview_push_not_ready"));
                     break;
                 case PushBlock.NoTarget:
                     lines.Add(Text.Get("ui.combat.preview_push_no_target"));
@@ -124,7 +132,7 @@ namespace GirlsDungeon.Game
             switch (preview.Block)
             {
                 case AreaBlock.NotReady:
-                    lines.Add(Text.Get("ui.combat.preview_area_not_ready", simulation.World.GrenadeCooldown));
+                    lines.Add(NotReadyText(SkillKind.Grenade, "ui.combat.preview_area_not_ready"));
                     break;
                 case AreaBlock.OutOfRange:
                     lines.Add(Text.Get("ui.combat.preview_area_out_of_range"));
@@ -413,7 +421,7 @@ namespace GirlsDungeon.Game
             switch (preview.Block)
             {
                 case SonicBlock.NotReady:
-                    previewLabel.text = Text.Get("ui.combat.preview_sonic_not_ready", simulation.World.SonicCooldown);
+                    previewLabel.text = NotReadyText(SkillKind.Sonic, "ui.combat.preview_sonic_not_ready");
                     break;
                 case SonicBlock.OutOfRange:
                     previewLabel.text = Text.Get("ui.combat.preview_out_of_range", name);
@@ -579,6 +587,9 @@ namespace GirlsDungeon.Game
                         break;
                     case ShopkeeperAngered _:
                         AddLog(Text.Get("ui.shop.log_angered"));
+                        break;
+                    case UnitSlowed slowed:
+                        AddLog(Text.Get("ui.remold.log_slowed", UnitName(slowed.Kind), slowed.Amount, slowed.Turns));
                         break;
                     case KeeperSkillUsed skill:
                         // 키는 통째로 쓴다 (이어 붙이면 키 검사가 못 찾는다).

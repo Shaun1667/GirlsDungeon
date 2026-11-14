@@ -8,7 +8,7 @@ namespace GirlsDungeon.Core.Sim
     public enum SonicBlock
     {
         None = 0,
-        /// <summary>재사용 대기 중.</summary>
+        /// <summary>재사용 대기 중 (또는 리몰딩 지수가 모자람 — Remold).</summary>
         NotReady = 1,
         /// <summary>대상이 전투 중인 적이 아니다.</summary>
         NoTarget = 2,
@@ -46,7 +46,7 @@ namespace GirlsDungeon.Core.Sim
     {
         public static SonicPreview Preview(World world, CombatSettings settings, Unit attacker, Unit target)
         {
-            if (world.SonicCooldown > 0) return new SonicPreview(SonicBlock.NotReady, target, 0, 0);
+            if (attacker.IsPlayer && !Remold.IsReady(world, settings, SkillKind.Sonic)) return new SonicPreview(SonicBlock.NotReady, target, 0, 0);
             // 대상: 전투 중인 적, 탐험 중이면 보이는 아무 적, 중립 상점 주인 (치면 적대 — 3-15b).
             bool validTarget = target != null && !target.IsPlayer
                 && (world.Combatants.Contains(target.Id) || world.Mode == WorldMode.Exploration || Shop.IsNeutral(world, target));
@@ -69,16 +69,17 @@ namespace GirlsDungeon.Core.Sim
             var preview = Preview(world, settings, attacker, target);
             if (!preview.CanUse) return false;
 
+            Remold.Pay(world, settings, SkillKind.Sonic);
+            Remold.BeforeAttack(world, settings, attacker, target, events);
             int stabilityBefore = target.Stability;
             int dealt = KeeperSkills.AfterShield(world, target, preview.Damage, events);
             target.Hp -= dealt;
+            Remold.OnDamageDealt(world, settings, attacker, target, dealt);
             target.Stability = Math.Max(0, target.Stability - preview.StabilityDamage);
             events.Add(new UnitAttacked(attacker, target, dealt, false, CoverLevel.None, false, stabilityBefore > 0 && target.Stability == 0));
             events.Add(new UnitStatsChanged(target.Id));
             Alert.Wake(world, target, events);
             if (target.Hp <= 0) CombatFlow.Kill(world, target, events);
-
-            world.SonicCooldown = settings.SonicCooldownRounds;
             return true;
         }
     }
