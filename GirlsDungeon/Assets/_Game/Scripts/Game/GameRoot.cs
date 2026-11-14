@@ -248,7 +248,7 @@ namespace GirlsDungeon.Game
             return moveController.PlanMove(cell);
         }
 
-        /// <summary>[상태 변경] 예약 칸 다시 클릭 · 대상 없이 Enter와 같다: 예약 칸으로 이동만 한다. 못 하면 false.</summary>
+        /// <summary>[상태 변경] 예약 칸 다시 클릭 · 대상 없이 Space와 같다: 예약 칸으로 이동만 한다. 못 하면 false.</summary>
         public bool DebugConfirmMove()
         {
             DebugUsed = true;

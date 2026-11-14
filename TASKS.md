@@ -514,6 +514,13 @@
   - 테스트 작성, 실행 안 함: `ArchiveTests`(5개 — 단말 한 번, 예고 = 실제 다음 층(다른 난수를 쓴 뒤에도), 예고가 세계를 바꾸지 않음 · 마지막 층, 스냅샷 · 새 층에서 초기화, 게임에서 열린 방 · 닿는 단말 1개) · `BalanceTests` 키 3개 · 무작위 후보 10개 · `TestData`. 난수 용도가 바뀌어 같은 시드의 층이 달라졌으므로 전체 테스트를 돌려야 한다.
   - 확인 방법: 플레이 → "기록실" 방의 초록 단말을 클릭 → 기록 줄에 다음 층 특수 방 · 적 수 → 계단으로 내려가 같은지 본다.
 
+- [x] **3-14r. 공격 키 Space · 턴 종료 키 Z** — 플레이 확인 대기 (2026-11-14 사용자 "공격을 엔터에서 스페이스바로, 턴 종료를 스페이스바에서 Z키로 옮겨줘")
+  - 구현: `MoveController` 확인 키(사격 · 스킬 · 대상 없이 예약 칸으로 이동만)를 Enter → Space (Enter는 이제 아무 일도 안 함). `SkillBarView` 턴 종료 키 Space → Z, 카드 글 키 `ui.key.space` → `ui.key.z`. 화면 글(조작 안내 · 공격 버튼 "공격 (Space)" · 사격 · 수류탄 설명 · 이동 예정 안내)과 주석 · CLAUDE.md를 같이 고침.
+  - 확인: 컴파일 오류 0 · 플레이 (테스트 씬, 결투장, 캐릭터 A, Input System에 키 입력을 넣어 확인): 수류탄 대상 고른 뒤 Space → 던짐 · Z → 턴 종료(라운드 2 → 3) · 아무것도 고르지 않고 Space → 아무 일 없음 · 콘솔 오류 0.
+  - 확인 못 함: 실제 키보드로 누름, 화면의 카드 글자 "Z".
+  - 테스트: 없음 (화면 입력).
+  - 확인 방법: 전투 중 적 클릭 → Space = 공격. Z = 턴 종료. 턴 종료 카드에 Z가 보인다.
+
 - [x] **3-14q. 캐릭터 A 수류탄 범위 마름모 반경 2** — 플레이 확인 대기 (2026-11-14 사용자 "캐릭터 A의 수류탄의 범위를 이정도로 늘려줘" + 그림: 1 · 3 · 5 · 3 · 1줄 마름모)
   - 결정 (2026-11-14, 사용자): A의 수류탄 범위 = 마름모 13칸 (BALANCE 6-7). B · C는 그대로 3 × 3.
   - 구현: Core `AreaShape`(Square · Diamond) · `AreaAttack.InArea` · 캐릭터 줄 `CharacterStats.GrenadeRadius`(0 = 공통 6-2) · `GrenadeShape` · 조회 `CombatSettings.GrenadeRadiusFor` · `GrenadeShapeFor`(검사 `Validate`). `AreaAttack.Preview`가 던지는 사람이 플레이어면 그 캐릭터의 반경 · 모양으로 칸과 맞는 유닛을 고른다 (미리보기 = 실제). 에셋 `characters[].grenadeRadius` · `grenadeShape` (A = 2 · Diamond, B · C = 0). 스킬 설명 창 반경 숫자도 캐릭터 값.

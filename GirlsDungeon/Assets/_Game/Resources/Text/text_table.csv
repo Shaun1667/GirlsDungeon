@@ -1,6 +1,6 @@
 key,ko,en
 ui.hud.seed,시드 {0},Seed {0}
-ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Enter: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 · 흰 콘솔 · 주황 교환대 · 분홍 진열장 · 붉은 제단 클릭: 열기 · 쓰기 · 1~5 스킬 · Space 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Enter: Attack · Click a green or gold chest · blue rack · teal repair station · white console · orange counter · pink case · red altar: Open · Use · 1-5 Skills · Space End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
+ui.hud.controls,클릭: 이동 · 적 클릭: 대상 고르기 → Space: 공격 · 초록 · 금색 상자 · 파란 선반 · 청록 수리대 · 흰 콘솔 · 주황 교환대 · 분홍 진열장 · 붉은 제단 클릭: 열기 · 쓰기 · 1~5 스킬 · Z 턴 종료 · 보라 작업대 클릭: 파츠 작업 · 갈색 문 클릭: 열기 · Q/E: 카메라 회전 · 휠: 확대/축소 · 드래그: 화면 이동,Click: Move · Click enemy: Target → Space: Attack · Click a green or gold chest · blue rack · teal repair station · white console · orange counter · pink case · red altar: Open · Use · 1-5 Skills · Z End turn · Click purple workbench: Part work · Click brown door: Open · Q/E: Rotate camera · Wheel: Zoom · Drag: Pan
 ui.hud.hp,체력 {0}/{1},HP {0}/{1}
 ui.hud.stability,안정지수 {0}/{1},Stability {0}/{1}
 ui.combat.round,전투 · {0}라운드,Combat · Round {0}
@@ -97,15 +97,15 @@ weapon.machine_gun.rule,무거워 이동 −2,Heavy: move −2
 weapon.blade.name,도검,Blade
 weapon.blade.rule,주변 8칸만 벨 수 있고 엄폐를 무시함,Hits only the eight cells around you and ignores cover
 ui.skill.shoot,사격,Shoot
-ui.key.space,Space,Space
-ui.skill.shoot_tip,"사격 · 적을 클릭해 고른 뒤 확인 (공격 버튼 · Enter · 1)
+ui.key.z,Z,Z
+ui.skill.shoot_tip,"사격 · 적을 클릭해 고른 뒤 확인 (공격 버튼 · Space · 1)
 {0} · 공격 {1} · 사거리 {2}칸 · 한 차례 {4}발
-{3}","Shoot · click an enemy, then confirm (Attack button · Enter · 1)
+{3}","Shoot · click an enemy, then confirm (Attack button · Space · 1)
 {0} · Attack {1} · Range {2} · {4} shot(s) per turn
 {3}"
-ui.skill.grenade_tip,"수류탄 · 칸을 클릭해 범위를 옮긴 뒤 확인 (공격 버튼 · Enter · 2, 오른쪽 클릭 취소)
+ui.skill.grenade_tip,"수류탄 · 칸을 클릭해 범위를 옮긴 뒤 확인 (공격 버튼 · Space · 2, 오른쪽 클릭 취소)
 던지는 거리 {0}칸 · 반경 {1}칸 · 피해 {2}% · 안정 −{3}
-재사용 대기 {4}라운드 · 쓰면 차례 끝","Grenade · click a cell to move the blast, then confirm (Attack button · Enter · 2, right-click cancels)
+재사용 대기 {4}라운드 · 쓰면 차례 끝","Grenade · click a cell to move the blast, then confirm (Attack button · Space · 2, right-click cancels)
 Throw range {0} · Radius {1} · Damage {2}% · Stability −{3}
 Cooldown {4} rounds · Ends your turn"
 ui.skill.push_tip,"넉백 공격 · 칸을 클릭해 방향을 고른 뒤 확인 · 앞 너비 {0} × 길이 {1}
@@ -120,7 +120,7 @@ ui.skill.end_turn_tip,턴 종료 · 적 차례로 넘김,End turn · the enemies
 ui.fx.damage,{0},{0}
 ui.fx.crit,치명 {0},Crit {0}
 ui.fx.stability_break,안정 붕괴,Stability broken
-ui.combat.confirm_attack,공격 (Enter),Attack (Enter)
+ui.combat.confirm_attack,공격 (Space),Attack (Space)
 ui.select.title,캐릭터 선택,Choose your character
 ui.select.card,"{0}
 
@@ -139,8 +139,8 @@ character.hero_a.name,대원 A,Operative A
 character.hero_b.name,대원 B,Operative B
 character.hero_c.name,대원 C,Operative C
 ui.combat.preview_planned_move,"이동 예정 · 엄폐: {0}
-적 클릭 → 공격 · 스킬(2~4): 이동 후 사용 · 같은 칸 다시 클릭 / Enter: 이동만 · 오른쪽 클릭: 취소","Planned move · Cover: {0}
-Click enemy → Attack · Skills (2-4): used after moving · Click again / Enter: move only · Right-click: cancel"
+적 클릭 → 공격 · 스킬(2~4): 이동 후 사용 · 같은 칸 다시 클릭 / Space: 이동만 · 오른쪽 클릭: 취소","Planned move · Cover: {0}
+Click enemy → Attack · Skills (2-4): used after moving · Click again / Space: move only · Right-click: cancel"
 ui.skill.sonic,음파 공격,Sonic blast
 ui.skill.sonic_tip,"음파 공격 · 적을 클릭해 고른 뒤 확인 (사거리 {0}칸, 보이는 적 하나)
 피해 {1}% · 엄폐 무시 · 안정 −{2}

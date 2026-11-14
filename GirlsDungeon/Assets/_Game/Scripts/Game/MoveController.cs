@@ -22,9 +22,9 @@ namespace GirlsDungeon.Game
     /// 마우스 입력을 커맨드로 바꾼다. 칸의 이동 · 사격 가능 여부와 숫자는 모두 규칙이 정한다.
     /// 탐험: 클릭한 본 칸까지 경로를 만들어 한 걸음씩 MoveCommand.
     /// 전투(내 차례): 남은 이동 범위 표시(이동만 했으면 남은 칸만큼 또 걸을 수 있다 — 3-13) · 범위 안 칸 클릭 = 이동 예약(홀로그램, 바로 걷지 않음 — 3-10), 적 클릭 = 사격 대상 고르기(노란 선 · 미리보기 · 확인 버튼).
-    /// 예약이 있으면 선 · 미리보기는 예약 칸에서 계산한다. 확인(버튼 · Enter · 사격 카드) = 예약 칸으로 CombatMoveCommand 뒤 AttackCommand를 한 번에,
-    /// 대상 없이 Enter 또는 예약 칸을 다시 클릭 = 이동만. 오른쪽 클릭 · Esc = 대상 → 예약 순으로 취소. 마우스를 올리면 미리보기.
-    /// 조준 모드 (2026-11-14 사용자 "스킬도 기본 사격처럼"): 이동 범위는 계속 보이고, 클릭은 바로 쓰지 않고 대상만 고른다 — 확인(버튼 · Enter · 그 스킬 카드)에 쓴다.
+    /// 예약이 있으면 선 · 미리보기는 예약 칸에서 계산한다. 확인(버튼 · Space · 사격 카드) = 예약 칸으로 CombatMoveCommand 뒤 AttackCommand를 한 번에,
+    /// 대상 없이 Space 또는 예약 칸을 다시 클릭 = 이동만. 오른쪽 클릭 · Esc = 대상 → 예약 순으로 취소. 마우스를 올리면 미리보기.
+    /// 조준 모드 (2026-11-14 사용자 "스킬도 기본 사격처럼"): 이동 범위는 계속 보이고, 클릭은 바로 쓰지 않고 대상만 고른다 — 확인(버튼 · Space · 그 스킬 카드)에 쓴다.
     /// 수류탄 · 밀치기(범위 스킬) = 클릭한 칸으로 범위가 옮겨짐 → AreaAttackCommand · PushCommand. 음파(대상 스킬) = 사격과 같이 적 클릭 = 대상, 파란 칸 = 이동 예약 → SonicAttackCommand.
     /// 오른쪽 클릭 · Esc = 스킬 대상 → 조준 → 예약 순 취소.
     /// </summary>
@@ -51,7 +51,7 @@ namespace GirlsDungeon.Game
         private readonly List<LineRenderer> lines = new List<LineRenderer>();
         private readonly List<string> lineKinds = new List<string>();
 
-        /// <summary>고른 사격 대상 (없으면 -1). 적을 클릭하면 고르기만 하고, 확인(버튼 · Enter · 사격 카드)을 눌러야 쏜다.</summary>
+        /// <summary>고른 사격 대상 (없으면 -1). 적을 클릭하면 고르기만 하고, 확인(버튼 · Space · 사격 카드)을 눌러야 쏜다.</summary>
         private int selectedTargetId = -1;
 
         /// <summary>전투 이동 예약 칸 (홀로그램 자리). 화면의 입력 상태일 뿐 규칙 상태가 아니다 — 확인할 때 커맨드로 바뀐다.</summary>
@@ -121,7 +121,7 @@ namespace GirlsDungeon.Game
         }
 
         /// <summary>
-        /// 고른 대상을 쏜다 (확인 버튼 · Enter · 사격 카드). 이동 예약이 있으면 먼저 예약 칸으로 걷고 이어서 쏜다 (한 번에).
+        /// 고른 대상을 쏜다 (확인 버튼 · Space · 사격 카드). 이동 예약이 있으면 먼저 예약 칸으로 걷고 이어서 쏜다 (한 번에).
         /// 걷는 동안 감시 사격 등으로 상황이 바뀌어 더 쏠 수 없으면 이동만 하고 끝난다. 고른 대상이 없거나 아무것도 못 하면 false — 고른 상태는 남는다.
         /// </summary>
         public bool ConfirmAttack()
@@ -170,7 +170,7 @@ namespace GirlsDungeon.Game
             return true;
         }
 
-        /// <summary>예약한 칸으로 이동만 한다 (예약 칸 다시 클릭 · 대상 없이 Enter). 예약이 없거나 못 가면 false.</summary>
+        /// <summary>예약한 칸으로 이동만 한다 (예약 칸 다시 클릭 · 대상 없이 Space). 예약이 없거나 못 가면 false.</summary>
         public bool ConfirmMove()
         {
             if (simulation == null || Busy || !plannedCell.HasValue) return false;
@@ -360,7 +360,7 @@ namespace GirlsDungeon.Game
         public void CancelAim() => SetAiming(AimMode.None);
 
         /// <summary>
-        /// 스킬 대상 (2026-11-14 사용자 "스킬도 기본 사격처럼"): 조준 중 클릭은 바로 쓰지 않고 대상만 고른다 — 확인(버튼 · Enter · 그 스킬 카드)에 쓴다.
+        /// 스킬 대상 (2026-11-14 사용자 "스킬도 기본 사격처럼"): 조준 중 클릭은 바로 쓰지 않고 대상만 고른다 — 확인(버튼 · Space · 그 스킬 카드)에 쓴다.
         /// 범위 스킬(수류탄 · 넉백) = 누른 칸으로 범위가 옮겨진다 (skillCell). 대상 스킬(음파) = 사격처럼 적 클릭 = 대상, 파란 칸 클릭 = 이동 예약 (skillTargetId).
         /// </summary>
         private GridPos? skillCell;
@@ -385,7 +385,7 @@ namespace GirlsDungeon.Game
             return false;
         }
 
-        /// <summary>확인 버튼 · Enter: 스킬 조준 중이면 스킬, 아니면 사격.</summary>
+        /// <summary>확인 버튼 · Space: 스킬 조준 중이면 스킬, 아니면 사격.</summary>
         public bool Confirm() => aim != AimMode.None ? ConfirmSkill() : ConfirmAttack();
 
         /// <summary>[상태 변경 없음] 스킬 대상 고르기 (조준 중 클릭과 같다 — 디버그 · 테스트용). 고를 수 없으면 false.</summary>
@@ -732,7 +732,8 @@ namespace GirlsDungeon.Game
             var cell = mouse != null && TurnFlow.IsPlayerTurn(world) && !Busy ? PointerCell(mouse.position.ReadValue()) : null;
             // 오른쪽 클릭 · Esc 한 번은 한 단계만 취소한다: 스킬 대상 → 스킬 조준 → 고른 사격 대상 → 이동 예약.
             bool cancelPressed = (mouse != null && mouse.rightButton.wasPressedThisFrame) || (keyboard != null && keyboard.escapeKey.wasPressedThisFrame);
-            bool confirmPressed = keyboard != null && (keyboard.enterKey.wasPressedThisFrame || keyboard.numpadEnterKey.wasPressedThisFrame);
+            // 확인 키 = Space (2026-11-14 사용자 — 전에는 Enter, 턴 종료는 Z로 옮김).
+            bool confirmPressed = keyboard != null && keyboard.spaceKey.wasPressedThisFrame;
             bool aimCancelled = false;
             if (aim != AimMode.None && !Busy)
             {
@@ -750,7 +751,7 @@ namespace GirlsDungeon.Game
             if (plannedCell.HasValue && !Busy && (!Loadout.CanCombatMove(world, settings)
                 || (reachable != null && !reachable.ContainsKey(plannedCell.Value)))) ClearPlan();
 
-            // 고른 사격 대상: 노란 선 · 확인 버튼. 오른쪽 클릭 · Esc = 대상 → 이동 예약 순으로 취소, Enter = 확인 (대상이 없으면 예약 칸으로 이동만).
+            // 고른 사격 대상: 노란 선 · 확인 버튼. 오른쪽 클릭 · Esc = 대상 → 이동 예약 순으로 취소, Space = 확인 (대상이 없으면 예약 칸으로 이동만).
             var selected = RefreshSelection(world);
             if (!Busy && !aimCancelled && aim == AimMode.None && (selected != null || plannedCell.HasValue))
             {
@@ -801,7 +802,7 @@ namespace GirlsDungeon.Game
                 // 기관단총은 첫 사격 뒤에도 한 번 더 쏠 수 있다 — 판정은 규칙(Loadout.CanShoot) 한 곳.
                 hudView.ShowAttackPreview(target, preview, !Loadout.CanShoot(world, settings));
                 SetHover(cell);
-                // 클릭 = 대상 고르기 (바로 쏘지 않는다). 확인은 버튼 · Enter · 사격 카드.
+                // 클릭 = 대상 고르기 (바로 쏘지 않는다). 확인은 버튼 · Space · 사격 카드.
                 if (clicked) SelectTarget(target.Id);
                 return;
             }
@@ -839,7 +840,7 @@ namespace GirlsDungeon.Game
         /// 스킬 조준 중 입력 (2026-11-14 사용자). 미리보기는 예약이 있으면 예약 칸으로 걸어 본 복제 세계에서 계산한다 (확인 때와 같은 결과).
         /// 범위 스킬(수류탄 · 넉백): 클릭 = 그 칸으로 범위를 옮긴다 (고르기 전에는 마우스를 따라다님). 이동 범위는 보이기만 한다.
         /// 대상 스킬(음파): 사격과 같다 — 적 클릭 = 대상 고르기, 파란 칸 클릭 = 이동 예약 (예약 칸 다시 클릭 = 이동만).
-        /// 쓰기는 확인(버튼 · Enter · 그 스킬 카드)으로.
+        /// 쓰기는 확인(버튼 · Space · 그 스킬 카드)으로.
         /// </summary>
         private void HandleSkillAim(World world, GridPos? cell, bool clicked, bool canMove)
         {

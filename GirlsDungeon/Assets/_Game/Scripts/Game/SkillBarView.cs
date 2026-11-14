@@ -5,7 +5,7 @@ using UnityEngine.InputSystem;
 namespace GirlsDungeon.Game
 {
     /// <summary>
-    /// 전투 중 화면 아래 가운데의 스킬 바: 사격(1) · 스킬 칸 2 · 3 · 4(캐릭터마다 다름, 3-12) · 감시(5) · 턴 종료(Space).
+    /// 전투 중 화면 아래 가운데의 스킬 바: 사격(1) · 스킬 칸 2 · 3 · 4(캐릭터마다 다름, 3-12) · 감시(5) · 턴 종료(Z).
     /// 스킬 칸에 무엇이 들어가는지는 규칙의 캐릭터 표(CombatSettings.SkillSlots)에서 읽는다 — 빈 칸은 숨긴다.
     /// 쓸 수 없으면 어둡게, 재사용 대기는 덮개와 남은 라운드, 마우스를 올리면 설명 창 (수치는 규칙 · 무기 값에서 읽는다).
     /// 적 차례 재생 중(EventPlayer.IsPlaying)에는 누를 수 없다. 누르면 MoveController · 커맨드로만 잇는다.
@@ -118,7 +118,7 @@ namespace GirlsDungeon.Game
 
         public bool PressOverwatch() => Ready && moveController.RequestOverwatch();
 
-        /// <summary>턴 종료 카드 (Space). 지금 내 차례가 아니면 false.</summary>
+        /// <summary>턴 종료 카드 (Z). 지금 내 차례가 아니면 false.</summary>
         public bool EndTurn()
         {
             if (!Ready) return false;
@@ -179,7 +179,7 @@ namespace GirlsDungeon.Game
             shootCard.SetName(Text.Get("ui.skill.shoot"));
             overwatchCard.SetName(Text.Get("ui.skill.overwatch"));
             endTurnCard.SetName(Text.Get("ui.combat.end_turn"));
-            endTurnCard.SetKey(Text.Get("ui.key.space"));
+            endTurnCard.SetKey(Text.Get("ui.key.z"));
 
             shootCard.SetState(ready && Loadout.CanShoot(world, settings), ready && aim == AimMode.None && Loadout.CanShoot(world, settings), 0,
                 normalColor, selectedColor, disabledColor);
@@ -213,7 +213,7 @@ namespace GirlsDungeon.Game
             else if (keyboard.digit3Key.wasPressedThisFrame) PressSlot(1);
             else if (keyboard.digit4Key.wasPressedThisFrame) PressSlot(2);
             else if (keyboard.digit5Key.wasPressedThisFrame) PressOverwatch();
-            else if (keyboard.spaceKey.wasPressedThisFrame) EndTurn();
+            else if (keyboard.zKey.wasPressedThisFrame) EndTurn();
         }
 
         /// <summary>디버그 · 확인용: 카드에 마우스를 올린 것과 같다 (null이면 내림).</summary>
