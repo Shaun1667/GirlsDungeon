@@ -37,8 +37,18 @@ namespace GirlsDungeon.Core.Sim
         public int BurnDamage;
         public int BurnTurns;
 
+        // 리몰딩 지수 (3-16 시스템을 상점 주인에게 — 3-16b): 플레이어와 같은 규칙으로 얻는다.
+        /// <summary>리몰딩 지수 최대.</summary>
+        public int RemoldMax;
+        /// <summary>행동을 시작할 때마다 얻는 리몰딩.</summary>
+        public int RemoldPerAction;
+        /// <summary>피해를 1회 줄 때마다 얻는 리몰딩.</summary>
+        public int RemoldPerHit;
+        /// <summary>패시브: 행동을 끝낼 때마다 얻는 리몰딩.</summary>
+        public int RemoldPerActionEnd;
+
         // 결전기
-        /// <summary>결전기에 드는 기세 (행동을 끝낼 때마다 1).</summary>
+        /// <summary>결전기에 드는 리몰딩 지수.</summary>
         public int FinalCost;
         public int FinalStacks;
         /// <summary>방벽이 막는 양 (최대 체력의 %)과 지속 차례 수.</summary>
@@ -62,6 +72,8 @@ namespace GirlsDungeon.Core.Sim
             if (OrderStacks < 0 || OrderDamagePercent < 0 || OrderStabilityDamage < 0 || OrderCooldown < 0 || OrderRange < 1 || OrderRadius < 0
                 || BurnDamage < 0 || BurnTurns < 0)
                 throw new ArgumentException("Keeper area skill settings are invalid.");
+            if (RemoldMax < 1 || RemoldPerAction < 0 || RemoldPerHit < 0 || RemoldPerActionEnd < 0 || FinalCost > RemoldMax)
+                throw new ArgumentException("Keeper remold settings are invalid.");
             if (FinalCost < 1 || FinalStacks < 0 || ShieldPercent < 0 || ShieldTurns < 0)
                 throw new ArgumentException("Keeper final skill settings are invalid.");
             if (StacksPerExtraAttack < 1 || ExtraDamagePercentPerStack < 0)
@@ -133,7 +145,9 @@ namespace GirlsDungeon.Core.Sim
     /// - 일반 공격: 공격력 × BasicPercent (CombatRules.Preview가 BasicPercentFor로 읽는다 — 감시 사격도 같다).
     /// - 단일 강공격: 체력을 쓰고 밑천을 얻은 뒤 쏠 수 있는 플레이어에게 강한 사격 (엄폐 적용, 치명타 없음).
     /// - 화염탄: 체력을 쓰고 밑천을 얻은 뒤 사거리 · 사선 안의 플레이어 칸에 던진다 — 범위 피해(엄폐 무시) + 화상.
-    /// - 결전기: 기세(World.KeeperRemold)가 차면 밑천을 얻고 방벽(World.KeeperShield)을 두른다.
+    /// - 리몰딩 지수(World.KeeperRemold, 3-16b): 플레이어의 리몰딩(Remold)과 같은 규칙 — 행동 시작마다 RemoldPerAction, 피해를 1회 줄 때마다 RemoldPerHit
+    ///   (Remold.OnDamageDealt가 OnDamageDealt를 부른다), 최대 RemoldMax. 패시브로 행동을 끝낼 때마다 RemoldPerActionEnd.
+    /// - 결전기: 리몰딩 지수가 FinalCost만큼 있으면 쓰고 밑천을 얻고 방벽(World.KeeperShield)을 두른다.
     /// - 액티브(강공격 · 화염탄) 뒤 밑천 StacksPerExtraAttack개마다 추가 공격 1번: 피해 = 밑천 수 × ExtraDamagePercentPerStack% × 최대 체력.
     /// 적 차례는 EnemyTurn.Run이 StartAction → 이동 → Act 순으로 부른다. 받는 피해는 AfterShield를 거친다.
     /// </summary>
@@ -172,10 +186,23 @@ namespace GirlsDungeon.Core.Sim
             world.PlayerBurnTurns = 0;
         }
 
-        /// <summary>상점 주인이 행동을 시작한다: 밑천 절반(올림) 감소 · 재사용 대기 · 방벽 지속 차례 감소.</summary>
+        private static void GainRemold(World world, KeeperSkillSettings keeperSettings, int amount)
+        {
+            if (amount > 0) world.KeeperRemold = Math.Min(keeperSettings.RemoldMax, world.KeeperRemold + amount);
+        }
+
+        /// <summary>피해를 준 뒤 (Remold.OnDamageDealt가 부른다): 상점 주인이 다른 유닛의 체력을 1 이상 깎았으면 리몰딩을 얻는다.</summary>
+        public static void OnDamageDealt(World world, CombatSettings settings, Unit attacker, Unit target, int dealt)
+        {
+            if (!Uses(settings, attacker) || target == null || target == attacker || dealt <= 0) return;
+            GainRemold(world, settings.Keeper, settings.Keeper.RemoldPerHit);
+        }
+
+        /// <summary>상점 주인이 행동을 시작한다: 리몰딩 · 밑천 절반(올림) 감소 · 재사용 대기 · 방벽 지속 차례 감소.</summary>
         public static void StartAction(World world, CombatSettings settings, Unit keeper)
         {
             if (!Uses(settings, keeper)) return;
+            GainRemold(world, settings.Keeper, settings.Keeper.RemoldPerAction);
             world.KeeperStacks -= (world.KeeperStacks + 1) / 2;
             if (world.KeeperHeartCooldown > 0) world.KeeperHeartCooldown--;
             if (world.KeeperOrderCooldown > 0) world.KeeperOrderCooldown--;
@@ -184,7 +211,7 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>
         /// 상점 주인의 행동 (이동은 끝난 뒤). 결전기 → 화염탄 → 강공격 → 일반 공격 순으로 쓸 수 있는 것을 쓴다.
-        /// 아무것도 못 했으면 false (EnemyTurn이 감시를 건다). 행동을 끝내면 기세 +1.
+        /// 아무것도 못 했으면 false (EnemyTurn이 감시를 건다). 행동을 끝내면 패시브로 리몰딩을 얻는다.
         /// </summary>
         public static bool Act(World world, CombatSettings settings, Unit keeper, Unit player, List<GameEvent> events)
         {
@@ -209,7 +236,7 @@ namespace GirlsDungeon.Core.Sim
             {
                 acted = CombatRules.Resolve(world, settings, keeper, player, events);
             }
-            world.KeeperRemold = Math.Min(keeperSettings.FinalCost, world.KeeperRemold + 1);
+            GainRemold(world, keeperSettings, keeperSettings.RemoldPerActionEnd);
             return acted;
         }
 
@@ -343,6 +370,7 @@ namespace GirlsDungeon.Core.Sim
             player.Stability = Math.Max(0, player.Stability - stabilityDamage);
             events.Add(new UnitAttacked(keeper, player, damage, false, cover, guard, stabilityBefore > 0 && player.Stability == 0));
             events.Add(new UnitStatsChanged(player.Id));
+            Remold.OnDamageDealt(world, settings, keeper, player, damage);
             if (cover != CoverLevel.None)
                 CoverBreak.Hit(world, settings, CoverBreak.Facing(world.Map, player.Position, keeper.Position), events);
             if (player.Hp > 0) return true;

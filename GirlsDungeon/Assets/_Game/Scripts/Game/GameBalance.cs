@@ -113,7 +113,15 @@ namespace GirlsDungeon.Game
         [Tooltip("Burn: fixed damage at the start of each player turn.")]
         public int burnDamage = 4;
         public int burnTurns = 2;
-        [Tooltip("Final skill: momentum needed (1 per action).")]
+        [Tooltip("Remold gauge (same rules as the player gauge): maximum.")]
+        public int remoldMax = 6;
+        [Tooltip("Remold gained at the start of each action.")]
+        public int remoldPerAction = 1;
+        [Tooltip("Remold gained each time damage is dealt.")]
+        public int remoldPerHit = 1;
+        [Tooltip("Passive: remold gained at the end of each action.")]
+        public int remoldPerActionEnd = 1;
+        [Tooltip("Final skill: remold spent.")]
         public int finalCost = 6;
         public int finalStacks = 6;
         [Tooltip("Shield amount (% of max hp).")]
@@ -692,6 +700,10 @@ namespace GirlsDungeon.Game
                     OrderRadius = keeperSkills.orderRadius,
                     BurnDamage = keeperSkills.burnDamage,
                     BurnTurns = keeperSkills.burnTurns,
+                    RemoldMax = keeperSkills.remoldMax,
+                    RemoldPerAction = keeperSkills.remoldPerAction,
+                    RemoldPerHit = keeperSkills.remoldPerHit,
+                    RemoldPerActionEnd = keeperSkills.remoldPerActionEnd,
                     FinalCost = keeperSkills.finalCost,
                     FinalStacks = keeperSkills.finalStacks,
                     ShieldPercent = keeperSkills.shieldPercent,

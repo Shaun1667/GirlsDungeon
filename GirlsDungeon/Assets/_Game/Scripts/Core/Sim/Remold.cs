@@ -10,6 +10,7 @@ namespace GirlsDungeon.Core.Sim
     /// - 스킬 소모: 캐릭터 줄의 스킬 소모가 0보다 크면 그 스킬은 재사용 대기 대신 리몰딩을 쓴다 (IsReady · Pay — 스킬 미리보기 · 실제 · 화면 공용).
     /// - 이동 감소를 가진 적에게 주는 피해 +SlowedDamagePercent (SetEffects.DamagePercent가 더함 — 모든 피해 미리보기 공통).
     /// - 이번 차례에 SlowAfterMoveCells칸 이상 걸었으면 공격 전에 대상에게 이동 감소(SlowAmount칸, SlowTurns차례)를 건다 — 그 공격부터 위 피해 증가를 받는다.
+    /// - 상점 주인의 리몰딩(World.KeeperRemold)도 같은 규칙으로 얻는다 — 수치는 CombatSettings.Keeper, 처리는 KeeperSkills (3-16b).
     /// - 이동 감소: 적 이동 칸은 MoveRangeOf 한 곳. 적이 행동할 때마다 남은 차례가 1 준다. 전투가 끝나면 지운다.
     /// </summary>
     public static class Remold
@@ -88,6 +89,8 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>피해를 준 뒤 (체력을 깎는 곳마다): 플레이어가 다른 유닛에게 1 이상 주었으면 1회로 센다.</summary>
         public static void OnDamageDealt(World world, CombatSettings settings, Unit attacker, Unit target, int dealt)
         {
+            // 상점 주인도 같은 규칙으로 리몰딩을 얻는다 (KeeperSkills, 3-16b).
+            KeeperSkills.OnDamageDealt(world, settings, attacker, target, dealt);
             if (attacker == null || !attacker.IsPlayer || target == null || target == attacker || dealt <= 0) return;
             var trait = Trait(world, settings);
             if (trait != null) Gain(world, settings, trait.RemoldPerHit);

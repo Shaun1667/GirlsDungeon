@@ -55,7 +55,7 @@ namespace GirlsDungeon.Tests
             Assert.That(world.KeeperStacks, Is.EqualTo(3));
             Assert.That(world.KeeperOrderCooldown, Is.EqualTo(2));
             Assert.That(world.PlayerBurnTurns, Is.EqualTo(2));
-            Assert.That(world.KeeperRemold, Is.EqualTo(1));
+            Assert.That(world.KeeperRemold, Is.EqualTo(3), "two hits, then the passive at the end of the action");
             Assert.That(events.OfType<AreaExploded>().Count(), Is.EqualTo(1));
             var hits = events.OfType<UnitAttacked>().Select(hit => hit.Damage).ToArray();
             Assert.That(hits, Is.EqualTo(new[] { 6, 10 }), "fire bomb, then one extra attack for 3 stacks");
@@ -97,6 +97,27 @@ namespace GirlsDungeon.Tests
             Assert.That(KeeperSkills.Act(world, combat, keeper, player, events), Is.True);
             Assert.That(events.OfType<KeeperSkillUsed>().Any(), Is.False);
             Assert.That(events.OfType<UnitAttacked>().Count(), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void Remold_FollowsThePlayerRules_ActionStart_EachHit_AndTheCap()
+        {
+            var (world, keeper, player, combat) = Fight();
+            KeeperSkills.StartAction(world, combat, keeper);
+            Assert.That(world.KeeperRemold, Is.EqualTo(1), "+1 at the start of an action");
+
+            world.KeeperOrderCooldown = 1;
+            world.KeeperHeartCooldown = 1;
+            Assert.That(CombatRules.Resolve(world, combat, keeper, player, new List<GameEvent>()), Is.True);
+            Assert.That(world.KeeperRemold, Is.EqualTo(2), "+1 for a basic shot that deals damage (overwatch shots too)");
+
+            Assert.That(CombatRules.Resolve(world, combat, player, keeper, new List<GameEvent>()), Is.True);
+            Assert.That(world.KeeperRemold, Is.EqualTo(2), "nothing for being hit");
+
+            world.KeeperRemold = 5;
+            world.KeeperOrderCooldown = 0;
+            KeeperSkills.Act(world, combat, keeper, player, new List<GameEvent>());
+            Assert.That(world.KeeperRemold, Is.EqualTo(6), "never above the maximum");
         }
 
         [Test]

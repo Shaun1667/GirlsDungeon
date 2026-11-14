@@ -160,6 +160,10 @@ namespace GirlsDungeon.Tests
             Assert.That(keeper.OrderRadius, Is.EqualTo(expectedKeeper.OrderRadius), "keeper orderRadius");
             Assert.That(keeper.BurnDamage, Is.EqualTo(expectedKeeper.BurnDamage), "keeper burnDamage");
             Assert.That(keeper.BurnTurns, Is.EqualTo(expectedKeeper.BurnTurns), "keeper burnTurns");
+            Assert.That(keeper.RemoldMax, Is.EqualTo(expectedKeeper.RemoldMax), "keeper remoldMax");
+            Assert.That(keeper.RemoldPerAction, Is.EqualTo(expectedKeeper.RemoldPerAction), "keeper remoldPerAction");
+            Assert.That(keeper.RemoldPerHit, Is.EqualTo(expectedKeeper.RemoldPerHit), "keeper remoldPerHit");
+            Assert.That(keeper.RemoldPerActionEnd, Is.EqualTo(expectedKeeper.RemoldPerActionEnd), "keeper remoldPerActionEnd");
             Assert.That(keeper.FinalCost, Is.EqualTo(expectedKeeper.FinalCost), "keeper finalCost");
             Assert.That(keeper.FinalStacks, Is.EqualTo(expectedKeeper.FinalStacks), "keeper finalStacks");
             Assert.That(keeper.ShieldPercent, Is.EqualTo(expectedKeeper.ShieldPercent), "keeper shieldPercent");

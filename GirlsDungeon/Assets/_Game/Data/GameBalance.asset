@@ -230,6 +230,10 @@ MonoBehaviour:
     orderRadius: 2
     burnDamage: 4
     burnTurns: 2
+    remoldMax: 6
+    remoldPerAction: 1
+    remoldPerHit: 1
+    remoldPerActionEnd: 1
     finalCost: 6
     finalStacks: 6
     shieldPercent: 50
