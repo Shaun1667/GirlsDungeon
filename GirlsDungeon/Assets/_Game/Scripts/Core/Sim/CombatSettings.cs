@@ -74,6 +74,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>수류탄 반경 (0 = 기본 CombatSettings.GrenadeRadius) · 모양 (BALANCE 6번, 2026-11-14).</summary>
         public int GrenadeRadius;
         public AreaShape GrenadeShape;
+        /// <summary>넉백 공격 범위 길이 · 너비 (0 = 공통 PushLength · PushWidth, BALANCE 9-1). 너비가 홀수면 내 줄 가운데, 짝수면 마우스 쪽으로 한 줄 더.</summary>
+        public int PushLength;
+        public int PushWidth;
 
         /// <summary>
         /// 리몰딩 지수 (BALANCE 34번, 3-16 — 대원 A): 최대치(0 = 이 캐릭터는 리몰딩 없음) · 행동(차례) 시작마다 · 피해를 1회 줄 때마다 얻는 양.
@@ -380,6 +383,20 @@ namespace GirlsDungeon.Core.Sim
             return character != null && character.GrenadeRadius > 0 ? character.GrenadeShape : AreaShape.Square;
         }
 
+        /// <summary>넉백 공격 길이: 캐릭터 줄 값(0이 아니면), 없으면 공통 PushLength (BALANCE 9-1).</summary>
+        public int PushLengthFor(CharacterKind kind)
+        {
+            var character = TryCharacter(kind);
+            return character != null && character.PushLength > 0 ? character.PushLength : PushLength;
+        }
+
+        /// <summary>넉백 공격 너비: 캐릭터 줄 값(0이 아니면), 없으면 공통 PushWidth (BALANCE 9-1).</summary>
+        public int PushWidthFor(CharacterKind kind)
+        {
+            var character = TryCharacter(kind);
+            return character != null && character.PushWidth > 0 ? character.PushWidth : PushWidth;
+        }
+
         /// <summary>무기 보정 전 플레이어 이동 범위: 캐릭터 줄이 있으면 그 값, 없으면 유닛 표의 플레이어 줄.</summary>
         public int PlayerBaseMoveRange(CharacterKind kind)
         {
@@ -480,7 +497,7 @@ namespace GirlsDungeon.Core.Sim
             if (CombatDropKeyPercent < 0 || CombatDropKeyPercent > 100)
                 throw new ArgumentException("Key settings are invalid.");
             foreach (var character in Characters)
-                if (character.GrenadeRadius < 0 || !Enum.IsDefined(typeof(AreaShape), character.GrenadeShape))
+                if (character.GrenadeRadius < 0 || character.PushLength < 0 || character.PushWidth < 0 || !Enum.IsDefined(typeof(AreaShape), character.GrenadeShape))
                     throw new ArgumentException($"Grenade area for {character.Kind} is invalid.");
             foreach (var character in Characters)
                 if (character.DoorForcePercent < 0 || character.DoorForcePercent > 100)

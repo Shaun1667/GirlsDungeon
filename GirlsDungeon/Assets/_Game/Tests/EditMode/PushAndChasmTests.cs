@@ -118,11 +118,49 @@ namespace GirlsDungeon.Tests
         public void Area_IsThreeLongAndTwoWide_InFrontOfThePlayer()
         {
             var map = TestData.Parse("........", "........", "........");
-            var cells = Push.AreaCells(map, TestData.Combat(), new GridPos(0, 1), East, 1);
+            var cells = Push.AreaCells(map, new GridPos(0, 1), East, 1, 3, 2);
             CollectionAssert.AreEquivalent(new[]
             {
                 new GridPos(1, 1), new GridPos(1, 2), new GridPos(2, 1), new GridPos(2, 2), new GridPos(3, 1), new GridPos(3, 2),
             }, cells);
+        }
+
+        [Test]
+        public void HeroA_AreaIsThreeWideCenteredAndFiveLong_OthersKeepTheSharedArea()
+        {
+            var combat = TestData.Combat();
+            var world = MakeWorld(new GridPos(0, 2), new GridPos[0], "........", "........", "........", "........", "........");
+            world.PlayerCharacter = CharacterKind.HeroA;
+            Assert.That(Push.LengthOf(world, combat, world.Player), Is.EqualTo(5));
+            Assert.That(Push.WidthOf(world, combat, world.Player), Is.EqualTo(3));
+
+            var expected = new List<GridPos>();
+            for (int x = 1; x <= 5; x++)
+                for (int y = 1; y <= 3; y++) expected.Add(new GridPos(x, y));
+            // 너비가 홀수면 마우스 쪽(side)과 상관없이 내 줄을 가운데로 양옆 한 줄씩.
+            foreach (int side in new[] { 1, -1 })
+                CollectionAssert.AreEquivalent(expected,
+                    Push.AreaCells(world.Map, world.Player.Position, East, side, Push.LengthOf(world, combat, world.Player), Push.WidthOf(world, combat, world.Player)));
+
+            world.PlayerCharacter = CharacterKind.HeroB;
+            Assert.That(Push.LengthOf(world, combat, world.Player), Is.EqualTo(combat.PushLength));
+            Assert.That(Push.WidthOf(world, combat, world.Player), Is.EqualTo(combat.PushWidth));
+        }
+
+        [Test]
+        public void HeroA_PushesTheFarthestRowJustPastFiveCells_AndHitsTheSideLanes()
+        {
+            var world = MakeWorld(new GridPos(0, 1), new[] { new GridPos(5, 1), new GridPos(1, 0), new GridPos(2, 2) },
+                "..........", "..........", "..........");
+            world.PlayerCharacter = CharacterKind.HeroA;
+            var far = world.UnitAt(new GridPos(5, 1));
+            var left = world.UnitAt(new GridPos(1, 0));
+            var right = world.UnitAt(new GridPos(2, 2));
+
+            Assert.That(Push.Resolve(world, TestData.Combat(), world.Player, East, 1, new List<GameEvent>()), Is.True);
+            Assert.That(far.Position, Is.EqualTo(new GridPos(6, 1)), "depth 5 → 1 cell");
+            Assert.That(left.Position, Is.EqualTo(new GridPos(6, 0)), "depth 1 → 5 cells, side lane −1");
+            Assert.That(right.Position, Is.EqualTo(new GridPos(6, 2)), "depth 2 → 4 cells, side lane +1");
         }
 
         // ---- 밀림 ----

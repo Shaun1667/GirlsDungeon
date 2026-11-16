@@ -77,7 +77,8 @@ namespace GirlsDungeon.Core.Sim
 
     /// <summary>
     /// 밀치기의 한 곳 (BALANCE 9번 · 10번, 결정 2026-11-10 사용자). 플레이어 밀치기 스킬과 돌격병 근접 밀기(Knockback)가 같은 Slide · 낙하 처리를 쓴다.
-    /// - 범위: 플레이어 앞 동서남북 한 방향으로 길이 PushLength × 너비 PushWidth. 너비의 옆 줄은 side(+1 / −1) 쪽.
+    /// - 범위: 플레이어 앞 동서남북 한 방향으로 길이 × 너비 (캐릭터 줄 값, 없으면 공통 PushLength · PushWidth — CombatSettings.PushLengthFor · PushWidthFor).
+    ///   너비가 홀수면 내 줄을 가운데로 양옆 같게, 짝수면 남는 한 줄을 side(+1 / −1) 쪽에.
     /// - 범위 안 유닛은 직접 피해(공격력 공식 × PushDamagePercent, 엄폐 · 치명 없음)를 받고, 범위 끝 바로 바깥 칸까지 밀린다.
     /// - 미는 중 낭떠러지에 들어가면 떨어진다 (적은 즉사). 벽 · 기둥 · 상자 · 낮은 벽 · 다른 유닛 · 맵 끝에 부딪히면 그 앞에서 멈추고 충돌 피해.
     /// - 먼 유닛부터 민다 — 앞 유닛이 비켜 준 칸으로 뒤 유닛이 밀린다. 밀려 움직일 때는 감시 반응이 없다.
@@ -98,27 +99,38 @@ namespace GirlsDungeon.Core.Sim
 
         public static GridPos Perpendicular(GridPos direction) => new GridPos(-direction.Y, direction.X);
 
-        /// <summary>범위 칸 (맵 밖은 뺀다). 앞쪽 깊이 1 → PushLength, 각 깊이에서 가운데 줄 → 옆 줄.</summary>
-        public static List<GridPos> AreaCells(FloorMap map, CombatSettings settings, GridPos origin, GridPos direction, int side)
+        /// <summary>범위 칸 (맵 밖은 뺀다). 앞쪽 깊이 1 → length, 각 깊이에서 옆 줄 순서대로. 너비 홀수 = 가운데, 짝수 = 남는 줄이 side 쪽.</summary>
+        public static List<GridPos> AreaCells(FloorMap map, GridPos origin, GridPos direction, int side, int length, int width)
         {
             var perpendicular = Perpendicular(direction);
             var cells = new List<GridPos>();
-            for (int depth = 1; depth <= settings.PushLength; depth++)
+            int firstLane = -((width - 1) / 2);
+            for (int depth = 1; depth <= length; depth++)
             {
-                for (int lane = 0; lane < settings.PushWidth; lane++)
+                for (int i = 0; i < width; i++)
                 {
-                    var cell = new GridPos(origin.X + direction.X * depth + perpendicular.X * lane * side,
-                        origin.Y + direction.Y * depth + perpendicular.Y * lane * side);
+                    int lane = (firstLane + i) * side;
+                    var cell = new GridPos(origin.X + direction.X * depth + perpendicular.X * lane,
+                        origin.Y + direction.Y * depth + perpendicular.Y * lane);
                     if (map.InBounds(cell)) cells.Add(cell);
                 }
             }
             return cells;
         }
 
+        /// <summary>공격자의 범위 길이 (플레이어 = 고른 캐릭터 줄, 아니면 공통 값).</summary>
+        public static int LengthOf(World world, CombatSettings settings, Unit attacker) =>
+            attacker.IsPlayer ? settings.PushLengthFor(world.PlayerCharacter) : settings.PushLength;
+
+        /// <summary>공격자의 범위 너비 (플레이어 = 고른 캐릭터 줄, 아니면 공통 값).</summary>
+        public static int WidthOf(World world, CombatSettings settings, Unit attacker) =>
+            attacker.IsPlayer ? settings.PushWidthFor(world.PlayerCharacter) : settings.PushWidth;
+
         public static PushPreview Preview(World world, CombatSettings settings, Unit attacker, GridPos direction, int side)
         {
             var map = world.Map;
-            var cells = AreaCells(map, settings, attacker.Position, direction, side);
+            int length = LengthOf(world, settings, attacker);
+            var cells = AreaCells(map, attacker.Position, direction, side, length, WidthOf(world, settings, attacker));
 
             // 먼 유닛부터 (깊이 큰 순 → 가운데 줄 먼저 → ID).
             var targets = new List<Unit>();
@@ -152,7 +164,7 @@ namespace GirlsDungeon.Core.Sim
                     continue;
                 }
 
-                int distance = settings.PushLength + 1 - Depth(attacker.Position, start, direction);
+                int distance = length + 1 - Depth(attacker.Position, start, direction);
                 var slide = Slide(map, occupied, start, direction, distance);
                 int collision = slide.Collides ? settings.PushCollisionDamage : 0;
                 var hit = new PushHit(target, damage, false, slide, collision);

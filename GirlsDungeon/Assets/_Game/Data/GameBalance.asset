@@ -125,6 +125,8 @@ MonoBehaviour:
     doorForcePercent: 70
     grenadeRadius: 2
     grenadeShape: 1
+    pushLength: 5
+    pushWidth: 3
     remoldMax: 6
     remoldPerAction: 1
     remoldPerHit: 1
@@ -150,6 +152,8 @@ MonoBehaviour:
     doorForcePercent: 0
     grenadeRadius: 0
     grenadeShape: 0
+    pushLength: 0
+    pushWidth: 0
     remoldMax: 0
     remoldPerAction: 0
     remoldPerHit: 0
@@ -175,6 +179,8 @@ MonoBehaviour:
     doorForcePercent: 0
     grenadeRadius: 0
     grenadeShape: 0
+    pushLength: 0
+    pushWidth: 0
     remoldMax: 0
     remoldPerAction: 0
     remoldPerHit: 0

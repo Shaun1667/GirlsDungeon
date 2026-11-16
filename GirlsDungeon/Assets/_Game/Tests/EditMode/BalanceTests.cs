@@ -348,6 +348,20 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void PushAreas_MatchBalanceTable9_1()
+        {
+            var combat = Load().CreateCombatSettings();
+            // 사용자 결정 (2026-11-16): A = 너비 3 × 길이 5, 나머지는 공통 너비 2 × 길이 3.
+            Assert.That(combat.PushLengthFor(GirlsDungeon.Core.Sim.CharacterKind.HeroA), Is.EqualTo(5));
+            Assert.That(combat.PushWidthFor(GirlsDungeon.Core.Sim.CharacterKind.HeroA), Is.EqualTo(3));
+            foreach (var kind in new[] { GirlsDungeon.Core.Sim.CharacterKind.HeroB, GirlsDungeon.Core.Sim.CharacterKind.HeroC, GirlsDungeon.Core.Sim.CharacterKind.None })
+            {
+                Assert.That(combat.PushLengthFor(kind), Is.EqualTo(3), kind.ToString());
+                Assert.That(combat.PushWidthFor(kind), Is.EqualTo(2), kind.ToString());
+            }
+        }
+
+        [Test]
         public void GrenadeAreas_MatchBalanceTable6_7()
         {
             var combat = Load().CreateCombatSettings();

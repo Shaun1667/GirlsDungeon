@@ -296,7 +296,7 @@ namespace GirlsDungeon.Game
                     return Text.Get("ui.skill.grenade_tip", settings.GrenadeThrowRange, settings.GrenadeRadiusFor(simulation.World.PlayerCharacter), settings.GrenadeDamagePercent,
                         settings.GrenadeStabilityDamage, CostText(skill, settings.GrenadeCooldownRounds));
                 case SkillKind.Push:
-                    return Text.Get("ui.skill.push_tip", settings.PushWidth, settings.PushLength, settings.PushDamagePercent,
+                    return Text.Get("ui.skill.push_tip", settings.PushWidthFor(simulation.World.PlayerCharacter), settings.PushLengthFor(simulation.World.PlayerCharacter), settings.PushDamagePercent,
                         settings.PushCollisionDamage, CostText(skill, settings.PushCooldownRounds));
                 case SkillKind.Sonic:
                     return Text.Get("ui.skill.sonic_tip", settings.SonicRange, settings.SonicDamagePercent,
