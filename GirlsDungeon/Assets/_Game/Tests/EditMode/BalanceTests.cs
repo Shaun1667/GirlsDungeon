@@ -247,21 +247,23 @@ namespace GirlsDungeon.Tests
         public void PartSets_MatchBalanceTable18()
         {
             var combat = Load().CreateCombatSettings();
-            // 결정 2026-11-13 사용자: 같은 세트 3개 · 받은 퍼센트 그대로.
+            // 결정 2026-11-16 사용자: 새 세트 목록 13종 · 같은 세트 3개 · 받은 퍼센트 그대로.
             Assert.That(combat.SetPiecesRequired, Is.EqualTo(3));
-            Assert.That(combat.SetChainPercentPerStack, Is.EqualTo(5));
-            Assert.That(combat.SetChainMaxStacks, Is.EqualTo(4));
-            Assert.That(combat.SetTwoSidedPercent, Is.EqualTo(10));
-            Assert.That(combat.SetFracturePercent, Is.EqualTo(15));
-            Assert.That(combat.SetEmergencyStability, Is.EqualTo(2));
-            Assert.That(combat.SetBulwarkPercent, Is.EqualTo(20));
-            Assert.That(combat.SetBulwarkTurns, Is.EqualTo(2));
-            Assert.That(combat.SetAmbushPercent, Is.EqualTo(25));
+            Assert.That(combat.SetDecisivePercentPerStack, Is.EqualTo(5));
+            Assert.That(combat.SetDecisiveMaxStacks, Is.EqualTo(4));
+            Assert.That(combat.SetDualCounterPercent, Is.EqualTo(10));
+            Assert.That(combat.SetPhaseStrikePercent, Is.EqualTo(15));
+            Assert.That(combat.SetPhaseAmpPercent, Is.EqualTo(10));
+            Assert.That(combat.SetPhaseAmpTurns, Is.EqualTo(1));
+            Assert.That(combat.SetPhaseAmpDoublePercent, Is.EqualTo(10));
+            Assert.That(combat.SetElementPercent, Is.EqualTo(20));
+            Assert.That(combat.SetTacticalPercent, Is.EqualTo(25));
             Assert.That(combat.SetAssaultPercent, Is.EqualTo(12));
             Assert.That(combat.SetAssaultMeleePercent, Is.EqualTo(24));
-            // 검산: 백병 강습 + 도검 = 1.36배, 연쇄 가속 최대 = +20%.
+            Assert.That(combat.SetApexPercent, Is.EqualTo(20));
+            // 검산: 육박 강공 + 도검 = 1.36배, 결전 추진 최대 = +20%.
             Assert.That(combat.SetAssaultPercent + combat.SetAssaultMeleePercent, Is.EqualTo(36));
-            Assert.That(combat.SetChainPercentPerStack * combat.SetChainMaxStacks, Is.EqualTo(20));
+            Assert.That(combat.SetDecisivePercentPerStack * combat.SetDecisiveMaxStacks, Is.EqualTo(20));
         }
 
         [Test]
@@ -531,12 +533,12 @@ namespace GirlsDungeon.Tests
         public void PartSetTextKeys_ExistInTheTextTable()
         {
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
-            foreach (var name in new[] { "chain", "two_sided", "fracture", "emergency", "bulwark", "ambush", "assault" })
+            foreach (var name in new[] { "decisive", "dual_counter", "phase_strike", "phase_amp", "kinetic", "blaze", "frost", "acid", "magnetic", "torrent", "tactical", "assault", "apex" })
             {
                 Assert.That(table.Contains("part.set." + name + ".name"), Is.True, name);
                 Assert.That(table.Contains("part.set." + name + ".rule"), Is.True, name);
             }
-            foreach (var key in new[] { "ui.part.set", "ui.part.summary_set", "ui.hud.set", "ui.hud.set_chain", "ui.hud.set_bulwark" })
+            foreach (var key in new[] { "ui.part.set", "ui.part.summary_set", "ui.hud.set", "ui.hud.set_stacks" })
                 Assert.That(table.Contains(key), Is.True, key);
         }
 

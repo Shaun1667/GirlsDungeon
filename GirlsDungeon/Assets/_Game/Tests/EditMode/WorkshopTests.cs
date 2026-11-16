@@ -76,7 +76,7 @@ namespace GirlsDungeon.Tests
         {
             var (world, combat) = AtBench();
             world.PartMaterials = 10;
-            world.SpareParts.Add(Part(world.PlayerWeapon, 1, PartGrade.Military, PartSet.Chain, (PartStat.Attack, 1)));
+            world.SpareParts.Add(Part(world.PlayerWeapon, 1, PartGrade.Military, PartSet.Decisive, (PartStat.Attack, 1)));
             Assert.That(Workshop.AtBench(world), Is.True);
 
             world.Player.Position = new GridPos(1, 1);
@@ -85,7 +85,7 @@ namespace GirlsDungeon.Tests
 
             world.Player.Position = new GridPos(4, 2);
             world.Mode = WorldMode.Combat;
-            Assert.That(Workshop.ChangeSet(world, combat, PartPlace.Spare, 0, PartSet.Ambush, new List<GameEvent>()), Is.False);
+            Assert.That(Workshop.ChangeSet(world, combat, PartPlace.Spare, 0, PartSet.Tactical, new List<GameEvent>()), Is.False);
             Assert.That(world.PartMaterials, Is.EqualTo(10), "nothing spent");
         }
 
@@ -119,7 +119,7 @@ namespace GirlsDungeon.Tests
             {
                 var (world, _) = AtBench(CharacterKind.HeroB, seed);
                 world.PartMaterials = combat.WorkshopOptionCost;
-                world.SpareParts.Add(Part(WeaponKind.Blade, 2, PartGrade.Military, PartSet.Chain, (PartStat.MaxHp, 5), (PartStat.Defense, 1)));
+                world.SpareParts.Add(Part(WeaponKind.Blade, 2, PartGrade.Military, PartSet.Decisive, (PartStat.MaxHp, 5), (PartStat.Defense, 1)));
                 var events = new List<GameEvent>();
                 Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.Attack, events), Is.True);
                 Assert.That(world.PartMaterials, Is.EqualTo(0));
@@ -128,7 +128,7 @@ namespace GirlsDungeon.Tests
                 var reworked = events.OfType<PartReworked>().Single();
                 Assert.That(part.Bonuses[1].Stat, Is.EqualTo(PartStat.Defense), "other line untouched");
                 Assert.That(part.Bonuses[0].Stat, Is.Not.EqualTo(PartStat.Defense), "no stat twice");
-                Assert.That(part.Set, Is.EqualTo(PartSet.Chain), "set untouched");
+                Assert.That(part.Set, Is.EqualTo(PartSet.Decisive), "set untouched");
                 var range = combat.PartRange(part.Bonuses[0].Stat);
                 Assert.That(part.Bonuses[0].Value, Is.InRange(range.Min, range.Max));
                 if (reworked.Success)
@@ -167,7 +167,7 @@ namespace GirlsDungeon.Tests
                 {
                     var (world, _) = AtBench(character, seed);
                     world.PartMaterials = combat.WorkshopSetCost;
-                    world.SpareParts.Add(Part(WeaponKind.Pistol, 3, PartGrade.Precision, PartSet.Chain, (PartStat.Attack, 1)));
+                    world.SpareParts.Add(Part(WeaponKind.Pistol, 3, PartGrade.Precision, PartSet.Decisive, (PartStat.Attack, 1)));
                     var events = new List<GameEvent>();
                     Assert.That(Workshop.ChangeSet(world, combat, PartPlace.Spare, 0, PartSet.Assault, events), Is.True);
                     Assert.That(world.PartMaterials, Is.EqualTo(0));
@@ -217,13 +217,13 @@ namespace GirlsDungeon.Tests
             int baseAttack = world.Player.Attack;
             var old = Part(world.PlayerWeapon, 2, PartGrade.Industrial, PartSet.None, (PartStat.Defense, 1));
             world.PlayerParts[2] = old;
-            world.SpareParts.Add(Part(world.PlayerWeapon, 2, PartGrade.Military, PartSet.Ambush, (PartStat.Attack, 2)));
-            world.SpareParts.Add(Part(WeaponKind.Blade, 2, PartGrade.Military, PartSet.Ambush, (PartStat.Attack, 2)));
+            world.SpareParts.Add(Part(world.PlayerWeapon, 2, PartGrade.Military, PartSet.Tactical, (PartStat.Attack, 2)));
+            world.SpareParts.Add(Part(WeaponKind.Blade, 2, PartGrade.Military, PartSet.Tactical, (PartStat.Attack, 2)));
             Loadout.Apply(world, combat);
 
             Assert.That(Workshop.EquipSpare(world, combat, 1, new List<GameEvent>()), Is.False, "other weapon");
             Assert.That(Workshop.EquipSpare(world, combat, 0, new List<GameEvent>()), Is.True);
-            Assert.That(world.PlayerParts[2].Set, Is.EqualTo(PartSet.Ambush));
+            Assert.That(world.PlayerParts[2].Set, Is.EqualTo(PartSet.Tactical));
             Assert.That(world.SpareParts[0], Is.SameAs(old), "old part goes to the same spare slot");
             Assert.That(world.Player.Attack, Is.EqualTo(baseAttack + 2));
         }
@@ -236,10 +236,10 @@ namespace GirlsDungeon.Tests
             {
                 var (world, _) = AtBench(CharacterKind.HeroA, 7);
                 world.PartMaterials = 20;
-                world.SpareParts.Add(Part(WeaponKind.Smg, 1, PartGrade.Military, PartSet.Chain, (PartStat.Attack, 1), (PartStat.MaxHp, 5)));
+                world.SpareParts.Add(Part(WeaponKind.Smg, 1, PartGrade.Military, PartSet.Decisive, (PartStat.Attack, 1), (PartStat.MaxHp, 5)));
                 var events = new List<GameEvent>();
                 Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.CritPercent, events);
-                Workshop.ChangeSet(world, combat, PartPlace.Spare, 0, PartSet.Fracture, events);
+                Workshop.ChangeSet(world, combat, PartPlace.Spare, 0, PartSet.DualCounter, events);
                 var part = world.SpareParts[0];
                 return string.Join(",", part.Bonuses.Select(b => $"{b.Stat}{b.Value}")) + part.Set;
             }
@@ -251,13 +251,13 @@ namespace GirlsDungeon.Tests
         {
             var (world, combat) = AtBench();
             world.PartMaterials = 9;
-            world.SpareParts.Add(Part(WeaponKind.Smg, 1, PartGrade.Military, PartSet.Chain, (PartStat.Attack, 1)));
+            world.SpareParts.Add(Part(WeaponKind.Smg, 1, PartGrade.Military, PartSet.Decisive, (PartStat.Attack, 1)));
             var bytes = WorldSnapshot.Encode(world);
             var restored = WorldSnapshot.Decode(bytes);
             Assert.That(WorldSnapshot.Encode(restored), Is.EqualTo(bytes));
             Assert.That(restored.PartMaterials, Is.EqualTo(9));
             Assert.That(restored.SpareParts.Count, Is.EqualTo(1));
-            Assert.That(restored.SpareParts[0].Set, Is.EqualTo(PartSet.Chain));
+            Assert.That(restored.SpareParts[0].Set, Is.EqualTo(PartSet.Decisive));
             Assert.That(restored.Map.Get(new GridPos(5, 2)), Is.EqualTo(TileType.Workbench));
         }
     }

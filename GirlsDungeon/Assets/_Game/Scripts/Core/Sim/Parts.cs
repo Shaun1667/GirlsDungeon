@@ -130,7 +130,7 @@ namespace GirlsDungeon.Core.Sim
                 bonuses.Add(new PartBonus(stat, random.Range(range.Min, range.Max + 1)));
             }
             // 세트는 능력치 다음에 굴린다 (세트가 없는 파츠는 난수를 더 쓰지 않는다).
-            var set = rollSet && SetEffects.CanHaveSet(grade, slot) ? (PartSet)random.Range(1, SetEffects.SetCount + 1) : PartSet.None;
+            var set = rollSet && SetEffects.CanHaveSet(grade, slot) ? SetEffects.RandomSet(random) : PartSet.None;
             return new WeaponPart(weapon, slot, grade, bonuses, set);
         }
 

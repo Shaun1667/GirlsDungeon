@@ -40,7 +40,7 @@ namespace GirlsDungeon.Core.Sim
             int best = 0;
             for (int i = 1; i <= SetEffects.SetCount; i++)
                 if (counts[i] > counts[best]) best = i;
-            return best > 0 ? (PartSet)best : (PartSet)random.Range(1, SetEffects.SetCount + 1);
+            return best > 0 ? (PartSet)best : SetEffects.RandomSet(random);
         }
 
         /// <summary>진열장을 연다 (처음이면 파츠 3개를 만든다). 진열장 옆이 아니면 false.</summary>

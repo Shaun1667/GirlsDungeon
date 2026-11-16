@@ -95,9 +95,16 @@ namespace GirlsDungeon.Game
             Refresh();
         }
 
+        /// <summary>세트 바꾸기에서 고른 세트 (후보 SetEffects.Pool — 아직 조건이 없는 세트는 빠짐).</summary>
+        private PartSet SetTarget()
+        {
+            var pool = SetEffects.Pool();
+            return pool[targetIndex % pool.Count];
+        }
+
         public void StepTarget(int direction)
         {
-            int count = mode == ReworkKind.Option ? OptionTargets().Count : SetEffects.SetCount;
+            int count = mode == ReworkKind.Option ? OptionTargets().Count : SetEffects.Pool().Count;
             if (count == 0) return;
             targetIndex = (targetIndex + direction + count) % count;
             Refresh();
@@ -126,7 +133,7 @@ namespace GirlsDungeon.Game
             }
             else
             {
-                done = Execute(new ChangePartSetCommand(place, index, (PartSet)(targetIndex % SetEffects.SetCount + 1), settings));
+                done = Execute(new ChangePartSetCommand(place, index, SetTarget(), settings));
             }
             Refresh();
             return done;
@@ -262,7 +269,7 @@ namespace GirlsDungeon.Game
                 }
                 else
                 {
-                    var target = (PartSet)(targetIndex % SetEffects.SetCount + 1);
+                    var target = SetTarget();
                     lines.Add(Text.Get("ui.workshop.mode_set", HudView.SetName(target), Workshop.SetPercent(world, settings), settings.WorkshopSetCost));
                 }
             }

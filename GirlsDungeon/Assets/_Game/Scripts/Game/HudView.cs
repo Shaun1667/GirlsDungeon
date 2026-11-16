@@ -227,13 +227,19 @@ namespace GirlsDungeon.Game
         {
             switch (set)
             {
-                case PartSet.Chain: return Text.Get("part.set.chain.name");
-                case PartSet.TwoSided: return Text.Get("part.set.two_sided.name");
-                case PartSet.Fracture: return Text.Get("part.set.fracture.name");
-                case PartSet.Emergency: return Text.Get("part.set.emergency.name");
-                case PartSet.Bulwark: return Text.Get("part.set.bulwark.name");
-                case PartSet.Ambush: return Text.Get("part.set.ambush.name");
+                case PartSet.Decisive: return Text.Get("part.set.decisive.name");
+                case PartSet.DualCounter: return Text.Get("part.set.dual_counter.name");
+                case PartSet.PhaseStrike: return Text.Get("part.set.phase_strike.name");
+                case PartSet.PhaseAmp: return Text.Get("part.set.phase_amp.name");
+                case PartSet.Kinetic: return Text.Get("part.set.kinetic.name");
+                case PartSet.Blaze: return Text.Get("part.set.blaze.name");
+                case PartSet.Frost: return Text.Get("part.set.frost.name");
+                case PartSet.Acid: return Text.Get("part.set.acid.name");
+                case PartSet.Magnetic: return Text.Get("part.set.magnetic.name");
+                case PartSet.Torrent: return Text.Get("part.set.torrent.name");
+                case PartSet.Tactical: return Text.Get("part.set.tactical.name");
                 case PartSet.Assault: return Text.Get("part.set.assault.name");
+                case PartSet.Apex: return Text.Get("part.set.apex.name");
                 default: return string.Empty;
             }
         }
@@ -243,13 +249,19 @@ namespace GirlsDungeon.Game
         {
             switch (set)
             {
-                case PartSet.Chain: return Text.Get("part.set.chain.rule", settings.SetChainPercentPerStack, settings.SetChainMaxStacks);
-                case PartSet.TwoSided: return Text.Get("part.set.two_sided.rule", settings.SetTwoSidedPercent);
-                case PartSet.Fracture: return Text.Get("part.set.fracture.rule", settings.SetFracturePercent);
-                case PartSet.Emergency: return Text.Get("part.set.emergency.rule", settings.SetEmergencyStability);
-                case PartSet.Bulwark: return Text.Get("part.set.bulwark.rule", settings.SetBulwarkTurns, settings.SetBulwarkPercent);
-                case PartSet.Ambush: return Text.Get("part.set.ambush.rule", settings.SetAmbushPercent);
+                case PartSet.Decisive: return Text.Get("part.set.decisive.rule", settings.SetDecisivePercentPerStack, settings.SetDecisiveMaxStacks);
+                case PartSet.DualCounter: return Text.Get("part.set.dual_counter.rule", settings.SetDualCounterPercent);
+                case PartSet.PhaseStrike: return Text.Get("part.set.phase_strike.rule", settings.SetPhaseStrikePercent);
+                case PartSet.PhaseAmp: return Text.Get("part.set.phase_amp.rule", settings.SetPhaseAmpTurns, settings.SetPhaseAmpPercent, settings.SetPhaseAmpDoublePercent);
+                case PartSet.Kinetic: return Text.Get("part.set.kinetic.rule", settings.SetElementPercent);
+                case PartSet.Blaze: return Text.Get("part.set.blaze.rule", settings.SetElementPercent);
+                case PartSet.Frost: return Text.Get("part.set.frost.rule", settings.SetElementPercent);
+                case PartSet.Acid: return Text.Get("part.set.acid.rule", settings.SetElementPercent);
+                case PartSet.Magnetic: return Text.Get("part.set.magnetic.rule", settings.SetElementPercent);
+                case PartSet.Torrent: return Text.Get("part.set.torrent.rule", settings.SetElementPercent);
+                case PartSet.Tactical: return Text.Get("part.set.tactical.rule", settings.SetTacticalPercent);
                 case PartSet.Assault: return Text.Get("part.set.assault.rule", settings.SetAssaultPercent, settings.SetAssaultMeleePercent);
+                case PartSet.Apex: return Text.Get("part.set.apex.rule", settings.SetApexPercent);
                 default: return string.Empty;
             }
         }
@@ -716,10 +728,9 @@ namespace GirlsDungeon.Game
                 // 재료 · 보관함 (3-4c): 하나라도 있을 때만.
                 if (world.PartMaterials > 0 || world.SpareParts.Count > 0)
                     weaponLabel.text += "\n" + Text.Get("ui.hud.materials", world.PartMaterials, world.SpareParts.Count, settings.SpareSlots);
-                // 켜진 세트 (3-4b): 이름 · 연쇄 가속 중첩 · 방호 태세 남은 차례.
+                // 켜진 세트 (3-4b · 3-16e): 이름 · 결전 추진 중첩.
                 var activeSet = SetEffects.Active(world, settings);
-                if (activeSet == PartSet.Chain) weaponLabel.text += "\n" + Text.Get("ui.hud.set_chain", SetName(activeSet), world.SetChainStacks, settings.SetChainMaxStacks);
-                else if (activeSet == PartSet.Bulwark && world.SetBulwarkTurns > 0) weaponLabel.text += "\n" + Text.Get("ui.hud.set_bulwark", SetName(activeSet), world.SetBulwarkTurns);
+                if (activeSet == PartSet.Decisive) weaponLabel.text += "\n" + Text.Get("ui.hud.set_stacks", SetName(activeSet), world.SetDecisiveStacks, settings.SetDecisiveMaxStacks);
                 else if (activeSet != PartSet.None) weaponLabel.text += "\n" + Text.Get("ui.hud.set", SetName(activeSet));
             }
 

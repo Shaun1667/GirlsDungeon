@@ -464,23 +464,26 @@ namespace GirlsDungeon.Game
         [Header("Part sets (BALANCE 18)")]
         [Tooltip("How many parts of one set (slots 2 to 4) turn the set on.")]
         [SerializeField] private int setPiecesRequired = 3;
-        [Tooltip("Chain: skill damage per stack (%), stacks gained per skill used, max stacks.")]
-        [SerializeField] private int setChainPercentPerStack = 5;
-        [SerializeField] private int setChainMaxStacks = 4;
-        [Tooltip("Two-sided: single damage when no cover near the target, area damage when cover is near (%).")]
-        [SerializeField] private int setTwoSidedPercent = 10;
-        [Tooltip("Fracture: damage to enemies whose stability is below max (%).")]
-        [SerializeField] private int setFracturePercent = 15;
-        [Tooltip("Emergency: stability gained when a medkit fills HP.")]
-        [SerializeField] private int setEmergencyStability = 2;
-        [Tooltip("Bulwark: area damage taken reduction (%) and player turns it lasts after setting overwatch.")]
-        [SerializeField] private int setBulwarkPercent = 20;
-        [SerializeField] private int setBulwarkTurns = 2;
-        [Tooltip("Ambush: overwatch shot damage (%).")]
-        [SerializeField] private int setAmbushPercent = 25;
-        [Tooltip("Assault: all damage (%) and extra for melee weapon attacks (%).")]
+        [Tooltip("Decisive drive: slot 3 skill damage per stack (%), max stacks (one stack after each slot 3 skill).")]
+        [SerializeField] private int setDecisivePercentPerStack = 5;
+        [SerializeField] private int setDecisiveMaxStacks = 4;
+        [Tooltip("Dual counter: single damage when no cover near the target, area damage when cover is near (%).")]
+        [SerializeField] private int setDualCounterPercent = 10;
+        [Tooltip("Phase strike: damage to enemies with a phase debuff (%).")]
+        [SerializeField] private int setPhaseStrikePercent = 15;
+        [Tooltip("Phase amp: phase boost I phase damage (%), its turns, and damage when hitting two weak points at once (%).")]
+        [SerializeField] private int setPhaseAmpPercent = 10;
+        [SerializeField] private int setPhaseAmpTurns = 1;
+        [SerializeField] private int setPhaseAmpDoublePercent = 10;
+        [Tooltip("Element amp sets (kinetic, blaze, frost, acid, magnetic, torrent): damage of that element (%).")]
+        [SerializeField] private int setElementPercent = 20;
+        [Tooltip("Tactical calc: off-turn damage such as overwatch shots (%).")]
+        [SerializeField] private int setTacticalPercent = 25;
+        [Tooltip("Close assault: all damage (%) and extra for melee weapon attacks (%).")]
         [SerializeField] private int setAssaultPercent = 12;
         [SerializeField] private int setAssaultMeleePercent = 24;
+        [Tooltip("Apex summon: damage while you have a summon on the field (%).")]
+        [SerializeField] private int setApexPercent = 20;
 
         [Header("Part workshop (BALANCE 19)")]
         [Tooltip("Success chance (%) when no character is picked: change option, change set. Characters have their own.")]
@@ -729,16 +732,18 @@ namespace GirlsDungeon.Game
                 PartPrimaryStatCounts = (int[])partPrimaryStatCounts.Clone(),
                 PartSecondaryStatCounts = (int[])partSecondaryStatCounts.Clone(),
                 SetPiecesRequired = setPiecesRequired,
-                SetChainPercentPerStack = setChainPercentPerStack,
-                SetChainMaxStacks = setChainMaxStacks,
-                SetTwoSidedPercent = setTwoSidedPercent,
-                SetFracturePercent = setFracturePercent,
-                SetEmergencyStability = setEmergencyStability,
-                SetBulwarkPercent = setBulwarkPercent,
-                SetBulwarkTurns = setBulwarkTurns,
-                SetAmbushPercent = setAmbushPercent,
+                SetDecisivePercentPerStack = setDecisivePercentPerStack,
+                SetDecisiveMaxStacks = setDecisiveMaxStacks,
+                SetDualCounterPercent = setDualCounterPercent,
+                SetPhaseStrikePercent = setPhaseStrikePercent,
+                SetPhaseAmpPercent = setPhaseAmpPercent,
+                SetPhaseAmpTurns = setPhaseAmpTurns,
+                SetPhaseAmpDoublePercent = setPhaseAmpDoublePercent,
+                SetElementPercent = setElementPercent,
+                SetTacticalPercent = setTacticalPercent,
                 SetAssaultPercent = setAssaultPercent,
                 SetAssaultMeleePercent = setAssaultMeleePercent,
+                SetApexPercent = setApexPercent,
                 WorkshopOptionPercent = workshopOptionPercent,
                 WorkshopSetPercent = workshopSetPercent,
                 WorkshopOptionCost = workshopOptionCost,

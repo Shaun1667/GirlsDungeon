@@ -9,8 +9,8 @@ using NUnit.Framework;
 namespace GirlsDungeon.Tests
 {
     /// <summary>
-    /// 3-4b 파츠 세트 효과 (결정 2026-11-13 사용자: 7개 모두 · 같은 세트 3개를 끼우면 켜짐 · 받은 퍼센트 그대로, BALANCE 18번).
-    /// 켜짐 판정 · 효과마다 피해 % · 미리보기 = 실제 · 중첩 · 남은 차례 · 저장을 검사한다.
+    /// 파츠 세트 효과 (3-4b → 3-16e 새 목록 13종, 결정 2026-11-16 사용자: 같은 세트 3개를 끼우면 켜짐 · 받은 퍼센트 그대로, BALANCE 18번).
+    /// 켜짐 판정 · 효과마다 피해 % · 미리보기 = 실제 · 중첩 · 아직 조건이 없는 세트는 후보에서 빠짐 · 저장을 검사한다.
     /// </summary>
     public class SetEffectTests
     {
@@ -46,7 +46,7 @@ namespace GirlsDungeon.Tests
             => CombatRules.Preview(world, combat, world.Player, world.Player.Position, enemy).SetPercent;
 
         [Test]
-        public void Generate_SetOnlyOnMilitaryAndPrecisionSlots2To4_AllSevenAppear()
+        public void Generate_SetOnlyOnMilitaryAndPrecisionSlots2To4_AllPoolSetsAppear()
         {
             var combat = TestData.Combat();
             var random = new RandomStreams(5).Get(RandomPurpose.Item);
@@ -57,9 +57,19 @@ namespace GirlsDungeon.Tests
                 bool canHave = part.Slot >= 1 && part.Grade != PartGrade.Industrial;
                 if (canHave) Assert.That(part.Set, Is.Not.EqualTo(PartSet.None), $"slot {part.Slot} {part.Grade}");
                 else Assert.That(part.Set, Is.EqualTo(PartSet.None), $"slot {part.Slot} {part.Grade}");
+                if (part.Set != PartSet.None) Assert.That(SetEffects.HasSource(part.Set), Is.True, part.Set.ToString());
                 seen.Add(part.Set);
             }
-            Assert.That(seen.Count, Is.EqualTo(SetEffects.SetCount + 1), "all 7 sets and None");
+            Assert.That(seen.Count, Is.EqualTo(SetEffects.Pool().Count + 1), "every pool set and None");
+        }
+
+        [Test]
+        public void Pool_LeavesOutSetsWhoseConditionsDoNotExistYet()
+        {
+            // 결정 2026-11-16 사용자: 지금 피해는 모두 물리 — 위상 · 약점 · 소환물 · 다른 속성 세트는 그 시스템이 생기면 켜진다.
+            Assert.That(SetEffects.Pool(), Is.EqualTo(new[] { PartSet.Decisive, PartSet.DualCounter, PartSet.Kinetic, PartSet.Tactical, PartSet.Assault }));
+            foreach (var set in new[] { PartSet.PhaseStrike, PartSet.PhaseAmp, PartSet.Blaze, PartSet.Frost, PartSet.Acid, PartSet.Magnetic, PartSet.Torrent, PartSet.Apex })
+                Assert.That(SetEffects.HasSource(set), Is.False, set.ToString());
         }
 
         [Test]
@@ -71,7 +81,7 @@ namespace GirlsDungeon.Tests
             Assert.That(SetEffects.Active(world, combat), Is.EqualTo(PartSet.None), "two pieces");
             EquipSet(world, PartSet.Assault, 3);
             Assert.That(SetEffects.Active(world, combat), Is.EqualTo(PartSet.Assault));
-            world.PlayerParts[3] = new WeaponPart(world.PlayerWeapon, 3, PartGrade.Military, new List<PartBonus>(), PartSet.Ambush);
+            world.PlayerParts[3] = new WeaponPart(world.PlayerWeapon, 3, PartGrade.Military, new List<PartBonus>(), PartSet.Tactical);
             Assert.That(SetEffects.Active(world, combat), Is.EqualTo(PartSet.None), "mixed sets");
         }
 
@@ -97,10 +107,10 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void TwoSided_SingleWithoutCover_AreaWithCover()
+        public void DualCounter_SingleWithoutCover_AreaWithCover()
         {
             var (world, enemy, combat) = Room();
-            EquipSet(world, PartSet.TwoSided);
+            EquipSet(world, PartSet.DualCounter);
             Assert.That(ShotPercent(world, combat, enemy), Is.EqualTo(10), "open target: single +10");
             Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, DamageSource.Grenade), Is.EqualTo(0));
 
@@ -113,20 +123,33 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void Fracture_OnlyWhenTheEnemyLostStability()
+        public void Kinetic_AllCurrentDamageIsPhysical()
         {
             var (world, enemy, combat) = Room();
-            EquipSet(world, PartSet.Fracture);
-            Assert.That(ShotPercent(world, combat, enemy), Is.EqualTo(0));
-            enemy.Stability = enemy.MaxStability - 1;
-            Assert.That(ShotPercent(world, combat, enemy), Is.EqualTo(15));
+            EquipSet(world, PartSet.Kinetic);
+            Assert.That(ShotPercent(world, combat, enemy), Is.EqualTo(20));
+            foreach (var source in new[] { DamageSource.Overwatch, DamageSource.Grenade, DamageSource.Push, DamageSource.Sonic })
+                Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, source), Is.EqualTo(20), source.ToString());
         }
 
         [Test]
-        public void Ambush_OnlyOverwatchShotsOnTheEnemyTurn()
+        public void OtherElementSets_PhaseSummon_DoNothingYet()
         {
             var (world, enemy, combat) = Room();
-            EquipSet(world, PartSet.Ambush);
+            foreach (var set in new[] { PartSet.Blaze, PartSet.Frost, PartSet.Acid, PartSet.Magnetic, PartSet.Torrent, PartSet.PhaseStrike, PartSet.PhaseAmp, PartSet.Apex })
+            {
+                EquipSet(world, set);
+                Assert.That(SetEffects.Active(world, combat), Is.EqualTo(set));
+                Assert.That(ShotPercent(world, combat, enemy), Is.EqualTo(0), set.ToString());
+                Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, DamageSource.Sonic), Is.EqualTo(0), set.ToString());
+            }
+        }
+
+        [Test]
+        public void Tactical_OnlyOverwatchShotsOnTheEnemyTurn()
+        {
+            var (world, enemy, combat) = Room();
+            EquipSet(world, PartSet.Tactical);
             world.Mode = WorldMode.Combat;
             world.Turn = TurnSide.Player;
             Assert.That(ShotPercent(world, combat, enemy), Is.EqualTo(0));
@@ -135,54 +158,39 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void Chain_StacksPerSkillUpToFour_SkillsOnly_ClearedAfterCombat()
+        public void Decisive_StacksOnlyFromTheThirdSkill_UpToFour_ClearedAfterCombat()
         {
             var (world, enemy, combat) = Room();
-            EquipSet(world, PartSet.Chain);
-            Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, DamageSource.Sonic), Is.EqualTo(0), "no stacks yet");
-            for (int i = 0; i < 6; i++) SetEffects.OnSkillUsed(world, combat);
-            Assert.That(world.SetChainStacks, Is.EqualTo(4));
-            Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, DamageSource.Grenade), Is.EqualTo(20));
+            world.PlayerCharacter = CharacterKind.HeroA;
+            EquipSet(world, PartSet.Decisive);
+            var slots = combat.SkillSlots(world.PlayerCharacter);
+            var decisive = slots[SetEffects.DecisiveSkillIndex];
+            // 결정 2026-11-16 사용자: 결전기 = 세 번째 스킬 — 대원 A는 수류탄.
+            Assert.That(decisive, Is.EqualTo(SkillKind.Grenade));
+            var other = slots[0];
+            Assert.That(other, Is.Not.EqualTo(decisive));
+            DamageSource SourceOf(SkillKind skill) => skill == SkillKind.Grenade ? DamageSource.Grenade : skill == SkillKind.Push ? DamageSource.Push : DamageSource.Sonic;
+
+            SetEffects.OnSkillUsed(world, combat, other);
+            Assert.That(world.SetDecisiveStacks, Is.EqualTo(0), "other skills give no stack");
+            Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, SourceOf(decisive)), Is.EqualTo(0), "no stacks yet");
+            for (int i = 0; i < 6; i++) SetEffects.OnSkillUsed(world, combat, decisive);
+            Assert.That(world.SetDecisiveStacks, Is.EqualTo(4));
+            Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, SourceOf(decisive)), Is.EqualTo(20));
+            Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, SourceOf(other)), Is.EqualTo(0), "only the ultimate");
             Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, DamageSource.Shot), Is.EqualTo(0), "shots are not skills");
             SetEffects.OnCombatEnded(world);
-            Assert.That(world.SetChainStacks, Is.EqualTo(0));
+            Assert.That(world.SetDecisiveStacks, Is.EqualTo(0));
 
-            var (other, _, _) = Room();
-            SetEffects.OnSkillUsed(other, combat);
-            Assert.That(other.SetChainStacks, Is.EqualTo(0), "no stacks without the set");
-        }
+            var (plain, _, _) = Room();
+            plain.PlayerCharacter = CharacterKind.HeroA;
+            SetEffects.OnSkillUsed(plain, combat, decisive);
+            Assert.That(plain.SetDecisiveStacks, Is.EqualTo(0), "no stacks without the set");
 
-        [Test]
-        public void Bulwark_CutsAreaDamageTakenForTwoPlayerTurns()
-        {
-            var (world, enemy, combat) = Room();
-            EquipSet(world, PartSet.Bulwark);
-            var player = world.Player;
-            Assert.That(SetEffects.DamagePercent(world, combat, player, player, DamageSource.Grenade), Is.EqualTo(0));
-            SetEffects.OnOverwatchSet(world, combat);
-            Assert.That(world.SetBulwarkTurns, Is.EqualTo(2));
-            Assert.That(SetEffects.DamagePercent(world, combat, player, player, DamageSource.Grenade), Is.EqualTo(-20));
-            Assert.That(SetEffects.DamagePercent(world, combat, enemy, player, DamageSource.Shot), Is.EqualTo(0), "shots are not area damage");
-            SetEffects.OnPlayerTurnStarted(world);
-            Assert.That(SetEffects.DamagePercent(world, combat, player, player, DamageSource.Push), Is.EqualTo(-20));
-            SetEffects.OnPlayerTurnStarted(world);
-            Assert.That(world.SetBulwarkTurns, Is.EqualTo(0));
-            Assert.That(SetEffects.DamagePercent(world, combat, player, player, DamageSource.Grenade), Is.EqualTo(0));
-        }
-
-        [Test]
-        public void Emergency_MedkitThatFillsHpAlsoGivesStability()
-        {
-            var (world, _, combat) = Room();
-            var player = world.Player;
-            player.Stability = 1;
-            Assert.That(SetEffects.OnMedkitFilledHp(world, combat, player), Is.EqualTo(0), "no set");
-            EquipSet(world, PartSet.Emergency);
-            Assert.That(SetEffects.OnMedkitFilledHp(world, combat, player), Is.EqualTo(2));
-            Assert.That(player.Stability, Is.EqualTo(3));
-            player.Stability = player.MaxStability - 1;
-            Assert.That(SetEffects.OnMedkitFilledHp(world, combat, player), Is.EqualTo(1), "up to max only");
-            Assert.That(player.Stability, Is.EqualTo(player.MaxStability));
+            // 세 번째 스킬 칸이 비어 있는 캐릭터(B)는 결전기가 없다.
+            world.PlayerCharacter = CharacterKind.HeroB;
+            Assert.That(combat.SkillSlots(CharacterKind.HeroB)[SetEffects.DecisiveSkillIndex], Is.EqualTo(SkillKind.None));
+            Assert.That(SetEffects.IsDecisive(world, combat, SkillKind.Grenade), Is.False);
         }
 
         [Test]
@@ -194,19 +202,17 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void Snapshot_KeepsSetsStacksAndTurns()
+        public void Snapshot_KeepsSetsAndStacks()
         {
             var (world, _, combat) = Room();
-            EquipSet(world, PartSet.Chain);
-            world.SetChainStacks = 3;
-            world.SetBulwarkTurns = 1;
+            EquipSet(world, PartSet.Decisive);
+            world.SetDecisiveStacks = 3;
             var bytes = WorldSnapshot.Encode(world);
             var restored = WorldSnapshot.Decode(bytes);
             Assert.That(WorldSnapshot.Encode(restored), Is.EqualTo(bytes));
-            Assert.That(restored.PlayerParts[1].Set, Is.EqualTo(PartSet.Chain));
-            Assert.That(restored.SetChainStacks, Is.EqualTo(3));
-            Assert.That(restored.SetBulwarkTurns, Is.EqualTo(1));
-            Assert.That(SetEffects.Active(restored, combat), Is.EqualTo(PartSet.Chain));
+            Assert.That(restored.PlayerParts[1].Set, Is.EqualTo(PartSet.Decisive));
+            Assert.That(restored.SetDecisiveStacks, Is.EqualTo(3));
+            Assert.That(SetEffects.Active(restored, combat), Is.EqualTo(PartSet.Decisive));
         }
     }
 }

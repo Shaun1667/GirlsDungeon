@@ -128,7 +128,7 @@ namespace GirlsDungeon.Core.Sim
 
             var random = world.Random.Get(RandomPurpose.Workshop);
             bool success = random.Range(0, 100) < SetPercent(world, settings);
-            var set = success ? target : (PartSet)random.Range(1, SetEffects.SetCount + 1);
+            var set = success ? target : SetEffects.RandomSet(random);
 
             world.PartMaterials -= settings.WorkshopSetCost;
             Replace(world, settings, place, index, new WeaponPart(part.Weapon, part.Slot, part.Grade, part.Bonuses, set));

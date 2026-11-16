@@ -190,8 +190,6 @@ namespace GirlsDungeon.Core.Sim
                 int healed = System.Math.Min(MedkitHeal(player.MaxHp, settings.MedkitHealPercent), player.MaxHp - player.Hp);
                 player.Hp += healed;
                 world.Items.Remove(item);
-                // 응급 정비 세트 (3-4b): 이 구급상자로 체력이 가득 차면 안정지수도 오른다.
-                if (player.Hp >= player.MaxHp) SetEffects.OnMedkitFilledHp(world, settings, player);
                 events.Add(new MedkitUsed(item.Id, healed));
                 events.Add(new UnitStatsChanged(player.Id));
             }

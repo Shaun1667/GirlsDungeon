@@ -338,7 +338,7 @@ namespace GirlsDungeon.Core.Sim
             if (Math.Abs(direction.X) + Math.Abs(direction.Y) != 1 || (side != 1 && side != -1)) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Push)) return false;
             if (!Push.Resolve(world, settings, world.Player, direction, side, events)) return false;
-            SetEffects.OnSkillUsed(world, settings);
+            SetEffects.OnSkillUsed(world, settings, SkillKind.Push);
             CombatFlow.AfterSkill(world, settings, events);
             return true;
         }

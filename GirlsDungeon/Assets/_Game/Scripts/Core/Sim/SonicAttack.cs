@@ -104,7 +104,7 @@ namespace GirlsDungeon.Core.Sim
             if (!CombatFlow.CanUseSkill(world)) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Sonic)) return false;
             if (!SonicAttack.Resolve(world, settings, world.Player, world.FindUnit(targetId), events)) return false;
-            SetEffects.OnSkillUsed(world, settings);
+            SetEffects.OnSkillUsed(world, settings, SkillKind.Sonic);
             CombatFlow.AfterSkill(world, settings, events);
             return true;
         }

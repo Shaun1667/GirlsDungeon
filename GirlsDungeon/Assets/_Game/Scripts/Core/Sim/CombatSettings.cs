@@ -199,21 +199,25 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>2 · 3 · 4번 칸 능력치 개수, PartGrade 순서 (공업 1 · 군용 2 · 정밀 3).</summary>
         public int[] PartSecondaryStatCounts = new int[3];
 
-        // 파츠 세트 효과 (BALANCE 18번, 3-4b — SetEffects)
+        // 파츠 세트 효과 (BALANCE 18번, 3-16e — SetEffects)
         /// <summary>같은 세트 파츠를 몇 개 끼우면 켜지는가 (2 · 3 · 4번 칸 = 3).</summary>
         public int SetPiecesRequired;
-        public int SetChainPercentPerStack;
-        public int SetChainMaxStacks;
-        public int SetTwoSidedPercent;
-        public int SetFracturePercent;
-        public int SetEmergencyStability;
-        public int SetBulwarkPercent;
-        /// <summary>방호 태세가 걸려 있는 플레이어 차례 수 (감시를 건 뒤).</summary>
-        public int SetBulwarkTurns;
-        public int SetAmbushPercent;
+        /// <summary>결전 추진: 결전기 피해 중첩당 %, 최대 중첩.</summary>
+        public int SetDecisivePercentPerStack;
+        public int SetDecisiveMaxStacks;
+        public int SetDualCounterPercent;
+        public int SetPhaseStrikePercent;
+        /// <summary>위상 증폭: 위상 강화I의 주는 위상 피해 % · 남는 차례 · 두 약점 동시 공격 %.</summary>
+        public int SetPhaseAmpPercent;
+        public int SetPhaseAmpTurns;
+        public int SetPhaseAmpDoublePercent;
+        /// <summary>속성 증폭 6종(실탄 · 작열 · 빙점 · 강산 · 자력 · 격류) 공통: 그 속성 피해 %.</summary>
+        public int SetElementPercent;
+        public int SetTacticalPercent;
         public int SetAssaultPercent;
-        /// <summary>백병 강습: 근접 무기(도검) 공격이면 SetAssaultPercent 위에 더하는 값.</summary>
+        /// <summary>육박 강공: 근접 무기(도검) 공격이면 SetAssaultPercent 위에 더하는 값.</summary>
         public int SetAssaultMeleePercent;
+        public int SetApexPercent;
 
         // 파츠 작업방 (BALANCE 19번, 3-4c — Workshop)
         /// <summary>캐릭터를 고르지 않은 판의 옵션 · 세트 바꾸기 성공 확률 (%).</summary>
@@ -485,9 +489,9 @@ namespace GirlsDungeon.Core.Sim
                 if (character.WorkshopOptionPercent < 0 || character.WorkshopOptionPercent > 100 || character.WorkshopSetPercent < 0 || character.WorkshopSetPercent > 100)
                     throw new ArgumentException($"Workshop chances for {character.Kind} are invalid.");
             if (SetPiecesRequired < 1 || SetPiecesRequired > WeaponPart.SlotCount - SetEffects.FirstSetSlot
-                || SetChainPercentPerStack < 0 || SetChainMaxStacks < 0 || SetTwoSidedPercent < 0 || SetFracturePercent < 0
-                || SetEmergencyStability < 0 || SetBulwarkPercent < 0 || SetBulwarkPercent > 100 || SetBulwarkTurns < 0
-                || SetAmbushPercent < 0 || SetAssaultPercent < 0 || SetAssaultMeleePercent < 0)
+                || SetDecisivePercentPerStack < 0 || SetDecisiveMaxStacks < 0 || SetDualCounterPercent < 0 || SetPhaseStrikePercent < 0
+                || SetPhaseAmpPercent < 0 || SetPhaseAmpTurns < 0 || SetPhaseAmpDoublePercent < 0 || SetElementPercent < 0
+                || SetTacticalPercent < 0 || SetAssaultPercent < 0 || SetAssaultMeleePercent < 0 || SetApexPercent < 0)
                 throw new ArgumentException("Part set settings are invalid.");
             foreach (var stat in PartPrimaryStats) PartRange(stat);
             foreach (var stat in PartSecondaryStats) PartRange(stat);

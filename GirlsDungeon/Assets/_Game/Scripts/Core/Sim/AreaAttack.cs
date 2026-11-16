@@ -197,7 +197,7 @@ namespace GirlsDungeon.Core.Sim
             if (!CombatFlow.CanUseSkill(world)) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Grenade)) return false;
             if (!AreaAttack.Resolve(world, settings, world.Player, center, events)) return false;
-            SetEffects.OnSkillUsed(world, settings);
+            SetEffects.OnSkillUsed(world, settings, SkillKind.Grenade);
             CombatFlow.AfterSkill(world, settings, events);
             return true;
         }

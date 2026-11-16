@@ -583,7 +583,7 @@ namespace GirlsDungeon.Game
         {
             var world = World;
             if (world == null) return "Run not started";
-            return $"Active={SetEffects.Active(world, combatSettings)} ChainStacks={world.SetChainStacks} BulwarkTurns={world.SetBulwarkTurns}";
+            return $"Active={SetEffects.Active(world, combatSettings)} DecisiveStacks={world.SetDecisiveStacks} Pool={string.Join(",", SetEffects.Pool())}";
         }
 
         /// <summary>든 무기 4칸 파츠 (디버그).</summary>

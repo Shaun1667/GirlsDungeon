@@ -436,16 +436,18 @@ MonoBehaviour:
   partPrimaryStatCounts: 020000000300000004000000
   partSecondaryStatCounts: 010000000200000003000000
   setPiecesRequired: 3
-  setChainPercentPerStack: 5
-  setChainMaxStacks: 4
-  setTwoSidedPercent: 10
-  setFracturePercent: 15
-  setEmergencyStability: 2
-  setBulwarkPercent: 20
-  setBulwarkTurns: 2
-  setAmbushPercent: 25
+  setDecisivePercentPerStack: 5
+  setDecisiveMaxStacks: 4
+  setDualCounterPercent: 10
+  setPhaseStrikePercent: 15
+  setPhaseAmpPercent: 10
+  setPhaseAmpTurns: 1
+  setPhaseAmpDoublePercent: 10
+  setElementPercent: 20
+  setTacticalPercent: 25
   setAssaultPercent: 12
   setAssaultMeleePercent: 24
+  setApexPercent: 20
   workshopOptionPercent: 70
   workshopSetPercent: 50
   workshopOptionCost: 2

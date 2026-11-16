@@ -1,30 +1,43 @@
 using System.Collections.Generic;
 using GirlsDungeon.Core.Grid;
 using GirlsDungeon.Core.Map;
+using GirlsDungeon.Core.Random;
 
 namespace GirlsDungeon.Core.Sim
 {
     /// <summary>
-    /// 파츠 세트 (3-4b, 사용자 제공 표를 우리 규칙으로 바꿈 — TASKS 3-4). 군용 · 정밀 등급의 2 · 3 · 4번 칸 파츠에만 붙는다.
+    /// 파츠 세트 (3-16e, 결정 2026-11-16 사용자: 새 목록 13종으로 전부 교체). 군용 · 정밀 등급의 2 · 3 · 4번 칸 파츠에만 붙는다.
     /// 저장 · 데이터에 정수로 들어가므로 끝에만 추가한다. 이름 글은 텍스트 표 `part.set.{소문자 이름}.name` · `.rule`.
     /// </summary>
     public enum PartSet : byte
     {
         None = 0,
-        /// <summary>연쇄 가속: 스킬을 쓸 때마다 이번 전투 스킬 피해 +n%, 최대 m중첩.</summary>
-        Chain = 1,
-        /// <summary>양면 전술: 대상 옆에 엄폐물이 없으면 단일 피해 +n%, 있으면 범위 피해 +n%.</summary>
-        TwoSided = 2,
-        /// <summary>균열 추격: 안정지수가 깎인 적에게 주는 피해 +n%.</summary>
-        Fracture = 3,
-        /// <summary>응급 정비: 구급상자로 체력이 가득 차면 안정지수 +n.</summary>
-        Emergency = 4,
-        /// <summary>방호 태세: 감시를 걸면 n턴 동안 받는 범위 피해 -m%.</summary>
-        Bulwark = 5,
-        /// <summary>매복 사수: 감시 사격(적 차례에 쏘는 것) 피해 +n%.</summary>
-        Ambush = 6,
-        /// <summary>백병 강습: 주는 피해 +n%, 근접 무기(도검) 공격이면 +m% 더.</summary>
-        Assault = 7,
+        /// <summary>결전 추진: 결전기(세 번째 스킬 = 스킬 바 4번 카드) 피해 +n% × 중첩, 결전기를 쓴 뒤마다 1중첩, 최대 m.</summary>
+        Decisive = 1,
+        /// <summary>이중 대책: 대상 옆에 엄폐물이 없으면 단일 피해 +n%, 있으면 범위 피해 +n%.</summary>
+        DualCounter = 2,
+        /// <summary>위상 타격: 위상 속성 디버프를 가진 적에게 주는 피해 +n% (위상 디버프가 생기면 켜짐).</summary>
+        PhaseStrike = 3,
+        /// <summary>위상 증폭: 액티브 스킬로 약점 공격 시 위상 강화I, 두 약점 동시 공격 +n% (약점이 생기면 켜짐).</summary>
+        PhaseAmp = 4,
+        /// <summary>실탄 증폭: 물리 피해 +n%.</summary>
+        Kinetic = 5,
+        /// <summary>작열 증폭: 연소 피해 +n%.</summary>
+        Blaze = 6,
+        /// <summary>빙점 증폭: 빙결 피해 +n%.</summary>
+        Frost = 7,
+        /// <summary>강산 증폭: 산성 피해 +n%.</summary>
+        Acid = 8,
+        /// <summary>자력 증폭: 전도 피해 +n%.</summary>
+        Magnetic = 9,
+        /// <summary>격류 증폭: 탁류 피해 +n%.</summary>
+        Torrent = 10,
+        /// <summary>전술 연산: 턴 외 피해(지금은 감시 사격) +n%.</summary>
+        Tactical = 11,
+        /// <summary>육박 강공: 주는 피해 +n%, 근접 무기(도검) 공격이면 +m% 더.</summary>
+        Assault = 12,
+        /// <summary>정점 소환: 내 실체 소환물이 있으면 나와 소환물이 주는 피해 +n% (소환물이 생기면 켜짐).</summary>
+        Apex = 13,
     }
 
     /// <summary>피해가 어디서 나왔는지 — 세트 효과가 고르는 기준.</summary>
@@ -42,11 +55,25 @@ namespace GirlsDungeon.Core.Sim
         Sonic = 4,
     }
 
+    /// <summary>피해 속성 (3-16e). 지금은 모든 피해가 물리 — 속성을 주는 무기 · 스킬이 생기면 ElementOf에서 고른다.</summary>
+    public enum DamageElement
+    {
+        Physical = 0,
+        Burn = 1,
+        Freeze = 2,
+        Acid = 3,
+        Conduct = 4,
+        Torrent = 5,
+        Phase = 6,
+    }
+
     /// <summary>
-    /// 세트 효과의 한 곳 (3-4b, 결정 2026-11-13 사용자: 7개 모두 · 같은 세트 3개를 끼우면 켜짐 · 받은 퍼센트 그대로).
+    /// 세트 효과의 한 곳 (3-4b → 3-16e 새 목록).
     /// - 켜짐 `Active`: 든 무기의 2 · 3 · 4번 칸이 모두 같은 세트일 때 그 세트 (아니면 None).
     /// - 피해 `DamagePercent`: 주는 피해 증가 − 받는 피해 감소를 더한 값(%). 사격 · 수류탄 · 넉백 · 음파의 미리보기와 실제가 모두 이것을 쓴다 (규칙 6 · 7).
-    /// - 상태: 연쇄 가속 중첩 `World.SetChainStacks`, 방호 태세 남은 차례 `World.SetBulwarkTurns` — 전투가 끝나면 0.
+    /// - 상태: 결전 추진 중첩 `World.SetDecisiveStacks` — 전투가 끝나면 0.
+    /// - 아직 게임에 없는 조건(위상 디버프 · 약점 · 소환물 · 물리 밖 속성)을 쓰는 세트는 `HasSource`가 false — 드롭 · 작업방 · 진열실 후보(`Pool`)에서 빠진다.
+    ///   그 시스템이 생기면 아래 조건 함수(ElementOf · HasPhaseDebuff · IsWeaknessHit · HasSummon)만 고치면 자동으로 켜진다.
     /// 수치는 CombatSettings.Set… (BALANCE 18번).
     /// </summary>
     public static class SetEffects
@@ -54,17 +81,90 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>세트가 붙는 첫 칸 (0 = 1번 칸은 세트가 없다).</summary>
         public const int FirstSetSlot = 1;
 
-        public const int SetCount = 7;
+        public const int SetCount = 13;
+
+        /// <summary>결전기 = 세 번째 스킬 (스킬 바 4번 카드, 스킬 칸 목록 2 · 3 · 4번 중 세 번째 — 결정 2026-11-16 사용자, 대원 A = 수류탄).</summary>
+        public const int DecisiveSkillIndex = 2;
 
         /// <summary>그 등급 · 칸의 파츠에 세트가 붙는가 (군용 · 정밀의 2 · 3 · 4번 칸).</summary>
         public static bool CanHaveSet(PartGrade grade, int slot) => slot >= FirstSetSlot && grade != PartGrade.Industrial;
+
+        // ---- 아직 없는 시스템의 조건 (생기면 여기만 고친다) ----
+
+        /// <summary>그 피해의 속성. 지금은 모두 물리.</summary>
+        public static DamageElement ElementOf(World world, CombatSettings settings, DamageSource source) => DamageElement.Physical;
+
+        /// <summary>대상이 위상 속성 디버프를 가졌는가 (위상 디버프가 아직 없다).</summary>
+        public static bool HasPhaseDebuff(Unit target) => false;
+
+        /// <summary>이 공격이 약점 공격인가 (약점이 아직 없다).</summary>
+        public static bool IsWeaknessHit(World world, Unit target, DamageSource source) => false;
+
+        /// <summary>플레이어의 실체 소환물이 필드에 있는가 (소환물이 아직 없다).</summary>
+        public static bool HasSummon(World world) => false;
+
+        /// <summary>속성 증폭 세트가 고르는 속성 (속성 세트가 아니면 null).</summary>
+        public static DamageElement? ElementOfSet(PartSet set)
+        {
+            switch (set)
+            {
+                case PartSet.Kinetic: return DamageElement.Physical;
+                case PartSet.Blaze: return DamageElement.Burn;
+                case PartSet.Frost: return DamageElement.Freeze;
+                case PartSet.Acid: return DamageElement.Acid;
+                case PartSet.Magnetic: return DamageElement.Conduct;
+                case PartSet.Torrent: return DamageElement.Torrent;
+                default: return null;
+            }
+        }
+
+        private static readonly DamageSource[] AllSources = { DamageSource.Shot, DamageSource.Overwatch, DamageSource.Grenade, DamageSource.Push, DamageSource.Sonic };
+
+        /// <summary>지금 게임에서 이 세트의 조건이 생길 수 있는가 — 없으면 드롭 후보에서 뺀다.</summary>
+        public static bool HasSource(PartSet set)
+        {
+            var element = ElementOfSet(set);
+            if (element.HasValue)
+            {
+                foreach (var source in AllSources)
+                    if (ElementOf(null, null, source) == element.Value) return true;
+                return false;
+            }
+            switch (set)
+            {
+                case PartSet.PhaseStrike:
+                case PartSet.PhaseAmp:
+                case PartSet.Apex:
+                    return false;
+                case PartSet.None:
+                    return false;
+                default:
+                    return true;
+            }
+        }
+
+        /// <summary>파츠에 붙을 수 있는 세트 후보 (번호 순).</summary>
+        public static List<PartSet> Pool()
+        {
+            var pool = new List<PartSet>();
+            for (int i = 1; i <= SetCount; i++)
+                if (HasSource((PartSet)i)) pool.Add((PartSet)i);
+            return pool;
+        }
+
+        /// <summary>후보에서 무작위 세트 하나 (드롭 · 작업방 실패 · 진열실).</summary>
+        public static PartSet RandomSet(IRandom random)
+        {
+            var pool = Pool();
+            return pool[random.Range(0, pool.Count)];
+        }
 
         /// <summary>든 무기에서 켜진 세트 (없으면 None).</summary>
         public static PartSet Active(World world, CombatSettings settings)
         {
             var counts = new int[SetCount + 1];
             foreach (var part in world.PlayerParts)
-                if (part != null && part.Set != PartSet.None) counts[(int)part.Set]++;
+                if (part != null && part.Set != PartSet.None && (int)part.Set <= SetCount) counts[(int)part.Set]++;
             for (int i = 1; i <= SetCount; i++)
                 if (counts[i] >= settings.SetPiecesRequired) return (PartSet)i;
             return PartSet.None;
@@ -81,10 +181,32 @@ namespace GirlsDungeon.Core.Sim
 
         public static bool IsSkill(DamageSource source) => source == DamageSource.Grenade || source == DamageSource.Push || source == DamageSource.Sonic;
         public static bool IsArea(DamageSource source) => source == DamageSource.Grenade || source == DamageSource.Push;
+        /// <summary>턴 외 피해 (지원 공격 · 매복 · 반격 · 패시브 — 지금은 감시 사격뿐).</summary>
+        public static bool IsOffTurn(DamageSource source) => source == DamageSource.Overwatch;
+
+        /// <summary>그 피해를 낸 스킬 (스킬이 아니면 None).</summary>
+        public static SkillKind SkillOf(DamageSource source)
+        {
+            switch (source)
+            {
+                case DamageSource.Grenade: return SkillKind.Grenade;
+                case DamageSource.Push: return SkillKind.Push;
+                case DamageSource.Sonic: return SkillKind.Sonic;
+                default: return SkillKind.None;
+            }
+        }
+
+        /// <summary>그 스킬이 지금 캐릭터의 결전기(세 번째 스킬, 스킬 바 4번 카드)인가. 그 칸이 비어 있는 캐릭터는 결전기가 없다.</summary>
+        public static bool IsDecisive(World world, CombatSettings settings, SkillKind skill)
+        {
+            if (skill == SkillKind.None || settings == null) return false;
+            var slots = settings.SkillSlots(world.PlayerCharacter);
+            return slots.Count > DecisiveSkillIndex && slots[DecisiveSkillIndex] == skill;
+        }
 
         /// <summary>
         /// 세트 효과로 바뀌는 피해 (%p). 100에 더해 곱한다 (+12 → ×1.12, −20 → ×0.8).
-        /// 주는 쪽 효과는 플레이어가 때릴 때만, 받는 쪽 효과(방호 태세)는 플레이어가 맞을 때만.
+        /// 주는 쪽 효과는 플레이어가 때릴 때만.
         /// </summary>
         public static int DamagePercent(World world, CombatSettings settings, Unit attacker, Unit target, DamageSource source, GridPos? from = null)
         {
@@ -96,43 +218,45 @@ namespace GirlsDungeon.Core.Sim
 
         private static int SetPercent(World world, CombatSettings settings, Unit attacker, Unit target, DamageSource source)
         {
-            if (world.Player == null) return 0;
+            if (world.Player == null || attacker == null || !attacker.IsPlayer || target == null) return 0;
             var set = Active(world, settings);
             if (set == PartSet.None) return 0;
 
-            int percent = 0;
-            if (attacker != null && attacker.IsPlayer)
+            var element = ElementOfSet(set);
+            if (element.HasValue)
+                return ElementOf(world, settings, source) == element.Value ? settings.SetElementPercent : 0;
+
+            switch (set)
             {
-                switch (set)
-                {
-                    case PartSet.Chain:
-                        if (IsSkill(source)) percent += settings.SetChainPercentPerStack * world.SetChainStacks;
-                        break;
-                    case PartSet.TwoSided:
-                        bool nearCover = NearCover(world.Map, target.Position);
-                        if (!nearCover && !IsArea(source)) percent += settings.SetTwoSidedPercent;
-                        if (nearCover && IsArea(source)) percent += settings.SetTwoSidedPercent;
-                        break;
-                    case PartSet.Fracture:
-                        if (!target.IsPlayer && target.Stability < target.MaxStability) percent += settings.SetFracturePercent;
-                        break;
-                    case PartSet.Ambush:
-                        if (source == DamageSource.Overwatch) percent += settings.SetAmbushPercent;
-                        break;
-                    case PartSet.Assault:
-                        percent += settings.SetAssaultPercent;
-                        var weapon = settings.TryWeapon(world.PlayerWeapon);
-                        if ((source == DamageSource.Shot || source == DamageSource.Overwatch) && weapon != null && weapon.Melee)
-                            percent += settings.SetAssaultMeleePercent;
-                        break;
-                }
+                case PartSet.Decisive:
+                    return IsDecisive(world, settings, SkillOf(source)) ? settings.SetDecisivePercentPerStack * world.SetDecisiveStacks : 0;
+                case PartSet.DualCounter:
+                    bool nearCover = NearCover(world.Map, target.Position);
+                    if (!nearCover && !IsArea(source)) return settings.SetDualCounterPercent;
+                    if (nearCover && IsArea(source)) return settings.SetDualCounterPercent;
+                    return 0;
+                case PartSet.PhaseStrike:
+                    return !target.IsPlayer && HasPhaseDebuff(target) ? settings.SetPhaseStrikePercent : 0;
+                case PartSet.PhaseAmp:
+                    // 위상 강화I(주는 위상 피해 +n%)는 약점 공격 전에 얻는다 — 약점이 생기면 버프 상태와 두 약점 동시 공격을 여기에 더한다.
+                    return IsSkill(source) && IsWeaknessHit(world, target, source) && ElementOf(world, settings, source) == DamageElement.Phase
+                        ? settings.SetPhaseAmpPercent : 0;
+                case PartSet.Tactical:
+                    return IsOffTurn(source) ? settings.SetTacticalPercent : 0;
+                case PartSet.Assault:
+                    int percent = settings.SetAssaultPercent;
+                    var weapon = settings.TryWeapon(world.PlayerWeapon);
+                    if ((source == DamageSource.Shot || source == DamageSource.Overwatch) && weapon != null && weapon.Melee)
+                        percent += settings.SetAssaultMeleePercent;
+                    return percent;
+                case PartSet.Apex:
+                    return HasSummon(world) ? settings.SetApexPercent : 0;
+                default:
+                    return 0;
             }
-            if (target != null && target.IsPlayer && set == PartSet.Bulwark && world.SetBulwarkTurns > 0 && IsArea(source))
-                percent -= settings.SetBulwarkPercent;
-            return percent;
         }
 
-        /// <summary>대상 칸의 동서남북 어느 쪽이든 엄폐물(낮음 · 높음)이 있는가 — 방향은 따지지 않는다 (양면 전술).</summary>
+        /// <summary>대상 칸의 동서남북 어느 쪽이든 엄폐물(낮음 · 높음)이 있는가 — 방향은 따지지 않는다 (이중 대책).</summary>
         public static bool NearCover(FloorMap map, GridPos cell)
         {
             return Cover.InDirection(map, cell, new GridPos(1, 0)) != CoverLevel.None
@@ -141,41 +265,17 @@ namespace GirlsDungeon.Core.Sim
                 || Cover.InDirection(map, cell, new GridPos(0, -1)) != CoverLevel.None;
         }
 
-        /// <summary>스킬(수류탄 · 넉백 · 음파)을 쓴 뒤: 연쇄 가속이면 중첩 +1 (최대까지). 쓴 스킬의 피해에는 아직 붙지 않는다.</summary>
-        public static void OnSkillUsed(World world, CombatSettings settings)
+        /// <summary>스킬을 쓴 뒤: 결전 추진이고 그 스킬이 결전기면 중첩 +1 (최대까지). 쓴 스킬의 피해에는 아직 붙지 않는다.</summary>
+        public static void OnSkillUsed(World world, CombatSettings settings, SkillKind skill)
         {
-            if (Active(world, settings) != PartSet.Chain) return;
-            if (world.SetChainStacks < settings.SetChainMaxStacks) world.SetChainStacks++;
+            if (Active(world, settings) != PartSet.Decisive || !IsDecisive(world, settings, skill)) return;
+            if (world.SetDecisiveStacks < settings.SetDecisiveMaxStacks) world.SetDecisiveStacks++;
         }
 
-        /// <summary>감시를 건 뒤: 방호 태세면 받는 범위 피해 감소를 n차례 건다 (플레이어 차례가 시작될 때마다 1씩 준다).</summary>
-        public static void OnOverwatchSet(World world, CombatSettings settings)
-        {
-            if (Active(world, settings) == PartSet.Bulwark) world.SetBulwarkTurns = settings.SetBulwarkTurns;
-        }
-
-        /// <summary>플레이어 차례가 시작될 때 (TurnFlow).</summary>
-        public static void OnPlayerTurnStarted(World world)
-        {
-            if (world.SetBulwarkTurns > 0) world.SetBulwarkTurns--;
-        }
-
-        /// <summary>전투가 끝날 때 (CombatFlow): 중첩 · 남은 차례를 지운다.</summary>
+        /// <summary>전투가 끝날 때 (CombatFlow): 중첩을 지운다.</summary>
         public static void OnCombatEnded(World world)
         {
-            world.SetChainStacks = 0;
-            world.SetBulwarkTurns = 0;
-        }
-
-        /// <summary>
-        /// 구급상자로 체력이 가득 찼을 때: 응급 정비면 안정지수 +n (최대까지). 올린 만큼을 돌려준다 (0이면 그대로).
-        /// </summary>
-        public static int OnMedkitFilledHp(World world, CombatSettings settings, Unit player)
-        {
-            if (Active(world, settings) != PartSet.Emergency || player.Stability >= player.MaxStability) return 0;
-            int gained = System.Math.Min(settings.SetEmergencyStability, player.MaxStability - player.Stability);
-            player.Stability += gained;
-            return gained;
+            world.SetDecisiveStacks = 0;
         }
     }
 }

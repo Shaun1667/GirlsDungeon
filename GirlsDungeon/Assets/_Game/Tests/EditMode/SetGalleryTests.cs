@@ -48,11 +48,11 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = CaseWorld();
-            world.PlayerParts[1] = new WeaponPart(world.PlayerWeapon, 1, PartGrade.Military, new List<PartBonus>(), PartSet.Ambush);
-            world.PlayerParts[2] = new WeaponPart(world.PlayerWeapon, 2, PartGrade.Military, new List<PartBonus>(), PartSet.Ambush);
-            world.PlayerParts[3] = new WeaponPart(world.PlayerWeapon, 3, PartGrade.Military, new List<PartBonus>(), PartSet.Chain);
+            world.PlayerParts[1] = new WeaponPart(world.PlayerWeapon, 1, PartGrade.Military, new List<PartBonus>(), PartSet.Tactical);
+            world.PlayerParts[2] = new WeaponPart(world.PlayerWeapon, 2, PartGrade.Military, new List<PartBonus>(), PartSet.Tactical);
+            world.PlayerParts[3] = new WeaponPart(world.PlayerWeapon, 3, PartGrade.Military, new List<PartBonus>(), PartSet.Decisive);
             SetGallery.Open(world, combat, new List<GameEvent>());
-            Assert.That(world.GalleryOffers.All(p => p.Set == PartSet.Ambush), Is.True);
+            Assert.That(world.GalleryOffers.All(p => p.Set == PartSet.Tactical), Is.True);
         }
 
         [Test]
@@ -90,11 +90,11 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             var world = RunFactory.NewRun(8, TestData.Map(), combat);
-            world.GalleryOffers.Add(new WeaponPart(world.PlayerWeapon, 2, PartGrade.Military, new List<PartBonus> { new PartBonus(PartStat.Attack, 1) }, PartSet.Fracture));
+            world.GalleryOffers.Add(new WeaponPart(world.PlayerWeapon, 2, PartGrade.Military, new List<PartBonus> { new PartBonus(PartStat.Attack, 1) }, PartSet.DualCounter));
             var bytes = WorldSnapshot.Encode(world);
             var restored = WorldSnapshot.Decode(bytes);
             Assert.That(WorldSnapshot.Encode(restored), Is.EqualTo(bytes));
-            Assert.That(restored.GalleryOffers.Single().Set, Is.EqualTo(PartSet.Fracture));
+            Assert.That(restored.GalleryOffers.Single().Set, Is.EqualTo(PartSet.DualCounter));
             RunFactory.NextFloor(world, TestData.Map(), combat, new List<GameEvent>());
             Assert.That(world.GalleryOffers, Is.Empty);
         }
