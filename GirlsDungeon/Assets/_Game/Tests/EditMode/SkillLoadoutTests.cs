@@ -28,7 +28,7 @@ namespace GirlsDungeon.Tests
             var enemy = world.AddUnit(combat.StatsFor(UnitKind.Rifleman), new GridPos(6, 2));
             world.Map.SetTile(new GridPos(5, 2), TileType.Crate);
             Loadout.Apply(world, combat);
-            var simulation = new Simulation(world);
+            var simulation = new Simulation(world, combat); // 전투 수치를 넘겨야 전투 시작 리몰딩이 들어온다 (게임과 같음)
             Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(2, 2), 1)), Is.True);
             Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
             return (simulation, world, enemy, combat);
