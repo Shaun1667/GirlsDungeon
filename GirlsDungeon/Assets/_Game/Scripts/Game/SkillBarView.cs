@@ -293,13 +293,13 @@ namespace GirlsDungeon.Game
             switch (skill)
             {
                 case SkillKind.Grenade:
-                    return Text.Get("ui.skill.grenade_tip", settings.GrenadeThrowRange, settings.GrenadeRadiusFor(simulation.World.PlayerCharacter), settings.GrenadeDamagePercent,
+                    return Text.Get("ui.skill.grenade_tip", settings.GrenadeThrowRange, settings.GrenadeRadiusFor(simulation.World.PlayerCharacter), settings.SkillDamagePercentFor(simulation.World.PlayerCharacter, SkillKind.Grenade),
                         settings.GrenadeStabilityDamage, CostText(skill, settings.GrenadeCooldownRounds));
                 case SkillKind.Push:
-                    return Text.Get("ui.skill.push_tip", settings.PushWidthFor(simulation.World.PlayerCharacter), settings.PushLengthFor(simulation.World.PlayerCharacter), settings.PushDamagePercent,
+                    return Text.Get("ui.skill.push_tip", settings.PushWidthFor(simulation.World.PlayerCharacter), settings.PushLengthFor(simulation.World.PlayerCharacter), settings.SkillDamagePercentFor(simulation.World.PlayerCharacter, SkillKind.Push),
                         settings.PushCollisionDamage, CostText(skill, settings.PushCooldownRounds));
                 case SkillKind.Sonic:
-                    return Text.Get("ui.skill.sonic_tip", settings.SonicRange, settings.SonicDamagePercent,
+                    return Text.Get("ui.skill.sonic_tip", settings.SonicRange, settings.SkillDamagePercentFor(simulation.World.PlayerCharacter, SkillKind.Sonic),
                         settings.SonicStabilityDamage, CostText(skill, settings.SonicCooldownRounds));
                 default:
                     return string.Empty;

@@ -59,7 +59,7 @@ namespace GirlsDungeon.Core.Sim
             else if (!Vision.IsSet(Vision.Compute(world.Map, attacker.Position, attacker.VisionRange), world.Map, target.Position)) block = SonicBlock.NotVisible;
 
             int setPercent = SetEffects.DamagePercent(world, settings, attacker, target, DamageSource.Sonic);
-            int damage = CombatRules.Damage(attacker.Attack, target.Defense, settings.SonicDamagePercent, 0, settings.MinDamage, 100, setPercent);
+            int damage = CombatRules.Damage(attacker.Attack, target.Defense, settings.SkillDamagePercentFor(attacker.IsPlayer ? world.PlayerCharacter : CharacterKind.None, SkillKind.Sonic), 0, settings.MinDamage, 100, setPercent);
             return new SonicPreview(block, target, damage, settings.SonicStabilityDamage);
         }
 

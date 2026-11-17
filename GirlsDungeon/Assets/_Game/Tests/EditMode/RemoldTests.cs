@@ -157,7 +157,7 @@ namespace GirlsDungeon.Tests
             Assert.That(plain.SetPercent, Is.EqualTo(0));
             Assert.That(slowed.SetPercent, Is.EqualTo(20));
             Assert.That(SonicAttack.Preview(world, combat, player, enemy).Damage,
-                Is.EqualTo(CombatRules.Damage(player.Attack, enemy.Defense, combat.SonicDamagePercent, 0, combat.MinDamage, 100, 20)));
+                Is.EqualTo(CombatRules.Damage(player.Attack, enemy.Defense, combat.SkillDamagePercentFor(CharacterKind.HeroA, SkillKind.Sonic), 0, combat.MinDamage, 100, 20)));
 
             // 다른 캐릭터에게는 이 특성이 없다.
             world.PlayerCharacter = CharacterKind.HeroB;

@@ -67,6 +67,10 @@ namespace GirlsDungeon.Game
         [Tooltip("Knockback attack length and width for this character (0 = the shared pushLength / pushWidth). Odd width is centered on the player's lane.")]
         public int pushLength;
         public int pushWidth;
+        [Tooltip("Skill damage percent for this character: grenade, knockback, sonic (0 = the shared value).")]
+        public int grenadeDamagePercent;
+        public int pushDamagePercent;
+        public int sonicDamagePercent;
         [Tooltip("Remold gauge maximum (0 = this character has no Remold).")]
         public int remoldMax;
         [Tooltip("Remold gained when the player's turn starts.")]
@@ -298,6 +302,7 @@ namespace GirlsDungeon.Game
                 doorForcePercent = 70,
                 grenadeRadius = 2, grenadeShape = AreaShape.Diamond,
                 pushLength = 5, pushWidth = 3,
+                grenadeDamagePercent = 120, pushDamagePercent = 100, sonicDamagePercent = 150,
                 remoldMax = 6, remoldPerAction = 1, remoldPerHit = 1, grenadeRemoldCost = 4, sonicRemoldCost = 1,
                 slowedDamagePercent = 20, slowAfterMoveCells = 5, slowAmount = 2, slowTurns = 2,
             },
@@ -855,6 +860,9 @@ namespace GirlsDungeon.Game
                     GrenadeShape = entry.grenadeShape,
                     PushLength = entry.pushLength,
                     PushWidth = entry.pushWidth,
+                    GrenadeDamagePercent = entry.grenadeDamagePercent,
+                    PushDamagePercent = entry.pushDamagePercent,
+                    SonicDamagePercent = entry.sonicDamagePercent,
                     RemoldMax = entry.remoldMax,
                     RemoldPerAction = entry.remoldPerAction,
                     RemoldPerHit = entry.remoldPerHit,

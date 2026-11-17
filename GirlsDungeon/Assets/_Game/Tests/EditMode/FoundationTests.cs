@@ -522,6 +522,8 @@ namespace GirlsDungeon.Tests
                 GrenadeRadius = 2, GrenadeShape = AreaShape.Diamond,
                 // BALANCE 9-1: A의 넉백 공격은 너비 3(가운데) × 길이 5.
                 PushLength = 5, PushWidth = 3,
+                // BALANCE 6-3 · 9-3 · 15-2 (2026-11-17 사용자): A의 스킬 계수 수류탄 120 · 넉백 100 · 음파 150.
+                GrenadeDamagePercent = 120, PushDamagePercent = 100, SonicDamagePercent = 150,
                 // BALANCE 34번: 리몰딩 (A만) — 최대 6 · 행동 +1 · 피해 +1 · 음파 1 · 수류탄 4, 이동 감소 적 +20%, 5칸 이상 걸으면 이동 감소 2칸 2차례.
                 RemoldMax = 6, RemoldPerAction = 1, RemoldPerHit = 1, GrenadeRemoldCost = 4, SonicRemoldCost = 1,
                 SlowedDamagePercent = 20, SlowAfterMoveCells = 5, SlowAmount = 2, SlowTurns = 2,

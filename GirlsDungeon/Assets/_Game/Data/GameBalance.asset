@@ -127,6 +127,9 @@ MonoBehaviour:
     grenadeShape: 1
     pushLength: 5
     pushWidth: 3
+    grenadeDamagePercent: 120
+    pushDamagePercent: 100
+    sonicDamagePercent: 150
     remoldMax: 6
     remoldPerAction: 1
     remoldPerHit: 1
@@ -154,6 +157,9 @@ MonoBehaviour:
     grenadeShape: 0
     pushLength: 0
     pushWidth: 0
+    grenadeDamagePercent: 0
+    pushDamagePercent: 0
+    sonicDamagePercent: 0
     remoldMax: 0
     remoldPerAction: 0
     remoldPerHit: 0
@@ -181,6 +187,9 @@ MonoBehaviour:
     grenadeShape: 0
     pushLength: 0
     pushWidth: 0
+    grenadeDamagePercent: 0
+    pushDamagePercent: 0
+    sonicDamagePercent: 0
     remoldMax: 0
     remoldPerAction: 0
     remoldPerHit: 0

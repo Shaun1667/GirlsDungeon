@@ -113,7 +113,7 @@ namespace GirlsDungeon.Core.Sim
                 int reduction = cover == CoverLevel.Full ? settings.FullCoverReductionPercent
                     : cover == CoverLevel.Half ? settings.HalfCoverReductionPercent : 0;
                 int setPercent = SetEffects.DamagePercent(world, settings, attacker, unit, DamageSource.Grenade);
-                int damage = CombatRules.Damage(attacker.Attack, unit.Defense, settings.GrenadeDamagePercent, reduction, settings.MinDamage, 100, setPercent);
+                int damage = CombatRules.Damage(attacker.Attack, unit.Defense, settings.SkillDamagePercentFor(character, SkillKind.Grenade), reduction, settings.MinDamage, 100, setPercent);
                 hits.Add(new AreaHit(unit, cover, reduction, damage, settings.GrenadeStabilityDamage, setPercent));
                 if (unit.IsPlayer) hitsPlayer = true;
             }

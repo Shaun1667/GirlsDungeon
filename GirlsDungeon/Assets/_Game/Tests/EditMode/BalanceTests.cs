@@ -348,6 +348,26 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void HeroASkillDamage_MatchesBalanceTables6_9_15()
+        {
+            var combat = Load().CreateCombatSettings();
+            // 사용자 결정 (2026-11-17): A만 넉백 100 · 음파 150 · 수류탄 120, 나머지는 공통 값.
+            Assert.That(combat.SkillDamagePercentFor(GirlsDungeon.Core.Sim.CharacterKind.HeroA, GirlsDungeon.Core.Sim.SkillKind.Push), Is.EqualTo(100));
+            Assert.That(combat.SkillDamagePercentFor(GirlsDungeon.Core.Sim.CharacterKind.HeroA, GirlsDungeon.Core.Sim.SkillKind.Sonic), Is.EqualTo(150));
+            Assert.That(combat.SkillDamagePercentFor(GirlsDungeon.Core.Sim.CharacterKind.HeroA, GirlsDungeon.Core.Sim.SkillKind.Grenade), Is.EqualTo(120));
+            foreach (var kind in new[] { GirlsDungeon.Core.Sim.CharacterKind.HeroB, GirlsDungeon.Core.Sim.CharacterKind.HeroC, GirlsDungeon.Core.Sim.CharacterKind.None })
+            {
+                Assert.That(combat.SkillDamagePercentFor(kind, GirlsDungeon.Core.Sim.SkillKind.Push), Is.EqualTo(combat.PushDamagePercent), kind.ToString());
+                Assert.That(combat.SkillDamagePercentFor(kind, GirlsDungeon.Core.Sim.SkillKind.Sonic), Is.EqualTo(combat.SonicDamagePercent), kind.ToString());
+                Assert.That(combat.SkillDamagePercentFor(kind, GirlsDungeon.Core.Sim.SkillKind.Grenade), Is.EqualTo(combat.GrenadeDamagePercent), kind.ToString());
+            }
+            // 검산 (산탄총 14 → 방어 2 사격병): 14 × 14 ÷ 16 = 12.25 → 넉백 12 · 음파 18.4 → 18 · 수류탄 14.7 → 15.
+            Assert.That(GirlsDungeon.Core.Sim.CombatRules.Damage(14, 2, 100, 0, 1), Is.EqualTo(12));
+            Assert.That(GirlsDungeon.Core.Sim.CombatRules.Damage(14, 2, 150, 0, 1), Is.EqualTo(18));
+            Assert.That(GirlsDungeon.Core.Sim.CombatRules.Damage(14, 2, 120, 0, 1), Is.EqualTo(15));
+        }
+
+        [Test]
         public void PushAreas_MatchBalanceTable9_1()
         {
             var combat = Load().CreateCombatSettings();

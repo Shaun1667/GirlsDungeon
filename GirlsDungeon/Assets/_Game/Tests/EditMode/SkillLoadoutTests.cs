@@ -50,11 +50,12 @@ namespace GirlsDungeon.Tests
         public void Sonic_IgnoresCover_AndPreviewEqualsResult()
         {
             var (simulation, world, enemy, combat) = StartCombat(CharacterKind.HeroA);
+            enemy.MaxHp = enemy.Hp = 100; // 한 방에 쓰러지지 않게 (A의 음파 150%)
             Assert.That(Cover.Against(world.Map, enemy.Position, world.Player.Position), Is.Not.EqualTo(CoverLevel.None), "the enemy is in cover");
 
             var preview = SonicAttack.Preview(world, combat, world.Player, enemy);
             Assert.That(preview.CanUse, Is.True);
-            Assert.That(preview.Damage, Is.EqualTo(CombatRules.Damage(world.Player.Attack, enemy.Defense, combat.SonicDamagePercent, 0, combat.MinDamage)));
+            Assert.That(preview.Damage, Is.EqualTo(CombatRules.Damage(world.Player.Attack, enemy.Defense, combat.SkillDamagePercentFor(CharacterKind.HeroA, SkillKind.Sonic), 0, combat.MinDamage)));
             Assert.That(preview.StabilityDamage, Is.EqualTo(combat.SonicStabilityDamage));
 
             int hp = enemy.Hp;
@@ -65,7 +66,7 @@ namespace GirlsDungeon.Tests
                 Assert.That(hp - enemy.Hp, Is.EqualTo(preview.Damage));
                 Assert.That(enemy.Stability, Is.EqualTo(System.Math.Max(0, stability - preview.StabilityDamage)));
             }
-            // 쓰면 차례가 끝나고 적 차례 뒤 내 차례가 온다 (적은 한 방에 쓰러지지 않는다: 10 × 10 ÷ 12 × 60% = 5).
+            // 쓰면 차례가 끝나고 적 차례 뒤 내 차례가 온다 (적 체력 100이라 한 방에 쓰러지지 않는다).
             // A의 음파는 재사용 대기 대신 리몰딩 1 (3-16): 전투 시작 1 − 1 + 피해 1 + 다음 차례 1 = 2.
             Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
             Assert.That(world.SonicCooldown, Is.EqualTo(0));

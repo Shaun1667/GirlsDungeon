@@ -79,7 +79,7 @@ namespace GirlsDungeon.Core.Sim
     /// 밀치기의 한 곳 (BALANCE 9번 · 10번, 결정 2026-11-10 사용자). 플레이어 밀치기 스킬과 돌격병 근접 밀기(Knockback)가 같은 Slide · 낙하 처리를 쓴다.
     /// - 범위: 플레이어 앞 동서남북 한 방향으로 길이 × 너비 (캐릭터 줄 값, 없으면 공통 PushLength · PushWidth — CombatSettings.PushLengthFor · PushWidthFor).
     ///   너비가 홀수면 내 줄을 가운데로 양옆 같게, 짝수면 남는 한 줄을 side(+1 / −1) 쪽에.
-    /// - 범위 안 유닛은 직접 피해(공격력 공식 × PushDamagePercent, 엄폐 · 치명 없음)를 받고, 범위 끝 바로 바깥 칸까지 밀린다.
+    /// - 범위 안 유닛은 직접 피해(공격력 공식 × 넉백 계수 — CombatSettings.SkillDamagePercentFor, 엄폐 · 치명 없음)를 받고, 범위 끝 바로 바깥 칸까지 밀린다.
     /// - 미는 중 낭떠러지에 들어가면 떨어진다 (적은 즉사). 벽 · 기둥 · 상자 · 낮은 벽 · 다른 유닛 · 맵 끝에 부딪히면 그 앞에서 멈추고 충돌 피해.
     /// - 먼 유닛부터 민다 — 앞 유닛이 비켜 준 칸으로 뒤 유닛이 밀린다. 밀려 움직일 때는 감시 반응이 없다.
     /// </summary>
@@ -151,9 +151,10 @@ namespace GirlsDungeon.Core.Sim
             foreach (var unit in world.Units) occupied.Add(unit.Position);
 
             var hits = new List<PushHit>();
+            int damagePercent = settings.SkillDamagePercentFor(attacker.IsPlayer ? world.PlayerCharacter : CharacterKind.None, SkillKind.Push);
             foreach (var target in targets)
             {
-                int damage = CombatRules.Damage(attacker.Attack, target.Defense, settings.PushDamagePercent, 0, settings.MinDamage, 100,
+                int damage = CombatRules.Damage(attacker.Attack, target.Defense, damagePercent, 0, settings.MinDamage, 100,
                     SetEffects.DamagePercent(world, settings, attacker, target, DamageSource.Push));
                 bool diesFromHit = target.Hp - damage <= 0;
                 var start = target.Position;
