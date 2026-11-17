@@ -276,6 +276,9 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    closeRangePercent: 0
+    farRangePercent: 0
+    farRangeCells: 0
     extraShotsPerTurn: 0
     moveRangeBonus: 0
     melee: 0
@@ -297,6 +300,9 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    closeRangePercent: 0
+    farRangePercent: 0
+    farRangeCells: 0
     extraShotsPerTurn: 0
     moveRangeBonus: 0
     melee: 0
@@ -310,14 +316,17 @@ MonoBehaviour:
     nameKey: weapon.shotgun.name
     ruleKey: weapon.shotgun.rule
     attack: 14
-    attackRange: 4
+    attackRange: 5
     stabilityDamage: 3
     critPercent: 15
     critMultiplierPercent: 150
     moveAfterShot: 0
     noShotAfterMove: 0
-    falloffStartCells: 2
-    falloffPercentPerCell: 15
+    falloffStartCells: 0
+    falloffPercentPerCell: 0
+    closeRangePercent: 150
+    farRangePercent: 20
+    farRangeCells: 5
     extraShotsPerTurn: 0
     moveRangeBonus: 0
     melee: 0
@@ -339,6 +348,9 @@ MonoBehaviour:
     noShotAfterMove: 1
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    closeRangePercent: 0
+    farRangePercent: 0
+    farRangeCells: 0
     extraShotsPerTurn: 0
     moveRangeBonus: 0
     melee: 0
@@ -360,6 +372,9 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    closeRangePercent: 0
+    farRangePercent: 0
+    farRangeCells: 0
     extraShotsPerTurn: 1
     moveRangeBonus: 0
     melee: 0
@@ -381,6 +396,9 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    closeRangePercent: 0
+    farRangePercent: 0
+    farRangeCells: 0
     extraShotsPerTurn: 0
     moveRangeBonus: -2
     melee: 0
@@ -402,6 +420,9 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 0
     falloffPercentPerCell: 0
+    closeRangePercent: 0
+    farRangePercent: 0
+    farRangeCells: 0
     extraShotsPerTurn: 0
     moveRangeBonus: 0
     melee: 1

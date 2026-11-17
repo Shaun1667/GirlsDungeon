@@ -71,6 +71,9 @@ namespace GirlsDungeon.Tests
                 Assert.That(actual.NoShotAfterMove, Is.EqualTo(weapon.NoShotAfterMove), weapon.Kind + " no shot after move");
                 Assert.That(actual.FalloffStartCells, Is.EqualTo(weapon.FalloffStartCells), weapon.Kind + " falloff start");
                 Assert.That(actual.FalloffPercentPerCell, Is.EqualTo(weapon.FalloffPercentPerCell), weapon.Kind + " falloff");
+                Assert.That(actual.CloseRangePercent, Is.EqualTo(weapon.CloseRangePercent), weapon.Kind + " close range");
+                Assert.That(actual.FarRangePercent, Is.EqualTo(weapon.FarRangePercent), weapon.Kind + " far range");
+                Assert.That(actual.FarRangeCells, Is.EqualTo(weapon.FarRangeCells), weapon.Kind + " far range cells");
                 Assert.That(actual.ExtraShotsPerTurn, Is.EqualTo(weapon.ExtraShotsPerTurn), weapon.Kind + " extra shots");
                 Assert.That(actual.MoveRangeBonus, Is.EqualTo(weapon.MoveRangeBonus), weapon.Kind + " move bonus");
                 Assert.That(actual.Melee, Is.EqualTo(weapon.Melee), weapon.Kind + " melee");

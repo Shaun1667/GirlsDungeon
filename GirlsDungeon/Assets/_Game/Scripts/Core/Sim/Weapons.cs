@@ -46,6 +46,14 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>FalloffStartCells를 넘는 한 칸마다 줄어드는 피해 (%).</summary>
         public int FalloffPercentPerCell;
 
+        /// <summary>
+        /// 규칙: 거리별 피해 (0 = 안 씀, 산탄총 — 2026-11-17 사용자). 1칸 CloseRangePercent → FarRangeCells칸 FarRangePercent로 고르게,
+        /// 더 멀면 FarRangePercent. 쓰면 FalloffStartCells · FalloffPercentPerCell 대신 이것.
+        /// </summary>
+        public int CloseRangePercent;
+        public int FarRangePercent;
+        public int FarRangeCells;
+
         /// <summary>규칙: 한 차례에 더 쏠 수 있는 횟수 (0 = 한 번, 기관단총 1 = 두 번). 사이에 이동할 수 있다.</summary>
         public int ExtraShotsPerTurn;
 
@@ -171,13 +179,28 @@ namespace GirlsDungeon.Core.Sim
             return System.Math.Max(System.Math.Abs(a.X - b.X), System.Math.Abs(a.Y - b.Y));
         }
 
-        /// <summary>산탄총 규칙: 거리에 따라 줄어드는 피해 (%). 0 ~ 100.</summary>
+        /// <summary>
+        /// 산탄총 규칙: 거리에 따라 줄어드는 피해 (%). 피해 = 100 − 이 값 (%). 거리별 피해(FarRangeCells)를 쓰면 가까울 때 음수 = 늘어남
+        /// (1칸 150% → −50). 미리보기와 실제가 모두 이것을 쓴다.
+        /// </summary>
         public static int FalloffPercent(WeaponStats weapon, GridPos from, GridPos target)
         {
-            if (weapon == null || weapon.FalloffPercentPerCell <= 0) return 0;
+            if (weapon == null) return 0;
+            if (weapon.FarRangeCells > 1) return 100 - DistancePercent(weapon, CellDistance(from, target));
+            if (weapon.FalloffPercentPerCell <= 0) return 0;
             int over = CellDistance(from, target) - weapon.FalloffStartCells;
             if (over <= 0) return 0;
             return System.Math.Min(100, over * weapon.FalloffPercentPerCell);
+        }
+
+        /// <summary>거리별 피해 (%): 1칸 CloseRangePercent → FarRangeCells칸 FarRangePercent 사이를 고르게 (반올림), 그 밖은 끝 값.</summary>
+        public static int DistancePercent(WeaponStats weapon, int distance)
+        {
+            int far = weapon.FarRangeCells;
+            int d = System.Math.Max(1, System.Math.Min(far, distance));
+            long numerator = (long)weapon.CloseRangePercent * (far - d) + (long)weapon.FarRangePercent * (d - 1);
+            long denominator = far - 1;
+            return (int)((2 * numerator + denominator) / (2 * denominator));
         }
     }
 }

@@ -75,6 +75,7 @@ ui.weapon.swap,바꾸기,Swap
 ui.weapon.keep,두기,Leave it
 ui.combat.preview_moved,{0} · 이동한 차례에는 쏠 수 없음,{0} · Cannot shoot after moving this turn
 ui.combat.falloff,거리 감소 {0}%,Range −{0}%
+ui.combat.range_bonus,거리 보너스 +{0}%,Close range +{0}%
 ui.crate.preview_open,보급 상자 열기 (차례 끝),Open the supply crate (ends turn)
 ui.crate.preview_too_far,보급 상자 · 바로 옆에서 열 수 있음,Supply crate · open it from an adjacent cell
 ui.crate.log_open,보급 상자를 열었다,Opened a supply crate
@@ -87,7 +88,7 @@ weapon.assault_rifle.rule,특수 규칙 없음,No special rule
 weapon.pistol.name,권총,Pistol
 weapon.pistol.rule,쏜 뒤에도 남은 이동을 쓸 수 있음,Can still move after shooting
 weapon.shotgun.name,산탄총,Shotgun
-weapon.shotgun.rule,2칸보다 멀면 1칸마다 피해 −15%,Damage −15% per cell beyond 2 cells
+weapon.shotgun.rule,가까울수록 강함 — 1칸 150% → 5칸 20%,Stronger up close — 150% at 1 cell → 20% at 5 cells
 weapon.sniper.name,저격총,Sniper rifle
 weapon.sniper.rule,이동한 차례에는 쏠 수 없음,Cannot shoot in a turn after moving
 weapon.smg.name,기관단총,SMG

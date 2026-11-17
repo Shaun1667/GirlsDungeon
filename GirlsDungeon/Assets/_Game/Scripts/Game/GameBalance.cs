@@ -170,6 +170,10 @@ namespace GirlsDungeon.Game
         public int falloffStartCells;
         [Tooltip("Damage lost (%) per cell beyond the falloff start.")]
         public int falloffPercentPerCell;
+        [Tooltip("Rule: damage by distance (0 = not used). 1 cell = close percent, far cells = far percent, evenly in between. Replaces the falloff above.")]
+        public int closeRangePercent;
+        public int farRangePercent;
+        public int farRangeCells;
         [Tooltip("Rule: extra shots per turn (1 = two shots). Moving between shots is allowed.")]
         public int extraShotsPerTurn;
         [Tooltip("Rule: added to the player's move range (negative = heavier).")]
@@ -400,8 +404,8 @@ namespace GirlsDungeon.Game
             new WeaponEntry
             {
                 kind = WeaponKind.Shotgun, nameKey = "weapon.shotgun.name", ruleKey = "weapon.shotgun.rule",
-                attack = 14, attackRange = 4, stabilityDamage = 3, critPercent = 15, critMultiplierPercent = 150,
-                falloffStartCells = 2, falloffPercentPerCell = 15,
+                attack = 14, attackRange = 5, stabilityDamage = 3, critPercent = 15, critMultiplierPercent = 150,
+                closeRangePercent = 150, farRangePercent = 20, farRangeCells = 5,
                 partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.coupler", "part.slot.latch" },
             },
             new WeaponEntry
@@ -817,6 +821,9 @@ namespace GirlsDungeon.Game
                     NoShotAfterMove = entry.noShotAfterMove,
                     FalloffStartCells = entry.falloffStartCells,
                     FalloffPercentPerCell = entry.falloffPercentPerCell,
+                    CloseRangePercent = entry.closeRangePercent,
+                    FarRangePercent = entry.farRangePercent,
+                    FarRangeCells = entry.farRangeCells,
                     ExtraShotsPerTurn = entry.extraShotsPerTurn,
                     MoveRangeBonus = entry.moveRangeBonus,
                     Melee = entry.melee,

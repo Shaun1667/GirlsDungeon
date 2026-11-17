@@ -467,8 +467,9 @@ namespace GirlsDungeon.Tests
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.Shotgun, Attack = 14, AttackRange = 4, StabilityDamage = 3, CritPercent = 15, CritMultiplierPercent = 150,
-                FalloffStartCells = 2, FalloffPercentPerCell = 15,
+                Kind = WeaponKind.Shotgun, Attack = 14, AttackRange = 5, StabilityDamage = 3, CritPercent = 15, CritMultiplierPercent = 150,
+                // BALANCE 12-3 (2026-11-17 사용자): 1칸 150% → 5칸 20%.
+                CloseRangePercent = 150, FarRangePercent = 20, FarRangeCells = 5,
             });
             settings.Weapons.Add(new WeaponStats
             {

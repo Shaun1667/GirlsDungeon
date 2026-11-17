@@ -461,6 +461,7 @@ namespace GirlsDungeon.Core.Sim
             {
                 if (weapon.Attack < 1 || weapon.AttackRange < 1 || weapon.StabilityDamage < 0 || weapon.CritPercent < 0 || weapon.CritPercent > 100
                     || weapon.CritMultiplierPercent < 100 || weapon.FalloffStartCells < 0 || weapon.FalloffPercentPerCell < 0
+                    || weapon.FarRangeCells < 0 || weapon.FarRangeCells == 1 || weapon.CloseRangePercent < 0 || weapon.FarRangePercent < 0
                     || weapon.ExtraShotsPerTurn < 0)
                     throw new ArgumentException($"Stats for weapon {weapon.Kind} are invalid.");
             }

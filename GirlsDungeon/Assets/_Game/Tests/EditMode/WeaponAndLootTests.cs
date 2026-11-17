@@ -91,22 +91,37 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void Shotgun_LosesFifteenPercentPerCellBeyondTwo()
+        public void Shotgun_DamageGoesFrom150AtOneCellTo20AtFive()
         {
+            // BALANCE 12-3 (2026-11-17 사용자): 사거리 5, 1칸 150% → 5칸 20% 고르게 (반올림).
             var combat = TestData.Combat();
-            foreach (var (distance, falloff) in new[] { (1, 0), (2, 0), (3, 15), (4, 30) })
+            foreach (var (distance, percent) in new[] { (1, 150), (2, 118), (3, 85), (4, 53), (5, 20) })
             {
                 var world = MakeWorld(new GridPos(0, 0), "........");
                 Equip(world, WeaponKind.Shotgun);
                 var enemy = AddEnemy(world, new GridPos(distance, 0));
                 var preview = CombatRules.Preview(world, combat, world.Player, world.Player.Position, enemy);
                 Assert.That(preview.CanAttack, Is.True, $"distance {distance}");
-                Assert.That(preview.FalloffPercent, Is.EqualTo(falloff), $"distance {distance}");
-                Assert.That(preview.Damage, Is.EqualTo(CombatRules.Damage(14, 2, 100, 0, 1, 100 - falloff)), $"distance {distance}");
+                Assert.That(preview.FalloffPercent, Is.EqualTo(100 - percent), $"distance {distance}");
+                Assert.That(preview.Damage, Is.EqualTo(CombatRules.Damage(14, 2, 100, 0, 1, percent)), $"distance {distance}");
             }
-            Assert.That(CombatRules.Damage(14, 2, 100, 0, 1, 100), Is.EqualTo(12), "12.25");
-            Assert.That(CombatRules.Damage(14, 2, 100, 0, 1, 85), Is.EqualTo(10), "10.41");
-            Assert.That(CombatRules.Damage(14, 2, 100, 0, 1, 70), Is.EqualTo(9), "8.58");
+            // 검산 (방어 2 사격병): 12.25 × 150% = 18.4 → 18, 118% → 14, 85% → 10, 53% → 6, 20% → 2.
+            Assert.That(CombatRules.Damage(14, 2, 100, 0, 1, 150), Is.EqualTo(18));
+            Assert.That(CombatRules.Damage(14, 2, 100, 0, 1, 118), Is.EqualTo(14));
+            Assert.That(CombatRules.Damage(14, 2, 100, 0, 1, 85), Is.EqualTo(10));
+            Assert.That(CombatRules.Damage(14, 2, 100, 0, 1, 53), Is.EqualTo(6));
+            Assert.That(CombatRules.Damage(14, 2, 100, 0, 1, 20), Is.EqualTo(2));
+        }
+
+        [Test]
+        public void Shotgun_ReachesFiveCells_AndBeyondFarCellsStaysAt20()
+        {
+            var world = MakeWorld(new GridPos(0, 0), "........");
+            Equip(world, WeaponKind.Shotgun);
+            Assert.That(CombatRules.Preview(world, TestData.Combat(), world.Player, world.Player.Position, AddEnemy(world, new GridPos(6, 0))).Block,
+                Is.EqualTo(AttackBlock.OutOfRange));
+            var shotgun = TestData.Combat().WeaponFor(WeaponKind.Shotgun);
+            Assert.That(Loadout.DistancePercent(shotgun, 7), Is.EqualTo(20), "a range part can reach farther, the damage stays at the far value");
         }
 
         [Test]
@@ -115,7 +130,7 @@ namespace GirlsDungeon.Tests
             var world = MakeWorld(new GridPos(0, 0), "....", "....", "....", "....");
             Equip(world, WeaponKind.Shotgun);
             var enemy = AddEnemy(world, new GridPos(2, 2));
-            Assert.That(CombatRules.Preview(world, TestData.Combat(), world.Player, world.Player.Position, enemy).FalloffPercent, Is.EqualTo(0));
+            Assert.That(CombatRules.Preview(world, TestData.Combat(), world.Player, world.Player.Position, enemy).FalloffPercent, Is.EqualTo(100 - 118), "2 cells");
         }
 
         [Test]

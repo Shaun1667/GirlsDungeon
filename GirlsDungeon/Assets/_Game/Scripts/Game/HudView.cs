@@ -412,6 +412,7 @@ namespace GirlsDungeon.Game
                 string cover = CoverName(preview.Cover);
                 if (preview.ReductionPercent > 0) cover = cover + " · " + Text.Get("ui.combat.reduction", preview.ReductionPercent);
                 if (preview.FalloffPercent > 0) cover = cover + " · " + Text.Get("ui.combat.falloff", preview.FalloffPercent);
+                else if (preview.FalloffPercent < 0) cover = cover + " · " + Text.Get("ui.combat.range_bonus", -preview.FalloffPercent);
                 previewLabel.text = Text.Get("ui.combat.preview_attack", name, target.Hp, target.MaxHp, target.Stability, target.MaxStability,
                     preview.Damage, preview.CritPercent, preview.CritDamage, preview.StabilityDamage, cover);
                 if (preview.BreaksCover) previewLabel.text += "\n" + Text.Get("ui.combat.preview_breaks_cover");
