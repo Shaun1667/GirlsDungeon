@@ -535,6 +535,8 @@ MonoBehaviour:
   cameraZoomSharpness: 10
   cameraDragThresholdPixels: 8
   cameraMaxPanDistance: 20
+  cameraHoldDelaySeconds: 0.3
+  cameraHoldYawSpeed: 120
   enemyTurnBannerSeconds: 0.6
   attackPauseSeconds: 0.55
   actionPauseSeconds: 0.3

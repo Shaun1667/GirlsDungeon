@@ -612,6 +612,10 @@ namespace GirlsDungeon.Game
         [SerializeField] private float cameraDragThresholdPixels = 8f;
         [Tooltip("How far the camera can be dragged away from its target (BALANCE 3-26).")]
         [SerializeField] private float cameraMaxPanDistance = 20f;
+        [Tooltip("Seconds Q/E must be held before the camera starts turning continuously (BALANCE 3-27).")]
+        [SerializeField] private float cameraHoldDelaySeconds = 0.3f;
+        [Tooltip("Degrees per second while Q/E is held (BALANCE 3-28).")]
+        [SerializeField] private float cameraHoldYawSpeed = 120f;
 
         [Header("Turn playback (BALANCE 3-14 ~ 3-20, view only)")]
         [Tooltip("Pause after the enemy-turn banner appears.")]
@@ -643,6 +647,8 @@ namespace GirlsDungeon.Game
         public float CameraDistance => cameraDistance;
         public float CameraFollowSharpness => cameraFollowSharpness;
         public float CameraRotateSharpness => cameraRotateSharpness;
+        public float CameraHoldDelaySeconds => cameraHoldDelaySeconds;
+        public float CameraHoldYawSpeed => cameraHoldYawSpeed;
         public float CameraMinDistance => cameraMinDistance;
         public float CameraMaxDistance => cameraMaxDistance;
         public float CameraZoomStep => cameraZoomStep;

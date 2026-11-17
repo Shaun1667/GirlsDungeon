@@ -599,6 +599,9 @@ namespace GirlsDungeon.Tests
             Assert.That(balance.CameraZoomSharpness, Is.EqualTo(10f).Within(0.0001f));
             Assert.That(balance.CameraDragThresholdPixels, Is.EqualTo(8f).Within(0.0001f));
             Assert.That(balance.CameraMaxPanDistance, Is.EqualTo(20f).Within(0.0001f));
+            // 3-27 · 3-28: Q/E를 0.3초 넘게 누르면 초당 120도로 계속 돈다 (2026-11-17).
+            Assert.That(balance.CameraHoldDelaySeconds, Is.EqualTo(0.3f).Within(0.0001f));
+            Assert.That(balance.CameraHoldYawSpeed, Is.EqualTo(120f).Within(0.0001f));
             // 시작 거리는 확대 · 축소 범위 안에 있어야 한다.
             Assert.That(balance.CameraDistance, Is.InRange(balance.CameraMinDistance, balance.CameraMaxDistance));
         }

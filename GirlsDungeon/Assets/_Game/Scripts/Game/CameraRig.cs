@@ -5,7 +5,8 @@ using UnityEngine.InputSystem;
 namespace GirlsDungeon.Game
 {
     /// <summary>
-    /// 비스듬한 위에서 대상을 따라가는 카메라. Q/E로 일정 각도씩 돌리고, 마우스 휠로 확대 · 축소,
+    /// 비스듬한 위에서 대상을 따라가는 카메라. Q/E를 누르면 일정 각도씩 돌리고, 꾹 누르고 있으면 부드럽게 계속 돌며 뗀 곳에서 멈춘다.
+    /// 마우스 휠로 확대 · 축소,
     /// 왼쪽(또는 가운데) 버튼 드래그로 바닥을 잡아끌듯 화면을 옮긴다. 옮긴 만큼은 대상이 걷기 시작하거나
     /// 따라갈 대상이 바뀌면 부드럽게 제자리로 돌아온다. 화면만 바뀌고 규칙에는 영향이 없다.
     /// </summary>
@@ -29,6 +30,8 @@ namespace GirlsDungeon.Game
         private PointerDrag leftDrag;
         private PointerDrag middleDrag;
         private Vector2 lastPointer;
+        /// <summary>Q/E를 누르고 있는 시간 (꾹 누르면 계속 돌기 — BALANCE 3-27 · 3-28).</summary>
+        private float rotateHeld;
 
         public float TargetYaw => targetYaw;
         public float TargetDistance => targetDistance;
@@ -113,6 +116,7 @@ namespace GirlsDungeon.Game
             {
                 if (keyboard.qKey.wasPressedThisFrame) Rotate(-1);
                 if (keyboard.eKey.wasPressedThisFrame) Rotate(1);
+                HandleHeldRotation(keyboard);
             }
 
             var mouse = Mouse.current;
@@ -138,6 +142,24 @@ namespace GirlsDungeon.Game
                 recentering = false;
             }
             lastPointer = pointer;
+        }
+
+        /// <summary>
+        /// Q/E를 꾹 누르면 (CameraHoldDelaySeconds 뒤부터) 초당 CameraHoldYawSpeed도씩 계속 돈다.
+        /// 뗀 곳의 각도를 그대로 둔다 (회전 단위로 맞추지 않음). 둘 다 누르면 서로 상쇄.
+        /// </summary>
+        private void HandleHeldRotation(Keyboard keyboard)
+        {
+            int direction = (keyboard.eKey.isPressed ? 1 : 0) - (keyboard.qKey.isPressed ? 1 : 0);
+            if (!keyboard.qKey.isPressed && !keyboard.eKey.isPressed)
+            {
+                rotateHeld = 0f;
+                return;
+            }
+            rotateHeld += Time.unscaledDeltaTime;
+            if (direction == 0 || rotateHeld < balance.CameraHoldDelaySeconds) return;
+            // 목표 각도를 일정하게 밀면 LateUpdate의 부드러운 따라가기가 그대로 일정 속도 회전이 된다.
+            targetYaw += direction * balance.CameraHoldYawSpeed * Time.unscaledDeltaTime;
         }
 
         private bool GroundPoint(Vector2 screen, out Vector3 point)
