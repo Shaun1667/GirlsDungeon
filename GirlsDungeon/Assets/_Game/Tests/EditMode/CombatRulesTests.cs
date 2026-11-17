@@ -99,7 +99,7 @@ namespace GirlsDungeon.Tests
 
             Assert.That(CombatRules.Resolve(world, settings, player, enemy, events), Is.True);
 
-            Assert.That(enemy.Hp, Is.EqualTo(10 - 8));
+            Assert.That(enemy.Hp, Is.EqualTo(15 - 8));
             Assert.That(enemy.Stability, Is.EqualTo(3 - 2));
             var attacked = events.OfType<UnitAttacked>().Single();
             Assert.That(attacked.Damage, Is.EqualTo(8));
@@ -113,6 +113,7 @@ namespace GirlsDungeon.Tests
             var player = Add(world, UnitKind.Player, 0, 0);
             var enemy = Add(world, UnitKind.Rifleman, 5, 0);
             player.CritPercent = 100;
+            enemy.Hp = 10; // 보통 피해 8로는 안 쓰러지고 치명 13으로 쓰러지는 체력
             var events = new List<GameEvent>();
 
             CombatRules.Resolve(world, TestData.Combat(), player, enemy, events);

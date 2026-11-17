@@ -129,8 +129,8 @@ namespace GirlsDungeon.Tests
 
             Assert.That(simulation.Execute(new AreaAttackCommand(new GridPos(6, 2), TestData.Combat())), Is.True);
 
-            Assert.That(first.Hp, Is.EqualTo(10 - 6));
-            Assert.That(second.Hp, Is.EqualTo(10 - 6));
+            Assert.That(first.Hp, Is.EqualTo(15 - 6));
+            Assert.That(second.Hp, Is.EqualTo(15 - 6));
             Assert.That(first.Stability, Is.EqualTo(3 - 2));
             Assert.That(events.OfType<AreaExploded>().Count(), Is.EqualTo(1));
             Assert.That(world.Round, Is.EqualTo(2), "the enemy turn ran");

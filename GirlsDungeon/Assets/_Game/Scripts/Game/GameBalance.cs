@@ -277,18 +277,18 @@ namespace GirlsDungeon.Game
             },
             new UnitStatsEntry
             {
-                kind = UnitKind.Rifleman, nameKey = "unit.rifleman.name", visualId = "rifleman", maxHp = 10, maxStability = 3, visionRange = 9,
+                kind = UnitKind.Rifleman, nameKey = "unit.rifleman.name", visualId = "rifleman", maxHp = 15, maxStability = 3, visionRange = 9,
                 attack = 6, defense = 2, moveRange = 6, attackRange = 7, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150,
             },
             new UnitStatsEntry
             {
-                kind = UnitKind.Assault, nameKey = "unit.assault.name", visualId = "assault", maxHp = 8, maxStability = 2, visionRange = 9,
+                kind = UnitKind.Assault, nameKey = "unit.assault.name", visualId = "assault", maxHp = 12, maxStability = 2, visionRange = 9,
                 attack = 6, defense = 1, moveRange = 8, attackRange = 1, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150,
                 pushOnHit = 1,
             },
             new UnitStatsEntry
             {
-                kind = UnitKind.Shopkeeper, nameKey = "unit.shopkeeper.name", visualId = "shopkeeper", maxHp = 80, maxStability = 8, visionRange = 10,
+                kind = UnitKind.Shopkeeper, nameKey = "unit.shopkeeper.name", visualId = "shopkeeper", maxHp = 120, maxStability = 8, visionRange = 10,
                 attack = 9, defense = 4, moveRange = 6, attackRange = 6, stabilityDamage = 3, critPercent = 20, critMultiplierPercent = 150,
             },
         };
