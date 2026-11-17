@@ -198,7 +198,7 @@ namespace GirlsDungeon.Game
         /// <summary>
         /// 지금 쏠 수 있는 적(사거리 · 사선 안, CombatRules.Preview가 쏠 수 있다고 한 적)마다 플레이어에서 선을 긋는다
         /// (결정 2026-11-11, 사용자): 엄폐를 받는 적 = 흰 선, 엄폐가 없는 적 = 노란 선, 고른 적 = 밝은 노란 선.
-        /// 쏠 수 없는 때(적 차례 · 재생 중 · 스킬 조준 · 이미 쐈음)에는 모두 숨긴다.
+        /// 쏠 수 없는 때(적 차례 · 재생 중 · 스킬 조준 · 이미 쐈음)에는 모두 숨긴다. 음파 조준 중에는 RefreshSonicLines가 다시 긋는다.
         /// </summary>
         private void RefreshTargetLines(World world, bool show)
         {
@@ -208,24 +208,50 @@ namespace GirlsDungeon.Game
             {
                 var player = world.Player;
                 var origin = Origin(world);
-                var from = GridSpace.ToWorld(origin) + Vector3.up * targetLineHeight;
                 foreach (int id in world.Combatants)
                 {
                     var enemy = world.FindUnit(id);
                     if (enemy == null) continue;
                     var preview = CombatRules.Preview(world, settings, player, origin, enemy);
                     if (!preview.CanAttack) continue;
-
                     string kind = id == selectedTargetId ? "selected" : preview.Cover != CoverLevel.None ? "cover" : "open";
-                    var line = LineAt(used++);
-                    line.sharedMaterial = kind == "selected" ? selectedLineMaterial : kind == "cover" ? coverLineMaterial : openLineMaterial;
-                    line.SetPosition(0, from);
-                    line.SetPosition(1, GridSpace.ToWorld(enemy.Position) + Vector3.up * targetLineHeight);
-                    line.enabled = true;
-                    lineKinds.Add(id + ":" + kind);
+                    DrawTargetLine(used++, origin, enemy.Position, id, kind);
                 }
             }
             for (int i = used; i < lines.Count; i++) lines[i].enabled = false;
+        }
+
+        /// <summary>
+        /// 음파처럼 적 하나를 고르는 스킬의 조준 중 (2026-11-17 사용자 "사격과 같은 노란 줄"): 그 스킬을 쓸 수 있는 적마다
+        /// 사격과 같은 선을 긋는다. 음파는 엄폐를 무시하므로 흰 선 없이 노란 선, 고른 대상은 밝은 노란 선.
+        /// 출발점과 판정은 스킬 미리보기와 같은 복제 세계(예약 칸으로 걸어 본 결과)에서.
+        /// </summary>
+        private void RefreshSonicLines(World skillWorld)
+        {
+            lineKinds.Clear();
+            int used = 0;
+            if (skillWorld != null && !Busy)
+            {
+                var player = skillWorld.Player;
+                foreach (int id in skillWorld.Combatants)
+                {
+                    var enemy = skillWorld.FindUnit(id);
+                    if (enemy == null) continue;
+                    if (!SonicAttack.Preview(skillWorld, settings, player, enemy).CanUse) continue;
+                    DrawTargetLine(used++, player.Position, enemy.Position, id, id == skillTargetId ? "selected" : "open");
+                }
+            }
+            for (int i = used; i < lines.Count; i++) lines[i].enabled = false;
+        }
+
+        private void DrawTargetLine(int index, GridPos origin, GridPos enemyCell, int id, string kind)
+        {
+            var line = LineAt(index);
+            line.sharedMaterial = kind == "selected" ? selectedLineMaterial : kind == "cover" ? coverLineMaterial : openLineMaterial;
+            line.SetPosition(0, GridSpace.ToWorld(origin) + Vector3.up * targetLineHeight);
+            line.SetPosition(1, GridSpace.ToWorld(enemyCell) + Vector3.up * targetLineHeight);
+            line.enabled = true;
+            lineKinds.Add(id + ":" + kind);
         }
 
         private LineRenderer LineAt(int index)
@@ -973,6 +999,7 @@ namespace GirlsDungeon.Game
                 else hudView.ShowSonicHint();
             }
             hudView.ShowAttackConfirm(skillTargetId >= 0, locked != null && lockedPreview.CanUse && !Busy);
+            RefreshSonicLines(skillWorld);
             var lockedUnit = skillTargetId >= 0 ? world.FindUnit(skillTargetId) : null;
             RefreshGhost(world, lockedUnit != null ? GridSpace.ToWorld(lockedUnit.Position) : (Vector3?)null);
         }
