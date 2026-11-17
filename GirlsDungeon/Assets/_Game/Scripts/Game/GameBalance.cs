@@ -358,6 +358,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private int pushDamagePercent = 30;
         [Tooltip("Flat damage when a pushed unit hits a wall, cover or unit.")]
         [SerializeField] private int pushCollisionDamage = 3;
+        [Tooltip("Knockback skill: collision damage as a percent of the pushed unit's max HP (0 = the flat value above). Assault knockback keeps the flat value.")]
+        [SerializeField] private int pushCollisionMaxHpPercent = 30;
         [SerializeField] private int pushCooldownRounds = 2;
 
         [Header("Sonic skill (BALANCE 15)")]
@@ -697,6 +699,7 @@ namespace GirlsDungeon.Game
                 PushWidth = pushWidth,
                 PushDamagePercent = pushDamagePercent,
                 PushCollisionDamage = pushCollisionDamage,
+                PushCollisionMaxHpPercent = pushCollisionMaxHpPercent,
                 PushCooldownRounds = pushCooldownRounds,
                 SonicRange = sonicRange,
                 SonicDamagePercent = sonicDamagePercent,

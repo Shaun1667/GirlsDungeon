@@ -167,7 +167,7 @@ namespace GirlsDungeon.Core.Sim
 
                 int distance = length + 1 - Depth(attacker.Position, start, direction);
                 var slide = Slide(map, occupied, start, direction, distance);
-                int collision = slide.Collides ? settings.PushCollisionDamage : 0;
+                int collision = slide.Collides ? SkillCollisionDamage(settings, target) : 0;
                 var hit = new PushHit(target, damage, false, slide, collision);
                 if (!hit.Dies && !slide.Falls) occupied.Add(slide.End);
                 hits.Add(hit);
@@ -175,6 +175,13 @@ namespace GirlsDungeon.Core.Sim
 
             var block = attacker.IsPlayer && !Remold.IsReady(world, settings, SkillKind.Push) ? PushBlock.NotReady : hits.Count == 0 ? PushBlock.NoTarget : PushBlock.None;
             return new PushPreview(block, direction, cells, hits);
+        }
+
+        /// <summary>넉백 공격(스킬)으로 부딪힌 피해: 최대 체력 × PushCollisionMaxHpPercent (반올림, 최소 1), 0이면 고정 PushCollisionDamage.</summary>
+        public static int SkillCollisionDamage(CombatSettings settings, Unit target)
+        {
+            if (settings.PushCollisionMaxHpPercent <= 0) return settings.PushCollisionDamage;
+            return Math.Max(1, (target.MaxHp * settings.PushCollisionMaxHpPercent + 50) / 100);
         }
 
         /// <summary>

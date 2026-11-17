@@ -145,6 +145,8 @@ namespace GirlsDungeon.Core.Sim
         public int PushWidth;
         public int PushDamagePercent;
         public int PushCollisionDamage;
+        /// <summary>넉백 공격(스킬)으로 부딪힌 유닛이 받는 피해 = 그 유닛 최대 체력의 이 % (반올림, 최소 1 — 0 = 고정 PushCollisionDamage). 돌격병 밀기는 고정 값 그대로 (BALANCE 9-4).</summary>
+        public int PushCollisionMaxHpPercent;
         public int PushCooldownRounds;
 
         // 음파 공격 스킬 (BALANCE 15번, 3-12)
@@ -447,7 +449,7 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Guard settings are invalid.");
             if (CrateDurability < 1 || LowWallDurability < 1)
                 throw new ArgumentException("Cover durability must be at least 1.");
-            if (PushLength < 1 || PushWidth < 1 || PushDamagePercent < 0 || PushCollisionDamage < 0 || PushCooldownRounds < 0)
+            if (PushLength < 1 || PushWidth < 1 || PushDamagePercent < 0 || PushCollisionDamage < 0 || PushCollisionMaxHpPercent < 0 || PushCooldownRounds < 0)
                 throw new ArgumentException("Push settings are invalid.");
             if (SonicRange < 1 || SonicDamagePercent < 0 || SonicStabilityDamage < 0 || SonicCooldownRounds < 0)
                 throw new ArgumentException("Sonic settings are invalid.");

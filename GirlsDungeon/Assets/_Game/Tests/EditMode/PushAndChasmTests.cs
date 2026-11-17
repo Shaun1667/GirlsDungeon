@@ -198,10 +198,26 @@ namespace GirlsDungeon.Tests
 
             Assert.That(Push.Resolve(world, TestData.Combat(), world.Player, East, 1, events), Is.True);
             Assert.That(enemy.Position, Is.EqualTo(new GridPos(2, 0)));
-            Assert.That(enemy.Hp, Is.EqualTo(10 - 3 - 3), "push 3 + collision 3");
+            Assert.That(enemy.Hp, Is.EqualTo(10 - 3 - 3), "push 3 + collision 30% of max HP 10 = 3");
             var pushed = events.OfType<UnitPushed>().Single();
             Assert.That(pushed.CollisionDamage, Is.EqualTo(3));
             Assert.That(pushed.Fell, Is.False);
+        }
+
+        [Test]
+        public void SkillCollision_Is30PercentOfTheTargetsMaxHp()
+        {
+            // BALANCE 9-4 (2026-11-17 사용자): 넉백 공격으로 부딪히면 그 유닛 최대 체력의 30% (반올림, 최소 1).
+            var world = MakeWorld(new GridPos(0, 0), new[] { new GridPos(1, 0) }, "...#....");
+            var enemy = world.UnitAt(new GridPos(1, 0));
+            enemy.MaxHp = enemy.Hp = 80;
+            var combat = TestData.Combat();
+            var hit = Push.Preview(world, combat, world.Player, East, 1).Hits.Single();
+            Assert.That(hit.CollisionDamage, Is.EqualTo(24));
+            Assert.That(Push.Resolve(world, combat, world.Player, East, 1, new List<GameEvent>()), Is.True);
+            Assert.That(enemy.Hp, Is.EqualTo(80 - hit.Damage - 24));
+            enemy.MaxHp = 1;
+            Assert.That(Push.SkillCollisionDamage(combat, enemy), Is.EqualTo(1), "at least 1");
         }
 
         [Test]

@@ -221,6 +221,7 @@ MonoBehaviour:
   pushWidth: 2
   pushDamagePercent: 30
   pushCollisionDamage: 3
+  pushCollisionMaxHpPercent: 30
   pushCooldownRounds: 2
   sonicRange: 6
   sonicDamagePercent: 60

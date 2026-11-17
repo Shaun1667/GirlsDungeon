@@ -110,9 +110,9 @@ ui.skill.grenade_tip,"수류탄 · 칸을 클릭해 범위를 옮긴 뒤 확인 
 Throw range {0} · Radius {1} · Damage {2}% · Stability −{3}
 {4} · Ends your turn"
 ui.skill.push_tip,"넉백 공격 · 칸을 클릭해 방향을 고른 뒤 확인 · 앞 너비 {0} × 길이 {1}
-피해 {2}% · 부딪히면 {3} · 낭떠러지로 밀린 적은 떨어짐
+피해 {2}% · 부딪히면 최대 체력 {3}% · 낭떠러지로 밀린 적은 떨어짐
 {4} · 쓰면 차례 끝","Knockback · click a cell to aim, then confirm · width {0} × length {1}
-Damage {2}% · Collision {3} · Enemies pushed into a chasm fall
+Damage {2}% · Collision {3}% of max HP · Enemies pushed into a chasm fall
 {4} · Ends your turn"
 ui.skill.overwatch_tip,"감시 · 사격 대신 걸고 차례 끝
 적이 사거리 {0}칸 · 사선 안에서 움직이면 한 번 반응 사격","Overwatch · instead of shooting, ends your turn

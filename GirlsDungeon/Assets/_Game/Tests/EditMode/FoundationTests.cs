@@ -326,6 +326,7 @@ namespace GirlsDungeon.Tests
                 PushWidth = 2,
                 PushDamagePercent = 30,
                 PushCollisionDamage = 3,
+                PushCollisionMaxHpPercent = 30, // BALANCE 9-4 (2026-11-17 사용자): 넉백 공격 부딪힘 = 최대 체력 30%
                 PushCooldownRounds = 2,
                 SonicRange = 6,
                 SonicDamagePercent = 60,

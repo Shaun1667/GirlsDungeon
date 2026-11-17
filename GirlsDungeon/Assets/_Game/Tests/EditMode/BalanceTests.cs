@@ -137,6 +137,7 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.PushWidth, Is.EqualTo(expected.PushWidth));
             Assert.That(combat.PushDamagePercent, Is.EqualTo(expected.PushDamagePercent));
             Assert.That(combat.PushCollisionDamage, Is.EqualTo(expected.PushCollisionDamage));
+            Assert.That(combat.PushCollisionMaxHpPercent, Is.EqualTo(expected.PushCollisionMaxHpPercent));
             Assert.That(combat.PushCooldownRounds, Is.EqualTo(expected.PushCooldownRounds));
             Assert.That(combat.SonicRange, Is.EqualTo(expected.SonicRange));
             Assert.That(combat.SonicDamagePercent, Is.EqualTo(expected.SonicDamagePercent));
