@@ -64,6 +64,8 @@ namespace GirlsDungeon.Core.Map
         ArchiveTerminalUsed = 28,
         /// <summary>상인 계산대 (상점, 3-15b). 칸을 막고 낮은 엄폐, 시야는 막지 않는다. 바로 옆에서 팔기 창을 연다 (쓰고 나도 그대로).</summary>
         ShopCounter = 29,
+        /// <summary>올라가는 계단 (3-16u). 2층부터 층 시작 칸에 놓인다. 설 수 있고 시야를 막지 않는다. 밟으면 위층(떠날 때 그대로)으로 올라간다.</summary>
+        StairsUp = 30,
     }
 
     /// <summary>방 하나의 사각형.</summary>
@@ -204,7 +206,7 @@ namespace GirlsDungeon.Core.Map
         {
             if (!InBounds(cell)) return false;
             var tile = Get(cell);
-            return tile == TileType.Floor || tile == TileType.Stairs || tile == TileType.DoorOpen;
+            return tile == TileType.Floor || tile == TileType.Stairs || tile == TileType.DoorOpen || tile == TileType.StairsUp;
         }
 
         /// <summary>바로 옆에서 열 수 있는 닫힌 상자 (보급 상자 · 보물 상자).</summary>
@@ -293,7 +295,7 @@ namespace GirlsDungeon.Core.Map
         {
             int count = 0;
             for (int i = 0; i < tiles.Length; i++)
-                if (tiles[i] == TileType.Floor || tiles[i] == TileType.Stairs || tiles[i] == TileType.DoorOpen) count++;
+                if (tiles[i] == TileType.Floor || tiles[i] == TileType.Stairs || tiles[i] == TileType.DoorOpen || tiles[i] == TileType.StairsUp) count++;
             return count;
         }
 

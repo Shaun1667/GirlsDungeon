@@ -134,20 +134,115 @@ namespace GirlsDungeon.Core.Sim
         }
 
         /// <summary>
-        /// 다음 층으로 내려간다: 적 · 바닥 물건을 모두 치우고 새 지형 · 새 적을 만든다. 플레이어는 같은 유닛(체력 · 능력치 · 무기 그대로)으로 새 시작 칸에 선다.
-        /// 지형 · 배치 난수는 판의 난수를 이어 쓰므로 같은 시드 · 같은 진행이면 같은 층이 나온다.
+        /// 다음 층으로 내려간다. 지금 층은 떠날 때 그대로 보관하고(SaveFloor — 3-16u), 다음 층에 가 본 적이 있으면 그대로 되살린다.
+        /// 처음 가는 층이면 새 지형 · 새 적을 만든다 — 지형 · 배치 난수는 판의 난수를 이어 쓰므로 같은 시드 · 같은 진행이면 같은 층이 나온다
+        /// (되살리는 층은 난수를 쓰지 않는다). 플레이어는 같은 유닛(체력 · 능력치 · 무기 그대로)으로 시작 칸(2층부터 올라가는 계단)에 선다.
         /// </summary>
         public static void NextFloor(World world, MapSettings mapSettings, CombatSettings combatSettings, List<GameEvent> events)
         {
             var player = world.Player;
-            world.Units.RemoveAll(unit => !unit.IsPlayer);
-            world.Combatants.Clear();
-            world.Items.Clear();
+            SaveFloor(world);
             world.FloorIndex++;
-            BuildFloor(world, mapSettings);
+            var stored = StoredAt(world, world.FloorIndex);
+            if (stored != null)
+            {
+                RestoreFloor(world, stored);
+                player.Position = OpenCellAt(world, world.Map.StartCell);
+            }
+            else
+            {
+                BuildFloor(world, mapSettings);
+                // 2층부터 시작 칸이 올라가는 계단 (꾸미기 · 배치 뒤 — 지형 모양과 난수는 그대로).
+                world.Map.SetTile(world.Map.StartCell, TileType.StairsUp);
+                world.Explored = null;
+                player.Position = world.Map.StartCell;
+            }
+            ArriveOnFloor(world);
+            if (stored == null)
+            {
+                EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
+                Shop.Stock(world, combatSettings);
+            }
+            events?.Add(new FloorChanged(world.FloorIndex, player.Position));
+            VisionSystem.Update(world, events);
+        }
 
-            player.Position = world.Map.StartCell;
-            player.Overwatching = false;
+        /// <summary>
+        /// 위층으로 올라간다 (3-16u, 올라가는 계단): 지금 층을 보관하고 위층을 떠날 때 그대로 되살린다. 플레이어는 위층 내려가는 계단 옆 빈 칸에 선다.
+        /// 1층이거나 위층 기록이 없으면 false (아무것도 바꾸지 않음).
+        /// </summary>
+        public static bool PreviousFloor(World world, List<GameEvent> events)
+        {
+            if (world.FloorIndex <= 0) return false;
+            var stored = StoredAt(world, world.FloorIndex - 1);
+            if (stored == null) return false;
+            var player = world.Player;
+            SaveFloor(world);
+            world.FloorIndex--;
+            RestoreFloor(world, stored);
+            player.Position = CellBeside(world, world.Map.StairsCell);
+            ArriveOnFloor(world);
+            events?.Add(new FloorChanged(world.FloorIndex, player.Position));
+            VisionSystem.Update(world, events);
+            return true;
+        }
+
+        /// <summary>그 층의 보관 상태, 없으면 null.</summary>
+        public static StoredFloor StoredAt(World world, int floorIndex)
+            => floorIndex >= 0 && floorIndex < world.StoredFloors.Count ? world.StoredFloors[floorIndex] : null;
+
+        /// <summary>지금 층(지형 · 플레이어가 아닌 유닛 · 바닥 물건 · 본 칸 · 층별 기록)을 StoredFloors[FloorIndex]로 옮긴다.</summary>
+        private static void SaveFloor(World world)
+        {
+            var stored = new StoredFloor
+            {
+                Map = world.Map,
+                Explored = world.Explored,
+                FloorKeyGiven = world.FloorKeyGiven,
+                EnemiesRevealed = world.EnemiesRevealed,
+                ExchangeSold = world.ExchangeSold,
+                ArchiveRead = world.ArchiveRead,
+                ShopHostile = world.ShopHostile,
+            };
+            foreach (var unit in world.Units) if (!unit.IsPlayer) stored.Units.Add(unit);
+            world.Units.RemoveAll(unit => !unit.IsPlayer);
+            stored.Items.AddRange(world.Items);
+            world.Items.Clear();
+            stored.GalleryOffers.AddRange(world.GalleryOffers);
+            stored.AltarOffers.AddRange(world.AltarOffers);
+            stored.ArenaEnemies.AddRange(world.ArenaEnemies);
+            while (world.StoredFloors.Count <= world.FloorIndex) world.StoredFloors.Add(null);
+            world.StoredFloors[world.FloorIndex] = stored;
+        }
+
+        /// <summary>보관한 층을 지금 층으로 되살린다 (FloorIndex는 부르는 쪽이 맞춘다). 보관 자리는 비운다.</summary>
+        private static void RestoreFloor(World world, StoredFloor stored)
+        {
+            world.StoredFloors[world.FloorIndex] = null;
+            world.Map = stored.Map;
+            world.Explored = stored.Explored;
+            world.Units.AddRange(stored.Units);
+            world.Units.Sort((a, b) => a.Id.CompareTo(b.Id));
+            world.Items.Clear();
+            world.Items.AddRange(stored.Items);
+            world.FloorKeyGiven = stored.FloorKeyGiven;
+            world.EnemiesRevealed = stored.EnemiesRevealed;
+            world.ExchangeSold = stored.ExchangeSold;
+            world.GalleryOffers.Clear();
+            world.GalleryOffers.AddRange(stored.GalleryOffers);
+            world.AltarOffers.Clear();
+            world.AltarOffers.AddRange(stored.AltarOffers);
+            world.ArenaEnemies.Clear();
+            world.ArenaEnemies.AddRange(stored.ArenaEnemies);
+            world.ArchiveRead = stored.ArchiveRead;
+            world.ShopHostile = stored.ShopHostile;
+        }
+
+        /// <summary>층에 들어설 때 늘 새로 시작하는 탐험 상태 (전투 · 차례 · 재사용 대기 · 상점 주인 스킬).</summary>
+        private static void ArriveOnFloor(World world)
+        {
+            world.Combatants.Clear();
+            world.Player.Overwatching = false;
             world.Mode = WorldMode.Exploration;
             world.Turn = TurnSide.Player;
             world.Round = 0;
@@ -157,13 +252,30 @@ namespace GirlsDungeon.Core.Sim
             world.GrenadeCooldown = 0;
             world.PushCooldown = 0;
             world.SonicCooldown = 0;
-            world.Explored = null;
-
-            EnemySpawner.Spawn(world, combatSettings, world.Random.Get(RandomPurpose.Spawn));
-            Shop.Stock(world, combatSettings);
-            events?.Add(new FloorChanged(world.FloorIndex, world.Map.StartCell));
-            VisionSystem.Update(world, events);
+            KeeperSkills.Reset(world);
         }
+
+        /// <summary>그 칸이 비었으면 그 칸, 아니면 가장 가까운 빈 바닥.</summary>
+        private static GridPos OpenCellAt(World world, GridPos cell)
+            => world.Map.IsWalkable(cell) && !world.IsOccupied(cell) ? cell : Push.NearestOpenFloor(world, cell);
+
+        /// <summary>계단 옆 빈 칸 (이웃 순서 고정 — 같은 상태면 같은 칸). 옆이 모두 막혔으면 가장 가까운 빈 바닥.</summary>
+        private static GridPos CellBeside(World world, GridPos stairs)
+        {
+            var map = world.Map;
+            foreach (var step in BesideSteps)
+            {
+                var cell = new GridPos(stairs.X + step.X, stairs.Y + step.Y);
+                if (map.InBounds(cell) && map.Get(cell) == TileType.Floor && !world.IsOccupied(cell) && world.ItemAt(cell) == null) return cell;
+            }
+            return OpenCellAt(world, stairs);
+        }
+
+        private static readonly GridPos[] BesideSteps =
+        {
+            new GridPos(0, -1), new GridPos(0, 1), new GridPos(-1, 0), new GridPos(1, 0),
+            new GridPos(-1, -1), new GridPos(1, -1), new GridPos(-1, 1), new GridPos(1, 1),
+        };
 
         private static int CountLockedRooms(FloorMap map)
         {

@@ -20,8 +20,9 @@ namespace GirlsDungeon.Core.Sim
         /// 14: 고른 캐릭터 (2026-11-11). 15: 음파 공격 재사용 대기 (2026-11-12). 16: 이번 차례 이동 여부 → 걸은 칸 수 (2026-11-12).
         /// 17: 무기 파츠 — 든 무기 4칸 · 바닥 파츠 · 바닥 무기의 파츠 · 파츠가 더해 둔 몸 능력치 (2026-11-12, 3-4).
         /// 30: 상점 주인 스킬 상태 — 밑천 · 재사용 대기 · 기세 · 방벽 · 플레이어 화상 (2026-11-14, 3-15f).
+        /// 33: 떠난 층 보관 StoredFloors (2026-11-18, 3-16u — 올라가는 계단 칸은 TileType 값만 추가).
         /// </summary>
-        public const int Version = 32;
+        public const int Version = 33;
 
         public static byte[] Encode(World world)
         {
@@ -43,29 +44,7 @@ namespace GirlsDungeon.Core.Sim
                 WriteMap(writer, world.Map);
 
                 writer.Write(world.Units.Count);
-                foreach (var unit in world.Units)
-                {
-                    writer.Write(unit.Id);
-                    writer.Write((byte)unit.Kind);
-                    WriteCell(writer, unit.Position);
-                    writer.Write(unit.MaxHp);
-                    writer.Write(unit.Hp);
-                    writer.Write(unit.MaxStability);
-                    writer.Write(unit.Stability);
-                    writer.Write(unit.VisionRange);
-                    writer.Write(unit.Attack);
-                    writer.Write(unit.Defense);
-                    writer.Write(unit.MoveRange);
-                    writer.Write(unit.AttackRange);
-                    writer.Write(unit.StabilityDamage);
-                    writer.Write(unit.CritPercent);
-                    writer.Write(unit.CritMultiplierPercent);
-                    writer.Write(unit.PushOnHit);
-                    writer.Write(unit.Guarding);
-                    writer.Write(unit.Overwatching);
-                    writer.Write(unit.SlowAmount);
-                    writer.Write(unit.SlowTurns);
-                }
+                foreach (var unit in world.Units) WriteUnit(writer, unit);
 
                 writer.Write((byte)world.Mode);
                 writer.Write((byte)world.Turn);
@@ -84,16 +63,7 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write((byte)world.PlayerWeapon);
                 writer.Write(world.PlayerShots);
                 writer.Write(world.Items.Count);
-                foreach (var item in world.Items)
-                {
-                    writer.Write(item.Id);
-                    writer.Write((byte)item.Kind);
-                    writer.Write((byte)item.Weapon);
-                    WriteCell(writer, item.Position);
-                    WritePart(writer, item.Part);
-                    foreach (var part in item.Parts) WritePart(writer, part);
-                    writer.Write(item.Price);
-                }
+                foreach (var item in world.Items) WriteItem(writer, item);
                 writer.Write((byte)world.PlayerCharacter);
                 writer.Write(world.SonicCooldown);
                 foreach (var part in world.PlayerParts) WritePart(writer, part);
@@ -131,6 +101,8 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write(world.KeeperShieldTurns);
                 writer.Write(world.PlayerBurnTurns);
                 writer.Write(world.PlayerRemold);
+                writer.Write(world.StoredFloors.Count);
+                foreach (var stored in world.StoredFloors) WriteStoredFloor(writer, stored);
 
                 writer.Flush();
                 return stream.ToArray();
@@ -170,32 +142,7 @@ namespace GirlsDungeon.Core.Sim
                 };
 
                 int unitCount = reader.ReadInt32();
-                for (int i = 0; i < unitCount; i++)
-                {
-                    int id = reader.ReadInt32();
-                    var kind = (UnitKind)reader.ReadByte();
-                    var position = ReadCell(reader);
-                    world.Units.Add(new Unit(id, kind, position)
-                    {
-                        MaxHp = reader.ReadInt32(),
-                        Hp = reader.ReadInt32(),
-                        MaxStability = reader.ReadInt32(),
-                        Stability = reader.ReadInt32(),
-                        VisionRange = reader.ReadInt32(),
-                        Attack = reader.ReadInt32(),
-                        Defense = reader.ReadInt32(),
-                        MoveRange = reader.ReadInt32(),
-                        AttackRange = reader.ReadInt32(),
-                        StabilityDamage = reader.ReadInt32(),
-                        CritPercent = reader.ReadInt32(),
-                        CritMultiplierPercent = reader.ReadInt32(),
-                        PushOnHit = reader.ReadInt32(),
-                        Guarding = reader.ReadBoolean(),
-                        Overwatching = reader.ReadBoolean(),
-                        SlowAmount = reader.ReadInt32(),
-                        SlowTurns = reader.ReadInt32(),
-                    });
-                }
+                for (int i = 0; i < unitCount; i++) world.Units.Add(ReadUnit(reader));
 
                 world.Mode = (WorldMode)reader.ReadByte();
                 world.Turn = (TurnSide)reader.ReadByte();
@@ -214,16 +161,7 @@ namespace GirlsDungeon.Core.Sim
                 world.PlayerWeapon = (WeaponKind)reader.ReadByte();
                 world.PlayerShots = reader.ReadInt32();
                 int itemCount = reader.ReadInt32();
-                for (int i = 0; i < itemCount; i++)
-                {
-                    int id = reader.ReadInt32();
-                    var kind = (ItemKind)reader.ReadByte();
-                    var weapon = (WeaponKind)reader.ReadByte();
-                    var item = new FloorItem(id, kind, weapon, ReadCell(reader)) { Part = ReadPart(reader) };
-                    for (int slot = 0; slot < WeaponPart.SlotCount; slot++) item.Parts[slot] = ReadPart(reader);
-                    item.Price = reader.ReadInt32();
-                    world.Items.Add(item);
-                }
+                for (int i = 0; i < itemCount; i++) world.Items.Add(ReadItem(reader));
                 world.PlayerCharacter = (CharacterKind)reader.ReadByte();
                 world.SonicCooldown = reader.ReadInt32();
                 for (int slot = 0; slot < WeaponPart.SlotCount; slot++) world.PlayerParts[slot] = ReadPart(reader);
@@ -261,8 +199,133 @@ namespace GirlsDungeon.Core.Sim
                 world.KeeperShieldTurns = reader.ReadInt32();
                 world.PlayerBurnTurns = reader.ReadInt32();
                 world.PlayerRemold = reader.ReadInt32();
+                int storedCount = reader.ReadInt32();
+                for (int i = 0; i < storedCount; i++) world.StoredFloors.Add(ReadStoredFloor(reader));
                 return world;
             }
+        }
+
+        private static void WriteUnit(BinaryWriter writer, Unit unit)
+        {
+            writer.Write(unit.Id);
+            writer.Write((byte)unit.Kind);
+            WriteCell(writer, unit.Position);
+            writer.Write(unit.MaxHp);
+            writer.Write(unit.Hp);
+            writer.Write(unit.MaxStability);
+            writer.Write(unit.Stability);
+            writer.Write(unit.VisionRange);
+            writer.Write(unit.Attack);
+            writer.Write(unit.Defense);
+            writer.Write(unit.MoveRange);
+            writer.Write(unit.AttackRange);
+            writer.Write(unit.StabilityDamage);
+            writer.Write(unit.CritPercent);
+            writer.Write(unit.CritMultiplierPercent);
+            writer.Write(unit.PushOnHit);
+            writer.Write(unit.Guarding);
+            writer.Write(unit.Overwatching);
+            writer.Write(unit.SlowAmount);
+            writer.Write(unit.SlowTurns);
+        }
+
+        private static Unit ReadUnit(BinaryReader reader)
+        {
+            int id = reader.ReadInt32();
+            var kind = (UnitKind)reader.ReadByte();
+            var position = ReadCell(reader);
+            return new Unit(id, kind, position)
+            {
+                MaxHp = reader.ReadInt32(),
+                Hp = reader.ReadInt32(),
+                MaxStability = reader.ReadInt32(),
+                Stability = reader.ReadInt32(),
+                VisionRange = reader.ReadInt32(),
+                Attack = reader.ReadInt32(),
+                Defense = reader.ReadInt32(),
+                MoveRange = reader.ReadInt32(),
+                AttackRange = reader.ReadInt32(),
+                StabilityDamage = reader.ReadInt32(),
+                CritPercent = reader.ReadInt32(),
+                CritMultiplierPercent = reader.ReadInt32(),
+                PushOnHit = reader.ReadInt32(),
+                Guarding = reader.ReadBoolean(),
+                Overwatching = reader.ReadBoolean(),
+                SlowAmount = reader.ReadInt32(),
+                SlowTurns = reader.ReadInt32(),
+            };
+        }
+
+        private static void WriteItem(BinaryWriter writer, FloorItem item)
+        {
+            writer.Write(item.Id);
+            writer.Write((byte)item.Kind);
+            writer.Write((byte)item.Weapon);
+            WriteCell(writer, item.Position);
+            WritePart(writer, item.Part);
+            foreach (var part in item.Parts) WritePart(writer, part);
+            writer.Write(item.Price);
+        }
+
+        private static FloorItem ReadItem(BinaryReader reader)
+        {
+            int id = reader.ReadInt32();
+            var kind = (ItemKind)reader.ReadByte();
+            var weapon = (WeaponKind)reader.ReadByte();
+            var item = new FloorItem(id, kind, weapon, ReadCell(reader)) { Part = ReadPart(reader) };
+            for (int slot = 0; slot < WeaponPart.SlotCount; slot++) item.Parts[slot] = ReadPart(reader);
+            item.Price = reader.ReadInt32();
+            return item;
+        }
+
+        /// <summary>떠난 층 하나 (3-16u, 없는 자리는 false 한 바이트).</summary>
+        private static void WriteStoredFloor(BinaryWriter writer, StoredFloor stored)
+        {
+            writer.Write(stored != null);
+            if (stored == null) return;
+            WriteMap(writer, stored.Map);
+            writer.Write(stored.Units.Count);
+            foreach (var unit in stored.Units) WriteUnit(writer, unit);
+            writer.Write(stored.Items.Count);
+            foreach (var item in stored.Items) WriteItem(writer, item);
+            int cellCount = stored.Map.Width * stored.Map.Height;
+            for (int i = 0; i < cellCount; i++)
+                writer.Write(stored.Explored != null && i < stored.Explored.Length && stored.Explored[i]);
+            writer.Write(stored.FloorKeyGiven);
+            writer.Write(stored.EnemiesRevealed);
+            writer.Write(stored.ExchangeSold);
+            writer.Write(stored.GalleryOffers.Count);
+            foreach (var part in stored.GalleryOffers) WritePart(writer, part);
+            writer.Write(stored.AltarOffers.Count);
+            foreach (int row in stored.AltarOffers) writer.Write(row);
+            writer.Write(stored.ArenaEnemies.Count);
+            foreach (int id in stored.ArenaEnemies) writer.Write(id);
+            writer.Write(stored.ArchiveRead);
+            writer.Write(stored.ShopHostile);
+        }
+
+        private static StoredFloor ReadStoredFloor(BinaryReader reader)
+        {
+            if (!reader.ReadBoolean()) return null;
+            var stored = new StoredFloor { Map = ReadMap(reader) };
+            int unitCount = reader.ReadInt32();
+            for (int i = 0; i < unitCount; i++) stored.Units.Add(ReadUnit(reader));
+            int itemCount = reader.ReadInt32();
+            for (int i = 0; i < itemCount; i++) stored.Items.Add(ReadItem(reader));
+            stored.Explored = new bool[stored.Map.Width * stored.Map.Height];
+            for (int i = 0; i < stored.Explored.Length; i++) stored.Explored[i] = reader.ReadBoolean();
+            stored.FloorKeyGiven = reader.ReadBoolean();
+            stored.EnemiesRevealed = reader.ReadBoolean();
+            stored.ExchangeSold = reader.ReadByte();
+            int galleryCount = reader.ReadInt32();
+            for (int i = 0; i < galleryCount; i++) stored.GalleryOffers.Add(ReadPart(reader));
+            int altarCount = reader.ReadInt32();
+            for (int i = 0; i < altarCount; i++) stored.AltarOffers.Add(reader.ReadInt32());
+            int arenaCount = reader.ReadInt32();
+            for (int i = 0; i < arenaCount; i++) stored.ArenaEnemies.Add(reader.ReadInt32());
+            stored.ArchiveRead = reader.ReadBoolean();
+            stored.ShopHostile = reader.ReadBoolean();
+            return stored;
         }
 
         /// <summary>파츠 하나 (없으면 0 한 바이트).</summary>

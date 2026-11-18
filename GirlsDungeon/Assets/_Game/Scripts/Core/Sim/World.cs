@@ -119,6 +119,27 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>
+    /// 떠난 층 하나의 상태 (3-16u). 층마다 다른 World 필드를 그대로 옮겨 둔다 — 층별 새 필드를 World에 더하면
+    /// 여기 · RunFactory.SaveFloor · RestoreFloor · WorldSnapshot(WriteStoredFloor)에도 더한다.
+    /// </summary>
+    public sealed class StoredFloor
+    {
+        public FloorMap Map;
+        /// <summary>플레이어가 아닌 유닛 (쓰러지지 않은 적 · 상점 주인).</summary>
+        public readonly List<Unit> Units = new List<Unit>();
+        public readonly List<FloorItem> Items = new List<FloorItem>();
+        public bool[] Explored;
+        public bool FloorKeyGiven;
+        public bool EnemiesRevealed;
+        public byte ExchangeSold;
+        public readonly List<WeaponPart> GalleryOffers = new List<WeaponPart>();
+        public readonly List<int> AltarOffers = new List<int>();
+        public readonly List<int> ArenaEnemies = new List<int>();
+        public bool ArchiveRead;
+        public bool ShopHostile;
+    }
+
     /// <summary>판의 모든 상태. 저장 · 복원은 이것 하나로 끝나고, 시스템은 상태를 들지 않는다.</summary>
     public sealed class World
     {
@@ -248,6 +269,12 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>이 층 바닥에 놓인 물건. ID 오름차순 (추가는 언제나 끝에). 층을 내려가면 비운다.</summary>
         public List<FloorItem> Items { get; } = new List<FloorItem>();
+
+        /// <summary>
+        /// 떠난 층의 상태 (3-16u — 결정 2026-11-18 사용자: 이전 층은 떠날 때 그대로). 자리 = 층 번호, 지금 층 · 아직 안 간 층은 null.
+        /// 저장 · 복원은 RunFactory.SaveFloor · RestoreFloor 한 곳.
+        /// </summary>
+        public List<StoredFloor> StoredFloors { get; } = new List<StoredFloor>();
 
         public World(int seed, RandomStreams random)
         {

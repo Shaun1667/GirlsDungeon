@@ -11,6 +11,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material floorMaterial;
         [SerializeField] private Material wallMaterial;
         [SerializeField] private Material stairsMaterial;
+        [Tooltip("Up stairs (back to the previous floor, 3-16u). Falls back to the stairs material.")]
+        [SerializeField] private Material stairsUpMaterial;
         [SerializeField] private Material coverMaterial;
         [Tooltip("Dark pit drawn for chasm cells.")]
         [SerializeField] private Material chasmMaterial;
@@ -65,6 +67,7 @@ namespace GirlsDungeon.Game
             var floor = new MeshData();
             var walls = new MeshData();
             var stairs = new MeshData();
+            var stairsUp = new MeshData();
             var cover = new MeshData();
             var chasm = new MeshData();
             var supply = new MeshData();
@@ -104,6 +107,9 @@ namespace GirlsDungeon.Game
                             break;
                         case TileType.Stairs:
                             stairs.AddTop(position, 0.5f, 0.5f, 0f);
+                            break;
+                        case TileType.StairsUp:
+                            stairsUp.AddTop(position, 0.5f, 0.5f, 0f);
                             break;
                         case TileType.Crate:
                             floor.AddTop(position, 0.5f, 0.5f, 0f);
@@ -235,6 +241,7 @@ namespace GirlsDungeon.Game
             AddPart("Floor", floor, floorMaterial);
             AddPart("Walls", walls, wallMaterial);
             AddPart("Stairs", stairs, stairsMaterial);
+            AddPart("StairsUp", stairsUp, stairsUpMaterial != null ? stairsUpMaterial : stairsMaterial);
             AddPart("Cover", cover, coverMaterial);
             AddPart("Chasm", chasm, chasmMaterial != null ? chasmMaterial : wallMaterial);
             AddPart("Supply", supply, supplyMaterial != null ? supplyMaterial : coverMaterial);

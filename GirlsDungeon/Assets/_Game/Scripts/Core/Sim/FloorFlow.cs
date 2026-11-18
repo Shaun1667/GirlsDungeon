@@ -15,8 +15,10 @@ namespace GirlsDungeon.Core.Sim
         {
             var player = world.Player;
             if (player == null || world.Mode != WorldMode.Exploration) return;
-            if (player.Position != world.Map.StairsCell || !SteppedOnThisCommand(world, events)) return;
-            Descend(world, mapSettings, settings, events);
+            if (!SteppedOnThisCommand(world, events, player.Position)) return;
+            if (player.Position == world.Map.StairsCell) Descend(world, mapSettings, settings, events);
+            // 올라가는 계단 (3-16u): 위층을 떠날 때 그대로 되살린다.
+            else if (world.Map.Get(player.Position) == TileType.StairsUp) Ascend(world, events);
         }
 
         /// <summary>계단을 내려간다: 마지막 층이면 승리, 아니면 다음 층.</summary>
@@ -31,15 +33,18 @@ namespace GirlsDungeon.Core.Sim
             RunFactory.NextFloor(world, mapSettings, settings, events);
         }
 
-        private static bool SteppedOnThisCommand(World world, List<GameEvent> events)
+        /// <summary>위층으로 올라간다 (1층 · 위층 기록이 없으면 아무것도 안 함).</summary>
+        public static bool Ascend(World world, List<GameEvent> events) => RunFactory.PreviousFloor(world, events);
+
+        private static bool SteppedOnThisCommand(World world, List<GameEvent> events, GridPos cell)
         {
             foreach (var gameEvent in events)
-                if (gameEvent is UnitMoved moved && moved.UnitId == world.PlayerId && moved.To == world.Map.StairsCell) return true;
+                if (gameEvent is UnitMoved moved && moved.UnitId == world.PlayerId && moved.To == cell) return true;
             return false;
         }
     }
 
-    /// <summary>새 층에 내려왔다. 지형 · 적을 모두 다시 그려야 한다. 플레이어는 StartCell에 있다.</summary>
+    /// <summary>층이 바뀌었다 (내려감 · 올라감). 지형 · 적을 모두 다시 그려야 한다. 플레이어는 StartCell(= 도착 칸 — 올라가면 위층 계단 옆)에 있다.</summary>
     public sealed class FloorChanged : GameEvent
     {
         /// <summary>0 = 1층.</summary>
