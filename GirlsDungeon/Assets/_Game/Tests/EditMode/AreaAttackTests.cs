@@ -159,14 +159,17 @@ namespace GirlsDungeon.Tests
         public void ThrowerInsideTheBlast_IsNotHit()
         {
             // 3-16t (2026-11-18 사용자 "수류탄 자신은 피해 안입게 해줘").
-            var (simulation, world, _, _) = StartCombat();
+            var (_, world, _, _) = StartCombat();
             var preview = AreaAttack.Preview(world, TestData.Combat(), world.Player, new GridPos(3, 2));
             Assert.That(preview.HitsPlayer, Is.False);
             Assert.That(preview.Hits.Any(hit => hit.Target == world.Player), Is.False);
 
+            // 규칙만 직접 부른다 — 커맨드로 쏘면 차례가 끝나 적 차례 사격이 섞인다.
             world.Player.Hp = 1;
-            Assert.That(simulation.Execute(new AreaAttackCommand(new GridPos(3, 2), TestData.Combat())), Is.True);
+            var events = new List<GameEvent>();
+            Assert.That(AreaAttack.Resolve(world, TestData.Combat(), world.Player, new GridPos(3, 2), events), Is.True);
             Assert.That(world.Player.Hp, Is.EqualTo(1));
+            Assert.That(events.OfType<UnitAttacked>().Any(hit => hit.TargetId == world.PlayerId), Is.False);
             Assert.That(world.Mode, Is.Not.EqualTo(WorldMode.Defeat));
         }
 
