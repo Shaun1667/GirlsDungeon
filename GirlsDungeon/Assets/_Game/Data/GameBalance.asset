@@ -70,10 +70,10 @@ MonoBehaviour:
   - kind: 1
     nameKey: unit.rifleman.name
     visualId: rifleman
-    maxHp: 15
+    maxHp: 26
     maxStability: 3
     visionRange: 9
-    attack: 6
+    attack: 8
     defense: 2
     moveRange: 6
     attackRange: 7
@@ -84,10 +84,10 @@ MonoBehaviour:
   - kind: 2
     nameKey: unit.assault.name
     visualId: assault
-    maxHp: 12
+    maxHp: 21
     maxStability: 2
     visionRange: 9
-    attack: 6
+    attack: 8
     defense: 1
     moveRange: 8
     attackRange: 1
@@ -98,7 +98,7 @@ MonoBehaviour:
   - kind: 3
     nameKey: unit.shopkeeper.name
     visualId: shopkeeper
-    maxHp: 120
+    maxHp: 80
     maxStability: 8
     visionRange: 10
     attack: 9

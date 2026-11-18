@@ -198,9 +198,9 @@ namespace GirlsDungeon.Tests
 
             Assert.That(Push.Resolve(world, TestData.Combat(), world.Player, East, 1, events), Is.True);
             Assert.That(enemy.Position, Is.EqualTo(new GridPos(2, 0)));
-            Assert.That(enemy.Hp, Is.EqualTo(15 - 3 - 5), "push 3 + collision 30% of max HP 15 = 4.5 → 5");
+            Assert.That(enemy.Hp, Is.EqualTo(26 - 3 - 8), "push 3 + collision 30% of max HP 26 = 7.8 → 8");
             var pushed = events.OfType<UnitPushed>().Single();
-            Assert.That(pushed.CollisionDamage, Is.EqualTo(3));
+            Assert.That(pushed.CollisionDamage, Is.EqualTo(8));
             Assert.That(pushed.Fell, Is.False);
         }
 

@@ -499,19 +499,19 @@ namespace GirlsDungeon.Tests
             });
             settings.Units.Add(new UnitStats
             {
-                Kind = UnitKind.Rifleman, MaxHp = 15, MaxStability = 3, VisionRange = 9,
-                Attack = 6, Defense = 2, MoveRange = 6, AttackRange = 7, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = UnitKind.Rifleman, MaxHp = 26, MaxStability = 3, VisionRange = 9,
+                Attack = 8, Defense = 2, MoveRange = 6, AttackRange = 7, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
             });
             settings.Units.Add(new UnitStats
             {
-                Kind = UnitKind.Assault, MaxHp = 12, MaxStability = 2, VisionRange = 9,
-                Attack = 6, Defense = 1, MoveRange = 8, AttackRange = 1, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = UnitKind.Assault, MaxHp = 21, MaxStability = 2, VisionRange = 9,
+                Attack = 8, Defense = 1, MoveRange = 8, AttackRange = 1, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
                 PushOnHit = 1,
             });
             // BALANCE 32-6 상점 주인 (보스 급).
             settings.Units.Add(new UnitStats
             {
-                Kind = UnitKind.Shopkeeper, MaxHp = 120, MaxStability = 8, VisionRange = 10,
+                Kind = UnitKind.Shopkeeper, MaxHp = 80, MaxStability = 8, VisionRange = 10,
                 Attack = 9, Defense = 4, MoveRange = 6, AttackRange = 6, StabilityDamage = 3, CritPercent = 20, CritMultiplierPercent = 150,
             });
             // BALANCE 13번 캐릭터 표. 캐릭터를 고르지 않은 판(NewRun 기본)은 위 플레이어 줄을 그대로 쓴다.

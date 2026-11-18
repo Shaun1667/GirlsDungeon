@@ -134,7 +134,7 @@ namespace GirlsDungeon.Tests
             Assert.That(simulation.Execute(new CombatMoveCommand(new GridPos(4, 0), TestData.Combat())), Is.True);
             var reaction = events.OfType<OverwatchTriggered>().Single();
             Assert.That(reaction.WatcherId, Is.EqualTo(enemy.Id));
-            Assert.That(world.Player.Hp, Is.EqualTo(world.Player.MaxHp - 4));
+            Assert.That(world.Player.Hp, Is.EqualTo(world.Player.MaxHp - 5), "rifleman attack 8 (BALANCE 4-2)");
             Assert.That(enemy.Overwatching, Is.False, "overwatch fires once");
             Assert.That(world.Player.Position, Is.EqualTo(new GridPos(4, 0)), "the move still finishes when not downed");
         }

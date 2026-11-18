@@ -99,7 +99,7 @@ namespace GirlsDungeon.Tests
 
             Assert.That(CombatRules.Resolve(world, settings, player, enemy, events), Is.True);
 
-            Assert.That(enemy.Hp, Is.EqualTo(15 - 8));
+            Assert.That(enemy.Hp, Is.EqualTo(26 - 8));
             Assert.That(enemy.Stability, Is.EqualTo(3 - 2));
             var attacked = events.OfType<UnitAttacked>().Single();
             Assert.That(attacked.Damage, Is.EqualTo(8));

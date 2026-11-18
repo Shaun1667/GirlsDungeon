@@ -172,7 +172,7 @@ namespace GirlsDungeon.Tests
                 var world = TestData.NewRun(seed, 6);
                 var keeper = Shop.Keeper(world);
                 Assert.That(keeper, Is.Not.Null, $"seed {seed}");
-                Assert.That(keeper.MaxHp, Is.EqualTo(120));
+                Assert.That(keeper.MaxHp, Is.EqualTo(80));
                 Assert.That(world.Map.SpecialRoomAt(keeper.Position), Is.EqualTo(SpecialRoomKind.Shop));
                 bool nextToCounter = false;
                 for (int dy = -1; dy <= 1; dy++)
