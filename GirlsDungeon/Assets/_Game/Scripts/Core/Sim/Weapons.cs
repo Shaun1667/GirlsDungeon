@@ -86,8 +86,10 @@ namespace GirlsDungeon.Core.Sim
             player.Attack = attackBase + Percent(attackBase, Parts.Sum(world, PartStat.AttackPercent));
             player.AttackRange = weapon.AttackRange + Parts.Sum(world, PartStat.AttackRange);
             player.StabilityDamage = weapon.StabilityDamage + Parts.Sum(world, PartStat.StabilityDamage);
-            player.CritPercent = System.Math.Min(100, weapon.CritPercent + Parts.Sum(world, PartStat.CritPercent));
-            player.CritMultiplierPercent = weapon.CritMultiplierPercent + Parts.Sum(world, PartStat.CritMultiplier);
+            // 치명 확률은 100%까지, 넘는 만큼은 치명 피해(%p)로 1:1 전환 (3-16q, BALANCE 17-9).
+            int critTotal = weapon.CritPercent + Parts.Sum(world, PartStat.CritPercent);
+            player.CritPercent = System.Math.Max(0, System.Math.Min(100, critTotal));
+            player.CritMultiplierPercent = weapon.CritMultiplierPercent + Parts.Sum(world, PartStat.CritMultiplier) + CritOverflow(critTotal);
 
             // 몸 능력치는 파츠 합이 바뀐 만큼만 더하고 뺀다 (캐릭터 · 유닛 표에서 정한 값은 그대로 두고). 최대 체력이 늘면 지금 체력도 같이 는다.
             // 퍼센트(3-16n)는 파츠를 빼고 본 기본값에 곱한다 — 모든 파츠의 %를 더한 뒤 한 번 반올림.
@@ -111,6 +113,9 @@ namespace GirlsDungeon.Core.Sim
             // 이동 범위 = 캐릭터 값(없으면 유닛 표 값) + 무기 보정 (기관총 −2).
             player.MoveRange = System.Math.Max(0, settings.PlayerBaseMoveRange(world.PlayerCharacter) + weapon.MoveRangeBonus + Parts.Sum(world, PartStat.MoveRange));
         }
+
+        /// <summary>치명 확률 합이 100을 넘는 만큼 (치명 피해로 바뀌는 양, 3-16q).</summary>
+        public static int CritOverflow(int critTotal) => System.Math.Max(0, critTotal - 100);
 
         /// <summary>value의 percent% (반올림, 3-16n 파츠 퍼센트 능력치).</summary>
         public static int Percent(int value, int percent)

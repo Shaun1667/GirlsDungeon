@@ -548,7 +548,7 @@ namespace GirlsDungeon.Tests
             {
                 new PartStatRange { Stat = PartStat.Attack, Min = 1, Max = 2 },
                 new PartStatRange { Stat = PartStat.AttackRange, Min = 1, Max = 1 },
-                new PartStatRange { Stat = PartStat.CritPercent, Min = 3, Max = 6, Cap = 15 },
+                new PartStatRange { Stat = PartStat.CritPercent, Min = 3, Max = 6, Cap = 30 },
                 new PartStatRange { Stat = PartStat.CritMultiplier, Min = 10, Max = 20, Cap = 30 },
                 new PartStatRange { Stat = PartStat.StabilityDamage, Min = 1, Max = 1 },
                 new PartStatRange { Stat = PartStat.MaxHp, Min = 5, Max = 10 },

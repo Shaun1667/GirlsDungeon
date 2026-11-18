@@ -451,7 +451,7 @@ MonoBehaviour:
   - stat: 2
     min: 3
     max: 6
-    cap: 15
+    cap: 30
   - stat: 3
     min: 10
     max: 20

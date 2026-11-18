@@ -128,6 +128,29 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void CritOver100_TurnsIntoCritDamage_OneForOne()
+        {
+            // 3-16q: 치명 확률 합이 100을 넘으면 넘는 만큼 치명 피해(%p)로.
+            var combat = TestData.Combat();
+            var world = TestData.NewRun(1);
+            world.Items.Clear();
+            var weapon = combat.WeaponFor(world.PlayerWeapon);
+            int need = 100 - weapon.CritPercent;
+            world.PlayerParts[0] = MakePart(world.PlayerWeapon, 0, (PartStat.CritPercent, need + 12), (PartStat.CritMultiplier, 10));
+            Loadout.Apply(world, combat);
+            Assert.That(world.Player.CritPercent, Is.EqualTo(100));
+            Assert.That(world.Player.CritMultiplierPercent, Is.EqualTo(weapon.CritMultiplierPercent + 10 + 12));
+
+            // 딱 100이면 넘치는 것 없음.
+            world.PlayerParts[0] = MakePart(world.PlayerWeapon, 0, (PartStat.CritPercent, need));
+            Loadout.Apply(world, combat);
+            Assert.That(world.Player.CritPercent, Is.EqualTo(100));
+            Assert.That(world.Player.CritMultiplierPercent, Is.EqualTo(weapon.CritMultiplierPercent));
+            Assert.That(Loadout.CritOverflow(99), Is.EqualTo(0));
+            Assert.That(Loadout.CritOverflow(130), Is.EqualTo(30));
+        }
+
+        [Test]
         public void Percent_RoundsHalfUp()
         {
             Assert.That(Loadout.Percent(4, 10), Is.EqualTo(0));

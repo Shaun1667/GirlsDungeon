@@ -280,9 +280,9 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.WorkshopSetPercent, Is.EqualTo(50));
             Assert.That(combat.WorkshopOptionCost, Is.EqualTo(2));
             Assert.That(combat.WorkshopSetCost, Is.EqualTo(3));
-            // 19-8 · 19-9 강화 (2026-11-18 사용자): 재료 2 · 항상 성공, 한계 치명 15 · 공격% · 체력% · 방어% · 치명 피해 30.
+            // 19-8 · 19-9 강화 (2026-11-18 사용자): 재료 2 · 항상 성공, 한계 치명 30 (15 → 30, 3-16q) · 공격% · 체력% · 방어% · 치명 피해 30.
             Assert.That(combat.WorkshopUpgradeCost, Is.EqualTo(2));
-            Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.CritPercent).Cap, Is.EqualTo(15));
+            Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.CritPercent).Cap, Is.EqualTo(30));
             Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.AttackPercent).Cap, Is.EqualTo(30));
             Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.MaxHpPercent).Cap, Is.EqualTo(30));
             Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.DefensePercent).Cap, Is.EqualTo(30));

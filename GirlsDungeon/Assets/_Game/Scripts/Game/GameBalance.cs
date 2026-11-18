@@ -455,7 +455,7 @@ namespace GirlsDungeon.Game
         {
             new PartStatEntry { stat = PartStat.Attack, min = 1, max = 2 },
             new PartStatEntry { stat = PartStat.AttackRange, min = 1, max = 1 },
-            new PartStatEntry { stat = PartStat.CritPercent, min = 3, max = 6, cap = 15 },
+            new PartStatEntry { stat = PartStat.CritPercent, min = 3, max = 6, cap = 30 },
             new PartStatEntry { stat = PartStat.CritMultiplier, min = 10, max = 20, cap = 30 },
             new PartStatEntry { stat = PartStat.StabilityDamage, min = 1, max = 1 },
             new PartStatEntry { stat = PartStat.MaxHp, min = 5, max = 10 },

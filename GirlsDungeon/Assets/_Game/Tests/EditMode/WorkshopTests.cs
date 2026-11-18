@@ -250,7 +250,7 @@ namespace GirlsDungeon.Tests
             // 한계까지 올리면 더는 안 된다.
             while (Workshop.CanUpgrade(combat, world.SpareParts[0], 0))
                 Assert.That(Workshop.Upgrade(world, combat, PartPlace.Spare, 0, 0, new List<GameEvent>()), Is.True);
-            Assert.That(world.SpareParts[0].Bonuses[0].Value, Is.EqualTo(15), "crit cap 15");
+            Assert.That(world.SpareParts[0].Bonuses[0].Value, Is.EqualTo(30), "crit cap 30 (3-16q)");
             int materials = world.PartMaterials;
             Assert.That(Workshop.Upgrade(world, combat, PartPlace.Spare, 0, 0, new List<GameEvent>()), Is.False);
             Assert.That(world.PartMaterials, Is.EqualTo(materials));
