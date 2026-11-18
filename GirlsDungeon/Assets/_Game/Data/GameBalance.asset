@@ -443,39 +443,51 @@ MonoBehaviour:
   - stat: 0
     min: 1
     max: 2
+    cap: 0
   - stat: 1
     min: 1
     max: 1
+    cap: 0
   - stat: 2
     min: 3
     max: 6
+    cap: 15
   - stat: 3
     min: 10
     max: 20
+    cap: 30
   - stat: 4
     min: 1
     max: 1
+    cap: 0
   - stat: 5
     min: 5
     max: 10
+    cap: 0
   - stat: 6
     min: 1
     max: 1
+    cap: 0
   - stat: 7
     min: 1
     max: 1
+    cap: 0
   - stat: 8
     min: 1
     max: 1
+    cap: 0
   - stat: 9
     min: 5
     max: 10
+    cap: 30
   - stat: 10
     min: 5
     max: 10
+    cap: 30
   - stat: 11
     min: 5
     max: 10
+    cap: 30
   partPrimaryStats: 0902030a0b
   partSecondaryStats: 09020a0b
   partGradePercents: 3c0000001e0000000a000000
@@ -498,6 +510,7 @@ MonoBehaviour:
   workshopSetPercent: 50
   workshopOptionCost: 2
   workshopSetCost: 3
+  workshopUpgradeCost: 2
   disassembleMaterials: 010000000200000003000000
   spareSlots: 4
   setGalleryPartGrade: 1

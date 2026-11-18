@@ -7,7 +7,7 @@ namespace GirlsDungeon.Game
 {
     /// <summary>
     /// 파츠 작업 화면 (3-4c). 작업대 옆에 서면 뜬다 (MoveController.WorkbenchReached → GameRoot).
-    /// 끼운 파츠 · 보관함 파츠 중 하나를 고르고: 분해 / 옵션 바꾸기(줄 · 원하는 능력치) / 세트 바꾸기(원하는 세트) / 보관함 파츠 끼우기.
+    /// 끼운 파츠 · 보관함 파츠 중 하나를 고르고: 분해 / 옵션 바꾸기(줄 · 원하는 능력치) / 세트 바꾸기(원하는 세트) / 강화(줄, 3-16p) / 보관함 파츠 끼우기.
     /// 규칙은 Core.Sim.Workshop 한 곳 — 이 화면은 커맨드만 내고, 확률 · 비용 · 결과는 규칙과 수치 표에서 읽는다 (표시 값 = 실제 값).
     /// </summary>
     public sealed class WorkshopView : MonoBehaviour
@@ -18,6 +18,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private Button nextPartButton;
         [SerializeField] private Button optionModeButton;
         [SerializeField] private Button setModeButton;
+        [SerializeField] private Button upgradeModeButton;
         [SerializeField] private Button prevLineButton;
         [SerializeField] private Button nextLineButton;
         [SerializeField] private Button prevTargetButton;
@@ -104,6 +105,7 @@ namespace GirlsDungeon.Game
 
         public void StepTarget(int direction)
         {
+            if (mode == ReworkKind.Upgrade) return;
             int count = mode == ReworkKind.Option ? OptionTargets().Count : SetEffects.Pool().Count;
             if (count == 0) return;
             targetIndex = (targetIndex + direction + count) % count;
@@ -116,7 +118,7 @@ namespace GirlsDungeon.Game
             var part = SelectedPart();
             if (part == null) return false;
             var (place, index) = entries[selected];
-            int cost = mode == ReworkKind.Option ? settings.WorkshopOptionCost : settings.WorkshopSetCost;
+            int cost = mode == ReworkKind.Option ? settings.WorkshopOptionCost : mode == ReworkKind.Upgrade ? settings.WorkshopUpgradeCost : settings.WorkshopSetCost;
             if (simulation.World.PartMaterials < cost)
             {
                 lastResult = Text.Get("ui.workshop.result_not_enough", cost);
@@ -130,6 +132,11 @@ namespace GirlsDungeon.Game
                 var targets = OptionTargets();
                 if (targets.Count == 0) return false;
                 done = Execute(new ChangePartOptionCommand(place, index, line, targets[targetIndex % targets.Count], settings));
+            }
+            else if (mode == ReworkKind.Upgrade)
+            {
+                if (!Workshop.CanUpgrade(settings, part, line)) return false;
+                done = Execute(new UpgradePartCommand(place, index, line, settings));
             }
             else
             {
@@ -185,6 +192,13 @@ namespace GirlsDungeon.Game
             {
                 switch (gameEvent)
                 {
+                    case PartReworked reworked when reworked.Kind == ReworkKind.Upgrade:
+                    {
+                        var upgraded = Workshop.Get(simulation.World, reworked.Place, reworked.Index);
+                        if (upgraded != null && line < upgraded.Bonuses.Count)
+                            lastResult = Text.Get("ui.workshop.result_upgraded", Text.Get(HudView.StatKey(upgraded.Bonuses[line].Stat), upgraded.Bonuses[line].Value));
+                        break;
+                    }
                     case PartReworked reworked when reworked.Kind == ReworkKind.Option:
                         lastResult = Text.Get(reworked.Success ? "ui.workshop.result_option_success" : "ui.workshop.result_option_fail");
                         break;
@@ -251,7 +265,7 @@ namespace GirlsDungeon.Game
                 for (int i = 0; i < part.Bonuses.Count; i++)
                 {
                     string stat = Text.Get(HudView.StatKey(part.Bonuses[i].Stat), part.Bonuses[i].Value);
-                    bool marked = mode == ReworkKind.Option && i == line;
+                    bool marked = mode != ReworkKind.Set && i == line;
                     lines.Add(Text.Get(marked ? "ui.workshop.line_selected" : "ui.workshop.line", i + 1, stat));
                 }
                 lines.Add(part.Set != PartSet.None ? Text.Get("ui.workshop.set_line", HudView.SetName(part.Set)) : Text.Get("ui.workshop.no_set"));
@@ -262,6 +276,17 @@ namespace GirlsDungeon.Game
                     var targets = OptionTargets();
                     string target = targets.Count > 0 ? Text.Get(HudView.StatNameKey(targets[targetIndex % targets.Count])) : "-";
                     lines.Add(Text.Get("ui.workshop.mode_option", line + 1, target, Workshop.OptionPercent(world, settings), settings.WorkshopOptionCost));
+                }
+                else if (mode == ReworkKind.Upgrade)
+                {
+                    var bonus = part.Bonuses.Count > 0 ? part.Bonuses[line] : default;
+                    var range = part.Bonuses.Count > 0 ? settings.PartRange(bonus.Stat) : null;
+                    if (range == null || range.Cap <= 0)
+                        lines.Add(Text.Get("ui.workshop.mode_upgrade_none", line + 1));
+                    else if (bonus.Value >= range.Cap)
+                        lines.Add(Text.Get("ui.workshop.mode_upgrade_max", line + 1, range.Cap));
+                    else
+                        lines.Add(Text.Get("ui.workshop.mode_upgrade", line + 1, range.Min, range.Max, range.Cap, settings.WorkshopUpgradeCost));
                 }
                 else if (part.Set == PartSet.None)
                 {
@@ -277,11 +302,15 @@ namespace GirlsDungeon.Game
             label.text = string.Join("\n", lines);
 
             bool hasPart = part != null;
-            if (runButton != null) runButton.interactable = hasPart && (mode == ReworkKind.Option ? part.Bonuses.Count > 0 : part.Set != PartSet.None);
+            bool canRun = hasPart && (mode == ReworkKind.Option ? part.Bonuses.Count > 0
+                : mode == ReworkKind.Upgrade ? Workshop.CanUpgrade(settings, part, line) : part.Set != PartSet.None);
+            if (runButton != null) runButton.interactable = canRun;
             if (disassembleButton != null) disassembleButton.interactable = hasPart;
             if (equipButton != null) equipButton.interactable = hasPart && entries[selected].place == PartPlace.Spare;
-            if (prevLineButton != null) prevLineButton.interactable = hasPart && mode == ReworkKind.Option;
-            if (nextLineButton != null) nextLineButton.interactable = hasPart && mode == ReworkKind.Option;
+            if (prevLineButton != null) prevLineButton.interactable = hasPart && mode != ReworkKind.Set;
+            if (nextLineButton != null) nextLineButton.interactable = hasPart && mode != ReworkKind.Set;
+            if (prevTargetButton != null) prevTargetButton.interactable = mode != ReworkKind.Upgrade;
+            if (nextTargetButton != null) nextTargetButton.interactable = mode != ReworkKind.Upgrade;
         }
 
         private void Update()
@@ -296,6 +325,7 @@ namespace GirlsDungeon.Game
             Hook(nextPartButton, () => StepPart(1));
             Hook(optionModeButton, () => SetMode(ReworkKind.Option));
             Hook(setModeButton, () => SetMode(ReworkKind.Set));
+            Hook(upgradeModeButton, () => SetMode(ReworkKind.Upgrade));
             Hook(prevLineButton, () => StepLine(-1));
             Hook(nextLineButton, () => StepLine(1));
             Hook(prevTargetButton, () => StepTarget(-1));

@@ -243,28 +243,30 @@ namespace GirlsDungeon.EditorTools
                 new Vector2(0.5f, 0f), new Vector2(300f, 24f));
             weaponPanel.SetActive(false);
 
-            // 파츠 작업 화면 (3-4c): 작업대 옆에 서면 뜬다. 글은 WorkshopView가 채우고, 버튼 3줄 × 4개.
+            // 파츠 작업 화면 (3-4c): 작업대 옆에 서면 뜬다. 글은 WorkshopView가 채우고, 버튼 4줄 × 4개 (3-16p 강화 버튼 추가).
             var workshopPanel = CreatePanel(canvas.transform, "WorkshopPanel", new Vector2(0.5f, 0.5f), new Vector2(0f, 40f),
                 new Vector2(1300f, 780f), new Color(0.08f, 0.07f, 0.12f, 0.97f));
             var workshopLabel = CreateLabel(workshopPanel.transform, "Label", font, 28,
                 new Vector2(0.5f, 1f), new Vector2(0f, -24f), TextAnchor.UpperLeft);
-            workshopLabel.rectTransform.sizeDelta = new Vector2(1220f, 400f);
+            workshopLabel.rectTransform.sizeDelta = new Vector2(1220f, 340f);
             string[,] workshopButtons =
             {
                 { "prevPartButton", "ui.workshop.prev_part" }, { "nextPartButton", "ui.workshop.next_part" },
                 { "optionModeButton", "ui.workshop.mode_option_button" }, { "setModeButton", "ui.workshop.mode_set_button" },
+                { "upgradeModeButton", "ui.workshop.mode_upgrade_button" }, { "runButton", "ui.workshop.run" },
                 { "prevLineButton", "ui.workshop.prev_line" }, { "nextLineButton", "ui.workshop.next_line" },
                 { "prevTargetButton", "ui.workshop.prev_target" }, { "nextTargetButton", "ui.workshop.next_target" },
-                { "runButton", "ui.workshop.run" }, { "disassembleButton", "ui.workshop.disassemble" },
-                { "equipButton", "ui.workshop.equip" }, { "closeButton", "ui.workshop.close" },
+                { "disassembleButton", "ui.workshop.disassemble" }, { "equipButton", "ui.workshop.equip" },
+                { "closeButton", "ui.workshop.close" }, { "", "" },
             };
             var workshopRefs = new System.Collections.Generic.List<(string, Object)> { ("panel", workshopPanel), ("label", workshopLabel) };
             for (int i = 0; i < workshopButtons.GetLength(0); i++)
             {
+                if (workshopButtons[i, 0].Length == 0) continue;
                 int row = i / 4;
                 int column = i % 4;
                 var button = CreateButton(workshopPanel.transform, workshopButtons[i, 0], font, workshopButtons[i, 1],
-                    new Vector2(0.5f, 0f), new Vector2(-450f + column * 300f, 250f - row * 110f));
+                    new Vector2(0.5f, 0f), new Vector2(-450f + column * 300f, 360f - row * 110f));
                 button.GetComponentInChildren<UnityEngine.UI.Text>().fontSize = 28;
                 workshopRefs.Add((workshopButtons[i, 0], button));
             }

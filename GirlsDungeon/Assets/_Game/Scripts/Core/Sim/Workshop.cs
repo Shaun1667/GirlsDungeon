@@ -17,6 +17,8 @@ namespace GirlsDungeon.Core.Sim
     {
         Option = 0,
         Set = 1,
+        /// <summary>강화 (3-16p): 한 줄의 값을 처음 나오는 범위만큼 한 번 더 굴려 더한다 — 한계(PartStatRange.Cap)까지, 항상 성공.</summary>
+        Upgrade = 2,
     }
 
     /// <summary>
@@ -116,6 +118,37 @@ namespace GirlsDungeon.Core.Sim
             world.PartMaterials -= settings.WorkshopOptionCost;
             Replace(world, settings, place, index, new WeaponPart(part.Weapon, part.Slot, part.Grade, bonuses, part.Set));
             events.Add(new PartReworked(ReworkKind.Option, success, place, index, world.PartMaterials));
+            if (place == PartPlace.Equipped) events.Add(new UnitStatsChanged(world.PlayerId));
+            return true;
+        }
+
+        /// <summary>그 줄을 강화할 수 있는가 (한계가 있고 아직 한계 아래).</summary>
+        public static bool CanUpgrade(CombatSettings settings, WeaponPart part, int line)
+        {
+            if (part == null || line < 0 || line >= part.Bonuses.Count) return false;
+            var range = settings.PartRange(part.Bonuses[line].Stat);
+            return range != null && range.Cap > 0 && part.Bonuses[line].Value < range.Cap;
+        }
+
+        /// <summary>
+        /// 강화 (3-16p, 결정 2026-11-18 사용자): 재료를 내고 그 줄의 값에 처음 나오는 범위(Min ~ Max)를 한 번 더 굴려 더한다.
+        /// 한계(Cap)를 넘으면 한계에서 멈춘다. 항상 성공. 작업 난수.
+        /// </summary>
+        public static bool Upgrade(World world, CombatSettings settings, PartPlace place, int index, int line, List<GameEvent> events)
+        {
+            if (!AtBench(world) || world.PartMaterials < settings.WorkshopUpgradeCost) return false;
+            var part = Get(world, place, index);
+            if (!CanUpgrade(settings, part, line)) return false;
+
+            var bonus = part.Bonuses[line];
+            var range = settings.PartRange(bonus.Stat);
+            int roll = world.Random.Get(RandomPurpose.Workshop).Range(range.Min, range.Max + 1);
+            var bonuses = new List<PartBonus>(part.Bonuses);
+            bonuses[line] = new PartBonus(bonus.Stat, System.Math.Min(range.Cap, bonus.Value + roll));
+
+            world.PartMaterials -= settings.WorkshopUpgradeCost;
+            Replace(world, settings, place, index, new WeaponPart(part.Weapon, part.Slot, part.Grade, bonuses, part.Set));
+            events.Add(new PartReworked(ReworkKind.Upgrade, true, place, index, world.PartMaterials));
             if (place == PartPlace.Equipped) events.Add(new UnitStatsChanged(world.PlayerId));
             return true;
         }
@@ -229,6 +262,27 @@ namespace GirlsDungeon.Core.Sim
         }
 
         public bool TryApply(World world, List<GameEvent> events) => Workshop.ChangeOption(world, settings, place, index, line, target, events);
+    }
+
+    /// <summary>작업대에서 파츠 한 줄을 강화한다 (3-16p, 항상 성공).</summary>
+    public sealed class UpgradePartCommand : ICommand
+    {
+        private readonly PartPlace place;
+        private readonly int index;
+        private readonly int line;
+        private readonly CombatSettings settings;
+
+        public int CostTicks => 0;
+
+        public UpgradePartCommand(PartPlace place, int index, int line, CombatSettings settings)
+        {
+            this.place = place;
+            this.index = index;
+            this.line = line;
+            this.settings = settings;
+        }
+
+        public bool TryApply(World world, List<GameEvent> events) => Workshop.Upgrade(world, settings, place, index, line, events);
     }
 
     /// <summary>작업대에서 파츠 세트를 원하는 세트로 바꿔 본다 (확률, 실패하면 무작위).</summary>

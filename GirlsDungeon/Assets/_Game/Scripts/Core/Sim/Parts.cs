@@ -88,6 +88,8 @@ namespace GirlsDungeon.Core.Sim
         public PartStat Stat;
         public int Min;
         public int Max;
+        /// <summary>작업대 강화로 한 줄이 오를 수 있는 끝 (3-16p). 0이면 강화할 수 없다.</summary>
+        public int Cap;
     }
 
     /// <summary>

@@ -240,7 +240,7 @@ namespace GirlsDungeon.Tests
             foreach (var range in expected.PartStatRanges)
             {
                 var actual = combat.PartRange(range.Stat);
-                Assert.That(new[] { actual.Min, actual.Max }, Is.EqualTo(new[] { range.Min, range.Max }), range.Stat.ToString());
+                Assert.That(new[] { actual.Min, actual.Max, actual.Cap }, Is.EqualTo(new[] { range.Min, range.Max, range.Cap }), range.Stat.ToString());
             }
             // 사용자 결정 등급 표 (TASKS 3-4): 1번 칸 2 · 3 · 4개, 2 · 3 · 4번 칸 1 · 2 · 3개.
             Assert.That(combat.PartPrimaryStatCounts, Is.EqualTo(new[] { 2, 3, 4 }));
@@ -280,6 +280,13 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.WorkshopSetPercent, Is.EqualTo(50));
             Assert.That(combat.WorkshopOptionCost, Is.EqualTo(2));
             Assert.That(combat.WorkshopSetCost, Is.EqualTo(3));
+            // 19-8 · 19-9 강화 (2026-11-18 사용자): 재료 2 · 항상 성공, 한계 치명 15 · 공격% · 체력% · 방어% · 치명 피해 30.
+            Assert.That(combat.WorkshopUpgradeCost, Is.EqualTo(2));
+            Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.CritPercent).Cap, Is.EqualTo(15));
+            Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.AttackPercent).Cap, Is.EqualTo(30));
+            Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.MaxHpPercent).Cap, Is.EqualTo(30));
+            Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.DefensePercent).Cap, Is.EqualTo(30));
+            Assert.That(combat.PartRange(GirlsDungeon.Core.Sim.PartStat.CritMultiplier).Cap, Is.EqualTo(30));
             Assert.That(combat.DisassembleMaterials, Is.EqualTo(new[] { 1, 2, 3 }));
             Assert.That(combat.SpareSlots, Is.EqualTo(4));
             var heroA = combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroA);

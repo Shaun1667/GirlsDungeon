@@ -235,6 +235,8 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>옵션 · 세트 바꾸기에 드는 재료 (성공 · 실패 모두).</summary>
         public int WorkshopOptionCost;
         public int WorkshopSetCost;
+        /// <summary>강화 한 번에 드는 재료 (3-16p — 항상 성공).</summary>
+        public int WorkshopUpgradeCost;
         /// <summary>분해로 얻는 재료, PartGrade 순서 (공업 · 군용 · 정밀).</summary>
         public int[] DisassembleMaterials = new int[3];
         /// <summary>예비 파츠 보관함 칸 수.</summary>
@@ -488,7 +490,7 @@ namespace GirlsDungeon.Core.Sim
                 || PartGradePercents[0] + PartGradePercents[1] + PartGradePercents[2] != 100)
                 throw new ArgumentException("Part grade settings are invalid.");
             if (WorkshopOptionPercent < 0 || WorkshopOptionPercent > 100 || WorkshopSetPercent < 0 || WorkshopSetPercent > 100
-                || WorkshopOptionCost < 0 || WorkshopSetCost < 0 || DisassembleMaterials.Length != 3 || SpareSlots < 0)
+                || WorkshopOptionCost < 0 || WorkshopSetCost < 0 || WorkshopUpgradeCost < 0 || DisassembleMaterials.Length != 3 || SpareSlots < 0)
                 throw new ArgumentException("Workshop settings are invalid.");
             if (SetGalleryPartGrade == PartGrade.Industrial)
                 throw new ArgumentException("Set gallery parts must be able to carry a set.");

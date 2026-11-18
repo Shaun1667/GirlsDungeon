@@ -246,6 +246,10 @@ ui.workshop.disassemble_hint,분해하면 재료 +{0},Disassemble for {0} materi
 ui.workshop.mode_option,옵션 바꾸기: {0}번 줄 → {1} · 성공 {2}% (실패하면 무작위) · 재료 {3},Change option: line {0} → {1} · {2}% success (random on failure) · {3} materials
 ui.workshop.mode_set,세트 바꾸기: → {0} · 성공 {1}% (실패하면 무작위) · 재료 {2},Change set: → {0} · {1}% success (random on failure) · {2} materials
 ui.workshop.mode_set_none,이 파츠에는 세트가 없어 세트를 바꿀 수 없음,This part has no set to change
+ui.workshop.mode_upgrade,강화: {0}번 줄 · 한 번에 +{1} ~ {2} · 한계 {3} · 항상 성공 · 재료 {4},Upgrade: line {0} · +{1} to {2} per try · cap {3} · always succeeds · {4} materials
+ui.workshop.mode_upgrade_max,강화: {0}번 줄은 이미 한계({1})에 닿음,Upgrade: line {0} is already at its cap ({1})
+ui.workshop.mode_upgrade_none,강화: {0}번 줄은 강화할 수 없는 능력치,Upgrade: line {0} cannot be upgraded
+ui.workshop.result_upgraded,강화 — {0},Upgraded — {0}
 ui.workshop.result_option_success,성공 — 원하던 옵션이 붙었다,Success — the option you chose
 ui.workshop.result_option_fail,실패 — 옵션이 무작위로 바뀌었다,Failed — the option changed at random
 ui.workshop.result_set_success,성공 — 원하던 세트가 붙었다,Success — the set you chose
@@ -261,11 +265,12 @@ ui.workshop.prev_part,◀ 파츠,◀ Part
 ui.workshop.next_part,파츠 ▶,Part ▶
 ui.workshop.mode_option_button,옵션 바꾸기,Change option
 ui.workshop.mode_set_button,세트 바꾸기,Change set
+ui.workshop.mode_upgrade_button,강화,Upgrade
 ui.workshop.prev_line,◀ 줄,◀ Line
 ui.workshop.next_line,줄 ▶,Line ▶
 ui.workshop.prev_target,◀ 원하는 것,◀ Wanted
 ui.workshop.next_target,원하는 것 ▶,Wanted ▶
-ui.workshop.run,바꾸기 시도,Try change
+ui.workshop.run,실행,Run
 ui.workshop.disassemble,분해,Disassemble
 ui.workshop.equip,끼우기,Equip
 ui.workshop.close,닫기,Close

@@ -231,6 +231,56 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void Upgrade_AddsAnotherRollOfTheRange_StopsAtTheCap_AndCostsMaterials()
+        {
+            // 3-16p: 강화 = 처음 나오는 범위만큼 한 번 더 굴려 더함, 한계에서 멈춤, 재료 2 · 항상 성공.
+            var (world, combat) = AtBench();
+            world.SpareParts.Add(Part(world.PlayerWeapon, 0, PartGrade.Military, PartSet.None, (PartStat.CritPercent, 4), (PartStat.AttackPercent, 28)));
+            world.PartMaterials = 100;
+            var crit = combat.PartRange(PartStat.CritPercent);
+
+            var events = new List<GameEvent>();
+            Assert.That(Workshop.Upgrade(world, combat, PartPlace.Spare, 0, 0, events), Is.True);
+            int first = world.SpareParts[0].Bonuses[0].Value;
+            Assert.That(first, Is.InRange(4 + crit.Min, 4 + crit.Max));
+            Assert.That(world.PartMaterials, Is.EqualTo(100 - combat.WorkshopUpgradeCost));
+            Assert.That(events.OfType<PartReworked>().Single().Kind, Is.EqualTo(ReworkKind.Upgrade));
+            Assert.That(world.SpareParts[0].Bonuses[1].Value, Is.EqualTo(28), "other line untouched");
+
+            // 한계까지 올리면 더는 안 된다.
+            while (Workshop.CanUpgrade(combat, world.SpareParts[0], 0))
+                Assert.That(Workshop.Upgrade(world, combat, PartPlace.Spare, 0, 0, new List<GameEvent>()), Is.True);
+            Assert.That(world.SpareParts[0].Bonuses[0].Value, Is.EqualTo(15), "crit cap 15");
+            int materials = world.PartMaterials;
+            Assert.That(Workshop.Upgrade(world, combat, PartPlace.Spare, 0, 0, new List<GameEvent>()), Is.False);
+            Assert.That(world.PartMaterials, Is.EqualTo(materials));
+
+            // 28 + 5 ~ 10은 한계 30에서 멈춘다.
+            Assert.That(Workshop.Upgrade(world, combat, PartPlace.Spare, 0, 1, new List<GameEvent>()), Is.True);
+            Assert.That(world.SpareParts[0].Bonuses[1].Value, Is.EqualTo(30), "attack% cap 30");
+        }
+
+        [Test]
+        public void Upgrade_NeedsMaterials_AndACappedStat_AndRaisesEquippedStats()
+        {
+            var (world, combat) = AtBench();
+            world.SpareParts.Add(Part(world.PlayerWeapon, 2, PartGrade.Military, PartSet.None, (PartStat.MoveRange, 1)));
+            world.PartMaterials = 10;
+            Assert.That(Workshop.Upgrade(world, combat, PartPlace.Spare, 0, 0, new List<GameEvent>()), Is.False, "old flat stats have no cap");
+
+            world.PlayerParts[2] = Part(world.PlayerWeapon, 2, PartGrade.Military, PartSet.None, (PartStat.AttackPercent, 10));
+            Loadout.Apply(world, combat);
+            world.PartMaterials = combat.WorkshopUpgradeCost - 1;
+            Assert.That(Workshop.Upgrade(world, combat, PartPlace.Equipped, 2, 0, new List<GameEvent>()), Is.False, "not enough");
+
+            world.PartMaterials = combat.WorkshopUpgradeCost;
+            int weaponAttack = combat.WeaponFor(world.PlayerWeapon).Attack;
+            Assert.That(Workshop.Upgrade(world, combat, PartPlace.Equipped, 2, 0, new List<GameEvent>()), Is.True);
+            int percent = world.PlayerParts[2].Bonuses[0].Value;
+            Assert.That(world.Player.Attack, Is.EqualTo(weaponAttack + Loadout.Percent(weaponAttack, percent)), "equipped upgrade applies at once");
+        }
+
+        [Test]
         public void SameSeed_SameWorkshopResults()
         {
             var combat = TestData.Combat();

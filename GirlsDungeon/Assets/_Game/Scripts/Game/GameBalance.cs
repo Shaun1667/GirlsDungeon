@@ -146,6 +146,8 @@ namespace GirlsDungeon.Game
         public PartStat stat;
         public int min;
         public int max;
+        [Tooltip("Upgrade cap at the workbench (BALANCE 19-9). 0 = cannot be upgraded.")]
+        public int cap;
     }
 
     /// <summary>무기 하나의 능력치와 규칙 (표 한 줄, BALANCE 12번).</summary>
@@ -453,16 +455,16 @@ namespace GirlsDungeon.Game
         {
             new PartStatEntry { stat = PartStat.Attack, min = 1, max = 2 },
             new PartStatEntry { stat = PartStat.AttackRange, min = 1, max = 1 },
-            new PartStatEntry { stat = PartStat.CritPercent, min = 3, max = 6 },
-            new PartStatEntry { stat = PartStat.CritMultiplier, min = 10, max = 20 },
+            new PartStatEntry { stat = PartStat.CritPercent, min = 3, max = 6, cap = 15 },
+            new PartStatEntry { stat = PartStat.CritMultiplier, min = 10, max = 20, cap = 30 },
             new PartStatEntry { stat = PartStat.StabilityDamage, min = 1, max = 1 },
             new PartStatEntry { stat = PartStat.MaxHp, min = 5, max = 10 },
             new PartStatEntry { stat = PartStat.Defense, min = 1, max = 1 },
             new PartStatEntry { stat = PartStat.MoveRange, min = 1, max = 1 },
             new PartStatEntry { stat = PartStat.MaxStability, min = 1, max = 1 },
-            new PartStatEntry { stat = PartStat.AttackPercent, min = 5, max = 10 },
-            new PartStatEntry { stat = PartStat.MaxHpPercent, min = 5, max = 10 },
-            new PartStatEntry { stat = PartStat.DefensePercent, min = 5, max = 10 },
+            new PartStatEntry { stat = PartStat.AttackPercent, min = 5, max = 10, cap = 30 },
+            new PartStatEntry { stat = PartStat.MaxHpPercent, min = 5, max = 10, cap = 30 },
+            new PartStatEntry { stat = PartStat.DefensePercent, min = 5, max = 10, cap = 30 },
         };
         [Tooltip("Stats that slot 1 (muzzle or blade tip) can roll.")]
         [SerializeField] private PartStat[] partPrimaryStats = { PartStat.AttackPercent, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.MaxHpPercent, PartStat.DefensePercent };
@@ -509,6 +511,8 @@ namespace GirlsDungeon.Game
         [Tooltip("Materials spent per try (success or fail): change option, change set.")]
         [SerializeField] private int workshopOptionCost = 2;
         [SerializeField] private int workshopSetCost = 3;
+        [Tooltip("Materials per upgrade (always succeeds, BALANCE 19-8).")]
+        [SerializeField] private int workshopUpgradeCost = 2;
         [Tooltip("Materials from disassembling a part by grade: industrial, military, precision.")]
         [SerializeField] private int[] disassembleMaterials = { 1, 2, 3 };
         [Tooltip("Spare part storage slots.")]
@@ -780,6 +784,7 @@ namespace GirlsDungeon.Game
                 WorkshopSetPercent = workshopSetPercent,
                 WorkshopOptionCost = workshopOptionCost,
                 WorkshopSetCost = workshopSetCost,
+                WorkshopUpgradeCost = workshopUpgradeCost,
                 DisassembleMaterials = (int[])disassembleMaterials.Clone(),
                 SpareSlots = spareSlots,
                 CombatDropKeyPercent = combatDropKeyPercent,
@@ -895,7 +900,7 @@ namespace GirlsDungeon.Game
                     SlowTurns = entry.slowTurns,
                 });
             }
-            foreach (var entry in partStats) settings.PartStatRanges.Add(new PartStatRange { Stat = entry.stat, Min = entry.min, Max = entry.max });
+            foreach (var entry in partStats) settings.PartStatRanges.Add(new PartStatRange { Stat = entry.stat, Min = entry.min, Max = entry.max, Cap = entry.cap });
             settings.PartPrimaryStats.AddRange(partPrimaryStats);
             settings.PartSecondaryStats.AddRange(partSecondaryStats);
             return settings;

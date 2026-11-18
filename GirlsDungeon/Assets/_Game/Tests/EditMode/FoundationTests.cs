@@ -399,6 +399,7 @@ namespace GirlsDungeon.Tests
                 WorkshopSetPercent = 50,
                 WorkshopOptionCost = 2,
                 WorkshopSetCost = 3,
+                WorkshopUpgradeCost = 2,
                 DisassembleMaterials = new[] { 1, 2, 3 },
                 SpareSlots = 4,
                 // BALANCE 20번 잠긴 문 · 열쇠.
@@ -547,16 +548,16 @@ namespace GirlsDungeon.Tests
             {
                 new PartStatRange { Stat = PartStat.Attack, Min = 1, Max = 2 },
                 new PartStatRange { Stat = PartStat.AttackRange, Min = 1, Max = 1 },
-                new PartStatRange { Stat = PartStat.CritPercent, Min = 3, Max = 6 },
-                new PartStatRange { Stat = PartStat.CritMultiplier, Min = 10, Max = 20 },
+                new PartStatRange { Stat = PartStat.CritPercent, Min = 3, Max = 6, Cap = 15 },
+                new PartStatRange { Stat = PartStat.CritMultiplier, Min = 10, Max = 20, Cap = 30 },
                 new PartStatRange { Stat = PartStat.StabilityDamage, Min = 1, Max = 1 },
                 new PartStatRange { Stat = PartStat.MaxHp, Min = 5, Max = 10 },
                 new PartStatRange { Stat = PartStat.Defense, Min = 1, Max = 1 },
                 new PartStatRange { Stat = PartStat.MoveRange, Min = 1, Max = 1 },
                 new PartStatRange { Stat = PartStat.MaxStability, Min = 1, Max = 1 },
-                new PartStatRange { Stat = PartStat.AttackPercent, Min = 5, Max = 10 },
-                new PartStatRange { Stat = PartStat.MaxHpPercent, Min = 5, Max = 10 },
-                new PartStatRange { Stat = PartStat.DefensePercent, Min = 5, Max = 10 },
+                new PartStatRange { Stat = PartStat.AttackPercent, Min = 5, Max = 10, Cap = 30 },
+                new PartStatRange { Stat = PartStat.MaxHpPercent, Min = 5, Max = 10, Cap = 30 },
+                new PartStatRange { Stat = PartStat.DefensePercent, Min = 5, Max = 10, Cap = 30 },
             });
             settings.PartPrimaryStats.AddRange(new[] { PartStat.AttackPercent, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.MaxHpPercent, PartStat.DefensePercent });
             settings.PartSecondaryStats.AddRange(new[] { PartStat.AttackPercent, PartStat.CritPercent, PartStat.MaxHpPercent, PartStat.DefensePercent });
