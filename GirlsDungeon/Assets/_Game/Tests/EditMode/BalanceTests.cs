@@ -510,7 +510,7 @@ namespace GirlsDungeon.Tests
             var combat = Load().CreateCombatSettings();
             Assert.That(combat.AltarOfferCount, Is.EqualTo(3));
             var rows = combat.AltarTrades.Select(t => $"{t.CostStat} {t.CostAmount} {t.BoonStat} {t.BoonAmount}").ToArray();
-            Assert.That(rows, Is.EqualTo(new[] { "MaxHp 10 Attack 2", "Defense 1 CritPercent 15", "MoveRange 1 AttackRange 2", "MaxStability 2 StabilityDamage 2", "Attack 1 MaxHp 15" }));
+            Assert.That(rows, Is.EqualTo(new[] { "MaxHpPercent 10 AttackPercent 10", "DefensePercent 15 CritPercent 15", "AttackPercent 10 MaxHpPercent 15", "MaxHpPercent 10 CritMultiplier 30", "CritPercent 5 DefensePercent 25" }));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
             foreach (var key in GirlsDungeon.Game.AltarView.TextKeys()) Assert.That(table.Contains(key), Is.True, key);
         }

@@ -417,11 +417,11 @@ namespace GirlsDungeon.Tests
                 // BALANCE 27번 제단.
                 AltarTrades =
                 {
-                    new AltarTrade { CostStat = PartStat.MaxHp, CostAmount = 10, BoonStat = PartStat.Attack, BoonAmount = 2 },
-                    new AltarTrade { CostStat = PartStat.Defense, CostAmount = 1, BoonStat = PartStat.CritPercent, BoonAmount = 15 },
-                    new AltarTrade { CostStat = PartStat.MoveRange, CostAmount = 1, BoonStat = PartStat.AttackRange, BoonAmount = 2 },
-                    new AltarTrade { CostStat = PartStat.MaxStability, CostAmount = 2, BoonStat = PartStat.StabilityDamage, BoonAmount = 2 },
-                    new AltarTrade { CostStat = PartStat.Attack, CostAmount = 1, BoonStat = PartStat.MaxHp, BoonAmount = 15 },
+                    new AltarTrade { CostStat = PartStat.MaxHpPercent, CostAmount = 10, BoonStat = PartStat.AttackPercent, BoonAmount = 10 },
+                    new AltarTrade { CostStat = PartStat.DefensePercent, CostAmount = 15, BoonStat = PartStat.CritPercent, BoonAmount = 15 },
+                    new AltarTrade { CostStat = PartStat.AttackPercent, CostAmount = 10, BoonStat = PartStat.MaxHpPercent, BoonAmount = 15 },
+                    new AltarTrade { CostStat = PartStat.MaxHpPercent, CostAmount = 10, BoonStat = PartStat.CritMultiplier, BoonAmount = 30 },
+                    new AltarTrade { CostStat = PartStat.CritPercent, CostAmount = 5, BoonStat = PartStat.DefensePercent, BoonAmount = 25 },
                 },
                 AltarOfferCount = 3,
                 // BALANCE 29번 함정 방.

@@ -228,9 +228,9 @@ part.stat_name.hp,체력,HP
 part.stat_name.defense,방어,Defense
 part.stat_name.move,이동,Move
 part.stat_name.stability,안정지수,Stability
-part.stat_name.attack_percent,공격 %,Attack %
-part.stat_name.hp_percent,체력 %,HP %
-part.stat_name.defense_percent,방어 %,Defense %
+part.stat_name.attack_percent,공격%,Attack%
+part.stat_name.hp_percent,체력%,HP%
+part.stat_name.defense_percent,방어%,Defense%
 ui.part.store,보관,Store
 ui.loot.log_part_stored,{0} 파츠를 보관함에 넣었다 ({1}/{2}),Stored a {0} part ({1}/{2})
 ui.hud.materials,재료 {0} · 보관함 {1}/{2},Materials {0} · Spare {1}/{2}

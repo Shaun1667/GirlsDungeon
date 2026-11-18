@@ -502,26 +502,26 @@ MonoBehaviour:
   spareSlots: 4
   setGalleryPartGrade: 1
   altarTrades:
-  - costStat: 5
+  - costStat: 10
     costAmount: 10
-    boonStat: 0
-    boonAmount: 2
-  - costStat: 6
-    costAmount: 1
+    boonStat: 9
+    boonAmount: 10
+  - costStat: 11
+    costAmount: 15
     boonStat: 2
     boonAmount: 15
-  - costStat: 7
-    costAmount: 1
-    boonStat: 1
-    boonAmount: 2
-  - costStat: 8
-    costAmount: 2
-    boonStat: 4
-    boonAmount: 2
-  - costStat: 0
-    costAmount: 1
-    boonStat: 5
+  - costStat: 9
+    costAmount: 10
+    boonStat: 10
     boonAmount: 15
+  - costStat: 10
+    costAmount: 10
+    boonStat: 3
+    boonAmount: 30
+  - costStat: 2
+    costAmount: 5
+    boonStat: 11
+    boonAmount: 25
   altarOfferCount: 3
   arenaEnemyCount: 3
   arenaStatPercent: 30

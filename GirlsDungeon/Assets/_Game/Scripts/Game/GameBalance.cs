@@ -522,11 +522,11 @@ namespace GirlsDungeon.Game
         [Tooltip("Permanent trades at an altar: pay costAmount of costStat, gain boonAmount of boonStat.")]
         [SerializeField] private AltarTradeEntry[] altarTrades =
         {
-            new AltarTradeEntry { costStat = PartStat.MaxHp, costAmount = 10, boonStat = PartStat.Attack, boonAmount = 2 },
-            new AltarTradeEntry { costStat = PartStat.Defense, costAmount = 1, boonStat = PartStat.CritPercent, boonAmount = 15 },
-            new AltarTradeEntry { costStat = PartStat.MoveRange, costAmount = 1, boonStat = PartStat.AttackRange, boonAmount = 2 },
-            new AltarTradeEntry { costStat = PartStat.MaxStability, costAmount = 2, boonStat = PartStat.StabilityDamage, boonAmount = 2 },
-            new AltarTradeEntry { costStat = PartStat.Attack, costAmount = 1, boonStat = PartStat.MaxHp, boonAmount = 15 },
+            new AltarTradeEntry { costStat = PartStat.MaxHpPercent, costAmount = 10, boonStat = PartStat.AttackPercent, boonAmount = 10 },
+            new AltarTradeEntry { costStat = PartStat.DefensePercent, costAmount = 15, boonStat = PartStat.CritPercent, boonAmount = 15 },
+            new AltarTradeEntry { costStat = PartStat.AttackPercent, costAmount = 10, boonStat = PartStat.MaxHpPercent, boonAmount = 15 },
+            new AltarTradeEntry { costStat = PartStat.MaxHpPercent, costAmount = 10, boonStat = PartStat.CritMultiplier, boonAmount = 30 },
+            new AltarTradeEntry { costStat = PartStat.CritPercent, costAmount = 5, boonStat = PartStat.DefensePercent, boonAmount = 25 },
         };
         [Tooltip("Different trades offered by one altar.")]
         [SerializeField] private int altarOfferCount = 3;

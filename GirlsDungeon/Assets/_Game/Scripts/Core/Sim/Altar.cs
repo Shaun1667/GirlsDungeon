@@ -22,6 +22,9 @@ namespace GirlsDungeon.Core.Sim
     /// </summary>
     public static class Altar
     {
+        /// <summary>% 능력치 대가를 낸 뒤 남아야 하는 % 합의 아래 끝 (BALANCE 27-7).</summary>
+        public const int MinimumPercent = -50;
+
         /// <summary>플레이어가 켜진 제단 바로 옆에 있고 탐험 중이면 그 칸.</summary>
         public static GridPos? AltarNextTo(World world)
         {
@@ -67,13 +70,13 @@ namespace GirlsDungeon.Core.Sim
             return row >= 0 && row < settings.AltarTrades.Count ? settings.AltarTrades[row] : null;
         }
 
-        /// <summary>대가를 낸 뒤에도 능력치가 최소값 이상인지 (체력 · 공격 · 사거리 · 안정지수 · 이동은 1, 나머지는 0).</summary>
+        /// <summary>대가를 낸 뒤에도 능력치가 최소값 이상인지 (체력 · 공격 · 사거리 · 안정지수 · 이동은 1, % 능력치는 파츠 · 제단 % 합이 −50%, 나머지는 0).</summary>
         public static bool CanAccept(World world, CombatSettings settings, int index)
         {
             var trade = OfferAt(world, settings, index);
             var player = world.Player;
             if (trade == null || player == null) return false;
-            return Current(player, trade.CostStat) - trade.CostAmount >= Minimum(trade.CostStat);
+            return Current(world, player, trade.CostStat) - trade.CostAmount >= Minimum(trade.CostStat);
         }
 
         /// <summary>거래 하나를 받는다: 대가와 보상을 영구 효과로 쌓고 능력치를 다시 맞춘다. 제단은 꺼진다.</summary>
@@ -99,10 +102,15 @@ namespace GirlsDungeon.Core.Sim
             return total;
         }
 
-        private static int Current(Unit player, PartStat stat)
+        private static int Current(World world, Unit player, PartStat stat)
         {
             switch (stat)
             {
+                // % 능력치(3-16n)는 지금 붙은 % 합 — 파츠 · 제단 모두.
+                case PartStat.AttackPercent:
+                case PartStat.MaxHpPercent:
+                case PartStat.DefensePercent:
+                    return Parts.Sum(world, stat);
                 case PartStat.Attack: return player.Attack;
                 case PartStat.AttackRange: return player.AttackRange;
                 case PartStat.CritPercent: return player.CritPercent;
@@ -125,6 +133,10 @@ namespace GirlsDungeon.Core.Sim
                 case PartStat.MoveRange:
                 case PartStat.MaxStability:
                     return 1;
+                case PartStat.AttackPercent:
+                case PartStat.MaxHpPercent:
+                case PartStat.DefensePercent:
+                    return MinimumPercent;
                 default:
                     return 0;
             }

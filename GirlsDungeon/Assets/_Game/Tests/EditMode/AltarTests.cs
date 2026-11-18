@@ -45,7 +45,7 @@ namespace GirlsDungeon.Tests
         public void Accept_PaysThePrice_GainsTheBoon_AndTheAltarGoesOut()
         {
             var combat = TestData.Combat();
-            // 체력 −10 → 공격 +2 (표 0번)가 나오는 시드를 찾는다.
+            // 체력 −10% → 공격 +10% (표 0번, 3-16n)가 나오는 시드를 찾는다.
             for (int seed = 1; seed <= 60; seed++)
             {
                 var world = AltarWorld(seed);
@@ -56,19 +56,20 @@ namespace GirlsDungeon.Tests
                 int maxHp = player.MaxHp, attack = player.Attack;
                 var events = new List<GameEvent>();
                 Assert.That(Altar.Accept(world, combat, index, events), Is.True);
-                Assert.That(player.MaxHp, Is.EqualTo(maxHp - 10));
+                int expectedHp = maxHp + Loadout.Percent(maxHp, -10), expectedAttack = attack + Loadout.Percent(attack, 10);
+                Assert.That(player.MaxHp, Is.EqualTo(expectedHp));
                 Assert.That(player.Hp, Is.LessThanOrEqualTo(player.MaxHp));
-                Assert.That(player.Attack, Is.EqualTo(attack + 2));
+                Assert.That(player.Attack, Is.EqualTo(expectedAttack));
                 Assert.That(world.Map.Get(new GridPos(2, 1)), Is.EqualTo(TileType.AltarUsed));
                 Assert.That(world.AltarOffers, Is.Empty);
                 var traded = events.OfType<AltarTraded>().Single();
-                Assert.That((traded.CostStat, traded.CostAmount, traded.BoonStat, traded.BoonAmount), Is.EqualTo((PartStat.MaxHp, 10, PartStat.Attack, 2)));
+                Assert.That((traded.CostStat, traded.CostAmount, traded.BoonStat, traded.BoonAmount), Is.EqualTo((PartStat.MaxHpPercent, 10, PartStat.AttackPercent, 10)));
                 Assert.That(Altar.Open(world, combat, new List<GameEvent>()), Is.False, "the altar is spent");
 
                 // 영구 효과: 장비를 다시 맞춰도(무기 교체 · 파츠) 그대로 남는다.
                 Loadout.Apply(world, combat);
-                Assert.That(player.Attack, Is.EqualTo(attack + 2));
-                Assert.That(player.MaxHp, Is.EqualTo(maxHp - 10));
+                Assert.That(player.Attack, Is.EqualTo(expectedAttack));
+                Assert.That(player.MaxHp, Is.EqualTo(expectedHp));
                 return;
             }
             Assert.Fail("no seed offered trade 0");
@@ -82,12 +83,13 @@ namespace GirlsDungeon.Tests
             {
                 var world = AltarWorld(seed);
                 Altar.Open(world, combat, new List<GameEvent>());
-                int index = OfferOf(world, 1); // 방어 −1 → 치명 +15
+                int index = OfferOf(world, 1); // 방어 −15% → 치명 +15
                 if (index < 0) continue;
-                world.Player.Defense = 0;
+                Assert.That(Altar.CanAccept(world, combat, index), Is.True, "0% − 15% is above the −50% floor");
+                world.AltarBonuses.Add(new PartBonus(PartStat.DefensePercent, -40)); // −40% − 15% < −50%
                 Assert.That(Altar.CanAccept(world, combat, index), Is.False);
                 Assert.That(Altar.Accept(world, combat, index, new List<GameEvent>()), Is.False);
-                Assert.That(world.AltarBonuses, Is.Empty);
+                Assert.That(world.AltarBonuses.Count, Is.EqualTo(1));
                 Assert.That(world.Map.Get(new GridPos(2, 1)), Is.EqualTo(TileType.Altar));
                 return;
             }
