@@ -617,7 +617,12 @@ namespace GirlsDungeon.Tests
         public void CameraZoomAndDrag_MatchesBalanceTable3()
         {
             var balance = Load();
-            Assert.That(balance.CameraMinDistance, Is.EqualTo(8f).Within(0.0001f));
+            Assert.That(balance.CameraMinDistance, Is.EqualTo(1f).Within(0.0001f));
+            // 3-29 ~ 3-31: 거리 8보다 가까우면 휠 한 칸에 1씩 (8 → 1 = 일곱 칸), 가장 가까우면 0.9 위를 본다 (2026-11-17).
+            Assert.That(balance.CameraCloseZoomFrom, Is.EqualTo(8f).Within(0.0001f));
+            Assert.That(balance.CameraCloseZoomStep, Is.EqualTo(1f).Within(0.0001f));
+            Assert.That(balance.CameraCloseLookHeight, Is.EqualTo(0.9f).Within(0.0001f));
+            Assert.That((balance.CameraCloseZoomFrom - balance.CameraMinDistance) / balance.CameraCloseZoomStep, Is.EqualTo(7f).Within(0.0001f));
             Assert.That(balance.CameraMaxDistance, Is.EqualTo(28f).Within(0.0001f));
             Assert.That(balance.CameraZoomStep, Is.EqualTo(2f).Within(0.0001f));
             Assert.That(balance.CameraZoomSharpness, Is.EqualTo(10f).Within(0.0001f));

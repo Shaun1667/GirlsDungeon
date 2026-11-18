@@ -560,9 +560,12 @@ MonoBehaviour:
   cameraDistance: 17
   cameraFollowSharpness: 8
   cameraRotateSharpness: 10
-  cameraMinDistance: 8
+  cameraMinDistance: 1
   cameraMaxDistance: 28
   cameraZoomStep: 2
+  cameraCloseZoomFrom: 8
+  cameraCloseZoomStep: 1
+  cameraCloseLookHeight: 0.9
   cameraZoomSharpness: 10
   cameraDragThresholdPixels: 8
   cameraMaxPanDistance: 20

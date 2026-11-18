@@ -69,10 +69,23 @@ namespace GirlsDungeon.Game
             targetYaw += direction * balance.CameraYawStep;
         }
 
-        /// <summary>확대(steps &gt; 0) · 축소(steps &lt; 0). 거리는 BALANCE 3-21 ~ 3-22 사이.</summary>
+        /// <summary>확대(steps &gt; 0) · 축소(steps &lt; 0). 거리는 BALANCE 3-21 ~ 3-22 사이, 가까이선 칸 간격이 작다 (3-29 · 3-30).</summary>
         public void Zoom(int steps)
         {
-            targetDistance = Mathf.Clamp(targetDistance - steps * balance.CameraZoomStep, balance.CameraMinDistance, balance.CameraMaxDistance);
+            // 가까운 거리(3-29)보다 안쪽은 한 칸에 3-30만큼, 바깥은 3-23만큼. 경계는 넘지 않고 한 번 멈춘다.
+            var from = balance.CameraCloseZoomFrom;
+            for (var i = 0; i < Mathf.Abs(steps); i++)
+            {
+                if (steps > 0)
+                    targetDistance = targetDistance > from + 0.0001f
+                        ? Mathf.Max(targetDistance - balance.CameraZoomStep, from)
+                        : targetDistance - balance.CameraCloseZoomStep;
+                else
+                    targetDistance = targetDistance < from - 0.0001f
+                        ? Mathf.Min(targetDistance + balance.CameraCloseZoomStep, from)
+                        : targetDistance + balance.CameraZoomStep;
+                targetDistance = Mathf.Clamp(targetDistance, balance.CameraMinDistance, balance.CameraMaxDistance);
+            }
         }
 
         /// <summary>드래그로 옮긴 화면을 대상 쪽으로 되돌린다.</summary>
@@ -178,7 +191,11 @@ namespace GirlsDungeon.Game
         private void ApplyTransform()
         {
             var rotation = Quaternion.Euler(balance.CameraPitch, yaw, 0f);
-            transform.SetPositionAndRotation(focus - rotation * Vector3.forward * distance, rotation);
+            // 가까이 확대할수록 발 대신 몸 쪽을 본다 (3-31) — 가장 가까우면 캐릭터가 화면에 꽉 찬다.
+            var from = balance.CameraCloseZoomFrom;
+            var closeness = from > balance.CameraMinDistance ? Mathf.Clamp01((from - distance) / (from - balance.CameraMinDistance)) : 0f;
+            var look = focus + Vector3.up * (balance.CameraCloseLookHeight * closeness);
+            transform.SetPositionAndRotation(look - rotation * Vector3.forward * distance, rotation);
         }
     }
 }

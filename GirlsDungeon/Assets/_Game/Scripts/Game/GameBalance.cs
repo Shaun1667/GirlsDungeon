@@ -614,10 +614,15 @@ namespace GirlsDungeon.Game
         [SerializeField] private float cameraFollowSharpness = 8f;
         [SerializeField] private float cameraRotateSharpness = 10f;
         [Tooltip("Closest and farthest camera distance for mouse-wheel zoom (BALANCE 3-21, 3-22).")]
-        [SerializeField] private float cameraMinDistance = 8f;
+        [SerializeField] private float cameraMinDistance = 1f;
         [SerializeField] private float cameraMaxDistance = 28f;
         [Tooltip("Distance change per wheel notch (BALANCE 3-23).")]
         [SerializeField] private float cameraZoomStep = 2f;
+        [Tooltip("Closer than this distance, one wheel notch moves the close step instead (BALANCE 3-29, 3-30).")]
+        [SerializeField] private float cameraCloseZoomFrom = 8f;
+        [SerializeField] private float cameraCloseZoomStep = 1f;
+        [Tooltip("How high the camera looks above the target at the closest distance, rising from 0 at the close-zoom distance (BALANCE 3-31).")]
+        [SerializeField] private float cameraCloseLookHeight = 0.9f;
         [SerializeField] private float cameraZoomSharpness = 10f;
         [Tooltip("Pixels the mouse must move while held before a click becomes a camera drag (BALANCE 3-25).")]
         [SerializeField] private float cameraDragThresholdPixels = 8f;
@@ -663,6 +668,9 @@ namespace GirlsDungeon.Game
         public float CameraMinDistance => cameraMinDistance;
         public float CameraMaxDistance => cameraMaxDistance;
         public float CameraZoomStep => cameraZoomStep;
+        public float CameraCloseZoomFrom => cameraCloseZoomFrom;
+        public float CameraCloseZoomStep => cameraCloseZoomStep;
+        public float CameraCloseLookHeight => cameraCloseLookHeight;
         public float CameraZoomSharpness => cameraZoomSharpness;
         public float CameraDragThresholdPixels => cameraDragThresholdPixels;
         public float CameraMaxPanDistance => cameraMaxPanDistance;
