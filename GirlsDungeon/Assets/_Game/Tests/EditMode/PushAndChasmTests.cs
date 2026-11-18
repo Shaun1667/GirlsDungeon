@@ -202,6 +202,28 @@ namespace GirlsDungeon.Tests
             var pushed = events.OfType<UnitPushed>().Single();
             Assert.That(pushed.CollisionDamage, Is.EqualTo(8));
             Assert.That(pushed.Fell, Is.False);
+            // 3-16s: 밀린 걸음은 Pushed 표시 (화면이 걷기 동작 없이 그림).
+            var moved = events.OfType<UnitMoved>().Where(m => m.UnitId == enemy.Id).ToList();
+            Assert.That(moved, Is.Not.Empty);
+            Assert.That(moved.All(m => m.Pushed), Is.True);
+        }
+
+        [Test]
+        public void CollisionDamage_InTheEvent_IsWhatTheBarrierLetsThrough()
+        {
+            // 3-16s: 화면에 띄우는 부딪힘 숫자 = 실제로 깎인 체력 (상점 주인 방벽을 거친 뒤).
+            var world = MakeWorld(new GridPos(0, 0), new GridPos[0], "...#....");
+            var combat = TestData.Combat();
+            var keeper = world.AddUnit(combat.StatsFor(UnitKind.Shopkeeper), new GridPos(1, 0));
+            world.Combatants.Add(keeper.Id);
+            world.KeeperShield = 1000;
+            world.KeeperShieldTurns = 3;
+            var events = new List<GameEvent>();
+
+            Assert.That(Push.Resolve(world, combat, world.Player, East, 1, events), Is.True);
+            Assert.That(keeper.Position, Is.EqualTo(new GridPos(2, 0)));
+            Assert.That(keeper.Hp, Is.EqualTo(keeper.MaxHp), "the barrier took everything");
+            Assert.That(events.OfType<UnitPushed>().Single().CollisionDamage, Is.EqualTo(0), "no impact number to show");
         }
 
         [Test]

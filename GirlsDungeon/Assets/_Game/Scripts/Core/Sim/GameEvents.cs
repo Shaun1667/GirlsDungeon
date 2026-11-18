@@ -11,12 +11,15 @@ namespace GirlsDungeon.Core.Sim
         public int UnitId { get; }
         public GridPos From { get; }
         public GridPos To { get; }
+        /// <summary>밀려서 옮겨졌다 (넉백 · 돌격병 — 화면은 걷기 동작 없이 미끄러지게 그린다).</summary>
+        public bool Pushed { get; }
 
-        public UnitMoved(int unitId, GridPos from, GridPos to)
+        public UnitMoved(int unitId, GridPos from, GridPos to, bool pushed = false)
         {
             UnitId = unitId;
             From = from;
             To = to;
+            Pushed = pushed;
         }
     }
 

@@ -82,6 +82,15 @@ namespace GirlsDungeon.Game
                 // 수류탄 · 밀치기로 맞은 것은 탄도 선을 긋지 않는다 — 사격 · 근접만 선을 긋는다. 쓰면 차례가 끝나므로 다음 차례 표시에서 풀린다.
                 if (gameEvent is AreaExploded || gameEvent is PushUsed) skipTracers = true;
                 if (gameEvent is TurnStarted || gameEvent is CombatEnded || gameEvent is OverwatchTriggered) skipTracers = false;
+                // 밀려서 벽 · 유닛에 부딪힌 피해 (넉백 · 돌격병): 멈춘 칸 위에 숫자를 띄운다.
+                if (gameEvent is UnitPushed pushed && pushed.CollisionDamage > 0)
+                {
+                    bool hurt = pushed.Kind == UnitKind.Player;
+                    AddPopup(GridSpace.ToWorld(pushed.To), Text.Get("ui.fx.collision", pushed.CollisionDamage), hurt ? playerHurtColor : normalColor, -40f);
+                    if (hurt) playerView.Shake();
+                    else unitsView.Shake(pushed.UnitId);
+                    continue;
+                }
                 if (!(gameEvent is UnitAttacked attacked)) continue;
                 var from = ViewOf(attacked.AttackerId, attacked.AttackerKind);
                 var to = ViewOf(attacked.TargetId, attacked.TargetKind);

@@ -10,8 +10,8 @@ namespace GirlsDungeon.Tests
 {
     /// <summary>
     /// 3-15f 상점 주인 스킬 (BALANCE 33번): 밑천(스택) · 일반 공격 80% · 강공격 · 화염탄(화상) · 결전기(방벽) · 추가 공격.
-    /// 검산 값: 상점 주인 공격 9 · 체력 80, 플레이어 방어 4 → 화염탄 9 × 9 ÷ 13 = 6, 강공격 × 1.2 = 7, 일반 × 0.8 = 5 (치명 7),
-    /// 추가 공격 밑천 3 × 4% × 80 = 9.6 → 10.
+    /// 검산 값: 상점 주인 공격 9 · 체력 120 (3-16s), 플레이어 방어 4 → 화염탄 9 × 9 ÷ 13 = 6, 강공격 × 1.2 = 7, 일반 × 0.8 = 5 (치명 7),
+    /// 추가 공격 밑천 3 × 4% × 120 = 14.4 → 14.
     /// </summary>
     public class ShopkeeperSkillTests
     {
@@ -51,15 +51,15 @@ namespace GirlsDungeon.Tests
             Assert.That(KeeperSkills.Act(world, combat, keeper, player, events), Is.True);
 
             Assert.That(events.OfType<KeeperSkillUsed>().Single().Skill, Is.EqualTo(KeeperSkill.Order));
-            Assert.That(keeper.Hp, Is.EqualTo(80 - 32), "40% of max hp");
+            Assert.That(keeper.Hp, Is.EqualTo(120 - 48), "40% of max hp");
             Assert.That(world.KeeperStacks, Is.EqualTo(3));
             Assert.That(world.KeeperOrderCooldown, Is.EqualTo(2));
             Assert.That(world.PlayerBurnTurns, Is.EqualTo(2));
             Assert.That(world.KeeperRemold, Is.EqualTo(3), "two hits, then the passive at the end of the action");
             Assert.That(events.OfType<AreaExploded>().Count(), Is.EqualTo(1));
             var hits = events.OfType<UnitAttacked>().Select(hit => hit.Damage).ToArray();
-            Assert.That(hits, Is.EqualTo(new[] { 6, 10 }), "fire bomb, then one extra attack for 3 stacks");
-            Assert.That(player.Hp, Is.EqualTo(hp - 16));
+            Assert.That(hits, Is.EqualTo(new[] { 6, 14 }), "fire bomb, then one extra attack for 3 stacks");
+            Assert.That(player.Hp, Is.EqualTo(hp - 20));
         }
 
         [Test]
@@ -76,11 +76,11 @@ namespace GirlsDungeon.Tests
             Assert.That(KeeperSkills.Act(world, combat, keeper, player, events), Is.True);
 
             Assert.That(events.OfType<KeeperSkillUsed>().Single().Skill, Is.EqualTo(KeeperSkill.Heart));
-            Assert.That(keeper.Hp, Is.EqualTo(keeperHp - 24), "30% of max hp");
+            Assert.That(keeper.Hp, Is.EqualTo(keeperHp - 36), "30% of max hp");
             Assert.That(world.KeeperStacks, Is.EqualTo(3));
             Assert.That(world.KeeperHeartCooldown, Is.EqualTo(2));
             var hits = events.OfType<UnitAttacked>().Select(hit => hit.Damage).ToArray();
-            Assert.That(hits, Is.EqualTo(new[] { 7, 10 }), "120% shot, then one extra attack for 3 stacks");
+            Assert.That(hits, Is.EqualTo(new[] { 7, 14 }), "120% shot, then one extra attack for 3 stacks");
         }
 
         [Test]
@@ -124,9 +124,9 @@ namespace GirlsDungeon.Tests
         public void SkillCost_NeverGoesBelowTheHpFloor()
         {
             var (world, keeper, player, combat) = Fight();
-            keeper.Hp = 10;
+            keeper.Hp = 15;
             KeeperSkills.Act(world, combat, keeper, player, new List<GameEvent>());
-            Assert.That(keeper.Hp, Is.EqualTo(8), "10% of max hp is kept");
+            Assert.That(keeper.Hp, Is.EqualTo(12), "10% of max hp is kept");
             Assert.That(world.KeeperStacks, Is.EqualTo(3), "the skill is still used");
         }
 
@@ -159,14 +159,14 @@ namespace GirlsDungeon.Tests
 
             Assert.That(events.OfType<KeeperSkillUsed>().Single().Skill, Is.EqualTo(KeeperSkill.Final));
             Assert.That(world.KeeperStacks, Is.EqualTo(6));
-            Assert.That(world.KeeperShield, Is.EqualTo(40), "50% of max hp");
+            Assert.That(world.KeeperShield, Is.EqualTo(60), "50% of max hp");
             Assert.That(world.KeeperShieldTurns, Is.EqualTo(3));
             Assert.That(world.KeeperRemold, Is.EqualTo(1), "spent 6, then +1 for the action");
             Assert.That(events.OfType<UnitAttacked>().Any(), Is.False, "the final skill is the whole action");
 
             Assert.That(KeeperSkills.AfterShield(world, keeper, 10, events), Is.EqualTo(0));
-            Assert.That(world.KeeperShield, Is.EqualTo(30));
-            Assert.That(KeeperSkills.AfterShield(world, keeper, 50, events), Is.EqualTo(20));
+            Assert.That(world.KeeperShield, Is.EqualTo(50));
+            Assert.That(KeeperSkills.AfterShield(world, keeper, 70, events), Is.EqualTo(20));
             Assert.That(world.KeeperShield, Is.EqualTo(0));
             Assert.That(KeeperSkills.AfterShield(world, player, 10, events), Is.EqualTo(10), "only the shopkeeper");
         }

@@ -245,7 +245,7 @@ namespace GirlsDungeon.Game
             foreach (var gameEvent in events)
             {
                 if (gameEvent is UnitMoved moved && moved.UnitId == simulation.World.PlayerId)
-                    pendingSteps.Enqueue(GridSpace.ToWorld(moved.To));
+                    pendingSteps.Enqueue(GridSpace.ToWorld(moved.To) + (moved.Pushed ? SlideMarker : Vector3.zero));
                 // 낭떠러지에 떨어졌다가 다시 일어남: 떨어진 칸까지 걸어간 뒤 일어난 칸으로 바로 옮긴다.
                 if (gameEvent is PlayerFell fell && fell.To != fell.From)
                     pendingSteps.Enqueue(GridSpace.ToWorld(fell.To) + SnapMarker);
@@ -266,6 +266,12 @@ namespace GirlsDungeon.Game
         /// <summary>큐에서 "걷지 않고 바로 옮김"을 표시하는 높이 (칸 위치는 늘 y = 0).</summary>
         private static readonly Vector3 SnapMarker = Vector3.up * 1000f;
 
+        /// <summary>큐에서 "밀려서 미끄러짐"(걷기 동작 없이 옮김, 바라보는 방향 그대로)을 표시하는 높이.</summary>
+        private static readonly Vector3 SlideMarker = Vector3.up * 100f;
+
+        /// <summary>지금 칸이 밀려서 미끄러지는 중이다 (속도 값 0).</summary>
+        private bool isSliding;
+
         private void BeginNextStep()
         {
             if (pendingSteps.Count == 0) return;
@@ -276,9 +282,11 @@ namespace GirlsDungeon.Game
                 toPosition -= SnapMarker;
                 fromPosition = toPosition;
             }
-            // 걷는 방향을 바라본다 (순간 이동이면 그대로).
+            isSliding = toPosition.y > SlideMarker.y * 0.5f;
+            if (isSliding) toPosition -= SlideMarker;
+            // 걷는 방향을 바라본다 (순간 이동 · 밀림이면 그대로).
             var direction = toPosition - fromPosition;
-            if (direction.sqrMagnitude > 0.0001f) facingYaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
+            if (!isSliding && direction.sqrMagnitude > 0.0001f) facingYaw = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg;
             elapsed = 0f;
             isStepping = true;
         }
@@ -295,6 +303,7 @@ namespace GirlsDungeon.Game
             if (progress < 1f) return;
 
             isStepping = false;
+            isSliding = false;
             BeginNextStep();
         }
 
@@ -314,7 +323,7 @@ namespace GirlsDungeon.Game
             }
             var target = Quaternion.Euler(0f, facingYaw + yawOffset, 0f);
             modelPivot.localRotation = Quaternion.Slerp(modelPivot.localRotation, target, 1f - Mathf.Exp(-turnSharpness * Time.deltaTime));
-            if (hasSpeedParameter) modelAnimator.SetFloat(speedHash, IsMoving ? 1f : 0f);
+            if (hasSpeedParameter) modelAnimator.SetFloat(speedHash, IsMoving && !isSliding ? 1f : 0f);
             ShownCover = CoverHere();
             if (hasCoverParameter) modelAnimator.SetInteger(coverHash, ShownCover);
         }

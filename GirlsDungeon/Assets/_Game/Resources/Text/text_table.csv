@@ -121,6 +121,7 @@ ui.skill.end_turn_tip,턴 종료 · 적 차례로 넘김,End turn · the enemies
 ui.fx.damage,{0},{0}
 ui.fx.crit,치명 {0},Crit {0}
 ui.fx.stability_break,안정 붕괴,Stability broken
+ui.fx.collision,부딪힘 {0},Impact {0}
 ui.combat.confirm_attack,공격 (Space),Attack (Space)
 ui.select.title,캐릭터 선택,Choose your character
 ui.select.card,"{0}

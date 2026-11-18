@@ -256,13 +256,17 @@ namespace GirlsDungeon.Core.Sim
             var from = target.Position;
             foreach (var cell in slide.Path)
             {
-                events.Add(new UnitMoved(target.Id, target.Position, cell));
+                events.Add(new UnitMoved(target.Id, target.Position, cell, true));
                 target.Position = cell;
             }
+            // 보호막을 거친 실제 충돌 피해를 사건에 싣는다 (화면 피해 숫자 = 실제 값). 보호막 사건은 밀림 사건 뒤에.
+            var shieldEvents = new List<GameEvent>();
+            int dealtCollision = KeeperSkills.AfterShield(world, target, collisionDamage, shieldEvents);
             if (slide.Path.Count > 0 || slide.Collides)
-                events.Add(new UnitPushed(target.Id, target.Kind, from, slide.End, slide.Falls, collisionDamage));
+                events.Add(new UnitPushed(target.Id, target.Kind, from, slide.End, slide.Falls, dealtCollision));
+            events.AddRange(shieldEvents);
 
-            target.Hp -= KeeperSkills.AfterShield(world, target, collisionDamage, events);
+            target.Hp -= dealtCollision;
             events.Add(new UnitStatsChanged(target.Id));
 
             if (target.IsPlayer)

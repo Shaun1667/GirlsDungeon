@@ -98,7 +98,7 @@ MonoBehaviour:
   - kind: 3
     nameKey: unit.shopkeeper.name
     visualId: shopkeeper
-    maxHp: 80
+    maxHp: 120
     maxStability: 8
     visionRange: 10
     attack: 9

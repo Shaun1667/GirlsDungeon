@@ -30,6 +30,8 @@ namespace GirlsDungeon.Game
             public Vector3 From;
             public Vector3 To;
             public float Elapsed;
+            /// <summary>밀려서 미끄러지는 중 — 걷기 동작 · 걷는 방향 바라보기를 하지 않는다.</summary>
+            public bool Sliding;
             public float ShakeLeft;
             // 모델을 쓰는 유닛만 (캡슐이면 null).
             public Transform Model;
@@ -157,6 +159,7 @@ namespace GirlsDungeon.Game
         {
             facing = Quaternion.identity;
             Vector3 direction;
+            if (view.Elapsed < 1f && view.Sliding) return false;
             if (view.Elapsed < 1f) direction = view.To - view.From;
             else if (view.StillFor < walkHoldSeconds) return false;
             else
@@ -184,6 +187,7 @@ namespace GirlsDungeon.Game
                         view.From = view.Object.transform.position;
                         view.To = CellPosition(moved.To);
                         view.Elapsed = 0f;
+                        view.Sliding = moved.Pushed;
                         break;
                     case UnitAttacked attacked when views.TryGetValue(attacked.AttackerId, out var shooter) && shooter.Model != null:
                         // 쏘는 순간 대상을 바로 바라보고 사격 동작을 켠다.
@@ -231,7 +235,14 @@ namespace GirlsDungeon.Game
                 }
                 view.Object.transform.position = position;
                 if (view.Model == null) continue;
-                view.StillFor = view.Elapsed < 1f ? 0f : view.StillFor + Time.deltaTime;
+                if (view.Sliding && view.Elapsed >= 1f)
+                {
+                    // 다 밀렸다: 걷기 여운 없이 바로 선 모습.
+                    view.Sliding = false;
+                    view.StillFor = walkHoldSeconds;
+                }
+                if (view.Sliding) view.StillFor = walkHoldSeconds;
+                else view.StillFor = view.Elapsed < 1f ? 0f : view.StillFor + Time.deltaTime;
                 if (TryFacing(view, out var facing))
                     view.Model.rotation = Quaternion.Slerp(view.Model.rotation, facing, 1f - Mathf.Exp(-turnSharpness * Time.deltaTime));
                 if (view.HasSpeed) view.Animator.SetFloat(view.SpeedHash, view.StillFor < walkHoldSeconds ? 1f : 0f);
