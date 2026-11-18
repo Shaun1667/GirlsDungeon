@@ -156,15 +156,18 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
-        public void PlayerInsideTheBlast_IsHit_AndCanFall()
+        public void ThrowerInsideTheBlast_IsNotHit()
         {
+            // 3-16t (2026-11-18 사용자 "수류탄 자신은 피해 안입게 해줘").
             var (simulation, world, _, _) = StartCombat();
             var preview = AreaAttack.Preview(world, TestData.Combat(), world.Player, new GridPos(3, 2));
-            Assert.That(preview.HitsPlayer, Is.True);
+            Assert.That(preview.HitsPlayer, Is.False);
+            Assert.That(preview.Hits.Any(hit => hit.Target == world.Player), Is.False);
 
             world.Player.Hp = 1;
             Assert.That(simulation.Execute(new AreaAttackCommand(new GridPos(3, 2), TestData.Combat())), Is.True);
-            Assert.That(world.Mode, Is.EqualTo(WorldMode.Defeat));
+            Assert.That(world.Player.Hp, Is.EqualTo(1));
+            Assert.That(world.Mode, Is.Not.EqualTo(WorldMode.Defeat));
         }
 
         [Test]

@@ -106,6 +106,8 @@ namespace GirlsDungeon.Core.Sim
             bool hitsPlayer = false;
             foreach (var unit in world.Units)
             {
+                // 던진 사람은 자기 수류탄에 맞지 않는다 (2026-11-18 사용자, 3-16t).
+                if (unit == attacker) continue;
                 var position = unit.Position;
                 if (!InArea(position.X - center.X, position.Y - center.Y, radius, shape)) continue;
 
