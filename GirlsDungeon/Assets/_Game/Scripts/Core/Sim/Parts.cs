@@ -28,6 +28,12 @@ namespace GirlsDungeon.Core.Sim
         Defense = 6,
         MoveRange = 7,
         MaxStability = 8,
+        /// <summary>공격 % (무기 공격에 곱함 — 3-16n). 파츠의 퍼센트는 모두 더한 뒤 한 번 곱하고 반올림한다.</summary>
+        AttackPercent = 9,
+        /// <summary>최대 체력 % (캐릭터 기본 체력 기준).</summary>
+        MaxHpPercent = 10,
+        /// <summary>방어 % (캐릭터 기본 방어 기준, 합친 뒤 반올림 — 4에 +15%부터 +1).</summary>
+        DefensePercent = 11,
     }
 
     /// <summary>파츠 능력치 하나 (예: 공격 +2).</summary>

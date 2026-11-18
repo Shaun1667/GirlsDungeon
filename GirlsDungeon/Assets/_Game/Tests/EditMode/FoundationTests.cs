@@ -554,13 +554,12 @@ namespace GirlsDungeon.Tests
                 new PartStatRange { Stat = PartStat.Defense, Min = 1, Max = 1 },
                 new PartStatRange { Stat = PartStat.MoveRange, Min = 1, Max = 1 },
                 new PartStatRange { Stat = PartStat.MaxStability, Min = 1, Max = 1 },
+                new PartStatRange { Stat = PartStat.AttackPercent, Min = 5, Max = 10 },
+                new PartStatRange { Stat = PartStat.MaxHpPercent, Min = 5, Max = 10 },
+                new PartStatRange { Stat = PartStat.DefensePercent, Min = 5, Max = 10 },
             });
-            settings.PartPrimaryStats.AddRange(new[] { PartStat.Attack, PartStat.AttackRange, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.StabilityDamage });
-            settings.PartSecondaryStats.AddRange(new[]
-            {
-                PartStat.Attack, PartStat.AttackRange, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.StabilityDamage,
-                PartStat.MaxHp, PartStat.Defense, PartStat.MoveRange, PartStat.MaxStability,
-            });
+            settings.PartPrimaryStats.AddRange(new[] { PartStat.AttackPercent, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.MaxHpPercent, PartStat.DefensePercent });
+            settings.PartSecondaryStats.AddRange(new[] { PartStat.AttackPercent, PartStat.CritPercent, PartStat.MaxHpPercent, PartStat.DefensePercent });
             return settings;
         }
 

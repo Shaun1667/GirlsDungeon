@@ -121,7 +121,7 @@ namespace GirlsDungeon.Tests
                 world.PartMaterials = combat.WorkshopOptionCost;
                 world.SpareParts.Add(Part(WeaponKind.Blade, 2, PartGrade.Military, PartSet.Decisive, (PartStat.MaxHp, 5), (PartStat.Defense, 1)));
                 var events = new List<GameEvent>();
-                Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.Attack, events), Is.True);
+                Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.AttackPercent, events), Is.True);
                 Assert.That(world.PartMaterials, Is.EqualTo(0));
 
                 var part = world.SpareParts[0];
@@ -134,7 +134,7 @@ namespace GirlsDungeon.Tests
                 if (reworked.Success)
                 {
                     successes++;
-                    Assert.That(part.Bonuses[0].Stat, Is.EqualTo(PartStat.Attack));
+                    Assert.That(part.Bonuses[0].Stat, Is.EqualTo(PartStat.AttackPercent));
                 }
                 else failures++;
             }
@@ -149,9 +149,11 @@ namespace GirlsDungeon.Tests
             var (world, combat) = AtBench();
             world.SpareParts.Add(Part(world.PlayerWeapon, 0, PartGrade.Military, PartSet.None, (PartStat.Attack, 1), (PartStat.CritPercent, 3)));
             world.PartMaterials = 1;
-            Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.AttackRange, new List<GameEvent>()), Is.False, "not enough");
+            Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.AttackPercent, new List<GameEvent>()), Is.False, "not enough");
             world.PartMaterials = 10;
-            Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.MaxHp, new List<GameEvent>()), Is.False, "slot 1 has weapon stats only");
+            Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.MaxHp, new List<GameEvent>()), Is.False, "flat HP is not in the pool any more (3-16n)");
+            world.SpareParts.Add(Part(world.PlayerWeapon, 1, PartGrade.Military, PartSet.None, (PartStat.AttackPercent, 5)));
+            Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 1, 0, PartStat.CritMultiplier, new List<GameEvent>()), Is.False, "crit damage is slot 1 only");
             Assert.That(Workshop.ChangeOption(world, combat, PartPlace.Spare, 0, 0, PartStat.CritPercent, new List<GameEvent>()), Is.False, "already on line 2");
             Assert.That(world.PartMaterials, Is.EqualTo(10));
         }

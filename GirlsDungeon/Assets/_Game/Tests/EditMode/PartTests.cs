@@ -100,6 +100,57 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void PercentStats_AddUpAcrossParts_AndRoundOnce()
+        {
+            // 3-16n: 공격 · 체력 · 방어 %는 모든 파츠를 더한 뒤 기본값에 한 번 곱하고 반올림한다.
+            var combat = TestData.Combat();
+            var world = TestData.NewRun(1);
+            world.Items.Clear();
+            var player = world.Player;
+            int weaponAttack = combat.WeaponFor(world.PlayerWeapon).Attack;
+            int baseHp = player.MaxHp, baseDefense = player.Defense;
+
+            var first = world.AddPartItem(MakePart(world.PlayerWeapon, 0, (PartStat.AttackPercent, 10), (PartStat.DefensePercent, 10)), player.Position);
+            Assert.That(Parts.Equip(world, combat, first.Id, new List<GameEvent>()), Is.True);
+            var second = world.AddPartItem(MakePart(world.PlayerWeapon, 2, (PartStat.AttackPercent, 10), (PartStat.MaxHpPercent, 10), (PartStat.DefensePercent, 10)), player.Position);
+            Assert.That(Parts.Equip(world, combat, second.Id, new List<GameEvent>()), Is.True);
+
+            Assert.That(player.Attack, Is.EqualTo(weaponAttack + Loadout.Percent(weaponAttack, 20)));
+            Assert.That(player.MaxHp, Is.EqualTo(baseHp + Loadout.Percent(baseHp, 10)));
+            Assert.That(player.Defense, Is.EqualTo(baseDefense + Loadout.Percent(baseDefense, 20)), "20% summed, then rounded once");
+
+            // 바꾼 만큼만 되돌아간다.
+            var plain = world.AddPartItem(MakePart(world.PlayerWeapon, 2, (PartStat.CritPercent, 3)), player.Position);
+            Assert.That(Parts.Equip(world, combat, plain.Id, new List<GameEvent>()), Is.True);
+            Assert.That(player.MaxHp, Is.EqualTo(baseHp));
+            Assert.That(player.Defense, Is.EqualTo(baseDefense + Loadout.Percent(baseDefense, 10)));
+            Assert.That(player.Attack, Is.EqualTo(weaponAttack + Loadout.Percent(weaponAttack, 10)));
+        }
+
+        [Test]
+        public void Percent_RoundsHalfUp()
+        {
+            Assert.That(Loadout.Percent(4, 10), Is.EqualTo(0));
+            Assert.That(Loadout.Percent(4, 15), Is.EqualTo(1));
+            Assert.That(Loadout.Percent(4, 40), Is.EqualTo(2));
+            Assert.That(Loadout.Percent(14, 40), Is.EqualTo(6));
+            Assert.That(Loadout.Percent(100, 0), Is.EqualTo(0));
+        }
+
+        [Test]
+        public void Pools_CritDamageIsSlot1Only_AndRangeMoveStabilityAreGone()
+        {
+            var combat = TestData.Combat();
+            Assert.That(combat.PartPrimaryStats, Has.Member(PartStat.CritMultiplier));
+            Assert.That(combat.PartSecondaryStats, Has.No.Member(PartStat.CritMultiplier));
+            foreach (var gone in new[] { PartStat.Attack, PartStat.AttackRange, PartStat.StabilityDamage, PartStat.MoveRange, PartStat.MaxStability, PartStat.MaxHp, PartStat.Defense })
+            {
+                Assert.That(combat.PartPrimaryStats, Has.No.Member(gone), gone.ToString());
+                Assert.That(combat.PartSecondaryStats, Has.No.Member(gone), gone.ToString());
+            }
+        }
+
+        [Test]
         public void Equip_PartForAnotherWeapon_IsRefused()
         {
             var combat = TestData.Combat();

@@ -297,6 +297,9 @@ namespace GirlsDungeon.Game
                 case PartStat.MaxHp: return "part.stat_name.hp";
                 case PartStat.Defense: return "part.stat_name.defense";
                 case PartStat.MoveRange: return "part.stat_name.move";
+                case PartStat.AttackPercent: return "part.stat_name.attack_percent";
+                case PartStat.MaxHpPercent: return "part.stat_name.hp_percent";
+                case PartStat.DefensePercent: return "part.stat_name.defense_percent";
                 default: return "part.stat_name.stability";
             }
         }
@@ -313,6 +316,9 @@ namespace GirlsDungeon.Game
                 case PartStat.MaxHp: return "part.stat.hp";
                 case PartStat.Defense: return "part.stat.defense";
                 case PartStat.MoveRange: return "part.stat.move";
+                case PartStat.AttackPercent: return "part.stat.attack_percent";
+                case PartStat.MaxHpPercent: return "part.stat.hp_percent";
+                case PartStat.DefensePercent: return "part.stat.defense_percent";
                 default: return "part.stat.stability";
             }
         }

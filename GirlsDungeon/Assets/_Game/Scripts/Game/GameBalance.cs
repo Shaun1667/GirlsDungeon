@@ -460,14 +460,16 @@ namespace GirlsDungeon.Game
             new PartStatEntry { stat = PartStat.Defense, min = 1, max = 1 },
             new PartStatEntry { stat = PartStat.MoveRange, min = 1, max = 1 },
             new PartStatEntry { stat = PartStat.MaxStability, min = 1, max = 1 },
+            new PartStatEntry { stat = PartStat.AttackPercent, min = 5, max = 10 },
+            new PartStatEntry { stat = PartStat.MaxHpPercent, min = 5, max = 10 },
+            new PartStatEntry { stat = PartStat.DefensePercent, min = 5, max = 10 },
         };
         [Tooltip("Stats that slot 1 (muzzle or blade tip) can roll.")]
-        [SerializeField] private PartStat[] partPrimaryStats = { PartStat.Attack, PartStat.AttackRange, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.StabilityDamage };
-        [Tooltip("Stats that slots 2 to 4 can roll (body stats included).")]
+        [SerializeField] private PartStat[] partPrimaryStats = { PartStat.AttackPercent, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.MaxHpPercent, PartStat.DefensePercent };
+        [Tooltip("Stats that slots 2 to 4 can roll (crit damage is slot 1 only).")]
         [SerializeField] private PartStat[] partSecondaryStats =
         {
-            PartStat.Attack, PartStat.AttackRange, PartStat.CritPercent, PartStat.CritMultiplier, PartStat.StabilityDamage,
-            PartStat.MaxHp, PartStat.Defense, PartStat.MoveRange, PartStat.MaxStability,
+            PartStat.AttackPercent, PartStat.CritPercent, PartStat.MaxHpPercent, PartStat.DefensePercent,
         };
         [Tooltip("Grade chance (%) in order: industrial, military, precision. Sum 100.")]
         [SerializeField] private int[] partGradePercents = { 60, 30, 10 };
