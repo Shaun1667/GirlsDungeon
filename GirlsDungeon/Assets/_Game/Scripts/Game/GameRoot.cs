@@ -594,6 +594,13 @@ namespace GirlsDungeon.Game
             return world.PlayerParts[slot];
         }
 
+        /// <summary>등급 · 세트 · 능력치의 화면 이름 (텍스트 표, 디버그 창 파츠 편집이 씀).</summary>
+        public string DebugGradeName(PartGrade grade) => HudView.GradeName(grade);
+        public string DebugSetName(PartSet set) => HudView.SetName(set);
+        public string DebugStatName(PartStat stat) => Text.Get(HudView.StatNameKey(stat));
+        /// <summary>파츠 한 줄 (예: "정밀 · 공격 +10% · 치명 +5%"), 화면 비교 창과 같은 글.</summary>
+        public string DebugPartLine(WeaponPart part) => part == null ? string.Empty : HudView.GradeName(part.Grade) + " · " + HudView.PartStats(part) + (part.Set != PartSet.None ? " · " + HudView.SetName(part.Set) : string.Empty);
+
         /// <summary>켜진 세트 · 중첩 · 남은 차례 (디버그).</summary>
         public string DebugSetSummary()
         {

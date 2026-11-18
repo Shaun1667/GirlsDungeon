@@ -161,7 +161,21 @@ namespace GirlsDungeon.EditorTools
         private void DrawPartEditSection(GameRoot root)
         {
             EditorGUILayout.LabelField("파츠 편집", EditorStyles.boldLabel);
-            EditorGUILayout.LabelField("지금", root.DebugPartsSummary(), EditorStyles.wordWrappedLabel);
+            var world = root.World;
+            if (world == null || world.Player == null)
+            {
+                EditorGUILayout.LabelField("판이 아직 시작되지 않았습니다.");
+                return;
+            }
+            for (int i = 0; i < GirlsDungeon.Core.Sim.WeaponPart.SlotCount; i++)
+            {
+                var part = world.PlayerParts[i];
+                EditorGUILayout.LabelField($"{i + 1}번 칸", part == null ? "비어 있음" : root.DebugPartLine(part), EditorStyles.wordWrappedLabel);
+            }
+            var player = world.Player;
+            EditorGUILayout.LabelField("능력치",
+                $"공격 {player.Attack} · 치명 {player.CritPercent}% · 치명 배율 {player.CritMultiplierPercent}% · 체력 {player.Hp}/{player.MaxHp} · 방어 {player.Defense}",
+                EditorStyles.wordWrappedLabel);
 
             int slot = GUILayout.Toolbar(editSlot, SlotLabels);
             if (slot != editSlot)
@@ -171,14 +185,14 @@ namespace GirlsDungeon.EditorTools
             }
             if (GUILayout.Button("이 칸의 지금 파츠 불러오기")) LoadPart(root);
 
-            editGrade = (GirlsDungeon.Core.Sim.PartGrade)EditorGUILayout.EnumPopup("등급", editGrade);
-            editSet = (GirlsDungeon.Core.Sim.PartSet)EditorGUILayout.EnumPopup("세트 (2 ~ 4번 칸)", editSet);
+            editGrade = KoreanPopup("등급", editGrade, g => root.DebugGradeName(g));
+            editSet = KoreanPopup("세트 (2 ~ 4번 칸)", editSet, s => s == GirlsDungeon.Core.Sim.PartSet.None ? "없음" : root.DebugSetName(s));
 
             int remove = -1;
             for (int i = 0; i < editStats.Count; i++)
             {
                 EditorGUILayout.BeginHorizontal();
-                editStats[i] = (GirlsDungeon.Core.Sim.PartStat)EditorGUILayout.EnumPopup(editStats[i]);
+                editStats[i] = KoreanPopup(null, editStats[i], s => root.DebugStatName(s));
                 editValues[i] = EditorGUILayout.IntField(editValues[i], GUILayout.Width(60));
                 if (GUILayout.Button("빼기", GUILayout.Width(50))) remove = i;
                 EditorGUILayout.EndHorizontal();
@@ -203,6 +217,24 @@ namespace GirlsDungeon.EditorTools
             }
             if (GUILayout.Button("이 칸 비우기 [상태 변경]")) root.DebugSetPart(editSlot, editGrade, editSet, null);
             EditorGUILayout.EndHorizontal();
+        }
+
+        /// <summary>enum 값을 한글 이름으로 보여 주는 선택 칸. 이름이 겹치면(옛 고정 능력치) 뒤에 "(고정)"이 붙는다.</summary>
+        private static T KoreanPopup<T>(string label, T value, System.Func<T, string> name) where T : System.Enum
+        {
+            var values = (T[])System.Enum.GetValues(typeof(T));
+            var names = new string[values.Length];
+            int index = 0;
+            for (int i = 0; i < values.Length; i++)
+            {
+                names[i] = name(values[i]);
+                if (string.IsNullOrEmpty(names[i])) names[i] = values[i].ToString();
+                for (int j = 0; j < i; j++)
+                    if (names[j] == names[i]) { names[i] += " (고정)"; break; }
+                if (values[i].Equals(value)) index = i;
+            }
+            int picked = label == null ? EditorGUILayout.Popup(index, names) : EditorGUILayout.Popup(label, index, names);
+            return values[picked];
         }
 
         private void LoadPart(GameRoot root)
