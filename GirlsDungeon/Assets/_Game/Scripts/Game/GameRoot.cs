@@ -578,6 +578,22 @@ namespace GirlsDungeon.Game
             return simulation.Execute(new DebugEquipSetCommand(set, combatSettings));
         }
 
+        /// <summary>[상태 변경] 든 무기의 한 칸(0 ~ 3)에 마음대로 만든 파츠를 끼운다 (한계 검사 없음). bonuses가 null이면 비운다.</summary>
+        public bool DebugSetPart(int slot, PartGrade grade, PartSet set, System.Collections.Generic.List<PartBonus> bonuses)
+        {
+            if (World == null) return false;
+            DebugUsed = true;
+            return simulation.Execute(new DebugSetPartCommand(slot, grade, set, bonuses, combatSettings));
+        }
+
+        /// <summary>든 무기의 한 칸(0 ~ 3) 파츠, 없으면 null (디버그 창 파츠 편집이 불러옴).</summary>
+        public WeaponPart DebugPartAt(int slot)
+        {
+            var world = World;
+            if (world == null || slot < 0 || slot >= WeaponPart.SlotCount) return null;
+            return world.PlayerParts[slot];
+        }
+
         /// <summary>켜진 세트 · 중첩 · 남은 차례 (디버그).</summary>
         public string DebugSetSummary()
         {

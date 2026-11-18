@@ -53,6 +53,8 @@ namespace GirlsDungeon.EditorTools
                     DrawCombatSection(root);
                     EditorGUILayout.Space();
                     DrawLootSection(root);
+                    EditorGUILayout.Space();
+                    DrawPartEditSection(root);
                 }
             }
 
@@ -146,6 +148,76 @@ namespace GirlsDungeon.EditorTools
             if (GUILayout.Button("열쇠 +1 [상태 변경]")) root.DebugAddKeys(1);
             if (GUILayout.Button("잠긴 문 앞으로 [상태 변경]")) root.DebugGoToLockedDoor();
             EditorGUILayout.EndHorizontal();
+        }
+
+        // 파츠 편집 — 든 무기의 칸 하나를 마음대로 만든 파츠로 바꾼다 (한계 검사 없음).
+        private int editSlot;
+        private GirlsDungeon.Core.Sim.PartGrade editGrade = GirlsDungeon.Core.Sim.PartGrade.Precision;
+        private GirlsDungeon.Core.Sim.PartSet editSet = GirlsDungeon.Core.Sim.PartSet.None;
+        private readonly System.Collections.Generic.List<GirlsDungeon.Core.Sim.PartStat> editStats = new System.Collections.Generic.List<GirlsDungeon.Core.Sim.PartStat>();
+        private readonly System.Collections.Generic.List<int> editValues = new System.Collections.Generic.List<int>();
+        private static readonly string[] SlotLabels = { "1번", "2번", "3번", "4번" };
+
+        private void DrawPartEditSection(GameRoot root)
+        {
+            EditorGUILayout.LabelField("파츠 편집", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("지금", root.DebugPartsSummary(), EditorStyles.wordWrappedLabel);
+
+            int slot = GUILayout.Toolbar(editSlot, SlotLabels);
+            if (slot != editSlot)
+            {
+                editSlot = slot;
+                LoadPart(root);
+            }
+            if (GUILayout.Button("이 칸의 지금 파츠 불러오기")) LoadPart(root);
+
+            editGrade = (GirlsDungeon.Core.Sim.PartGrade)EditorGUILayout.EnumPopup("등급", editGrade);
+            editSet = (GirlsDungeon.Core.Sim.PartSet)EditorGUILayout.EnumPopup("세트 (2 ~ 4번 칸)", editSet);
+
+            int remove = -1;
+            for (int i = 0; i < editStats.Count; i++)
+            {
+                EditorGUILayout.BeginHorizontal();
+                editStats[i] = (GirlsDungeon.Core.Sim.PartStat)EditorGUILayout.EnumPopup(editStats[i]);
+                editValues[i] = EditorGUILayout.IntField(editValues[i], GUILayout.Width(60));
+                if (GUILayout.Button("빼기", GUILayout.Width(50))) remove = i;
+                EditorGUILayout.EndHorizontal();
+            }
+            if (remove >= 0)
+            {
+                editStats.RemoveAt(remove);
+                editValues.RemoveAt(remove);
+            }
+            if (GUILayout.Button("옵션 줄 더하기"))
+            {
+                editStats.Add(GirlsDungeon.Core.Sim.PartStat.AttackPercent);
+                editValues.Add(10);
+            }
+
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("이 칸에 끼우기 [상태 변경]"))
+            {
+                var bonuses = new System.Collections.Generic.List<GirlsDungeon.Core.Sim.PartBonus>();
+                for (int i = 0; i < editStats.Count; i++) bonuses.Add(new GirlsDungeon.Core.Sim.PartBonus(editStats[i], editValues[i]));
+                root.DebugSetPart(editSlot, editGrade, editSet, bonuses);
+            }
+            if (GUILayout.Button("이 칸 비우기 [상태 변경]")) root.DebugSetPart(editSlot, editGrade, editSet, null);
+            EditorGUILayout.EndHorizontal();
+        }
+
+        private void LoadPart(GameRoot root)
+        {
+            editStats.Clear();
+            editValues.Clear();
+            var part = root.DebugPartAt(editSlot);
+            if (part == null) return;
+            editGrade = part.Grade;
+            editSet = part.Set;
+            foreach (var bonus in part.Bonuses)
+            {
+                editStats.Add(bonus.Stat);
+                editValues.Add(bonus.Value);
+            }
         }
 
         private GirlsDungeon.Core.Map.SpecialRoomKind roomToVisit = GirlsDungeon.Core.Map.SpecialRoomKind.Treasure;

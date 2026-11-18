@@ -263,6 +263,39 @@ namespace GirlsDungeon.Core.Sim
         }
     }
 
+    /// <summary>
+    /// [디버그] 든 무기의 한 칸에 마음대로 만든 파츠를 끼운다 (등급 · 세트 · 능력치 줄 · 값을 그대로, 한계 검사 없음 — 디버그 창 파츠 편집).
+    /// bonuses가 null이면 그 칸을 비운다.
+    /// </summary>
+    public sealed class DebugSetPartCommand : ICommand
+    {
+        private readonly int slot;
+        private readonly PartGrade grade;
+        private readonly PartSet set;
+        private readonly List<PartBonus> bonuses;
+        private readonly CombatSettings settings;
+
+        public int CostTicks => 0;
+
+        public DebugSetPartCommand(int slot, PartGrade grade, PartSet set, List<PartBonus> bonuses, CombatSettings settings)
+        {
+            this.slot = slot;
+            this.grade = grade;
+            this.set = set;
+            this.bonuses = bonuses;
+            this.settings = settings;
+        }
+
+        public bool TryApply(World world, List<GameEvent> events)
+        {
+            if (world.Player == null || slot < 0 || slot >= WeaponPart.SlotCount) return false;
+            world.PlayerParts[slot] = bonuses == null ? null : new WeaponPart(world.PlayerWeapon, slot, grade, new List<PartBonus>(bonuses), set);
+            Loadout.Apply(world, settings);
+            events.Add(new UnitStatsChanged(world.Player.Id));
+            return true;
+        }
+    }
+
     /// <summary>발밑에 파츠가 있다. 화면이 비교 창을 띄운다 (끼우기 = EquipPartCommand, 두기 = 아무것도 안 함).</summary>
     public sealed class PartFound : GameEvent
     {
