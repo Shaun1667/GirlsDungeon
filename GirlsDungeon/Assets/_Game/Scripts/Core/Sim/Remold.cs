@@ -44,6 +44,7 @@ namespace GirlsDungeon.Core.Sim
                 case SkillKind.Grenade: return world.GrenadeCooldown;
                 case SkillKind.Push: return world.PushCooldown;
                 case SkillKind.Sonic: return world.SonicCooldown;
+                case SkillKind.Frost: return world.FrostCooldown;
                 default: return 0;
             }
         }
@@ -69,6 +70,7 @@ namespace GirlsDungeon.Core.Sim
                 case SkillKind.Grenade: world.GrenadeCooldown = settings.GrenadeCooldownRounds; break;
                 case SkillKind.Push: world.PushCooldown = settings.PushCooldownRounds; break;
                 case SkillKind.Sonic: world.SonicCooldown = settings.SonicCooldownRounds; break;
+                case SkillKind.Frost: world.FrostCooldown = settings.FrostCooldownRounds; break;
             }
         }
 

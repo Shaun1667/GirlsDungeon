@@ -149,7 +149,7 @@ MonoBehaviour:
     defense: 3
     moveRange: 6
     startWeapon: 4
-    skills: 010200
+    skills: 040201
     workshopOptionPercent: 70
     workshopSetPercent: 50
     doorForcePercent: 0
@@ -227,6 +227,11 @@ MonoBehaviour:
   sonicDamagePercent: 60
   sonicStabilityDamage: 3
   sonicCooldownRounds: 2
+  frostRange: 6
+  frostDamagePercent: 100
+  frostFixedDefensePercent: 50
+  frostStabilityDamage: 4
+  frostCooldownRounds: 2
   keeperSkills:
     basicPercent: 80
     stackMax: 6

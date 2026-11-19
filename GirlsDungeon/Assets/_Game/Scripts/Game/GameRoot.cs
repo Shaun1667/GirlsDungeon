@@ -275,6 +275,13 @@ namespace GirlsDungeon.Game
             return moveController.RequestSonic(targetId);
         }
 
+        /// <summary>[상태 변경] 빙결 사격을 그 적에게 쓴다 (3-16z). 못 쓰면 false.</summary>
+        public bool DebugFrost(int targetId)
+        {
+            DebugUsed = true;
+            return moveController.RequestFrost(targetId);
+        }
+
         /// <summary>스킬 바 칸 (2 · 3 · 4)에 든 스킬과 카드 이름 · 쓸 수 있는지.</summary>
         public string DebugSkillSlotsSummary()
         {
@@ -284,7 +291,7 @@ namespace GirlsDungeon.Game
                 var card = skillBar.SlotCard(i);
                 parts.Add($"{i + 2}:{skillBar.SlotSkill(i)}({(card.gameObject.activeSelf ? card.NameText + (card.Interactable ? "" : " off") : "hidden")})");
             }
-            return string.Join(" ", parts) + $", Aim={moveController.Aim}, SonicCooldown={World?.SonicCooldown}";
+            return string.Join(" ", parts) + $", Aim={moveController.Aim}, SonicCooldown={World?.SonicCooldown}, FrostCooldown={World?.FrostCooldown}";
         }
 
         /// <summary>[상태 변경] 사격 확인 버튼과 같다. 못 쏘면 false.</summary>

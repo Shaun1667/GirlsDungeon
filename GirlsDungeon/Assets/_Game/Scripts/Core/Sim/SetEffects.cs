@@ -53,6 +53,8 @@ namespace GirlsDungeon.Core.Sim
         Push = 3,
         /// <summary>음파 공격 (단일, 스킬).</summary>
         Sonic = 4,
+        /// <summary>빙결 사격 (단일, 스킬, 빙결 속성 — 3-16z).</summary>
+        Frost = 5,
     }
 
     /// <summary>피해 속성 (3-16e). 지금은 모든 피해가 물리 — 속성을 주는 무기 · 스킬이 생기면 ElementOf에서 고른다.</summary>
@@ -91,8 +93,9 @@ namespace GirlsDungeon.Core.Sim
 
         // ---- 아직 없는 시스템의 조건 (생기면 여기만 고친다) ----
 
-        /// <summary>그 피해의 속성. 지금은 모두 물리.</summary>
-        public static DamageElement ElementOf(World world, CombatSettings settings, DamageSource source) => DamageElement.Physical;
+        /// <summary>그 피해의 속성. 빙결 사격만 빙결 (3-16z), 나머지는 물리.</summary>
+        public static DamageElement ElementOf(World world, CombatSettings settings, DamageSource source)
+            => source == DamageSource.Frost ? DamageElement.Freeze : DamageElement.Physical;
 
         /// <summary>대상이 위상 속성 디버프를 가졌는가 (위상 디버프가 아직 없다).</summary>
         public static bool HasPhaseDebuff(Unit target) => false;
@@ -118,7 +121,7 @@ namespace GirlsDungeon.Core.Sim
             }
         }
 
-        private static readonly DamageSource[] AllSources = { DamageSource.Shot, DamageSource.Overwatch, DamageSource.Grenade, DamageSource.Push, DamageSource.Sonic };
+        private static readonly DamageSource[] AllSources = { DamageSource.Shot, DamageSource.Overwatch, DamageSource.Grenade, DamageSource.Push, DamageSource.Sonic, DamageSource.Frost };
 
         /// <summary>지금 게임에서 이 세트의 조건이 생길 수 있는가 — 없으면 드롭 후보에서 뺀다.</summary>
         public static bool HasSource(PartSet set)
@@ -179,7 +182,7 @@ namespace GirlsDungeon.Core.Sim
             return count;
         }
 
-        public static bool IsSkill(DamageSource source) => source == DamageSource.Grenade || source == DamageSource.Push || source == DamageSource.Sonic;
+        public static bool IsSkill(DamageSource source) => source == DamageSource.Grenade || source == DamageSource.Push || source == DamageSource.Sonic || source == DamageSource.Frost;
         public static bool IsArea(DamageSource source) => source == DamageSource.Grenade || source == DamageSource.Push;
         /// <summary>턴 외 피해 (지원 공격 · 매복 · 반격 · 패시브 — 지금은 감시 사격뿐).</summary>
         public static bool IsOffTurn(DamageSource source) => source == DamageSource.Overwatch;
@@ -192,6 +195,7 @@ namespace GirlsDungeon.Core.Sim
                 case DamageSource.Grenade: return SkillKind.Grenade;
                 case DamageSource.Push: return SkillKind.Push;
                 case DamageSource.Sonic: return SkillKind.Sonic;
+                case DamageSource.Frost: return SkillKind.Frost;
                 default: return SkillKind.None;
             }
         }

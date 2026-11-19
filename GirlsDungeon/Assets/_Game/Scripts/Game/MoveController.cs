@@ -16,6 +16,8 @@ namespace GirlsDungeon.Game
         Push = 2,
         /// <summary>음파 공격: 적을 클릭해 쓴다 (3-12).</summary>
         Sonic = 3,
+        /// <summary>빙결 사격: 음파처럼 적을 클릭해 쓴다 (3-16z).</summary>
+        Frost = 4,
     }
 
     /// <summary>
@@ -25,7 +27,7 @@ namespace GirlsDungeon.Game
     /// 예약이 있으면 선 · 미리보기는 예약 칸에서 계산한다. 확인(버튼 · Space · 사격 카드) = 예약 칸으로 CombatMoveCommand 뒤 AttackCommand를 한 번에,
     /// 대상 없이 Space 또는 예약 칸을 다시 클릭 = 이동만. 오른쪽 클릭 · Esc = 대상 → 예약 순으로 취소. 마우스를 올리면 미리보기.
     /// 조준 모드 (2026-11-14 사용자 "스킬도 기본 사격처럼"): 이동 범위는 계속 보이고, 클릭은 바로 쓰지 않고 대상만 고른다 — 확인(버튼 · Space · 그 스킬 카드)에 쓴다.
-    /// 수류탄 · 밀치기(범위 스킬) = 클릭한 칸으로 범위가 옮겨짐 → AreaAttackCommand · PushCommand. 음파(대상 스킬) = 사격과 같이 적 클릭 = 대상, 파란 칸 = 이동 예약 → SonicAttackCommand.
+    /// 수류탄 · 밀치기(범위 스킬) = 클릭한 칸으로 범위가 옮겨짐 → AreaAttackCommand · PushCommand. 음파 · 빙결 사격(대상 스킬) = 사격과 같이 적 클릭 = 대상, 파란 칸 = 이동 예약 → SonicAttackCommand · FrostAttackCommand.
     /// 오른쪽 클릭 · Esc = 스킬 대상 → 조준 → 예약 순 취소.
     /// </summary>
     public sealed class MoveController : MonoBehaviour
@@ -161,7 +163,7 @@ namespace GirlsDungeon.Game
         public bool PlanMove(GridPos cell)
         {
             // 범위 스킬 조준 중의 클릭은 범위 옮기기라 예약하지 않는다. 음파(대상 스킬)는 사격처럼 예약할 수 있다.
-            if (simulation == null || Busy || (aim != AimMode.None && aim != AimMode.Sonic)) return false;
+            if (simulation == null || Busy || (aim != AimMode.None && !IsTargetAim)) return false;
             var world = simulation.World;
             if (world.Mode != WorldMode.Combat || !Loadout.CanCombatMove(world, settings)) return false;
             RefreshRange(true);
@@ -237,8 +239,10 @@ namespace GirlsDungeon.Game
                 {
                     var enemy = skillWorld.FindUnit(id);
                     if (enemy == null) continue;
-                    if (!SonicAttack.Preview(skillWorld, settings, player, enemy).CanUse) continue;
-                    DrawTargetLine(used++, player.Position, enemy.Position, id, id == skillTargetId ? "selected" : "open");
+                    if (!TargetSkillUsable(skillWorld, enemy)) continue;
+                    // 빙결 사격은 엄폐를 받는다 — 사격처럼 엄폐 뒤 적은 흰 선 (3-16z).
+                    bool covered = aim == AimMode.Frost && FrostAttack.Preview(skillWorld, settings, player, enemy).Cover != CoverLevel.None;
+                    DrawTargetLine(used++, player.Position, enemy.Position, id, id == skillTargetId ? "selected" : covered ? "cover" : "open");
                 }
             }
             for (int i = used; i < lines.Count; i++) lines[i].enabled = false;
@@ -274,15 +278,56 @@ namespace GirlsDungeon.Game
         /// <summary>음파 공격 조준 모드를 켜고 끈다 (음파 버튼).</summary>
         public void ToggleSonicAim() => ToggleAim(AimMode.Sonic);
 
+        /// <summary>빙결 사격 조준 모드를 켜고 끈다 (빙결 사격 카드, 3-16z).</summary>
+        public void ToggleFrostAim() => ToggleAim(AimMode.Frost);
+
         /// <summary>그 적에게 음파 공격을 쓴다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 쓰면 false (조준 모드는 그대로).</summary>
-        public bool RequestSonic(int targetId)
+        public bool RequestSonic(int targetId) => RequestTargetSkill(AimMode.Sonic, targetId);
+
+        /// <summary>그 적에게 빙결 사격을 쓴다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 쓰면 false.</summary>
+        public bool RequestFrost(int targetId) => RequestTargetSkill(AimMode.Frost, targetId);
+
+        private bool RequestTargetSkill(AimMode mode, int targetId)
         {
             if (simulation == null || !CombatFlow.CanUseSkill(simulation.World) || Busy) return false;
             var preview = PreviewWorld();
-            if (preview == null || !SonicAttack.Preview(preview, settings, preview.Player, preview.FindUnit(targetId)).CanUse) return false;
-            if (!RunAfterPlannedMove(new SonicAttackCommand(targetId, settings))) return false;
+            if (preview == null || !TargetSkillUsable(preview, preview.FindUnit(targetId), mode)) return false;
+            ICommand command = mode == AimMode.Frost ? new FrostAttackCommand(targetId, settings) : (ICommand)new SonicAttackCommand(targetId, settings);
+            if (!RunAfterPlannedMove(command)) return false;
             SetAiming(AimMode.None);
             return true;
+        }
+
+        /// <summary>적 하나를 고르는 스킬(음파 · 빙결 사격)을 조준 중인가.</summary>
+        private bool IsTargetAim => aim == AimMode.Sonic || aim == AimMode.Frost;
+
+        /// <summary>그 적에게 대상 스킬을 쓸 수 있는가 (판정은 규칙 Preview 한 곳). mode를 주지 않으면 지금 조준 중인 스킬.</summary>
+        private bool TargetSkillUsable(World skillWorld, Unit target, AimMode? mode = null)
+        {
+            if (skillWorld == null || target == null) return false;
+            return (mode ?? aim) == AimMode.Frost
+                ? FrostAttack.Preview(skillWorld, settings, skillWorld.Player, target).CanUse
+                : SonicAttack.Preview(skillWorld, settings, skillWorld.Player, target).CanUse;
+        }
+
+        /// <summary>지금 조준 중인 대상 스킬의 미리보기를 HUD에 띄운다. 쓸 수 있으면 true.</summary>
+        private bool ShowTargetPreview(World skillWorld, Unit target)
+        {
+            if (aim == AimMode.Frost)
+            {
+                var frost = FrostAttack.Preview(skillWorld, settings, skillWorld.Player, target);
+                hudView.ShowFrostPreview(frost);
+                return frost.CanUse;
+            }
+            var sonic = SonicAttack.Preview(skillWorld, settings, skillWorld.Player, target);
+            hudView.ShowSonicPreview(sonic);
+            return sonic.CanUse;
+        }
+
+        private void ShowTargetHint()
+        {
+            if (aim == AimMode.Frost) hudView.ShowFrostHint();
+            else hudView.ShowSonicHint();
         }
 
         private void ToggleAim(AimMode mode)
@@ -307,6 +352,7 @@ namespace GirlsDungeon.Game
                 case AimMode.Grenade: return SkillKind.Grenade;
                 case AimMode.Push: return SkillKind.Push;
                 case AimMode.Sonic: return SkillKind.Sonic;
+                case AimMode.Frost: return SkillKind.Frost;
                 default: return SkillKind.None;
             }
         }
@@ -396,7 +442,7 @@ namespace GirlsDungeon.Game
         private GridPos? skillCell;
         private int skillTargetId = -1;
 
-        public bool HasSkillTarget => aim == AimMode.Sonic ? skillTargetId >= 0 : aim != AimMode.None && skillCell.HasValue;
+        public bool HasSkillTarget => IsTargetAim ? skillTargetId >= 0 : aim != AimMode.None && skillCell.HasValue;
         public GridPos? SkillCell => skillCell;
         public int SkillTargetId => skillTargetId;
 
@@ -411,7 +457,7 @@ namespace GirlsDungeon.Game
         {
             if (aim == AimMode.Grenade && skillCell.HasValue) return RequestAreaAttack(skillCell.Value);
             if (aim == AimMode.Push && skillCell.HasValue) return RequestPush(skillCell.Value);
-            if (aim == AimMode.Sonic && skillTargetId >= 0) return RequestSonic(skillTargetId);
+            if (IsTargetAim && skillTargetId >= 0) return RequestTargetSkill(aim, skillTargetId);
             return false;
         }
 
@@ -425,11 +471,11 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             var skillWorld = PreviewWorld();
             if (skillWorld == null) return false;
-            if (aim == AimMode.Sonic)
+            if (IsTargetAim)
             {
                 var under = world.UnitAt(cell);
                 var target = under != null && !under.IsPlayer ? skillWorld.FindUnit(under.Id) : null;
-                if (target == null || !SonicAttack.Preview(skillWorld, settings, skillWorld.Player, target).CanUse) return false;
+                if (target == null || !TargetSkillUsable(skillWorld, target)) return false;
                 skillTargetId = under.Id;
                 return true;
             }
@@ -792,7 +838,7 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             // 권총은 쏜 뒤에도 이동할 수 있다 — 판정은 규칙(Loadout.CanCombatMove) 한 곳.
             // 이동 범위는 스킬 조준 중에도 보인다 (2026-11-14 사용자). 예약 클릭은 조준 없음 · 음파 조준 때만.
-            bool canMove = Loadout.CanCombatMove(world, settings) && !Busy && (aim == AimMode.None || aim == AimMode.Sonic);
+            bool canMove = Loadout.CanCombatMove(world, settings) && !Busy && (aim == AimMode.None || IsTargetAim);
             RefreshRange(Loadout.CanCombatMove(world, settings) && !Busy);
 
             var mouse = Mouse.current;
@@ -913,7 +959,7 @@ namespace GirlsDungeon.Game
         private void HandleSkillAim(World world, GridPos? cell, bool clicked, bool canMove)
         {
             var skillWorld = PreviewWorld();
-            if (aim == AimMode.Sonic)
+            if (IsTargetAim)
             {
                 HandleSonicAim(world, skillWorld, cell, clicked, canMove);
                 return;
@@ -962,12 +1008,11 @@ namespace GirlsDungeon.Game
                     // 마우스 아래 적 (복제 세계에서는 같은 ID로 찾는다).
                     var target = skillWorld?.FindUnit(under.Id);
                     SetHover(cell);
-                    if (target == null) hudView.ShowSonicHint();
+                    if (target == null) ShowTargetHint();
                     else
                     {
-                        var preview = SonicAttack.Preview(skillWorld, settings, skillWorld.Player, target);
-                        hudView.ShowSonicPreview(preview);
-                        if (clicked && preview.CanUse) skillTargetId = under.Id;
+                        bool usable = ShowTargetPreview(skillWorld, target);
+                        if (clicked && usable) skillTargetId = under.Id;
                     }
                     handled = true;
                 }
@@ -990,15 +1035,15 @@ namespace GirlsDungeon.Game
             // 예약을 바꿨으면 복제 세계도 바뀐다.
             skillWorld = PreviewWorld();
             var locked = skillTargetId >= 0 && skillWorld != null ? skillWorld.FindUnit(skillTargetId) : null;
-            var lockedPreview = locked != null ? SonicAttack.Preview(skillWorld, settings, skillWorld.Player, locked) : default;
+            bool lockedUsable = locked != null && TargetSkillUsable(skillWorld, locked);
             if (!handled)
             {
                 SetHover(null);
-                if (locked != null) hudView.ShowSonicPreview(lockedPreview);
+                if (locked != null) ShowTargetPreview(skillWorld, locked);
                 else if (plannedCell.HasValue) hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(plannedCell.Value));
-                else hudView.ShowSonicHint();
+                else ShowTargetHint();
             }
-            hudView.ShowAttackConfirm(skillTargetId >= 0, locked != null && lockedPreview.CanUse && !Busy);
+            hudView.ShowAttackConfirm(skillTargetId >= 0, lockedUsable && !Busy);
             RefreshSonicLines(skillWorld);
             var lockedUnit = skillTargetId >= 0 ? world.FindUnit(skillTargetId) : null;
             RefreshGhost(world, lockedUnit != null ? GridSpace.ToWorld(lockedUnit.Position) : (Vector3?)null);

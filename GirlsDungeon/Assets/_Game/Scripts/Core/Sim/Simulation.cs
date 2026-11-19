@@ -252,6 +252,7 @@ namespace GirlsDungeon.Core.Sim
             world.GrenadeCooldown = 0;
             world.PushCooldown = 0;
             world.SonicCooldown = 0;
+            world.FrostCooldown = 0;
             KeeperSkills.Reset(world);
         }
 

@@ -136,6 +136,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Grenade: moveController.ToggleAim(); break;
                 case SkillKind.Push: moveController.TogglePushAim(); break;
                 case SkillKind.Sonic: moveController.ToggleSonicAim(); break;
+                case SkillKind.Frost: moveController.ToggleFrostAim(); break;
             }
             return true;
         }
@@ -157,6 +158,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Grenade: return AimMode.Grenade;
                 case SkillKind.Push: return AimMode.Push;
                 case SkillKind.Sonic: return AimMode.Sonic;
+                case SkillKind.Frost: return AimMode.Frost;
                 default: return AimMode.None;
             }
         }
@@ -168,6 +170,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Grenade: return "ui.skill.grenade";
                 case SkillKind.Push: return "ui.skill.push";
                 case SkillKind.Sonic: return "ui.skill.sonic";
+                case SkillKind.Frost: return "ui.skill.frost";
                 default: return null;
             }
         }
@@ -301,6 +304,10 @@ namespace GirlsDungeon.Game
                 case SkillKind.Sonic:
                     return Text.Get("ui.skill.sonic_tip", settings.SonicRange, settings.SkillDamagePercentFor(simulation.World.PlayerCharacter, SkillKind.Sonic),
                         settings.SonicStabilityDamage, CostText(skill, settings.SonicCooldownRounds));
+                case SkillKind.Frost:
+                    return Text.Get("ui.skill.frost_tip", settings.FrostRange, settings.SkillDamagePercentFor(simulation.World.PlayerCharacter, SkillKind.Frost),
+                        settings.FrostFixedDefensePercent, FrostAttack.FixedDamage(simulation.World.Player.Defense, settings.FrostFixedDefensePercent),
+                        settings.FrostStabilityDamage, CostText(skill, settings.FrostCooldownRounds));
                 default:
                     return string.Empty;
             }

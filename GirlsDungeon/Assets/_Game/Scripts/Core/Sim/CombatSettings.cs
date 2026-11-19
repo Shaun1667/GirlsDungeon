@@ -45,6 +45,8 @@ namespace GirlsDungeon.Core.Sim
         Push = 2,
         /// <summary>음파 공격: 보이는 적 하나에게 엄폐를 무시하는 피해 · 안정 피해 (SonicAttack, 3-12).</summary>
         Sonic = 3,
+        /// <summary>빙결 사격: 보이는 적 하나에게 빙결 속성 피해 + 내 방어력 비례 고정 피해 · 안정 피해, 엄폐 적용 (FrostAttack, 3-16z — 대원 B 스킬1).</summary>
+        Frost = 4,
     }
 
     /// <summary>
@@ -155,6 +157,15 @@ namespace GirlsDungeon.Core.Sim
         public int SonicDamagePercent;
         public int SonicStabilityDamage;
         public int SonicCooldownRounds;
+
+        // 빙결 사격 스킬 (BALANCE 35번, 3-16z — 대원 B 스킬1)
+        public int FrostRange;
+        /// <summary>공격력 공식 배율 (%). 엄폐 감소 · 안정지수 감소를 받는다 (사격과 같음), 치명 없음.</summary>
+        public int FrostDamagePercent;
+        /// <summary>추가 고정 피해 = 쓰는 사람 방어력의 이 % (반올림). 방어 · 엄폐로 줄지 않는다.</summary>
+        public int FrostFixedDefensePercent;
+        public int FrostStabilityDamage;
+        public int FrostCooldownRounds;
 
         /// <summary>상점 주인 스킬 (BALANCE 33번, 3-15f). null이면 스킬 없이 사격병처럼 싸운다.</summary>
         public KeeperSkillSettings Keeper;
@@ -420,6 +431,7 @@ namespace GirlsDungeon.Core.Sim
                 case SkillKind.Grenade: return character != null && character.GrenadeDamagePercent > 0 ? character.GrenadeDamagePercent : GrenadeDamagePercent;
                 case SkillKind.Push: return character != null && character.PushDamagePercent > 0 ? character.PushDamagePercent : PushDamagePercent;
                 case SkillKind.Sonic: return character != null && character.SonicDamagePercent > 0 ? character.SonicDamagePercent : SonicDamagePercent;
+                case SkillKind.Frost: return FrostDamagePercent;
                 default: return 0;
             }
         }
@@ -458,6 +470,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Push settings are invalid.");
             if (SonicRange < 1 || SonicDamagePercent < 0 || SonicStabilityDamage < 0 || SonicCooldownRounds < 0)
                 throw new ArgumentException("Sonic settings are invalid.");
+            if (FrostRange < 1 || FrostDamagePercent < 0 || FrostFixedDefensePercent < 0 || FrostStabilityDamage < 0 || FrostCooldownRounds < 0)
+                throw new ArgumentException("Frost settings are invalid.");
             Keeper?.Validate();
             if (AssaultPercent < 0 || AssaultPercent > 100 || FallDamagePercent < 0)
                 throw new ArgumentException("Assault / fall settings are invalid.");

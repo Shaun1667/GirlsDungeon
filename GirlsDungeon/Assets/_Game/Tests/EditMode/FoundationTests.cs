@@ -332,6 +332,12 @@ namespace GirlsDungeon.Tests
                 SonicDamagePercent = 60,
                 SonicStabilityDamage = 3,
                 SonicCooldownRounds = 2,
+                // BALANCE 35번 (3-16z): 빙결 사격 — 반경 6 · 100% · 방어 50% 고정 · 안정 4 · 재사용 대기 2 (한 차례 쉼).
+                FrostRange = 6,
+                FrostDamagePercent = 100,
+                FrostFixedDefensePercent = 50,
+                FrostStabilityDamage = 4,
+                FrostCooldownRounds = 2,
                 Keeper = new KeeperSkillSettings
                 {
                     BasicPercent = 80,
@@ -536,7 +542,8 @@ namespace GirlsDungeon.Tests
             settings.Characters.Add(new CharacterStats
             {
                 Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 10, VisionRange = 10, Defense = 3, MoveRange = 6, StartWeapon = WeaponKind.Smg,
-                Skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None },
+                // 3-16z: B 스킬1 = 빙결 사격 (2 · 3번 칸은 B 스킬2 · 결전기가 생길 때까지 넉백 · 수류탄).
+                Skills = { SkillKind.Frost, SkillKind.Push, SkillKind.Grenade },
                 WorkshopOptionPercent = 70, WorkshopSetPercent = 50,
             });
             settings.Characters.Add(new CharacterStats

@@ -48,6 +48,7 @@ namespace GirlsDungeon.Core.Sim
                 world.GrenadeCooldown = 0;
                 world.PushCooldown = 0;
                 world.SonicCooldown = 0;
+                world.FrostCooldown = 0;
             }
         }
 
@@ -114,6 +115,7 @@ namespace GirlsDungeon.Core.Sim
             world.GrenadeCooldown = 0;
             world.PushCooldown = 0;
             world.SonicCooldown = 0;
+            world.FrostCooldown = 0;
             SetEffects.OnCombatEnded(world);
             KeeperSkills.Reset(world);
             Remold.OnCombatEnded(world);
@@ -169,6 +171,7 @@ namespace GirlsDungeon.Core.Sim
             if (world.GrenadeCooldown > 0) world.GrenadeCooldown--;
             if (world.PushCooldown > 0) world.PushCooldown--;
             if (world.SonicCooldown > 0) world.SonicCooldown--;
+            if (world.FrostCooldown > 0) world.FrostCooldown--;
             world.Player.Overwatching = false;
             events.Add(new TurnStarted(TurnSide.Player, world.Round));
             Remold.OnPlayerTurnStarted(world, settings);

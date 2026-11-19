@@ -66,9 +66,11 @@ namespace GirlsDungeon.Tests
         [Test]
         public void Pool_LeavesOutSetsWhoseConditionsDoNotExistYet()
         {
-            // 결정 2026-11-16 사용자: 지금 피해는 모두 물리 — 위상 · 약점 · 소환물 · 다른 속성 세트는 그 시스템이 생기면 켜진다.
-            Assert.That(SetEffects.Pool(), Is.EqualTo(new[] { PartSet.Decisive, PartSet.DualCounter, PartSet.Kinetic, PartSet.Tactical, PartSet.Assault }));
-            foreach (var set in new[] { PartSet.PhaseStrike, PartSet.PhaseAmp, PartSet.Blaze, PartSet.Frost, PartSet.Acid, PartSet.Magnetic, PartSet.Torrent, PartSet.Apex })
+            // 결정 2026-11-16 사용자: 위상 · 약점 · 소환물 · 다른 속성 세트는 그 시스템이 생기면 켜진다.
+            // 3-16z: 빙결 사격(빙결 속성)이 생겨 빙점 증폭이 후보에 들어왔다.
+            Assert.That(SetEffects.Pool(), Is.EqualTo(new[] { PartSet.Decisive, PartSet.DualCounter, PartSet.Kinetic, PartSet.Frost, PartSet.Tactical, PartSet.Assault }));
+            Assert.That(SetEffects.HasSource(PartSet.Frost), Is.True);
+            foreach (var set in new[] { PartSet.PhaseStrike, PartSet.PhaseAmp, PartSet.Blaze, PartSet.Acid, PartSet.Magnetic, PartSet.Torrent, PartSet.Apex })
                 Assert.That(SetEffects.HasSource(set), Is.False, set.ToString());
         }
 
@@ -146,6 +148,19 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void FrostSet_RaisesOnlyFrostShotDamage_AndKineticSkipsIt()
+        {
+            // 3-16z: 빙결 사격은 빙결 속성 — 빙점 증폭만 받고 실탄 증폭(물리)은 받지 않는다.
+            var (world, enemy, combat) = Room();
+            EquipSet(world, PartSet.Frost);
+            Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, DamageSource.Frost), Is.EqualTo(combat.SetElementPercent));
+            Assert.That(ShotPercent(world, combat, enemy), Is.EqualTo(0));
+            EquipSet(world, PartSet.Kinetic);
+            Assert.That(SetEffects.DamagePercent(world, combat, world.Player, enemy, DamageSource.Frost), Is.EqualTo(0));
+            Assert.That(ShotPercent(world, combat, enemy), Is.EqualTo(combat.SetElementPercent));
+        }
+
+        [Test]
         public void Tactical_OnlyOverwatchShotsOnTheEnemyTurn()
         {
             var (world, enemy, combat) = Room();
@@ -187,9 +202,9 @@ namespace GirlsDungeon.Tests
             SetEffects.OnSkillUsed(plain, combat, decisive);
             Assert.That(plain.SetDecisiveStacks, Is.EqualTo(0), "no stacks without the set");
 
-            // 세 번째 스킬 칸이 비어 있는 캐릭터(B)는 결전기가 없다.
-            world.PlayerCharacter = CharacterKind.HeroB;
-            Assert.That(combat.SkillSlots(CharacterKind.HeroB)[SetEffects.DecisiveSkillIndex], Is.EqualTo(SkillKind.None));
+            // 세 번째 스킬 칸이 비어 있는 캐릭터(C)는 결전기가 없다 (B는 3-16z부터 4번 칸이 있다).
+            world.PlayerCharacter = CharacterKind.HeroC;
+            Assert.That(combat.SkillSlots(CharacterKind.HeroC)[SetEffects.DecisiveSkillIndex], Is.EqualTo(SkillKind.None));
             Assert.That(SetEffects.IsDecisive(world, combat, SkillKind.Grenade), Is.False);
         }
 

@@ -155,6 +155,18 @@ ui.combat.preview_sonic,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
 Sonic damage {5} (ignores cover) · Stability −{6}"
 ui.combat.preview_sonic_not_ready,음파 공격 재사용 대기 {0}라운드,Sonic blast ready in {0} rounds
 ui.combat.preview_sonic_not_visible,{0} · 보이지 않아 음파 공격을 쓸 수 없음,{0} · Not visible for the sonic blast
+ui.skill.frost,빙결 사격,Frost shot
+ui.skill.frost_tip,"빙결 사격 · 적을 클릭해 고른 뒤 확인 (사거리 {0}칸, 보이는 적 하나)
+빙결 피해 {1}% · 엄폐 적용 + 방어력 {2}% 고정 피해 (지금 {3}) · 안정 −{4}
+{5} · 쓰면 차례 끝","Frost shot · click an enemy, then confirm (range {0}, one visible enemy)
+Frost damage {1}% · Cover applies + fixed damage {2}% of defense (now {3}) · Stability −{4}
+{5} · Ends your turn"
+ui.combat.preview_frost_hint,빙결 사격 · 적 클릭 = 대상 · 파란 칸 = 이동 예약 (오른쪽 클릭 취소),Frost shot · click an enemy to target · blue cell to plan a move (right-click cancels)
+ui.combat.preview_frost,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
+빙결 피해 {5} (빙결 {6} + 고정 {7}) · {8} · 안정 −{9}","{0} · HP {1}/{2} · Stability {3}/{4}
+Frost damage {5} (frost {6} + fixed {7}) · {8} · Stability −{9}"
+ui.combat.preview_frost_not_ready,빙결 사격 재사용 대기 {0}라운드,Frost shot ready in {0} rounds
+ui.combat.preview_frost_not_visible,{0} · 보이지 않아 빙결 사격을 쓸 수 없음,{0} · Not visible for the frost shot
 ui.part.compare,"{0} 파츠 · {1} ({2})
 새 파츠: {3}
 지금 끼운 것: {4}","{0} part · {1} ({2})

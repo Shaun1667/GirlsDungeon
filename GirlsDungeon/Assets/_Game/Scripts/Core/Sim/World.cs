@@ -191,6 +191,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>음파 공격 스킬을 다시 쓸 수 있을 때까지 남은 라운드 (0 = 지금 사용 가능). 전투가 끝나면 0.</summary>
         public int SonicCooldown { get; set; }
 
+        /// <summary>빙결 사격 스킬을 다시 쓸 수 있을 때까지 남은 라운드 (3-16z). 전투가 끝나면 0.</summary>
+        public int FrostCooldown { get; set; }
+
         /// <summary>한 번이라도 본 칸 (인덱스 = x + y * Width). 지금 보이는 칸은 저장하지 않고 Vision으로 다시 계산한다.</summary>
         public bool[] Explored { get; set; }
 

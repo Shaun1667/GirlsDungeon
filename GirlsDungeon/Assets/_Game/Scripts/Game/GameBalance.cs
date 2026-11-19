@@ -316,6 +316,7 @@ namespace GirlsDungeon.Game
             {
                 kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
                 maxHp = 90, maxStability = 10, visionRange = 10, defense = 3, moveRange = 6, startWeapon = WeaponKind.Smg,
+                skills = new[] { SkillKind.Frost, SkillKind.Push, SkillKind.Grenade },
             },
             new CharacterEntry
             {
@@ -370,6 +371,16 @@ namespace GirlsDungeon.Game
         [SerializeField] private int sonicDamagePercent = 60;
         [SerializeField] private int sonicStabilityDamage = 3;
         [SerializeField] private int sonicCooldownRounds = 2;
+
+        [Header("Frost shot skill (BALANCE 35)")]
+        [SerializeField] private int frostRange = 6;
+        [Tooltip("Damage multiplier (%) on the attack formula. Cover and the stability guard apply, no crit.")]
+        [SerializeField] private int frostDamagePercent = 100;
+        [Tooltip("Extra fixed damage = this % of the user's defense (rounded). Not reduced by defense or cover.")]
+        [SerializeField] private int frostFixedDefensePercent = 50;
+        [SerializeField] private int frostStabilityDamage = 4;
+        [Tooltip("Rounds before it can be used again. 2 = skip one turn.")]
+        [SerializeField] private int frostCooldownRounds = 2;
 
         [Header("Shopkeeper skills (BALANCE 33)")]
         [SerializeField] private KeeperSkillsEntry keeperSkills = new KeeperSkillsEntry();
@@ -722,6 +733,11 @@ namespace GirlsDungeon.Game
                 SonicDamagePercent = sonicDamagePercent,
                 SonicStabilityDamage = sonicStabilityDamage,
                 SonicCooldownRounds = sonicCooldownRounds,
+                FrostRange = frostRange,
+                FrostDamagePercent = frostDamagePercent,
+                FrostFixedDefensePercent = frostFixedDefensePercent,
+                FrostStabilityDamage = frostStabilityDamage,
+                FrostCooldownRounds = frostCooldownRounds,
                 Keeper = new KeeperSkillSettings
                 {
                     BasicPercent = keeperSkills.basicPercent,
