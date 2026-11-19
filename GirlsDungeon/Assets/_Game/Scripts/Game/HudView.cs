@@ -396,6 +396,7 @@ namespace GirlsDungeon.Game
                 case ItemKind.Weapon: return WeaponName(item.Weapon);
                 case ItemKind.Part: return item.Part != null ? Text.Get("ui.shop.item_part", WeaponName(item.Part.Weapon), GradeName(item.Part.Grade)) : WeaponName(item.Weapon);
                 case ItemKind.Key: return Text.Get("ui.shop.item_key");
+                case ItemKind.Gold: return Text.Get("ui.loot.item_gold", item.Amount);
                 default: return Text.Get("ui.shop.item_medkit");
             }
         }
@@ -593,6 +594,7 @@ namespace GirlsDungeon.Game
                         AddLog(dropped.Kind == ItemKind.Weapon ? Text.Get("ui.loot.log_weapon_dropped", WeaponName(dropped.Weapon))
                             : dropped.Kind == ItemKind.Part ? Text.Get("ui.loot.log_part_dropped", WeaponName(dropped.Weapon))
                             : dropped.Kind == ItemKind.Key ? Text.Get("ui.door.log_key_dropped")
+                            : dropped.Kind == ItemKind.Gold ? Text.Get("ui.loot.log_gold_dropped")
                             : Text.Get("ui.loot.log_medkit_dropped"));
                         break;
                     case PartFound partFound:

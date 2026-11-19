@@ -539,7 +539,9 @@ MonoBehaviour:
   arenaEnemyCount: 3
   arenaStatPercent: 30
   arenaPartGrade: 2
-  goldPerKill: 5
+  goldDropPercent: 40
+  goldDropMin: 5
+  goldDropMax: 15
   crateGold: 15
   treasureGold: 40
   floorsPerZone: 5

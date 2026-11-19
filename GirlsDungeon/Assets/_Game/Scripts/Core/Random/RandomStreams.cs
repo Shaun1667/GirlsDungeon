@@ -20,6 +20,8 @@ namespace GirlsDungeon.Core.Random
         Floor = 9,
         /// <summary>상점 진열 물건 (파츠 굴림 · 무기 고르기, 3-15b). 층을 만들 때만 쓴다.</summary>
         Shop = 10,
+        /// <summary>적을 쓰러뜨렸을 때 바닥 골드 굴림 (3-16w — 떨어질지 · 양).</summary>
+        GoldDrop = 11,
     }
 
     /// <summary>시드 하나에서 용도별 난수를 만든다. 상태는 세계 스냅샷에 저장된다.</summary>

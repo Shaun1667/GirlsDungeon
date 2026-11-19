@@ -443,7 +443,9 @@ namespace GirlsDungeon.Tests
                 ExchangeKeyCost = 5,
                 ExchangeKeySellMaterials = 3,
                 // BALANCE 31번 사르디스 골드 · 32번 상점.
-                GoldPerKill = 5,
+                GoldDropPercent = 40,
+                GoldDropMin = 5,
+                GoldDropMax = 15,
                 CrateGold = 15,
                 TreasureGold = 40,
                 ShopMedkits = 2,

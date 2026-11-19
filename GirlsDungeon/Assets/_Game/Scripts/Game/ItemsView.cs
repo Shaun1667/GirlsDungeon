@@ -17,6 +17,8 @@ namespace GirlsDungeon.Game
         [SerializeField] private Material partMaterial;
         [Tooltip("Key lying on the floor (3-4d).")]
         [SerializeField] private Material keyMaterial;
+        [Tooltip("Gold lying on the floor (3-16w).")]
+        [SerializeField] private Material goldMaterial;
         [Tooltip("Display stand under a shop item that is not bought yet (3-15).")]
         [SerializeField] private Material standMaterial;
 
@@ -96,13 +98,16 @@ namespace GirlsDungeon.Game
             bool isWeapon = item.Kind == ItemKind.Weapon;
             bool isPart = item.Kind == ItemKind.Part;
             bool isKey = item.Kind == ItemKind.Key;
-            body.GetComponent<MeshRenderer>().sharedMaterial = isWeapon ? weaponMaterial : isPart ? partMaterial : isKey && keyMaterial != null ? keyMaterial : medkitMaterial;
-            // 무기 = 납작하고 긴 막대, 파츠 = 작고 납작한 판, 열쇠 = 가늘고 긴 막대(노랑), 구급상자 = 작은 정육면체.
+            bool isGold = item.Kind == ItemKind.Gold;
+            body.GetComponent<MeshRenderer>().sharedMaterial = isWeapon ? weaponMaterial : isPart ? partMaterial : isKey && keyMaterial != null ? keyMaterial
+                : isGold && goldMaterial != null ? goldMaterial : medkitMaterial;
+            // 무기 = 납작하고 긴 막대, 파츠 = 작고 납작한 판, 열쇠 = 가늘고 긴 막대(노랑), 골드 = 작고 두꺼운 판(45도), 구급상자 = 작은 정육면체.
             var size = isWeapon ? new Vector3(0.7f, 0.12f, 0.2f) : isPart ? new Vector3(0.3f, 0.1f, 0.3f)
-                : isKey ? new Vector3(0.4f, 0.1f, 0.12f) : new Vector3(0.35f, 0.35f, 0.35f);
+                : isKey ? new Vector3(0.4f, 0.1f, 0.12f) : isGold ? new Vector3(0.22f, 0.14f, 0.22f) : new Vector3(0.35f, 0.35f, 0.35f);
             body.transform.localScale = size;
             body.transform.position = GridSpace.ToWorld(item.Position) + Vector3.up * (size.y * 0.5f);
             if (isWeapon || isKey) body.transform.rotation = Quaternion.Euler(0f, 30f, 0f);
+            if (isGold) body.transform.rotation = Quaternion.Euler(0f, 45f, 0f);
             if (item.Price > 0)
             {
                 // 진열대: 물건 아래 낮고 넓은 판. 물건을 그만큼 띄운다. 산 뒤에는 숨긴다 (Sync).

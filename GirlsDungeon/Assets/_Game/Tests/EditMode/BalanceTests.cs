@@ -320,7 +320,9 @@ namespace GirlsDungeon.Tests
             var balance = Load();
             var combat = balance.CreateCombatSettings();
             var map = balance.CreateMapSettings();
-            Assert.That(combat.GoldPerKill, Is.EqualTo(5));
+            Assert.That(combat.GoldDropPercent, Is.EqualTo(40));
+            Assert.That(combat.GoldDropMin, Is.EqualTo(5));
+            Assert.That(combat.GoldDropMax, Is.EqualTo(15));
             Assert.That(combat.CrateGold, Is.EqualTo(15));
             Assert.That(combat.TreasureGold, Is.EqualTo(40));
             Assert.That(map.FloorsPerZone, Is.EqualTo(5));
@@ -335,8 +337,10 @@ namespace GirlsDungeon.Tests
             Assert.That(combat.ShopPartPrices, Is.EqualTo(new[] { 20, 45, 80 }));
             Assert.That(combat.ShopSellPercent, Is.EqualTo(35));
             Assert.That(combat.ShopMaterialSellPrice, Is.EqualTo(3));
-            // 검산 (BALANCE 31번): 1층 적 4 × 5 + 보급 상자 2 × 15 + 보물 상자 40 = 90 골드 → 정밀 파츠(80) 하나 또는 군용 파츠 + 구급상자(70).
-            Assert.That(4 * combat.GoldPerKill + 2 * combat.CrateGold + combat.TreasureGold, Is.EqualTo(90));
+            // 검산 (BALANCE 31번, 3-16w): 적 하나 평균 40% × (5 + 15) ÷ 2 = 4 → 1층 적 5 × 4 + 보급 상자 2 × 15 + 보물 상자 40 = 90 골드
+            // → 정밀 파츠(80) 하나 또는 군용 파츠 + 구급상자(70).
+            Assert.That(combat.GoldDropPercent * (combat.GoldDropMin + combat.GoldDropMax) / 2 / 100, Is.EqualTo(4));
+            Assert.That(5 * 4 + 2 * combat.CrateGold + combat.TreasureGold, Is.EqualTo(90));
             Assert.That(GirlsDungeon.Core.Sim.Shop.SellValue(combat, combat.ShopKeyPrice), Is.EqualTo(12));
         }
 

@@ -147,19 +147,61 @@ namespace GirlsDungeon.Tests
         public void Gold_ComesFromKills_Crates_AndTreasure()
         {
             var combat = TestData.Combat();
+            combat.GoldDropPercent = 100;
             var world = new World(1, new RandomStreams(1)) { Map = TestData.Parse(".....", ".....", ".....") };
             world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(0, 1)).Id;
             Loadout.Apply(world, combat);
             var events = new List<GameEvent> { new UnitDied(9, UnitKind.Rifleman, new GridPos(3, 1)), new UnitDied(10, UnitKind.Assault, new GridPos(4, 1)) };
             Gold.CheckKills(world, combat, events);
-            Assert.That(world.Gold, Is.EqualTo(10));
+            // 3-16w (결정 2026-11-19 사용자): 쓰러뜨려도 바로 주지 않고 쓰러진 자리에 바닥 골드.
+            Assert.That(world.Gold, Is.EqualTo(0));
+            var dropped = world.Items.Where(item => item.Kind == ItemKind.Gold).ToList();
+            Assert.That(dropped.Select(item => item.Position), Is.EquivalentTo(new[] { new GridPos(3, 1), new GridPos(4, 1) }));
+            Assert.That(dropped.All(item => item.Amount >= combat.GoldDropMin && item.Amount <= combat.GoldDropMax), Is.True);
+            int floorGold = dropped.Sum(item => item.Amount);
 
             world.Map.SetTile(new GridPos(1, 1), TileType.SupplyCrate);
             Assert.That(Loot.OpenCrate(world, combat, new GridPos(1, 1), new List<GameEvent>()), Is.True);
-            Assert.That(world.Gold, Is.EqualTo(25));
+            Assert.That(world.Gold, Is.EqualTo(15));
             world.Map.SetTile(new GridPos(1, 0), TileType.TreasureChest);
             Assert.That(Loot.OpenCrate(world, combat, new GridPos(1, 0), new List<GameEvent>()), Is.True);
-            Assert.That(world.Gold, Is.EqualTo(65));
+            Assert.That(world.Gold, Is.EqualTo(55));
+
+            // 밟으면(지나가도) 줍는다.
+            world.Items.RemoveAll(item => item.Kind != ItemKind.Gold);
+            var simulation = new Simulation(world, combat);
+            var gained = new List<GameEvent>();
+            simulation.EventsPublished += published => gained.AddRange(published);
+            // 열린 상자 칸(1, 1)은 피해 아래 줄로 돌아간다.
+            foreach (var cell in new[] { new GridPos(0, 2), new GridPos(1, 2), new GridPos(2, 2), new GridPos(3, 2), new GridPos(3, 1) })
+                Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, cell, 1, true)), Is.True, cell.ToString());
+            Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(4, 1), 1)), Is.True);
+            Assert.That(world.Gold, Is.EqualTo(55 + floorGold));
+            Assert.That(world.Items.Any(item => item.Kind == ItemKind.Gold), Is.False);
+            Assert.That(gained.OfType<GoldGained>().All(gold => gold.Source == GoldSource.Pickup), Is.True);
+        }
+
+        [Test]
+        public void FloorGold_DropsAboutAsOftenAsTheTableSays_AndSurvivesTheSnapshot()
+        {
+            var combat = TestData.Combat();
+            var world = new World(2, new RandomStreams(2)) { Map = TestData.Parse("..........", "..........", "..........") };
+            world.PlayerId = world.AddUnit(combat.StatsFor(UnitKind.Player), new GridPos(0, 0)).Id;
+            int drops = 0;
+            for (int i = 0; i < 200; i++)
+            {
+                var events = new List<GameEvent> { new UnitDied(1000 + i, UnitKind.Rifleman, new GridPos(5, 1)) };
+                Gold.CheckKills(world, combat, events);
+                drops += events.OfType<ItemDropped>().Count();
+                world.Items.RemoveAll(item => item.Kind == ItemKind.Gold && item.Id != world.Items[0].Id);
+            }
+            // 40% → 200번 중 약 80번 (넉넉하게 50 ~ 110).
+            Assert.That(drops, Is.InRange(50, 110));
+
+            var gold = world.Items.Single(item => item.Kind == ItemKind.Gold);
+            var copy = WorldSnapshot.Decode(WorldSnapshot.Encode(world));
+            Assert.That(copy.FindItem(gold.Id).Amount, Is.EqualTo(gold.Amount));
+            Assert.That(copy.FindItem(gold.Id).Kind, Is.EqualTo(ItemKind.Gold));
         }
 
         // ---------- 상점 주인 (3-15b) ----------

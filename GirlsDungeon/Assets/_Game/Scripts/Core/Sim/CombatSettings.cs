@@ -281,8 +281,11 @@ namespace GirlsDungeon.Core.Sim
         public int TrapEnemyCount;
 
         // 사르디스 골드 (BALANCE 31번, 3-15a — Gold)
-        /// <summary>적 하나를 쓰러뜨리면 얻는 골드.</summary>
-        public int GoldPerKill;
+        /// <summary>적 하나를 쓰러뜨리면 바닥에 골드가 떨어질 확률 % (3-16w — 바로 주지 않고 주워야 얻는다).</summary>
+        public int GoldDropPercent;
+        /// <summary>떨어지는 골드 양의 최소 · 최대 (둘 다 포함).</summary>
+        public int GoldDropMin;
+        public int GoldDropMax;
         /// <summary>보급 상자를 열면 얻는 골드 (원래 물건과 함께).</summary>
         public int CrateGold;
         /// <summary>보물 상자를 열면 얻는 골드.</summary>
@@ -506,7 +509,7 @@ namespace GirlsDungeon.Core.Sim
             foreach (var trade in AltarTrades)
                 if (trade == null || trade.CostAmount <= 0 || trade.BoonAmount <= 0 || trade.CostStat == trade.BoonStat)
                     throw new ArgumentException("Altar trade is invalid.");
-            if (GoldPerKill < 0 || CrateGold < 0 || TreasureGold < 0)
+            if (GoldDropPercent < 0 || GoldDropPercent > 100 || GoldDropMin < 1 || GoldDropMax < GoldDropMin || CrateGold < 0 || TreasureGold < 0)
                 throw new ArgumentException("Gold settings are invalid.");
             if (ShopMedkits < 0 || ShopKeys < 0 || ShopWeapons < 0 || ShopMedkitPrice < 1 || ShopKeyPrice < 1 || ShopWeaponPrice < 1
                 || ShopPartPrices.Count < 3 || ShopPartPrices.Exists(price => price < 1) || ShopSellPercent < 0 || ShopSellPercent > 100 || ShopMaterialSellPrice < 0)

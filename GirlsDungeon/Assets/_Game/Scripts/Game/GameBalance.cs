@@ -544,8 +544,11 @@ namespace GirlsDungeon.Game
         [SerializeField] private PartGrade arenaPartGrade = PartGrade.Precision;
 
         [Header("Sardis gold (BALANCE 31)")]
-        [Tooltip("Gold gained per enemy defeated, per supply crate opened and per treasure chest opened.")]
-        [SerializeField] private int goldPerKill = 5;
+        [Tooltip("Chance (%) that a defeated enemy drops gold on the floor, and the dropped amount range (inclusive).")]
+        [SerializeField] private int goldDropPercent = 40;
+        [SerializeField] private int goldDropMin = 5;
+        [SerializeField] private int goldDropMax = 15;
+        [Tooltip("Gold gained per supply crate opened and per treasure chest opened.")]
         [SerializeField] private int crateGold = 15;
         [SerializeField] private int treasureGold = 40;
 
@@ -803,7 +806,9 @@ namespace GirlsDungeon.Game
                 ArenaEnemyCount = arenaEnemyCount,
                 ArenaStatPercent = arenaStatPercent,
                 ArenaPartGrade = arenaPartGrade,
-                GoldPerKill = goldPerKill,
+                GoldDropPercent = goldDropPercent,
+                GoldDropMin = goldDropMin,
+                GoldDropMax = goldDropMax,
                 CrateGold = crateGold,
                 TreasureGold = treasureGold,
                 ShopMedkits = shopMedkits,

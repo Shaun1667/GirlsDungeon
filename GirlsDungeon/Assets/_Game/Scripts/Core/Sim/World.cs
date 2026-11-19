@@ -90,6 +90,8 @@ namespace GirlsDungeon.Core.Sim
         Part = 2,
         /// <summary>열쇠 (3-4d). 밟으면 바로 줍는다 (World.Keys).</summary>
         Key = 3,
+        /// <summary>사르디스 골드 (3-16w). 밟으면(지나가도) 바로 줍는다 — 양은 FloorItem.Amount.</summary>
+        Gold = 4,
     }
 
     /// <summary>바닥에 놓인 물건. 다른 곳에서는 고유 ID로 참조한다.</summary>
@@ -109,6 +111,9 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>상점 진열 물건의 값 (사르디스 골드, 3-15b). 0 = 그냥 줍는 물건. 값이 있으면 밟아도 줍지 않고 사기 창(ShopItemOffered)만 뜬다.</summary>
         public int Price { get; set; }
+
+        /// <summary>골드일 때 양 (3-16w). 다른 물건은 0.</summary>
+        public int Amount { get; set; }
 
         public FloorItem(int id, ItemKind kind, WeaponKind weapon, GridPos position)
         {

@@ -152,7 +152,7 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>
         /// 이번 커맨드로 플레이어가 물건 칸에 들어섰으면 줍는다. Simulation이 커맨드마다 CombatFlow 뒤에 부른다.
         /// 구급상자: 체력이 모자라면 바로 회복하고 사라진다 (가득이면 그대로 둔다). 무기: WeaponFound만 내고 고르는 것은 화면에 맡긴다.
-        /// 지나가는 걸음(passingThrough, 3-16v)이면 창을 띄우는 물건(무기 · 파츠 · 상점 진열)은 그대로 두고 열쇠 · 구급상자만 줍는다.
+        /// 지나가는 걸음(passingThrough, 3-16v)이면 창을 띄우는 물건(무기 · 파츠 · 상점 진열)은 그대로 두고 열쇠 · 골드 · 구급상자만 줍는다.
         /// </summary>
         public static void CheckPickup(World world, CombatSettings settings, List<GameEvent> events, bool passingThrough = false)
         {
@@ -179,6 +179,12 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>발밑 물건 하나를 줍는다 (열쇠 · 구급상자는 바로, 무기 · 파츠는 비교 창 사건). 상점에서 산 물건도 이 길로 (Shop.Buy).</summary>
         internal static void PickUp(World world, CombatSettings settings, Unit player, FloorItem item, ref bool offered, List<GameEvent> events)
         {
+            if (item.Kind == ItemKind.Gold)
+            {
+                world.Items.Remove(item);
+                Gold.Gain(world, item.Amount, GoldSource.Pickup, events);
+                return;
+            }
             if (item.Kind == ItemKind.Key)
             {
                 world.Items.Remove(item);
@@ -274,6 +280,15 @@ namespace GirlsDungeon.Core.Sim
             var weapon = RandomOtherWeapon(world, settings, random);
             if (weapon.HasValue) Drop(world, ItemKind.Weapon, weapon.Value, near, source, events);
             else Drop(world, ItemKind.Medkit, default, near, source, events);
+        }
+
+        /// <summary>골드 amount를 near 근처 빈 칸에 놓는다 (3-16w, Gold.CheckKills가 부름).</summary>
+        internal static void DropGold(World world, int amount, GridPos near, List<GameEvent> events)
+        {
+            var cell = FreeCellNear(world, near) ?? world.Player.Position;
+            var item = world.AddItem(ItemKind.Gold, default, cell);
+            item.Amount = amount;
+            events.Add(new ItemDropped(item.Id, item.Kind, item.Weapon, item.Position, DropSource.Combat));
         }
 
         private static void Drop(World world, ItemKind kind, WeaponKind weapon, GridPos near, DropSource source, List<GameEvent> events)

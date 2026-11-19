@@ -356,6 +356,8 @@ ui.altar.log_traded,제단: {0} −{1} → {2} +{3},Altar: {0} −{1} → {2} +{
 room.kind.shop.name,상점,Shop
 ui.hud.gold,사르디스 골드 {0},Sardis Gold {0}
 ui.gold.log_gain,사르디스 골드 +{0} (가진 골드 {1}),Sardis Gold +{0} (now {1})
+ui.loot.log_gold_dropped,사르디스 골드가 떨어졌다,Sardis Gold dropped
+ui.loot.item_gold,사르디스 골드 {0},Sardis Gold {0}
 ui.shop.preview,{0} · {1} 사르디스 골드 (가진 골드 {2}) · 밟으면 사기 창,{0} · {1} Sardis Gold (you have {2}) · step on it to buy
 ui.shop.item_part,{0} {1} 파츠,{0} {1} part
 ui.shop.item_key,열쇠,Key

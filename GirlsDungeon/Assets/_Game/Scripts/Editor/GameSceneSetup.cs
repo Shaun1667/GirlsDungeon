@@ -57,6 +57,7 @@ namespace GirlsDungeon.EditorTools
             // 잠긴 문 · 열쇠 (3-4d): 문은 갈색, 열쇠는 노랑.
             var doorMaterial = LoadOrCreateMaterial("GreyboxDoor", new Color(0.5f, 0.3f, 0.15f));
             var keyItemMaterial = LoadOrCreateMaterial("GreyboxKeyItem", new Color(1f, 0.85f, 0.2f));
+            var goldItemMaterial = LoadOrCreateMaterial("GreyboxGoldItem", new Color(0.95f, 0.6f, 0.1f));
             // 보물 상자 (3-14b): 금색, 연 뒤에는 어둡게.
             var treasureMaterial = LoadOrCreateMaterial("GreyboxTreasure", new Color(0.95f, 0.75f, 0.15f));
             var treasureOpenedMaterial = LoadOrCreateMaterial("GreyboxTreasureOpened", new Color(0.4f, 0.32f, 0.1f));
@@ -454,7 +455,7 @@ namespace GirlsDungeon.EditorTools
 
             // 특수 방 이름 글(RoomLabelsView)은 씬에 두지 않는다 (2026-11-14 사용자 "특수방마다 이름 뜨는거 없애주고"). 이름 키는 기록실 예고가 쓴다.
             var itemsView = new GameObject("ItemsView").AddComponent<ItemsView>();
-            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial), ("partMaterial", partItemMaterial), ("keyMaterial", keyItemMaterial), ("standMaterial", shopStandMaterial));
+            SetReferences(itemsView, ("weaponMaterial", weaponItemMaterial), ("medkitMaterial", medkitMaterial), ("partMaterial", partItemMaterial), ("keyMaterial", keyItemMaterial), ("goldMaterial", goldItemMaterial), ("standMaterial", shopStandMaterial));
 
             var floorObject = new GameObject("FloorView");
             var floorView = floorObject.AddComponent<FloorView>();
