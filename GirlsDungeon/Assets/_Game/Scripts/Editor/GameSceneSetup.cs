@@ -48,6 +48,7 @@ namespace GirlsDungeon.EditorTools
             var areaMaterial = LoadOrCreateMaterial("GreyboxArea", new Color(0.95f, 0.45f, 0.15f));
             var guardMaterial = LoadOrCreateMaterial("GreyboxGuard", new Color(0.95f, 0.85f, 0.2f));
             var watchMaterial = LoadOrCreateMaterial("GreyboxWatch", new Color(0.85f, 0.15f, 0.2f));
+            var frostFieldMaterial = LoadOrCreateMaterial("GreyboxFrostField", new Color(0.65f, 0.88f, 1f));
             var chasmMaterial = LoadOrCreateMaterial("GreyboxChasm", new Color(0.05f, 0.05f, 0.08f));
             var pushMaterial = LoadOrCreateMaterial("GreyboxPush", new Color(0.7f, 0.35f, 0.95f));
             var supplyMaterial = LoadOrCreateMaterial("GreyboxSupply", new Color(0.25f, 0.65f, 0.35f));
@@ -448,6 +449,14 @@ namespace GirlsDungeon.EditorTools
             SetFloat(pushAreaView, "height", 0.02f);
             var threatView = threatObject.AddComponent<ThreatView>();
             SetReferences(threatView, ("guardView", guardView), ("watchView", watchView));
+            // 서리밭 (3-17c): 위협 칸보다 조금 위, 이동 범위보다 아래.
+            var frostFieldObject = new GameObject("FrostFieldView");
+            var frostFieldCells = new GameObject("FrostFieldCells").AddComponent<RangeView>();
+            frostFieldCells.transform.SetParent(frostFieldObject.transform, false);
+            SetReferences(frostFieldCells, ("rangeMaterial", frostFieldMaterial));
+            SetFloat(frostFieldCells, "height", 0.013f);
+            var frostFieldView = frostFieldObject.AddComponent<FrostFieldView>();
+            SetReferences(frostFieldView, ("fieldCells", frostFieldCells));
 
             var unitsObject = new GameObject("UnitsView");
             var unitsView = unitsObject.AddComponent<UnitsView>();
@@ -509,6 +518,7 @@ namespace GirlsDungeon.EditorTools
                 ("hudView", hudView),
                 ("fogView", fogView),
                 ("threatView", threatView),
+                ("frostFieldView", frostFieldView),
                 ("itemsView", itemsView),
                 ("eventPlayer", eventPlayer),
                 ("skillBar", skillBar),

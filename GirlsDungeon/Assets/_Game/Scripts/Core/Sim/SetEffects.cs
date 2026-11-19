@@ -216,7 +216,8 @@ namespace GirlsDungeon.Core.Sim
         {
             // 상점 주인의 밑천(스택)은 받는 피해를 줄인다 (KeeperSkills, 3-15f) — 모든 피해 미리보기가 이 함수를 거친다.
             // 이동 감소를 가진 적에게 주는 피해 증가 (Remold, 3-16 — from = 이동 예약 칸에서 쏘는 미리보기).
-            return SetPercent(world, settings, attacker, target, source) - KeeperSkills.DamageTakenReduction(world, settings, target)
+            // 빙설 보루 (3-17c): 플레이어가 받는 피해 감소.
+            return SetPercent(world, settings, attacker, target, source) - KeeperSkills.DamageTakenReduction(world, settings, target) - FrostStatus.BulwarkReduction(world, settings, target)
                 + Remold.SlowedDamagePercent(world, settings, attacker, target, from);
         }
 

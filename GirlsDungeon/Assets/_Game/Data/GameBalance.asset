@@ -133,9 +133,15 @@ MonoBehaviour:
     remoldMax: 6
     remoldPerAction: 1
     remoldPerHit: 1
+    remoldPerActionEnd: 0
+    actionEndHealPercent: 0
+    actionEndLowHpHealPercent: 0
+    lowHpPercent: 0
     grenadeRemoldCost: 4
     pushRemoldCost: 0
     sonicRemoldCost: 1
+    frostGuardRemoldCost: 0
+    frostDecisiveRemoldCost: 0
     slowedDamagePercent: 20
     slowAfterMoveCells: 5
     slowAmount: 2
@@ -149,7 +155,7 @@ MonoBehaviour:
     defense: 3
     moveRange: 6
     startWeapon: 4
-    skills: 040501
+    skills: 040506
     workshopOptionPercent: 70
     workshopSetPercent: 50
     doorForcePercent: 0
@@ -171,6 +177,7 @@ MonoBehaviour:
     pushRemoldCost: 0
     sonicRemoldCost: 0
     frostGuardRemoldCost: 1
+    frostDecisiveRemoldCost: 5
     slowedDamagePercent: 0
     slowAfterMoveCells: 0
     slowAmount: 0
@@ -198,9 +205,15 @@ MonoBehaviour:
     remoldMax: 0
     remoldPerAction: 0
     remoldPerHit: 0
+    remoldPerActionEnd: 0
+    actionEndHealPercent: 0
+    actionEndLowHpHealPercent: 0
+    lowHpPercent: 0
     grenadeRemoldCost: 0
     pushRemoldCost: 0
     sonicRemoldCost: 0
+    frostGuardRemoldCost: 0
+    frostDecisiveRemoldCost: 0
     slowedDamagePercent: 0
     slowAfterMoveCells: 0
     slowAmount: 0
@@ -245,6 +258,23 @@ MonoBehaviour:
   defenseSupportMaxStacks: 4
   defenseSupportTurns: 2
   freezeTurns: 1
+  decisiveRange: 6
+  decisiveRadius: 3
+  decisiveFixedDefensePercent: 50
+  decisiveAvalancheStacks: 2
+  decisiveStabilityRestore: 2
+  decisiveShieldPercent: 100
+  decisiveBuffTurns: 3
+  decisiveFieldTurns: 3
+  bulwarkStacksPerUse: 1
+  bulwarkMaxStacks: 5
+  bulwarkDamagePercent: 30
+  avalancheBurstStacks: 5
+  avalancheStabilityDamage: 8
+  coagMaxStacks: 2
+  coagTurns: 2
+  coagMovePerStack: 1
+  coagFreezeTurns: 1
   keeperSkills:
     basicPercent: 80
     stackMax: 6

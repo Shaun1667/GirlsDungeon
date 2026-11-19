@@ -458,6 +458,27 @@ namespace GirlsDungeon.Game
             previewLabel.gameObject.SetActive(true);
         }
 
+        /// <summary>서리 결전 미리보기 (규칙 FrostDecisive.Preview의 값 그대로, 3-17c).</summary>
+        public void ShowFrostDecisivePreview(FrostDecisivePreview preview)
+        {
+            switch (preview.Block)
+            {
+                case FrostDecisiveBlock.NotReady:
+                    previewLabel.text = NotReadyText(SkillKind.FrostDecisive, "ui.combat.preview_frost_guard_not_ready");
+                    break;
+                case FrostDecisiveBlock.OutOfRange:
+                    previewLabel.text = Text.Get("ui.combat.preview_decisive_out_of_range");
+                    break;
+                case FrostDecisiveBlock.NotEmpty:
+                    previewLabel.text = Text.Get("ui.combat.preview_decisive_not_empty");
+                    break;
+                default:
+                    previewLabel.text = Text.Get("ui.combat.preview_decisive", preview.Targets.Count, preview.FixedDamage, preview.AvalancheStacks, preview.Shield, preview.StabilityRestored);
+                    break;
+            }
+            previewLabel.gameObject.SetActive(true);
+        }
+
         /// <summary>서리 수호 미리보기 (규칙 FrostGuard.Preview의 값 그대로, 3-17b).</summary>
         public void ShowFrostGuardPreview(FrostGuardPreview preview)
         {
@@ -649,6 +670,21 @@ namespace GirlsDungeon.Game
                     case ShopkeeperAngered _:
                         AddLog(Text.Get("ui.shop.log_angered"));
                         break;
+                    case FrostDecisiveUsed decisiveUsed:
+                        AddLog(Text.Get("ui.decisive.log_used", decisiveUsed.Hits));
+                        break;
+                    case FrostDecisiveSelf decisiveSelf:
+                        AddLog(Text.Get(decisiveSelf.Cleansed ? "ui.decisive.log_self_cleansed" : "ui.decisive.log_self", decisiveSelf.Shield, decisiveSelf.StabilityRestored, decisiveSelf.BulwarkStacks));
+                        break;
+                    case AvalancheStacked avalanche:
+                        AddLog(Text.Get("ui.decisive.log_avalanche", UnitName(avalanche.Kind), avalanche.Stacks));
+                        break;
+                    case AvalancheBurst burst:
+                        AddLog(Text.Get("ui.decisive.log_avalanche_burst", UnitName(burst.Kind), burst.StabilityDamage));
+                        break;
+                    case UnitCoagulated coag:
+                        AddLog(Text.Get("ui.decisive.log_coag", UnitName(coag.Kind), coag.Stacks));
+                        break;
                     case FrostGuardUsed guard:
                         AddLog(Text.Get("ui.frost_guard.log_used", guard.Shield, guard.StabilityRestored, guard.StacksAdded, guard.Stacks, guard.DefenseBonus));
                         break;
@@ -779,7 +815,9 @@ namespace GirlsDungeon.Game
             if (player != null && !playing)
             {
                 // 서리 보호막 · 방위 지원 (3-17b)이 있으면 같은 줄에 붙여 보인다 (키를 통째로).
-                hpLabel.text = world.PlayerShield > 0
+                hpLabel.text = world.BulwarkStacks > 0
+                    ? Text.Get("ui.hud.hp_shield_bulwark", player.Hp, player.MaxHp, world.PlayerShield, world.BulwarkStacks)
+                    : world.PlayerShield > 0
                     ? Text.Get("ui.hud.hp_shield", player.Hp, player.MaxHp, world.PlayerShield)
                     : Text.Get("ui.hud.hp", player.Hp, player.MaxHp);
                 stabilityLabel.text = world.DefenseSupportStacks > 0

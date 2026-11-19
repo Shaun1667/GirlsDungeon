@@ -20,6 +20,8 @@ namespace GirlsDungeon.Game
         Frost = 4,
         /// <summary>서리 수호: 자신에게 쓰는 스킬 — 카드를 누르면 범위 · 미리보기, 확인으로 쓴다 (3-17b).</summary>
         FrostGuard = 5,
+        /// <summary>서리 결전: 수류탄처럼 빈 칸을 골라 눈꽃 범위를 옮긴다 (3-17c).</summary>
+        FrostDecisive = 6,
     }
 
     /// <summary>
@@ -309,6 +311,20 @@ namespace GirlsDungeon.Game
         /// <summary>서리 수호 조준 모드를 켜고 끈다 (서리 수호 카드, 3-17b).</summary>
         public void ToggleFrostGuardAim() => ToggleAim(AimMode.FrostGuard);
 
+        /// <summary>서리 결전 조준 모드를 켜고 끈다 (서리 결전 카드, 3-17c).</summary>
+        public void ToggleFrostDecisiveAim() => ToggleAim(AimMode.FrostDecisive);
+
+        /// <summary>그 칸에 서리 결전을 쓴다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 쓰면 false.</summary>
+        public bool RequestFrostDecisive(GridPos center)
+        {
+            if (simulation == null || !CombatFlow.CanUseSkill(simulation.World) || Busy) return false;
+            var preview = PreviewWorld();
+            if (preview == null || !FrostDecisive.Preview(preview, settings, preview.Player, center).CanUse) return false;
+            if (!RunAfterPlannedMove(new FrostDecisiveCommand(center, settings))) return false;
+            SetAiming(AimMode.None);
+            return true;
+        }
+
         /// <summary>서리 수호를 쓴다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 쓰면 false.</summary>
         public bool RequestFrostGuard()
         {
@@ -373,6 +389,7 @@ namespace GirlsDungeon.Game
                 case AimMode.Sonic: return SkillKind.Sonic;
                 case AimMode.Frost: return SkillKind.Frost;
                 case AimMode.FrostGuard: return SkillKind.FrostGuard;
+                case AimMode.FrostDecisive: return SkillKind.FrostDecisive;
                 default: return SkillKind.None;
             }
         }
@@ -477,6 +494,7 @@ namespace GirlsDungeon.Game
         {
             if (aim == AimMode.Grenade && skillCell.HasValue) return RequestAreaAttack(skillCell.Value);
             if (aim == AimMode.Push && skillCell.HasValue) return RequestPush(skillCell.Value);
+            if (aim == AimMode.FrostDecisive && skillCell.HasValue) return RequestFrostDecisive(skillCell.Value);
             if (IsTargetAim && skillTargetId >= 0) return RequestTargetSkill(aim, skillTargetId);
             if (aim == AimMode.FrostGuard) return RequestFrostGuard();
             return false;
@@ -1001,6 +1019,13 @@ namespace GirlsDungeon.Game
                 pushAreaView.Hide();
                 if (skillWorld == null) hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(plannedCell ?? world.Player.Position));
                 else ShowIdlePreview(null, default);
+            }
+            else if (aim == AimMode.FrostDecisive)
+            {
+                var decisive = FrostDecisive.Preview(skillWorld, settings, skillWorld.Player, at.Value);
+                areaView.Show(decisive.Cells);
+                hudView.ShowFrostDecisivePreview(decisive);
+                usable = decisive.CanUse;
             }
             else if (aim == AimMode.Push)
             {

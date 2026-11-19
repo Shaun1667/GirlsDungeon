@@ -32,6 +32,7 @@ namespace GirlsDungeon.Core.Sim
                 case SkillKind.Push: return trait.PushRemoldCost;
                 case SkillKind.Sonic: return trait.SonicRemoldCost;
                 case SkillKind.FrostGuard: return trait.FrostGuardRemoldCost;
+                case SkillKind.FrostDecisive: return trait.FrostDecisiveRemoldCost;
                 default: return 0;
             }
         }
@@ -137,13 +138,16 @@ namespace GirlsDungeon.Core.Sim
         {
             // 결빙 (3-17b): 이동할 수 없다.
             if (unit.FrozenTurns > 0) return 0;
-            return IsSlowed(unit) ? Math.Max(0, unit.MoveRange - unit.SlowAmount) : unit.MoveRange;
+            // 응고 (3-17c): 스택마다 이동 감소 (FrostStatus).
+            int range = unit.MoveRange - unit.CoagMove;
+            return Math.Max(0, IsSlowed(unit) ? range - unit.SlowAmount : range);
         }
 
         /// <summary>적이 행동을 시작했다 (EnemyTurn): 이동 감소 남은 차례가 1 준다.</summary>
         public static void OnEnemyActed(Unit unit)
         {
             if (unit.FrozenTurns > 0) unit.FrozenTurns--;
+            FrostStatus.OnEnemyActed(unit);
             if (unit.SlowTurns <= 0) return;
             unit.SlowTurns--;
             if (unit.SlowTurns == 0) unit.SlowAmount = 0;

@@ -138,6 +138,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Sonic: moveController.ToggleSonicAim(); break;
                 case SkillKind.Frost: moveController.ToggleFrostAim(); break;
                 case SkillKind.FrostGuard: moveController.ToggleFrostGuardAim(); break;
+                case SkillKind.FrostDecisive: moveController.ToggleFrostDecisiveAim(); break;
             }
             return true;
         }
@@ -161,6 +162,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Sonic: return AimMode.Sonic;
                 case SkillKind.Frost: return AimMode.Frost;
                 case SkillKind.FrostGuard: return AimMode.FrostGuard;
+                case SkillKind.FrostDecisive: return AimMode.FrostDecisive;
                 default: return AimMode.None;
             }
         }
@@ -174,6 +176,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Sonic: return "ui.skill.sonic";
                 case SkillKind.Frost: return "ui.skill.frost";
                 case SkillKind.FrostGuard: return "ui.skill.frost_guard";
+                case SkillKind.FrostDecisive: return "ui.skill.frost_decisive";
                 default: return null;
             }
         }
@@ -315,6 +318,11 @@ namespace GirlsDungeon.Game
                     return Text.Get("ui.skill.frost_guard_tip", settings.FrostGuardShieldPercent, FrostGuard.ShieldAmount(simulation.World, settings), settings.FrostGuardShieldTurns,
                         settings.FrostGuardStabilityRestore, settings.FrostGuardRange, settings.DefenseSupportPercent, settings.DefenseSupportMaxStacks, settings.DefenseSupportTurns,
                         settings.FreezeTurns, CostText(skill, 0));
+                case SkillKind.FrostDecisive:
+                    return Text.Get("ui.skill.frost_decisive_tip", settings.DecisiveRange, settings.DecisiveRadius, settings.DecisiveFixedDefensePercent,
+                        FrostAttack.FixedDamage(simulation.World.Player.Defense, settings.DecisiveFixedDefensePercent), settings.DecisiveAvalancheStacks,
+                        settings.DecisiveStabilityRestore, settings.DecisiveShieldPercent, settings.DecisiveBuffTurns, settings.DecisiveFieldTurns,
+                        settings.BulwarkDamagePercent, CostText(skill, 0));
                 default:
                     return string.Empty;
             }

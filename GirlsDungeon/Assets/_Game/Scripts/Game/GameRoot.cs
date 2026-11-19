@@ -21,6 +21,7 @@ namespace GirlsDungeon.Game
         [SerializeField] private HudView hudView;
         [SerializeField] private FogView fogView;
         [SerializeField] private ThreatView threatView;
+        [SerializeField] private FrostFieldView frostFieldView;
         [SerializeField] private ItemsView itemsView;
         [SerializeField] private EventPlayer eventPlayer;
         [SerializeField] private SkillBarView skillBar;
@@ -140,6 +141,7 @@ namespace GirlsDungeon.Game
             moveController.AltarReached -= OnAltarReached;
             moveController.AltarReached += OnAltarReached;
             threatView.Bind(simulation, combatSettings);
+            if (frostFieldView != null) frostFieldView.Bind(simulation);
             cameraRig.Bind(balance, playerView.transform);
 
             if (seedLabel != null) seedLabel.text = Text.Get("ui.hud.seed", seed);

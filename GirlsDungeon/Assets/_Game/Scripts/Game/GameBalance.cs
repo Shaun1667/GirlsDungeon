@@ -88,6 +88,7 @@ namespace GirlsDungeon.Game
         public int pushRemoldCost;
         public int sonicRemoldCost;
         public int frostGuardRemoldCost;
+        public int frostDecisiveRemoldCost;
         [Tooltip("Bonus damage (%) against enemies with a movement debuff.")]
         public int slowedDamagePercent;
         [Tooltip("After walking at least this many cells this turn, attacks slow the target first (0 = never).")]
@@ -323,8 +324,8 @@ namespace GirlsDungeon.Game
             {
                 kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
                 maxHp = 90, maxStability = 10, visionRange = 10, defense = 3, moveRange = 6, startWeapon = WeaponKind.Smg,
-                skills = new[] { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.Grenade },
-                frostGuardRemoldCost = 1,
+                skills = new[] { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.FrostDecisive },
+                frostGuardRemoldCost = 1, frostDecisiveRemoldCost = 5,
                 remoldMax = 6, remoldPerActionEnd = 2, actionEndHealPercent = 5, actionEndLowHpHealPercent = 10, lowHpPercent = 50,
             },
             new CharacterEntry
@@ -405,6 +406,31 @@ namespace GirlsDungeon.Game
         [SerializeField] private int defenseSupportTurns = 2;
         [Tooltip("Freeze: the enemy that breaks the frost shield cannot move for this many actions.")]
         [SerializeField] private int freezeTurns = 1;
+
+        [Header("Frost decisive skill (BALANCE 37)")]
+        [Tooltip("Pick an empty cell within this many steps (x + y).")]
+        [SerializeField] private int decisiveRange = 6;
+        [Tooltip("Snowflake area: cells within this many steps of the picked cell (damage and frost field).")]
+        [SerializeField] private int decisiveRadius = 3;
+        [SerializeField] private int decisiveFixedDefensePercent = 50;
+        [SerializeField] private int decisiveAvalancheStacks = 2;
+        [SerializeField] private int decisiveStabilityRestore = 2;
+        [SerializeField] private int decisiveShieldPercent = 100;
+        [Tooltip("Shield and bulwark last this many of the player's turns.")]
+        [SerializeField] private int decisiveBuffTurns = 3;
+        [SerializeField] private int decisiveFieldTurns = 3;
+        [Tooltip("Snow bulwark: stacks per use, max stacks, damage taken reduction (%).")]
+        [SerializeField] private int bulwarkStacksPerUse = 1;
+        [SerializeField] private int bulwarkMaxStacks = 5;
+        [SerializeField] private int bulwarkDamagePercent = 30;
+        [Tooltip("Avalanche: stacks that burst, and the fixed stability damage of a burst.")]
+        [SerializeField] private int avalancheBurstStacks = 5;
+        [SerializeField] private int avalancheStabilityDamage = 8;
+        [Tooltip("Coagulation: max stacks, actions it lasts, move cells per stack, and the freeze it turns into at max stacks.")]
+        [SerializeField] private int coagMaxStacks = 2;
+        [SerializeField] private int coagTurns = 2;
+        [SerializeField] private int coagMovePerStack = 1;
+        [SerializeField] private int coagFreezeTurns = 1;
 
         [Header("Shopkeeper skills (BALANCE 33)")]
         [SerializeField] private KeeperSkillsEntry keeperSkills = new KeeperSkillsEntry();
@@ -770,6 +796,23 @@ namespace GirlsDungeon.Game
                 DefenseSupportMaxStacks = defenseSupportMaxStacks,
                 DefenseSupportTurns = defenseSupportTurns,
                 FreezeTurns = freezeTurns,
+                DecisiveRange = decisiveRange,
+                DecisiveRadius = decisiveRadius,
+                DecisiveFixedDefensePercent = decisiveFixedDefensePercent,
+                DecisiveAvalancheStacks = decisiveAvalancheStacks,
+                DecisiveStabilityRestore = decisiveStabilityRestore,
+                DecisiveShieldPercent = decisiveShieldPercent,
+                DecisiveBuffTurns = decisiveBuffTurns,
+                DecisiveFieldTurns = decisiveFieldTurns,
+                BulwarkStacksPerUse = bulwarkStacksPerUse,
+                BulwarkMaxStacks = bulwarkMaxStacks,
+                BulwarkDamagePercent = bulwarkDamagePercent,
+                AvalancheBurstStacks = avalancheBurstStacks,
+                AvalancheStabilityDamage = avalancheStabilityDamage,
+                CoagMaxStacks = coagMaxStacks,
+                CoagTurns = coagTurns,
+                CoagMovePerStack = coagMovePerStack,
+                CoagFreezeTurns = coagFreezeTurns,
                 Keeper = new KeeperSkillSettings
                 {
                     BasicPercent = keeperSkills.basicPercent,
@@ -952,6 +995,7 @@ namespace GirlsDungeon.Game
                     PushRemoldCost = entry.pushRemoldCost,
                     SonicRemoldCost = entry.sonicRemoldCost,
                     FrostGuardRemoldCost = entry.frostGuardRemoldCost,
+                    FrostDecisiveRemoldCost = entry.frostDecisiveRemoldCost,
                     SlowedDamagePercent = entry.slowedDamagePercent,
                     SlowAfterMoveCells = entry.slowAfterMoveCells,
                     SlowAmount = entry.slowAmount,

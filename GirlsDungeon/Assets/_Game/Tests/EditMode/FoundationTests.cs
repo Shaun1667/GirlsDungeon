@@ -347,6 +347,25 @@ namespace GirlsDungeon.Tests
                 DefenseSupportMaxStacks = 4,
                 DefenseSupportTurns = 2,
                 FreezeTurns = 1,
+                // BALANCE 37번 (3-17c): 서리 결전 — 범위 6 · 눈꽃 3 · 방어 50% 고정 · 눈사태 2 · 안정 +2 · 보호막 100% · 3차례 · 서리밭 3차례,
+                // 빙설 보루 1스택(최대 5, 받는 피해 −30%), 눈사태 5스택 = 안정 −8, 응고 최대 2 · 2행동 · 스택마다 이동 −1 · 최대면 결빙 1.
+                DecisiveRange = 6,
+                DecisiveRadius = 3,
+                DecisiveFixedDefensePercent = 50,
+                DecisiveAvalancheStacks = 2,
+                DecisiveStabilityRestore = 2,
+                DecisiveShieldPercent = 100,
+                DecisiveBuffTurns = 3,
+                DecisiveFieldTurns = 3,
+                BulwarkStacksPerUse = 1,
+                BulwarkMaxStacks = 5,
+                BulwarkDamagePercent = 30,
+                AvalancheBurstStacks = 5,
+                AvalancheStabilityDamage = 8,
+                CoagMaxStacks = 2,
+                CoagTurns = 2,
+                CoagMovePerStack = 1,
+                CoagFreezeTurns = 1,
                 Keeper = new KeeperSkillSettings
                 {
                     BasicPercent = 80,
@@ -551,9 +570,9 @@ namespace GirlsDungeon.Tests
             settings.Characters.Add(new CharacterStats
             {
                 Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 10, VisionRange = 10, Defense = 3, MoveRange = 6, StartWeapon = WeaponKind.Smg,
-                // 3-16z · 3-17b: B 스킬1 = 빙결 사격, 스킬2 = 서리 수호 (4번 칸은 결전기가 생길 때까지 수류탄).
-                Skills = { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.Grenade },
-                FrostGuardRemoldCost = 1,
+                // 3-16z · 3-17b · 3-17c: B 스킬1 = 빙결 사격, 스킬2 = 서리 수호, 결전기 = 서리 결전.
+                Skills = { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.FrostDecisive },
+                FrostGuardRemoldCost = 1, FrostDecisiveRemoldCost = 5,
                 WorkshopOptionPercent = 70, WorkshopSetPercent = 50,
                 // BALANCE 34번 (3-17a): B 리몰딩 최대 6 · 행동 종료 +2 · 최대 체력 5% 회복 (50% 미만이면 10%).
                 RemoldMax = 6, RemoldPerActionEnd = 2, ActionEndHealPercent = 5, ActionEndLowHpHealPercent = 10, LowHpPercent = 50,

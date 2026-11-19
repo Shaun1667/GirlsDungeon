@@ -185,6 +185,28 @@ ui.frost_guard.log_broken,서리 보호막이 피해 {0}을 막고 깨짐,Frost 
 ui.frost_guard.log_frozen,{0} 결빙 ({1}행동 동안 이동 불가),{0} is frozen (cannot move for {1} action(s))
 ui.hud.hp_shield,체력 {0}/{1} · 보호막 {2},HP {0}/{1} · Shield {2}
 ui.hud.stability_support,안정지수 {0}/{1} · 방위 지원 {2}스택 (방어 +{3}),Stability {0}/{1} · Defense support {2} (defense +{3})
+ui.skill.frost_decisive,서리 결전,Frost decisive
+ui.skill.frost_decisive_tip,"서리 결전 · {0}칸(걸음 수) 안 빈 칸을 골라 확인
+눈꽃 범위 {1}칸 안 모든 적: 방어력 {2}% 고정 피해 (지금 {3}) · 눈사태 {4}스택
+자신: 안정 +{5} · 디버프 1개 정화 · 서리 보호막 기초 공격력 {6}% · 빙설 보루 (받는 피해 −{9}%) {7}차례
+그 범위에 서리밭 {8}차례 (행동을 마친 적 응고)
+{10} · 쓰면 차례 끝","Frost decisive · pick an empty cell within {0} steps, then confirm
+All enemies within {1} of it: fixed damage {2}% of defense (now {3}) · Avalanche {4} stacks
+You: stability +{5} · cleanse one debuff · frost shield {6}% of base attack · snow bulwark (damage taken −{9}%) for {7} turns
+Frost field there for {8} turns (enemies ending their action in it are coagulated)
+{10} · Ends your turn"
+ui.combat.preview_decisive,"서리 결전 · 맞는 적 {0} · 고정 피해 {1} · 눈사태 +{2}
+자신: 보호막 {3} · 안정 +{4} · 빙설 보루","Frost decisive · enemies hit {0} · fixed damage {1} · avalanche +{2}
+You: shield {3} · stability +{4} · snow bulwark"
+ui.combat.preview_decisive_out_of_range,서리 결전 · 범위 밖 칸,Frost decisive · out of range
+ui.combat.preview_decisive_not_empty,서리 결전 · 빈 칸을 골라야 함,Frost decisive · pick an empty cell
+ui.decisive.log_used,서리 결전: 적 {0}명,Frost decisive: {0} enemies
+ui.decisive.log_self,서리 결전: 보호막 {0} · 안정 +{1} · 빙설 보루 {2}스택,Frost decisive: shield {0} · stability +{1} · snow bulwark {2}
+ui.decisive.log_self_cleansed,서리 결전: 보호막 {0} · 안정 +{1} · 빙설 보루 {2}스택 · 화상 정화,Frost decisive: shield {0} · stability +{1} · snow bulwark {2} · burn cleansed
+ui.decisive.log_avalanche,{0} 눈사태 {1}스택,{0} avalanche {1}
+ui.decisive.log_avalanche_burst,{0} 눈사태 폭발: 안정 −{1},{0} avalanche burst: stability −{1}
+ui.decisive.log_coag,{0} 응고 {1}스택,{0} coagulated {1}
+ui.hud.hp_shield_bulwark,체력 {0}/{1} · 보호막 {2} · 빙설 보루 {3},HP {0}/{1} · Shield {2} · Snow bulwark {3}
 ui.part.compare,"{0} 파츠 · {1} ({2})
 새 파츠: {3}
 지금 끼운 것: {4}","{0} part · {1} ({2})

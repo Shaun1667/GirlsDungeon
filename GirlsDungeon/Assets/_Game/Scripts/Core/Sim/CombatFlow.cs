@@ -203,27 +203,35 @@ namespace GirlsDungeon.Core.Sim
                 var player = world.Player;
                 if (enemy == null || player == null || enemy.Guarding) continue;
 
-                enemy.Overwatching = false;
-                // 상점 주인은 스킬을 쓴다 (KeeperSkills, 3-15f): 행동 시작 처리 → 이동 → 스킬 또는 일반 공격.
-                bool keeper = KeeperSkills.Uses(settings, enemy);
-                if (keeper) KeeperSkills.StartAction(world, settings, enemy);
-                // 이동 감소 (Remold, 3-16): 이번 행동의 이동 칸을 정한 뒤 남은 차례를 줄인다.
-                int moveRange = Remold.MoveRangeOf(enemy);
-                Remold.OnEnemyActed(enemy);
-                var destination = ChooseCell(world, settings, enemy, player, moveRange);
-                if (destination != enemy.Position)
-                {
-                    var path = CombatMovement.Path(world, enemy, destination, moveRange);
-                    if (!CombatMovement.Walk(world, settings, enemy, path, events)) continue;
-                }
-
-                if (keeper ? KeeperSkills.Act(world, settings, enemy, player, events) : CombatRules.Resolve(world, settings, enemy, player, events)) continue;
-                if (world.Mode != WorldMode.Combat) return;
-                // 근접(밀기) 적은 감시를 걸지 않는다 — 반응으로 밀면 걷던 경로가 꼬인다.
-                if (enemy.PushOnHit > 0) continue;
-                enemy.Overwatching = true;
-                events.Add(new OverwatchSet(enemy.Id, enemy.Kind));
+                ActOnce(world, settings, enemy, player, events);
+                // 행동을 마친 적 (3-17c): 서리밭 응고 · 응고 2스택이면 결빙 (FrostStatus).
+                if (world.Mode == WorldMode.Combat && world.FindUnit(id) != null) FrostStatus.OnEnemyActionEnded(world, settings, enemy, events);
             }
+        }
+
+        /// <summary>적 하나의 행동 (이동 → 공격 또는 감시).</summary>
+        private static void ActOnce(World world, CombatSettings settings, Unit enemy, Unit player, List<GameEvent> events)
+        {
+            enemy.Overwatching = false;
+            // 상점 주인은 스킬을 쓴다 (KeeperSkills, 3-15f): 행동 시작 처리 → 이동 → 스킬 또는 일반 공격.
+            bool keeper = KeeperSkills.Uses(settings, enemy);
+            if (keeper) KeeperSkills.StartAction(world, settings, enemy);
+            // 이동 감소 (Remold, 3-16): 이번 행동의 이동 칸을 정한 뒤 남은 차례를 줄인다.
+            int moveRange = Remold.MoveRangeOf(enemy);
+            Remold.OnEnemyActed(enemy);
+            var destination = ChooseCell(world, settings, enemy, player, moveRange);
+            if (destination != enemy.Position)
+            {
+                var path = CombatMovement.Path(world, enemy, destination, moveRange);
+                if (!CombatMovement.Walk(world, settings, enemy, path, events)) return;
+            }
+
+            if (keeper ? KeeperSkills.Act(world, settings, enemy, player, events) : CombatRules.Resolve(world, settings, enemy, player, events)) return;
+            if (world.Mode != WorldMode.Combat) return;
+            // 근접(밀기) 적은 감시를 걸지 않는다 — 반응으로 밀면 걷던 경로가 꼬인다.
+            if (enemy.PushOnHit > 0) return;
+            enemy.Overwatching = true;
+            events.Add(new OverwatchSet(enemy.Id, enemy.Kind));
         }
 
         private static Grid.GridPos ChooseCell(World world, CombatSettings settings, Unit enemy, Unit player, int moveRange)

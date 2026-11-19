@@ -119,7 +119,7 @@ namespace GirlsDungeon.Core.Sim
         /// 플레이어가 받는 피해를 서리 보호막이 먼저 막는다. 남은 피해를 돌려준다.
         /// 보호막이 이번에 깨졌고 공격자가 있으면(플레이어가 아닌 유닛) 결빙을 건다.
         /// </summary>
-        public static int AbsorbPlayerShield(World world, Unit attacker, int damage, List<GameEvent> events)
+        public static int AbsorbPlayerShield(World world, Unit attacker, int damage, List<GameEvent> events, CombatSettings settings = null)
         {
             if (world.PlayerShield <= 0 || damage <= 0) return damage;
             int absorbed = Math.Min(world.PlayerShield, damage);
@@ -130,12 +130,8 @@ namespace GirlsDungeon.Core.Sim
             world.PlayerShieldTurns = 0;
             if (attacker != null && !attacker.IsPlayer)
             {
-                int turns = world.PlayerShieldFreezeTurns;
-                if (turns > 0)
-                {
-                    attacker.FrozenTurns = Math.Max(attacker.FrozenTurns, turns);
-                    events?.Add(new UnitFrozen(attacker.Id, attacker.Kind, attacker.FrozenTurns));
-                }
+                // 결빙은 빙결계 디버프 — 눈사태가 쌓인다 (FrostStatus, 3-17c).
+                FrostStatus.Freeze(world, settings, attacker, world.PlayerShieldFreezeTurns, events);
             }
             return damage - absorbed;
         }
@@ -143,6 +139,7 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>내 차례 시작 (CombatFlow): 보호막 · 방위 지원 남은 차례가 1 준다. 0이 되면 사라진다.</summary>
         public static void OnPlayerTurnStarted(World world, CombatSettings settings, List<GameEvent> events)
         {
+            FrostStatus.OnPlayerTurnStarted(world, events);
             if (world.PlayerShieldTurns > 0 && --world.PlayerShieldTurns == 0) world.PlayerShield = 0;
             if (world.DefenseSupportTurns > 0 && --world.DefenseSupportTurns == 0)
             {
@@ -162,6 +159,7 @@ namespace GirlsDungeon.Core.Sim
             world.DefenseSupportTurns = 0;
             if (world.Player != null) world.Player.Defense -= world.DefenseSupportApplied;
             world.DefenseSupportApplied = 0;
+            FrostStatus.Clear(world);
         }
     }
 

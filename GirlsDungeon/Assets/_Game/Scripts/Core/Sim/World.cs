@@ -72,6 +72,12 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>결빙 (3-17b, FrostGuard): 남은 행동 수 동안 이동할 수 없다. 0 = 없음.</summary>
         public int FrozenTurns { get; set; }
 
+        /// <summary>눈사태 · 응고 (3-17c, FrostStatus): 스택 · 응고 남은 행동 · 응고로 줄어든 이동 칸.</summary>
+        public int AvalancheStacks { get; set; }
+        public int CoagStacks { get; set; }
+        public int CoagTurns { get; set; }
+        public int CoagMove { get; set; }
+
         public bool IsPlayer => Kind == UnitKind.Player;
 
         public Unit(int id, UnitKind kind, GridPos position)
@@ -207,6 +213,13 @@ namespace GirlsDungeon.Core.Sim
         public int DefenseSupportStacks { get; set; }
         public int DefenseSupportTurns { get; set; }
         public int DefenseSupportApplied { get; set; }
+
+        /// <summary>서리밭 (3-17c, FrostStatus). 전투가 끝나면 사라진다.</summary>
+        public List<FrostField> FrostFields { get; } = new List<FrostField>();
+
+        /// <summary>빙설 보루 (3-17c): 스택 · 남은 차례. 받는 피해 감소, 공격을 받을 때마다 −1스택.</summary>
+        public int BulwarkStacks { get; set; }
+        public int BulwarkTurns { get; set; }
 
         /// <summary>한 번이라도 본 칸 (인덱스 = x + y * Width). 지금 보이는 칸은 저장하지 않고 Vision으로 다시 계산한다.</summary>
         public bool[] Explored { get; set; }

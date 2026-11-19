@@ -49,6 +49,8 @@ namespace GirlsDungeon.Core.Sim
         Frost = 4,
         /// <summary>서리 수호: 자신에게 서리 보호막 · 안정 회복 · 주위 적 수만큼 방위 지원 (FrostGuard, 3-17b — 대원 B 스킬2).</summary>
         FrostGuard = 5,
+        /// <summary>서리 결전: 빈 칸을 골라 눈꽃 범위 적에게 고정 피해 · 눈사태, 자신에게 보호막 · 빙설 보루, 서리밭 (FrostDecisive, 3-17c — 대원 B 결전기).</summary>
+        FrostDecisive = 6,
     }
 
     /// <summary>
@@ -104,6 +106,8 @@ namespace GirlsDungeon.Core.Sim
         public int SonicRemoldCost;
         /// <summary>서리 수호 리몰딩 소모 (대원 B, 3-17b).</summary>
         public int FrostGuardRemoldCost;
+        /// <summary>서리 결전 리몰딩 소모 (대원 B, 3-17c).</summary>
+        public int FrostDecisiveRemoldCost;
 
         /// <summary>이동 감소를 가진 적에게 주는 피해 (+%p, 0 = 없음).</summary>
         public int SlowedDamagePercent;
@@ -191,6 +195,29 @@ namespace GirlsDungeon.Core.Sim
         public int DefenseSupportTurns;
         /// <summary>결빙 (서리 보호막을 깬 적): 이 수만큼 행동 동안 이동할 수 없다.</summary>
         public int FreezeTurns;
+
+        // 서리 결전 · 눈사태 · 응고 · 서리밭 · 빙설 보루 (BALANCE 37번, 3-17c — 대원 B 결전기)
+        /// <summary>고를 수 있는 칸: 쓰는 자리에서 걸음 수 이 안의 빈 칸.</summary>
+        public int DecisiveRange;
+        /// <summary>눈꽃 범위: 고른 칸에서 걸음 수 이 안 (피해 · 서리밭 공용).</summary>
+        public int DecisiveRadius;
+        public int DecisiveFixedDefensePercent;
+        public int DecisiveAvalancheStacks;
+        public int DecisiveStabilityRestore;
+        public int DecisiveShieldPercent;
+        /// <summary>서리 결전의 보호막 · 빙설 보루 지속 (내 차례 시작마다 −1).</summary>
+        public int DecisiveBuffTurns;
+        public int DecisiveFieldTurns;
+        public int BulwarkStacksPerUse;
+        public int BulwarkMaxStacks;
+        public int BulwarkDamagePercent;
+        public int AvalancheBurstStacks;
+        public int AvalancheStabilityDamage;
+        public int CoagMaxStacks;
+        public int CoagTurns;
+        public int CoagMovePerStack;
+        /// <summary>응고가 최대 스택이 되어 바뀌는 결빙의 행동 수.</summary>
+        public int CoagFreezeTurns;
 
         /// <summary>상점 주인 스킬 (BALANCE 33번, 3-15f). null이면 스킬 없이 사격병처럼 싸운다.</summary>
         public KeeperSkillSettings Keeper;
@@ -495,6 +522,11 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Push settings are invalid.");
             if (SonicRange < 1 || SonicDamagePercent < 0 || SonicStabilityDamage < 0 || SonicCooldownRounds < 0)
                 throw new ArgumentException("Sonic settings are invalid.");
+            if (DecisiveRange < 0 || DecisiveRadius < 0 || DecisiveFixedDefensePercent < 0 || DecisiveAvalancheStacks < 0 || DecisiveStabilityRestore < 0
+                || DecisiveShieldPercent < 0 || DecisiveBuffTurns < 0 || DecisiveFieldTurns < 0 || BulwarkStacksPerUse < 0 || BulwarkMaxStacks < 0
+                || BulwarkDamagePercent < 0 || BulwarkDamagePercent > 100 || AvalancheBurstStacks < 0 || AvalancheStabilityDamage < 0
+                || CoagMaxStacks < 0 || CoagTurns < 0 || CoagMovePerStack < 0 || CoagFreezeTurns < 0)
+                throw new ArgumentException("Frost decisive settings are invalid.");
             if (FrostGuardShieldPercent < 0 || FrostGuardShieldTurns < 0 || FrostGuardStabilityRestore < 0 || FrostGuardRange < 0
                 || DefenseSupportPercent < 0 || DefenseSupportMaxStacks < 0 || DefenseSupportTurns < 0 || FreezeTurns < 0)
                 throw new ArgumentException("Frost guard settings are invalid.");
@@ -527,6 +559,7 @@ namespace GirlsDungeon.Core.Sim
                     || character.GrenadeRemoldCost < 0 || character.PushRemoldCost < 0 || character.SonicRemoldCost < 0
                     || character.GrenadeRemoldCost > character.RemoldMax || character.PushRemoldCost > character.RemoldMax || character.SonicRemoldCost > character.RemoldMax
                     || character.FrostGuardRemoldCost < 0 || character.FrostGuardRemoldCost > character.RemoldMax
+                    || character.FrostDecisiveRemoldCost < 0 || character.FrostDecisiveRemoldCost > character.RemoldMax
                     || character.SlowAfterMoveCells < 0 || character.SlowAmount < 0 || character.SlowTurns < 0)
                     throw new ArgumentException($"Remold settings for character {character.Kind} are invalid.");
             }
