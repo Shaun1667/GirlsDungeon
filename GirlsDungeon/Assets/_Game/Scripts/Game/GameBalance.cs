@@ -302,7 +302,7 @@ namespace GirlsDungeon.Game
             new CharacterEntry
             {
                 kind = CharacterKind.HeroA, nameKey = "character.hero_a.name", visualId = "hero_a",
-                maxHp = 110, maxStability = 7, visionRange = 8, defense = 5, moveRange = 8, startWeapon = WeaponKind.Shotgun,
+                maxHp = 110, maxStability = 8, visionRange = 8, defense = 5, moveRange = 8, startWeapon = WeaponKind.Shotgun,
                 skills = new[] { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade },
                 workshopOptionPercent = 55, workshopSetPercent = 35,
                 doorForcePercent = 70,

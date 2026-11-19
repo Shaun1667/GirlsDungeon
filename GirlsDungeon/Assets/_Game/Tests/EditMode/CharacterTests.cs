@@ -20,7 +20,7 @@ namespace GirlsDungeon.Tests
             Assert.That(world.PlayerCharacter, Is.EqualTo(CharacterKind.HeroA));
             Assert.That(world.PlayerWeapon, Is.EqualTo(WeaponKind.Shotgun));
             Assert.That(new[] { player.MaxHp, player.Hp, player.MaxStability, player.Stability, player.VisionRange, player.Defense, player.MoveRange },
-                Is.EqualTo(new[] { 110, 110, 7, 7, 8, 5, 8 }));
+                Is.EqualTo(new[] { 110, 110, 8, 8, 8, 5, 8 }));
             // 공격 · 사거리는 무기에서 온다 (Loadout.Apply).
             Assert.That(player.Attack, Is.EqualTo(shotgun.Attack));
             Assert.That(player.AttackRange, Is.EqualTo(shotgun.AttackRange));
