@@ -137,6 +137,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Push: moveController.TogglePushAim(); break;
                 case SkillKind.Sonic: moveController.ToggleSonicAim(); break;
                 case SkillKind.Frost: moveController.ToggleFrostAim(); break;
+                case SkillKind.FrostGuard: moveController.ToggleFrostGuardAim(); break;
             }
             return true;
         }
@@ -159,6 +160,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Push: return AimMode.Push;
                 case SkillKind.Sonic: return AimMode.Sonic;
                 case SkillKind.Frost: return AimMode.Frost;
+                case SkillKind.FrostGuard: return AimMode.FrostGuard;
                 default: return AimMode.None;
             }
         }
@@ -171,6 +173,7 @@ namespace GirlsDungeon.Game
                 case SkillKind.Push: return "ui.skill.push";
                 case SkillKind.Sonic: return "ui.skill.sonic";
                 case SkillKind.Frost: return "ui.skill.frost";
+                case SkillKind.FrostGuard: return "ui.skill.frost_guard";
                 default: return null;
             }
         }
@@ -308,6 +311,10 @@ namespace GirlsDungeon.Game
                     return Text.Get("ui.skill.frost_tip", settings.FrostRange, settings.SkillDamagePercentFor(simulation.World.PlayerCharacter, SkillKind.Frost),
                         settings.FrostFixedDefensePercent, FrostAttack.FixedDamage(simulation.World.Player.Defense, settings.FrostFixedDefensePercent),
                         settings.FrostStabilityDamage, CostText(skill, settings.FrostCooldownRounds));
+                case SkillKind.FrostGuard:
+                    return Text.Get("ui.skill.frost_guard_tip", settings.FrostGuardShieldPercent, FrostGuard.ShieldAmount(simulation.World, settings), settings.FrostGuardShieldTurns,
+                        settings.FrostGuardStabilityRestore, settings.FrostGuardRange, settings.DefenseSupportPercent, settings.DefenseSupportMaxStacks, settings.DefenseSupportTurns,
+                        settings.FreezeTurns, CostText(skill, 0));
                 default:
                     return string.Empty;
             }

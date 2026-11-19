@@ -18,6 +18,8 @@ namespace GirlsDungeon.Game
         Sonic = 3,
         /// <summary>빙결 사격: 음파처럼 적을 클릭해 쓴다 (3-16z).</summary>
         Frost = 4,
+        /// <summary>서리 수호: 자신에게 쓰는 스킬 — 카드를 누르면 범위 · 미리보기, 확인으로 쓴다 (3-17b).</summary>
+        FrostGuard = 5,
     }
 
     /// <summary>
@@ -163,7 +165,7 @@ namespace GirlsDungeon.Game
         public bool PlanMove(GridPos cell)
         {
             // 범위 스킬 조준 중의 클릭은 범위 옮기기라 예약하지 않는다. 음파(대상 스킬)는 사격처럼 예약할 수 있다.
-            if (simulation == null || Busy || (aim != AimMode.None && !IsTargetAim)) return false;
+            if (simulation == null || Busy || (aim != AimMode.None && !AllowsPlanning)) return false;
             var world = simulation.World;
             if (world.Mode != WorldMode.Combat || !Loadout.CanCombatMove(world, settings)) return false;
             RefreshRange(true);
@@ -301,6 +303,23 @@ namespace GirlsDungeon.Game
         /// <summary>적 하나를 고르는 스킬(음파 · 빙결 사격)을 조준 중인가.</summary>
         private bool IsTargetAim => aim == AimMode.Sonic || aim == AimMode.Frost;
 
+        /// <summary>조준 중에도 파란 칸 클릭으로 이동 예약을 할 수 있는가 (대상 스킬 · 자신에게 쓰는 스킬).</summary>
+        private bool AllowsPlanning => IsTargetAim || aim == AimMode.FrostGuard;
+
+        /// <summary>서리 수호 조준 모드를 켜고 끈다 (서리 수호 카드, 3-17b).</summary>
+        public void ToggleFrostGuardAim() => ToggleAim(AimMode.FrostGuard);
+
+        /// <summary>서리 수호를 쓴다 (예약이 있으면 예약 칸으로 걸은 뒤). 못 쓰면 false.</summary>
+        public bool RequestFrostGuard()
+        {
+            if (simulation == null || !CombatFlow.CanUseSkill(simulation.World) || Busy) return false;
+            var preview = PreviewWorld();
+            if (preview == null || !FrostGuard.Preview(preview, settings, preview.Player).CanUse) return false;
+            if (!RunAfterPlannedMove(new FrostGuardCommand(settings))) return false;
+            SetAiming(AimMode.None);
+            return true;
+        }
+
         /// <summary>그 적에게 대상 스킬을 쓸 수 있는가 (판정은 규칙 Preview 한 곳). mode를 주지 않으면 지금 조준 중인 스킬.</summary>
         private bool TargetSkillUsable(World skillWorld, Unit target, AimMode? mode = null)
         {
@@ -353,6 +372,7 @@ namespace GirlsDungeon.Game
                 case AimMode.Push: return SkillKind.Push;
                 case AimMode.Sonic: return SkillKind.Sonic;
                 case AimMode.Frost: return SkillKind.Frost;
+                case AimMode.FrostGuard: return SkillKind.FrostGuard;
                 default: return SkillKind.None;
             }
         }
@@ -442,7 +462,7 @@ namespace GirlsDungeon.Game
         private GridPos? skillCell;
         private int skillTargetId = -1;
 
-        public bool HasSkillTarget => IsTargetAim ? skillTargetId >= 0 : aim != AimMode.None && skillCell.HasValue;
+        public bool HasSkillTarget => aim == AimMode.FrostGuard || (IsTargetAim ? skillTargetId >= 0 : aim != AimMode.None && skillCell.HasValue);
         public GridPos? SkillCell => skillCell;
         public int SkillTargetId => skillTargetId;
 
@@ -458,6 +478,7 @@ namespace GirlsDungeon.Game
             if (aim == AimMode.Grenade && skillCell.HasValue) return RequestAreaAttack(skillCell.Value);
             if (aim == AimMode.Push && skillCell.HasValue) return RequestPush(skillCell.Value);
             if (IsTargetAim && skillTargetId >= 0) return RequestTargetSkill(aim, skillTargetId);
+            if (aim == AimMode.FrostGuard) return RequestFrostGuard();
             return false;
         }
 
@@ -838,7 +859,7 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             // 권총은 쏜 뒤에도 이동할 수 있다 — 판정은 규칙(Loadout.CanCombatMove) 한 곳.
             // 이동 범위는 스킬 조준 중에도 보인다 (2026-11-14 사용자). 예약 클릭은 조준 없음 · 음파 조준 때만.
-            bool canMove = Loadout.CanCombatMove(world, settings) && !Busy && (aim == AimMode.None || IsTargetAim);
+            bool canMove = Loadout.CanCombatMove(world, settings) && !Busy && (aim == AimMode.None || AllowsPlanning);
             RefreshRange(Loadout.CanCombatMove(world, settings) && !Busy);
 
             var mouse = Mouse.current;
@@ -964,6 +985,11 @@ namespace GirlsDungeon.Game
                 HandleSonicAim(world, skillWorld, cell, clicked, canMove);
                 return;
             }
+            if (aim == AimMode.FrostGuard)
+            {
+                HandleFrostGuardAim(world, cell, clicked, canMove);
+                return;
+            }
 
             if (clicked && skillWorld != null && world.Map.InBounds(cell.Value)) skillCell = cell.Value;
             SetHover(cell);
@@ -993,6 +1019,46 @@ namespace GirlsDungeon.Game
             }
             hudView.ShowAttackConfirm(skillCell.HasValue, skillCell.HasValue && usable && !Busy);
             RefreshGhost(world, at.HasValue ? GridSpace.ToWorld(at.Value) : (Vector3?)null);
+        }
+
+        /// <summary>
+        /// 서리 수호 조준 중 (3-17b): 대상이 없는 자신 스킬 — 범위(방위 지원을 세는 칸)와 미리보기를 보이고, 파란 칸 클릭 = 이동 예약 (예약 칸 다시 클릭 = 이동만).
+        /// 쓰기는 확인(버튼 · Space · 같은 카드)으로. 범위 · 미리보기는 예약 칸으로 걸어 본 복제 세계에서.
+        /// </summary>
+        private void HandleFrostGuardAim(World world, GridPos? cell, bool clicked, bool canMove)
+        {
+            pushAreaView.Hide();
+            if (cell.HasValue && canMove && reachable != null && reachable.ContainsKey(cell.Value) && cell.Value != world.Player.Position)
+            {
+                SetHover(cell);
+                if (clicked)
+                {
+                    if (plannedCell.HasValue && plannedCell.Value == cell.Value) ConfirmMove();
+                    else PlanMove(cell.Value);
+                }
+            }
+            else
+            {
+                SetHover(null);
+                if (clicked && cell.HasValue && cell.Value == world.Player.Position && plannedCell.HasValue) ClearPlan();
+            }
+
+            var skillWorld = PreviewWorld();
+            if (skillWorld == null)
+            {
+                areaView.Hide();
+                hudView.ShowPlannedMovePreview(WeakestCoverAgainstCombatants(plannedCell ?? world.Player.Position));
+                hudView.ShowAttackConfirm(true, false);
+            }
+            else
+            {
+                var preview = FrostGuard.Preview(skillWorld, settings, skillWorld.Player);
+                areaView.Show(preview.Cells);
+                hudView.ShowFrostGuardPreview(preview);
+                hudView.ShowAttackConfirm(true, preview.CanUse && !Busy);
+            }
+            RefreshSonicLines(null);
+            RefreshGhost(world, null);
         }
 
         private void HandleSonicAim(World world, World skillWorld, GridPos? cell, bool clicked, bool canMove)

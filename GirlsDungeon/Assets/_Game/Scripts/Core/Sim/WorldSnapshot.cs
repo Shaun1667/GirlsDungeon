@@ -22,7 +22,7 @@ namespace GirlsDungeon.Core.Sim
         /// 30: 상점 주인 스킬 상태 — 밑천 · 재사용 대기 · 기세 · 방벽 · 플레이어 화상 (2026-11-14, 3-15f).
         /// 33: 떠난 층 보관 StoredFloors (2026-11-18, 3-16u — 올라가는 계단 칸은 TileType 값만 추가).
         /// </summary>
-        public const int Version = 35;
+        public const int Version = 36;
 
         public static byte[] Encode(World world)
         {
@@ -67,6 +67,12 @@ namespace GirlsDungeon.Core.Sim
                 writer.Write((byte)world.PlayerCharacter);
                 writer.Write(world.SonicCooldown);
                 writer.Write(world.FrostCooldown);
+                writer.Write(world.PlayerShield);
+                writer.Write(world.PlayerShieldTurns);
+                writer.Write(world.PlayerShieldFreezeTurns);
+                writer.Write(world.DefenseSupportStacks);
+                writer.Write(world.DefenseSupportTurns);
+                writer.Write(world.DefenseSupportApplied);
                 foreach (var part in world.PlayerParts) WritePart(writer, part);
                 writer.Write(world.PartAppliedMaxHp);
                 writer.Write(world.PartAppliedDefense);
@@ -166,6 +172,12 @@ namespace GirlsDungeon.Core.Sim
                 world.PlayerCharacter = (CharacterKind)reader.ReadByte();
                 world.SonicCooldown = reader.ReadInt32();
                 world.FrostCooldown = reader.ReadInt32();
+                world.PlayerShield = reader.ReadInt32();
+                world.PlayerShieldTurns = reader.ReadInt32();
+                world.PlayerShieldFreezeTurns = reader.ReadInt32();
+                world.DefenseSupportStacks = reader.ReadInt32();
+                world.DefenseSupportTurns = reader.ReadInt32();
+                world.DefenseSupportApplied = reader.ReadInt32();
                 for (int slot = 0; slot < WeaponPart.SlotCount; slot++) world.PlayerParts[slot] = ReadPart(reader);
                 world.PartAppliedMaxHp = reader.ReadInt32();
                 world.PartAppliedDefense = reader.ReadInt32();
@@ -229,6 +241,7 @@ namespace GirlsDungeon.Core.Sim
             writer.Write(unit.Overwatching);
             writer.Write(unit.SlowAmount);
             writer.Write(unit.SlowTurns);
+            writer.Write(unit.FrozenTurns);
         }
 
         private static Unit ReadUnit(BinaryReader reader)
@@ -255,6 +268,7 @@ namespace GirlsDungeon.Core.Sim
                 Overwatching = reader.ReadBoolean(),
                 SlowAmount = reader.ReadInt32(),
                 SlowTurns = reader.ReadInt32(),
+                FrozenTurns = reader.ReadInt32(),
             };
         }
 

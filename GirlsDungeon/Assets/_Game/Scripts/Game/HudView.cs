@@ -458,6 +458,15 @@ namespace GirlsDungeon.Game
             previewLabel.gameObject.SetActive(true);
         }
 
+        /// <summary>서리 수호 미리보기 (규칙 FrostGuard.Preview의 값 그대로, 3-17b).</summary>
+        public void ShowFrostGuardPreview(FrostGuardPreview preview)
+        {
+            previewLabel.text = !preview.CanUse
+                ? NotReadyText(SkillKind.FrostGuard, "ui.combat.preview_frost_guard_not_ready")
+                : Text.Get("ui.combat.preview_frost_guard", preview.Shield, preview.StabilityRestored, preview.EnemiesInRange, preview.StacksAfter, preview.DefenseBonusAfter);
+            previewLabel.gameObject.SetActive(true);
+        }
+
         /// <summary>빙결 사격 조준 중, 마우스가 적 위에 있지 않을 때 (3-16z).</summary>
         public void ShowFrostHint()
         {
@@ -640,6 +649,15 @@ namespace GirlsDungeon.Game
                     case ShopkeeperAngered _:
                         AddLog(Text.Get("ui.shop.log_angered"));
                         break;
+                    case FrostGuardUsed guard:
+                        AddLog(Text.Get("ui.frost_guard.log_used", guard.Shield, guard.StabilityRestored, guard.StacksAdded, guard.Stacks, guard.DefenseBonus));
+                        break;
+                    case PlayerShieldAbsorbed absorbed:
+                        AddLog(absorbed.Remaining > 0 ? Text.Get("ui.frost_guard.log_absorbed", absorbed.Absorbed, absorbed.Remaining) : Text.Get("ui.frost_guard.log_broken", absorbed.Absorbed));
+                        break;
+                    case UnitFrozen frozen:
+                        AddLog(Text.Get("ui.frost_guard.log_frozen", UnitName(frozen.Kind), frozen.Turns));
+                        break;
                     case TraitHealed traitHealed:
                         AddLog(Text.Get("ui.remold.log_heal", traitHealed.Amount));
                         break;
@@ -760,8 +778,13 @@ namespace GirlsDungeon.Game
             bool playing = simulation.IsPlaying;
             if (player != null && !playing)
             {
-                hpLabel.text = Text.Get("ui.hud.hp", player.Hp, player.MaxHp);
-                stabilityLabel.text = Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
+                // 서리 보호막 · 방위 지원 (3-17b)이 있으면 같은 줄에 붙여 보인다 (키를 통째로).
+                hpLabel.text = world.PlayerShield > 0
+                    ? Text.Get("ui.hud.hp_shield", player.Hp, player.MaxHp, world.PlayerShield)
+                    : Text.Get("ui.hud.hp", player.Hp, player.MaxHp);
+                stabilityLabel.text = world.DefenseSupportStacks > 0
+                    ? Text.Get("ui.hud.stability_support", player.Stability, player.MaxStability, world.DefenseSupportStacks, world.DefenseSupportApplied)
+                    : Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
                 // 표시 값 = 실제 값: 무기 표가 아니라 유닛에 적용된 값(Loadout.Apply 결과)을 읽는다.
                 weaponLabel.text = Text.Get("ui.hud.weapon", WeaponName(world.PlayerWeapon), player.Attack, player.AttackRange);
                 // 사르디스 골드 (3-15): 늘 보인다.

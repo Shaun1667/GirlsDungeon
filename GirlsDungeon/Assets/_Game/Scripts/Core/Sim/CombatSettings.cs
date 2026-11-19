@@ -47,6 +47,8 @@ namespace GirlsDungeon.Core.Sim
         Sonic = 3,
         /// <summary>빙결 사격: 보이는 적 하나에게 빙결 속성 피해 + 내 방어력 비례 고정 피해 · 안정 피해, 엄폐 적용 (FrostAttack, 3-16z — 대원 B 스킬1).</summary>
         Frost = 4,
+        /// <summary>서리 수호: 자신에게 서리 보호막 · 안정 회복 · 주위 적 수만큼 방위 지원 (FrostGuard, 3-17b — 대원 B 스킬2).</summary>
+        FrostGuard = 5,
     }
 
     /// <summary>
@@ -100,6 +102,8 @@ namespace GirlsDungeon.Core.Sim
         public int GrenadeRemoldCost;
         public int PushRemoldCost;
         public int SonicRemoldCost;
+        /// <summary>서리 수호 리몰딩 소모 (대원 B, 3-17b).</summary>
+        public int FrostGuardRemoldCost;
 
         /// <summary>이동 감소를 가진 적에게 주는 피해 (+%p, 0 = 없음).</summary>
         public int SlowedDamagePercent;
@@ -172,6 +176,21 @@ namespace GirlsDungeon.Core.Sim
         public int FrostFixedDefensePercent;
         public int FrostStabilityDamage;
         public int FrostCooldownRounds;
+
+        // 서리 수호 스킬 · 서리 보호막 · 방위 지원 · 결빙 (BALANCE 36번, 3-17b — 대원 B 스킬2)
+        /// <summary>보호막 = 쓰는 사람 기초 공격력(든 무기 공격력, 파츠 전)의 이 % (반올림).</summary>
+        public int FrostGuardShieldPercent;
+        /// <summary>보호막 지속 (내 차례 시작마다 1씩 줄어 0이면 사라짐).</summary>
+        public int FrostGuardShieldTurns;
+        public int FrostGuardStabilityRestore;
+        /// <summary>방위 지원을 세는 범위 (걸음 수 = 가로 + 세로).</summary>
+        public int FrostGuardRange;
+        /// <summary>방위 지원 한 스택 = 부여자 기초 방어력(캐릭터 방어, 파츠 전)의 이 % (스택 합에 한 번 반올림).</summary>
+        public int DefenseSupportPercent;
+        public int DefenseSupportMaxStacks;
+        public int DefenseSupportTurns;
+        /// <summary>결빙 (서리 보호막을 깬 적): 이 수만큼 행동 동안 이동할 수 없다.</summary>
+        public int FreezeTurns;
 
         /// <summary>상점 주인 스킬 (BALANCE 33번, 3-15f). null이면 스킬 없이 사격병처럼 싸운다.</summary>
         public KeeperSkillSettings Keeper;
@@ -476,6 +495,9 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Push settings are invalid.");
             if (SonicRange < 1 || SonicDamagePercent < 0 || SonicStabilityDamage < 0 || SonicCooldownRounds < 0)
                 throw new ArgumentException("Sonic settings are invalid.");
+            if (FrostGuardShieldPercent < 0 || FrostGuardShieldTurns < 0 || FrostGuardStabilityRestore < 0 || FrostGuardRange < 0
+                || DefenseSupportPercent < 0 || DefenseSupportMaxStacks < 0 || DefenseSupportTurns < 0 || FreezeTurns < 0)
+                throw new ArgumentException("Frost guard settings are invalid.");
             if (FrostRange < 1 || FrostDamagePercent < 0 || FrostFixedDefensePercent < 0 || FrostStabilityDamage < 0 || FrostCooldownRounds < 0)
                 throw new ArgumentException("Frost settings are invalid.");
             Keeper?.Validate();
@@ -504,6 +526,7 @@ namespace GirlsDungeon.Core.Sim
                     || character.ActionEndHealPercent < 0 || character.ActionEndLowHpHealPercent < 0 || character.LowHpPercent < 0 || character.LowHpPercent > 100
                     || character.GrenadeRemoldCost < 0 || character.PushRemoldCost < 0 || character.SonicRemoldCost < 0
                     || character.GrenadeRemoldCost > character.RemoldMax || character.PushRemoldCost > character.RemoldMax || character.SonicRemoldCost > character.RemoldMax
+                    || character.FrostGuardRemoldCost < 0 || character.FrostGuardRemoldCost > character.RemoldMax
                     || character.SlowAfterMoveCells < 0 || character.SlowAmount < 0 || character.SlowTurns < 0)
                     throw new ArgumentException($"Remold settings for character {character.Kind} are invalid.");
             }

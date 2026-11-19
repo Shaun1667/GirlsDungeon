@@ -164,8 +164,10 @@ namespace GirlsDungeon.Core.Sim
             => Uses(settings, target) ? world.KeeperStacks * settings.Keeper.StackDamageTakenPercent : 0;
 
         /// <summary>방벽이 막고 남은 피해를 돌려준다. 체력을 깎는 곳은 모두 이것을 거친다.</summary>
-        public static int AfterShield(World world, Unit target, int damage, List<GameEvent> events)
+        public static int AfterShield(World world, Unit target, int damage, List<GameEvent> events, Unit attacker = null)
         {
+            // 플레이어 서리 보호막 (3-17b) — 깨뜨린 공격자는 결빙.
+            if (target != null && target.IsPlayer) return FrostGuard.AbsorbPlayerShield(world, attacker, damage, events);
             if (target == null || target.Kind != UnitKind.Shopkeeper || world.KeeperShield <= 0 || damage <= 0) return damage;
             int absorbed = Math.Min(world.KeeperShield, damage);
             world.KeeperShield -= absorbed;
@@ -366,6 +368,7 @@ namespace GirlsDungeon.Core.Sim
             CoverLevel cover, bool guard, List<GameEvent> events)
         {
             int stabilityBefore = player.Stability;
+            damage = AfterShield(world, player, damage, events, keeper);
             player.Hp -= damage;
             player.Stability = Math.Max(0, player.Stability - stabilityDamage);
             events.Add(new UnitAttacked(keeper, player, damage, false, cover, guard, stabilityBefore > 0 && player.Stability == 0));

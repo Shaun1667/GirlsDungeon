@@ -100,9 +100,13 @@ namespace GirlsDungeon.Core.Sim
             if (player.Hp > player.MaxHp) player.Hp = player.MaxHp;
             world.PartAppliedMaxHp = hpBonus;
 
-            int defenseBonus = Parts.Sum(world, PartStat.Defense) + Percent(player.Defense - world.PartAppliedDefense, Parts.Sum(world, PartStat.DefensePercent));
-            player.Defense += defenseBonus - world.PartAppliedDefense;
+            // 기본 방어 = 파츠 · 방위 지원(3-17b)을 뺀 값. 방위 지원도 바뀐 만큼만 더하고 뺀다.
+            int baseDefense = player.Defense - world.PartAppliedDefense - world.DefenseSupportApplied;
+            int defenseBonus = Parts.Sum(world, PartStat.Defense) + Percent(baseDefense, Parts.Sum(world, PartStat.DefensePercent));
+            int support = FrostGuard.DefenseSupportBonus(world, settings, baseDefense);
+            player.Defense += defenseBonus - world.PartAppliedDefense + support - world.DefenseSupportApplied;
             world.PartAppliedDefense = defenseBonus;
+            world.DefenseSupportApplied = support;
 
             int stabilityBonus = Parts.Sum(world, PartStat.MaxStability);
             int stabilityDelta = stabilityBonus - world.PartAppliedMaxStability;

@@ -338,6 +338,15 @@ namespace GirlsDungeon.Tests
                 FrostFixedDefensePercent = 50,
                 FrostStabilityDamage = 4,
                 FrostCooldownRounds = 2,
+                // BALANCE 36번 (3-17b): 서리 수호 — 보호막 기초 공격력 130% · 2차례 · 안정 +2 · 범위 5 · 방위 지원 30% × 최대 4스택 · 2차례 · 결빙 1.
+                FrostGuardShieldPercent = 130,
+                FrostGuardShieldTurns = 2,
+                FrostGuardStabilityRestore = 2,
+                FrostGuardRange = 5,
+                DefenseSupportPercent = 30,
+                DefenseSupportMaxStacks = 4,
+                DefenseSupportTurns = 2,
+                FreezeTurns = 1,
                 Keeper = new KeeperSkillSettings
                 {
                     BasicPercent = 80,
@@ -542,8 +551,9 @@ namespace GirlsDungeon.Tests
             settings.Characters.Add(new CharacterStats
             {
                 Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 10, VisionRange = 10, Defense = 3, MoveRange = 6, StartWeapon = WeaponKind.Smg,
-                // 3-16z: B 스킬1 = 빙결 사격 (2 · 3번 칸은 B 스킬2 · 결전기가 생길 때까지 넉백 · 수류탄).
-                Skills = { SkillKind.Frost, SkillKind.Push, SkillKind.Grenade },
+                // 3-16z · 3-17b: B 스킬1 = 빙결 사격, 스킬2 = 서리 수호 (4번 칸은 결전기가 생길 때까지 수류탄).
+                Skills = { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.Grenade },
+                FrostGuardRemoldCost = 1,
                 WorkshopOptionPercent = 70, WorkshopSetPercent = 50,
                 // BALANCE 34번 (3-17a): B 리몰딩 최대 6 · 행동 종료 +2 · 최대 체력 5% 회복 (50% 미만이면 10%).
                 RemoldMax = 6, RemoldPerActionEnd = 2, ActionEndHealPercent = 5, ActionEndLowHpHealPercent = 10, LowHpPercent = 50,

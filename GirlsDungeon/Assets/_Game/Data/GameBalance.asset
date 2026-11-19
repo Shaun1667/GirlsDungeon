@@ -149,7 +149,7 @@ MonoBehaviour:
     defense: 3
     moveRange: 6
     startWeapon: 4
-    skills: 040201
+    skills: 040501
     workshopOptionPercent: 70
     workshopSetPercent: 50
     doorForcePercent: 0
@@ -170,6 +170,7 @@ MonoBehaviour:
     grenadeRemoldCost: 0
     pushRemoldCost: 0
     sonicRemoldCost: 0
+    frostGuardRemoldCost: 1
     slowedDamagePercent: 0
     slowAfterMoveCells: 0
     slowAmount: 0
@@ -236,6 +237,14 @@ MonoBehaviour:
   frostFixedDefensePercent: 50
   frostStabilityDamage: 4
   frostCooldownRounds: 2
+  frostGuardShieldPercent: 130
+  frostGuardShieldTurns: 2
+  frostGuardStabilityRestore: 2
+  frostGuardRange: 5
+  defenseSupportPercent: 30
+  defenseSupportMaxStacks: 4
+  defenseSupportTurns: 2
+  freezeTurns: 1
   keeperSkills:
     basicPercent: 80
     stackMax: 6

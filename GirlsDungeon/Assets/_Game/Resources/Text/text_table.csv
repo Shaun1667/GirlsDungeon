@@ -167,6 +167,24 @@ ui.combat.preview_frost,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
 Frost damage {5} (frost {6} + fixed {7}) · {8} · Stability −{9}"
 ui.combat.preview_frost_not_ready,빙결 사격 재사용 대기 {0}라운드,Frost shot ready in {0} rounds
 ui.combat.preview_frost_not_visible,{0} · 보이지 않아 빙결 사격을 쓸 수 없음,{0} · Not visible for the frost shot
+ui.skill.frost_guard,서리 수호,Frost guard
+ui.skill.frost_guard_tip,"서리 수호 · 누른 뒤 확인 (자신에게)
+서리 보호막 = 기초 공격력 {0}% (지금 {1}) · {2}차례 · 깨뜨린 적은 결빙 {8}행동 (이동 불가)
+안정 +{3} · {4}칸 안 적 하나마다 방위 지원 1스택 (방어 +기초 방어 {5}%, 최대 {6}스택 · {7}차례)
+{9} · 쓰면 차례 끝","Frost guard · press, then confirm (on yourself)
+Frost shield = {0}% of base attack (now {1}) · {2} turns · the enemy that breaks it is frozen for {8} action(s) (cannot move)
+Stability +{3} · each enemy within {4} cells gives 1 defense support stack (defense + {5}% of base defense, max {6} stacks · {7} turns)
+{9} · Ends your turn"
+ui.combat.preview_frost_guard,"서리 수호 · 보호막 {0} · 안정 +{1}
+범위 안 적 {2} → 방위 지원 {3}스택 (방어 +{4})","Frost guard · Shield {0} · Stability +{1}
+Enemies in range {2} → defense support {3} stacks (defense +{4})"
+ui.combat.preview_frost_guard_not_ready,서리 수호를 쓸 수 없음 ({0}),Frost guard not ready ({0})
+ui.frost_guard.log_used,서리 수호: 보호막 {0} · 안정 +{1} · 방위 지원 +{2} (지금 {3}스택 · 방어 +{4}),Frost guard: shield {0} · stability +{1} · defense support +{2} (now {3} stacks · defense +{4})
+ui.frost_guard.log_absorbed,서리 보호막이 피해 {0}을 막음 (남은 보호막 {1}),Frost shield blocked {0} (shield left {1})
+ui.frost_guard.log_broken,서리 보호막이 피해 {0}을 막고 깨짐,Frost shield blocked {0} and broke
+ui.frost_guard.log_frozen,{0} 결빙 ({1}행동 동안 이동 불가),{0} is frozen (cannot move for {1} action(s))
+ui.hud.hp_shield,체력 {0}/{1} · 보호막 {2},HP {0}/{1} · Shield {2}
+ui.hud.stability_support,안정지수 {0}/{1} · 방위 지원 {2}스택 (방어 +{3}),Stability {0}/{1} · Defense support {2} (defense +{3})
 ui.part.compare,"{0} 파츠 · {1} ({2})
 새 파츠: {3}
 지금 끼운 것: {4}","{0} part · {1} ({2})

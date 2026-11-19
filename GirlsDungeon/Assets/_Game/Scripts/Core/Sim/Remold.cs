@@ -31,6 +31,7 @@ namespace GirlsDungeon.Core.Sim
                 case SkillKind.Grenade: return trait.GrenadeRemoldCost;
                 case SkillKind.Push: return trait.PushRemoldCost;
                 case SkillKind.Sonic: return trait.SonicRemoldCost;
+                case SkillKind.FrostGuard: return trait.FrostGuardRemoldCost;
                 default: return 0;
             }
         }
@@ -132,11 +133,17 @@ namespace GirlsDungeon.Core.Sim
         public static bool IsSlowed(Unit unit) => unit != null && unit.SlowTurns > 0 && unit.SlowAmount > 0;
 
         /// <summary>이번 행동에서 쓸 이동 칸 (이동 감소를 뺀 값, 0 이상). 적 이동 범위 · 경로가 쓴다.</summary>
-        public static int MoveRangeOf(Unit unit) => IsSlowed(unit) ? Math.Max(0, unit.MoveRange - unit.SlowAmount) : unit.MoveRange;
+        public static int MoveRangeOf(Unit unit)
+        {
+            // 결빙 (3-17b): 이동할 수 없다.
+            if (unit.FrozenTurns > 0) return 0;
+            return IsSlowed(unit) ? Math.Max(0, unit.MoveRange - unit.SlowAmount) : unit.MoveRange;
+        }
 
         /// <summary>적이 행동을 시작했다 (EnemyTurn): 이동 감소 남은 차례가 1 준다.</summary>
         public static void OnEnemyActed(Unit unit)
         {
+            if (unit.FrozenTurns > 0) unit.FrozenTurns--;
             if (unit.SlowTurns <= 0) return;
             unit.SlowTurns--;
             if (unit.SlowTurns == 0) unit.SlowAmount = 0;
@@ -149,6 +156,7 @@ namespace GirlsDungeon.Core.Sim
             {
                 unit.SlowAmount = 0;
                 unit.SlowTurns = 0;
+                unit.FrozenTurns = 0;
             }
         }
 

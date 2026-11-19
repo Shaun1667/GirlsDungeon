@@ -69,6 +69,9 @@ namespace GirlsDungeon.Core.Sim
         public int SlowAmount { get; set; }
         public int SlowTurns { get; set; }
 
+        /// <summary>결빙 (3-17b, FrostGuard): 남은 행동 수 동안 이동할 수 없다. 0 = 없음.</summary>
+        public int FrozenTurns { get; set; }
+
         public bool IsPlayer => Kind == UnitKind.Player;
 
         public Unit(int id, UnitKind kind, GridPos position)
@@ -193,6 +196,17 @@ namespace GirlsDungeon.Core.Sim
 
         /// <summary>빙결 사격 스킬을 다시 쓸 수 있을 때까지 남은 라운드 (3-16z). 전투가 끝나면 0.</summary>
         public int FrostCooldown { get; set; }
+
+        /// <summary>플레이어 서리 보호막 (3-17b, FrostGuard): 남은 양 · 남은 차례. 피해를 먼저 막는다.</summary>
+        public int PlayerShield { get; set; }
+        public int PlayerShieldTurns { get; set; }
+        /// <summary>그 보호막이 깨질 때 깨뜨린 적에게 거는 결빙 행동 수 (서리 보호막의 효과 — 걸 때 수치에서 옮겨 둔다).</summary>
+        public int PlayerShieldFreezeTurns { get; set; }
+
+        /// <summary>방위 지원 (3-17b): 스택 · 남은 차례, 그리고 지금 플레이어 방어에 더해 둔 양 (Loadout.Apply가 바뀐 만큼만 더하고 뺀다).</summary>
+        public int DefenseSupportStacks { get; set; }
+        public int DefenseSupportTurns { get; set; }
+        public int DefenseSupportApplied { get; set; }
 
         /// <summary>한 번이라도 본 칸 (인덱스 = x + y * Width). 지금 보이는 칸은 저장하지 않고 Vision으로 다시 계산한다.</summary>
         public bool[] Explored { get; set; }

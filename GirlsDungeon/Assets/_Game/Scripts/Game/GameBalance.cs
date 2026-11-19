@@ -87,6 +87,7 @@ namespace GirlsDungeon.Game
         public int grenadeRemoldCost;
         public int pushRemoldCost;
         public int sonicRemoldCost;
+        public int frostGuardRemoldCost;
         [Tooltip("Bonus damage (%) against enemies with a movement debuff.")]
         public int slowedDamagePercent;
         [Tooltip("After walking at least this many cells this turn, attacks slow the target first (0 = never).")]
@@ -322,7 +323,8 @@ namespace GirlsDungeon.Game
             {
                 kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
                 maxHp = 90, maxStability = 10, visionRange = 10, defense = 3, moveRange = 6, startWeapon = WeaponKind.Smg,
-                skills = new[] { SkillKind.Frost, SkillKind.Push, SkillKind.Grenade },
+                skills = new[] { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.Grenade },
+                frostGuardRemoldCost = 1,
                 remoldMax = 6, remoldPerActionEnd = 2, actionEndHealPercent = 5, actionEndLowHpHealPercent = 10, lowHpPercent = 50,
             },
             new CharacterEntry
@@ -388,6 +390,21 @@ namespace GirlsDungeon.Game
         [SerializeField] private int frostStabilityDamage = 4;
         [Tooltip("Rounds before it can be used again. 2 = skip one turn.")]
         [SerializeField] private int frostCooldownRounds = 2;
+
+        [Header("Frost guard skill (BALANCE 36)")]
+        [Tooltip("Shield = this % of the base attack (held weapon, before parts).")]
+        [SerializeField] private int frostGuardShieldPercent = 130;
+        [Tooltip("Shield lasts this many of the player's turns.")]
+        [SerializeField] private int frostGuardShieldTurns = 2;
+        [SerializeField] private int frostGuardStabilityRestore = 2;
+        [Tooltip("Defense support counts enemies within this many steps (x + y).")]
+        [SerializeField] private int frostGuardRange = 5;
+        [Tooltip("Defense support: each stack adds this % of the base defense (character, before parts).")]
+        [SerializeField] private int defenseSupportPercent = 30;
+        [SerializeField] private int defenseSupportMaxStacks = 4;
+        [SerializeField] private int defenseSupportTurns = 2;
+        [Tooltip("Freeze: the enemy that breaks the frost shield cannot move for this many actions.")]
+        [SerializeField] private int freezeTurns = 1;
 
         [Header("Shopkeeper skills (BALANCE 33)")]
         [SerializeField] private KeeperSkillsEntry keeperSkills = new KeeperSkillsEntry();
@@ -745,6 +762,14 @@ namespace GirlsDungeon.Game
                 FrostFixedDefensePercent = frostFixedDefensePercent,
                 FrostStabilityDamage = frostStabilityDamage,
                 FrostCooldownRounds = frostCooldownRounds,
+                FrostGuardShieldPercent = frostGuardShieldPercent,
+                FrostGuardShieldTurns = frostGuardShieldTurns,
+                FrostGuardStabilityRestore = frostGuardStabilityRestore,
+                FrostGuardRange = frostGuardRange,
+                DefenseSupportPercent = defenseSupportPercent,
+                DefenseSupportMaxStacks = defenseSupportMaxStacks,
+                DefenseSupportTurns = defenseSupportTurns,
+                FreezeTurns = freezeTurns,
                 Keeper = new KeeperSkillSettings
                 {
                     BasicPercent = keeperSkills.basicPercent,
@@ -926,6 +951,7 @@ namespace GirlsDungeon.Game
                     GrenadeRemoldCost = entry.grenadeRemoldCost,
                     PushRemoldCost = entry.pushRemoldCost,
                     SonicRemoldCost = entry.sonicRemoldCost,
+                    FrostGuardRemoldCost = entry.frostGuardRemoldCost,
                     SlowedDamagePercent = entry.slowedDamagePercent,
                     SlowAfterMoveCells = entry.slowAfterMoveCells,
                     SlowAmount = entry.slowAmount,

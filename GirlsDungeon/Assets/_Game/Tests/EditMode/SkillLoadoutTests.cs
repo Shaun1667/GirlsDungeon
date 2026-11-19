@@ -39,7 +39,7 @@ namespace GirlsDungeon.Tests
         {
             var combat = TestData.Combat();
             Assert.That(combat.SkillSlots(CharacterKind.HeroA), Is.EqualTo(new[] { SkillKind.Push, SkillKind.Sonic, SkillKind.Grenade }));
-            Assert.That(combat.SkillSlots(CharacterKind.HeroB), Is.EqualTo(new[] { SkillKind.Frost, SkillKind.Push, SkillKind.Grenade }), "3-16z: B skill 1 = frost shot");
+            Assert.That(combat.SkillSlots(CharacterKind.HeroB), Is.EqualTo(new[] { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.Grenade }), "3-16z / 3-17b: B skills 1 and 2");
             Assert.That(combat.SkillSlots(CharacterKind.HeroC), Is.EqualTo(new[] { SkillKind.Grenade, SkillKind.Push, SkillKind.None }));
             Assert.That(combat.SkillSlots(CharacterKind.None), Is.EqualTo(new[] { SkillKind.Grenade, SkillKind.Push, SkillKind.None }));
             Assert.That(combat.HasSkill(CharacterKind.HeroA, SkillKind.Sonic), Is.True);

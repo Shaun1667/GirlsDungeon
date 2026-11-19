@@ -128,7 +128,7 @@ namespace GirlsDungeon.Core.Sim
             bool crit = world.Random.Get(RandomPurpose.Combat).Range(0, 100) < preview.CritPercent;
             // 대원 A 특성: 많이 걸었으면 맞히기 전에 이동 감소 (피해 증가는 미리보기에 이미 들어 있다 — Remold).
             Remold.BeforeAttack(world, settings, attacker, target, events);
-            int damage = KeeperSkills.AfterShield(world, target, crit ? preview.CritDamage : preview.Damage, events);
+            int damage = KeeperSkills.AfterShield(world, target, crit ? preview.CritDamage : preview.Damage, events, attacker);
             int stabilityBefore = target.Stability;
 
             target.Hp -= damage;
