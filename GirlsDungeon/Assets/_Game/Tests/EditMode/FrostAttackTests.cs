@@ -68,7 +68,7 @@ namespace GirlsDungeon.Tests
             int reduction = combat.HalfCoverReductionPercent + combat.StabilityGuardPercent;
             Assert.That(preview.MainDamage, Is.EqualTo(CombatRules.Damage(player.Attack, enemy.Defense, combat.FrostDamagePercent, reduction, combat.MinDamage)));
             Assert.That(preview.FixedDamage, Is.EqualTo(FrostAttack.FixedDamage(player.Defense, combat.FrostFixedDefensePercent)));
-            Assert.That(preview.FixedDamage, Is.EqualTo(2), "B defense 3 x 50% = 1.5 -> 2");
+            Assert.That(preview.FixedDamage, Is.EqualTo(4), "B defense 8 x 50% = 4");
             Assert.That(preview.Damage, Is.EqualTo(preview.MainDamage + preview.FixedDamage));
             Assert.That(preview.StabilityDamage, Is.EqualTo(4));
 

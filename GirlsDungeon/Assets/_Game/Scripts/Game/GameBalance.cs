@@ -323,7 +323,7 @@ namespace GirlsDungeon.Game
             new CharacterEntry
             {
                 kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
-                maxHp = 90, maxStability = 10, visionRange = 10, defense = 3, moveRange = 6, startWeapon = WeaponKind.Smg,
+                maxHp = 90, maxStability = 10, visionRange = 10, defense = 8, moveRange = 6, startWeapon = WeaponKind.Smg,
                 skills = new[] { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.FrostDecisive },
                 frostGuardRemoldCost = 1, frostDecisiveRemoldCost = 5,
                 remoldMax = 6, remoldPerActionEnd = 2, actionEndHealPercent = 5, actionEndLowHpHealPercent = 10, lowHpPercent = 50,
@@ -482,7 +482,7 @@ namespace GirlsDungeon.Game
             new WeaponEntry
             {
                 kind = WeaponKind.Smg, nameKey = "weapon.smg.name", ruleKey = "weapon.smg.rule",
-                attack = 7, attackRange = 6, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150, extraShotsPerTurn = 1,
+                attack = 10, attackRange = 6, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150, extraShotsPerTurn = 1,
             },
             new WeaponEntry
             {

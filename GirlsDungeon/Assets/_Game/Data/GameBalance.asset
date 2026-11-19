@@ -152,7 +152,7 @@ MonoBehaviour:
     maxHp: 90
     maxStability: 10
     visionRange: 10
-    defense: 3
+    defense: 8
     moveRange: 6
     startWeapon: 4
     skills: 040506
@@ -412,7 +412,7 @@ MonoBehaviour:
   - kind: 4
     nameKey: weapon.smg.name
     ruleKey: weapon.smg.rule
-    attack: 7
+    attack: 10
     attackRange: 6
     stabilityDamage: 2
     critPercent: 15

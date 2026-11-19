@@ -35,7 +35,7 @@ namespace GirlsDungeon.Tests
             Assert.That(world.PlayerCharacter, Is.EqualTo(CharacterKind.HeroB));
             Assert.That(world.PlayerWeapon, Is.EqualTo(WeaponKind.Smg));
             Assert.That(new[] { player.MaxHp, player.MaxStability, player.VisionRange, player.Defense, player.MoveRange },
-                Is.EqualTo(new[] { 90, 10, 10, 3, 6 }));
+                Is.EqualTo(new[] { 90, 10, 10, 8, 6 }));
             Assert.That(Loadout.ShotsPerTurn(world, TestData.Combat()), Is.EqualTo(2));
         }
 

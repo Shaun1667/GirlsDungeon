@@ -516,7 +516,7 @@ namespace GirlsDungeon.Tests
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.Smg, Attack = 7, AttackRange = 6, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = WeaponKind.Smg, Attack = 10, AttackRange = 6, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
                 ExtraShotsPerTurn = 1,
             });
             settings.Weapons.Add(new WeaponStats
@@ -569,7 +569,7 @@ namespace GirlsDungeon.Tests
             });
             settings.Characters.Add(new CharacterStats
             {
-                Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 10, VisionRange = 10, Defense = 3, MoveRange = 6, StartWeapon = WeaponKind.Smg,
+                Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 10, VisionRange = 10, Defense = 8, MoveRange = 6, StartWeapon = WeaponKind.Smg,
                 // 3-16z · 3-17b · 3-17c: B 스킬1 = 빙결 사격, 스킬2 = 서리 수호, 결전기 = 서리 결전.
                 Skills = { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.FrostDecisive },
                 FrostGuardRemoldCost = 1, FrostDecisiveRemoldCost = 5,
