@@ -50,7 +50,7 @@ namespace GirlsDungeon.Core.Sim
             Shop.CheckHostility(World, pending);
             CombatFlow.AfterAction(World, settings, pending);
             if (settings != null) Gold.CheckKills(World, settings, pending);
-            if (settings != null) Loot.CheckPickup(World, settings, pending);
+            if (settings != null) Loot.CheckPickup(World, settings, pending, command is MoveCommand step && step.PassingThrough);
             if (settings != null && mapSettings != null) FloorFlow.CheckStairs(World, mapSettings, settings, pending);
             Publish();
             return true;

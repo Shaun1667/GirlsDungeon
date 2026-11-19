@@ -1121,7 +1121,9 @@ namespace GirlsDungeon.Game
                 return;
             }
 
-            var command = new MoveCommand(simulation.World.PlayerId, pendingSteps.Dequeue(), moveCostTicks);
+            // 길 중간 칸이면 지나가는 걸음 — 바닥 무기 · 파츠 · 진열 물건에 걸려 멈추지 않는다 (3-16v).
+            var next = pendingSteps.Dequeue();
+            var command = new MoveCommand(simulation.World.PlayerId, next, moveCostTicks, pendingSteps.Count > 0);
             if (!simulation.Execute(command))
             {
                 pendingSteps.Clear();

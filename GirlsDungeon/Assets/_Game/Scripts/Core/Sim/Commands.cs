@@ -21,11 +21,18 @@ namespace GirlsDungeon.Core.Sim
 
         public int CostTicks { get; }
 
-        public MoveCommand(int unitId, GridPos to, int costTicks)
+        /// <summary>
+        /// 길 중간의 한 걸음이면 true (3-16v): 지나가는 칸의 무기 · 파츠 · 상점 진열 물건은 창을 띄우지 않는다 (Loot.CheckPickup).
+        /// 열쇠 · 구급상자는 지나가도 줍는다.
+        /// </summary>
+        public bool PassingThrough { get; }
+
+        public MoveCommand(int unitId, GridPos to, int costTicks, bool passingThrough = false)
         {
             this.unitId = unitId;
             this.to = to;
             CostTicks = costTicks;
+            PassingThrough = passingThrough;
         }
 
         public bool TryApply(World world, List<GameEvent> events)

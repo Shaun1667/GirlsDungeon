@@ -152,14 +152,16 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>
         /// 이번 커맨드로 플레이어가 물건 칸에 들어섰으면 줍는다. Simulation이 커맨드마다 CombatFlow 뒤에 부른다.
         /// 구급상자: 체력이 모자라면 바로 회복하고 사라진다 (가득이면 그대로 둔다). 무기: WeaponFound만 내고 고르는 것은 화면에 맡긴다.
+        /// 지나가는 걸음(passingThrough, 3-16v)이면 창을 띄우는 물건(무기 · 파츠 · 상점 진열)은 그대로 두고 열쇠 · 구급상자만 줍는다.
         /// </summary>
-        public static void CheckPickup(World world, CombatSettings settings, List<GameEvent> events)
+        public static void CheckPickup(World world, CombatSettings settings, List<GameEvent> events, bool passingThrough = false)
         {
             var player = world.Player;
             if (player == null || (world.Mode != WorldMode.Exploration && world.Mode != WorldMode.Combat)) return;
             if (!SteppedOnThisCommand(world, player, events)) return;
 
-            bool offered = false;
+            // offered = 이미 창을 띄웠다 — 지나가는 걸음은 처음부터 띄운 것으로 쳐서 창을 막는다.
+            bool offered = passingThrough;
             foreach (var item in world.Items.ToArray())
             {
                 if (item.Position != player.Position) continue;

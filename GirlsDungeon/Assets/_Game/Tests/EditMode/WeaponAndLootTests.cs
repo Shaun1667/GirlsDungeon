@@ -467,6 +467,43 @@ namespace GirlsDungeon.Tests
             Assert.That(world.FindItem(weapon.Id), Is.Not.Null);
         }
 
+        [Test]
+        public void PassingOverItems_OffersNothing_ButStillPicksUpKeysAndMedkits()
+        {
+            // 3-16v: 길 중간 칸(PassingThrough)의 무기 · 파츠 · 진열 물건은 창을 띄우지 않는다. 열쇠 · 구급상자는 줍는다.
+            var world = MakeWorld(new GridPos(0, 0), ".....");
+            var weapon = world.AddItem(ItemKind.Weapon, WeaponKind.Pistol, new GridPos(1, 0));
+            var part = world.AddItem(ItemKind.Part, default, new GridPos(1, 0));
+            var key = world.AddItem(ItemKind.Key, default, new GridPos(1, 0));
+            var forSale = world.AddItem(ItemKind.Medkit, default, new GridPos(2, 0));
+            forSale.Price = 10;
+            world.Player.Hp = world.Player.MaxHp - 1;
+            var medkit = world.AddItem(ItemKind.Medkit, default, new GridPos(3, 0));
+            var events = new List<GameEvent>();
+            var simulation = new Simulation(world, TestData.Combat());
+            simulation.EventsPublished += published => events.AddRange(published);
+
+            Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(1, 0), 1, true)), Is.True);
+            Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(2, 0), 1, true)), Is.True);
+            Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(3, 0), 1, true)), Is.True);
+
+            Assert.That(events.OfType<WeaponFound>(), Is.Empty);
+            Assert.That(events.OfType<PartFound>(), Is.Empty);
+            Assert.That(events.OfType<ShopItemOffered>(), Is.Empty);
+            Assert.That(world.FindItem(weapon.Id), Is.Not.Null);
+            Assert.That(world.FindItem(part.Id), Is.Not.Null);
+            Assert.That(world.FindItem(forSale.Id), Is.Not.Null, "not bought by walking over it");
+            Assert.That(world.FindItem(key.Id), Is.Null);
+            Assert.That(world.Keys, Is.EqualTo(1));
+            Assert.That(world.FindItem(medkit.Id), Is.Null);
+            Assert.That(world.Player.Hp, Is.EqualTo(world.Player.MaxHp));
+
+            // 마지막 걸음(지나가지 않음)으로 다시 서면 창이 뜬다.
+            Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(2, 0), 1)), Is.True);
+            Assert.That(simulation.Execute(new MoveCommand(world.PlayerId, new GridPos(1, 0), 1)), Is.True);
+            Assert.That(events.OfType<WeaponFound>().Single().ItemId, Is.EqualTo(weapon.Id));
+        }
+
         // ---------- 저장 · 층 ----------
 
         [Test]
