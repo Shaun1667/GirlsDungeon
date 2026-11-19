@@ -91,6 +91,12 @@ namespace GirlsDungeon.Core.Sim
         public int RemoldMax;
         public int RemoldPerAction;
         public int RemoldPerHit;
+        /// <summary>내 차례(행동)를 마칠 때 얻는 리몰딩 (대원 B 특성, 3-17a).</summary>
+        public int RemoldPerActionEnd;
+        /// <summary>내 차례를 마칠 때 최대 체력의 이 %만큼 회복 (반올림, 0 = 없음 — 대원 B 특성). 체력이 LowHpPercent% 미만이면 LowHpHealPercent.</summary>
+        public int ActionEndHealPercent;
+        public int ActionEndLowHpHealPercent;
+        public int LowHpPercent;
         public int GrenadeRemoldCost;
         public int PushRemoldCost;
         public int SonicRemoldCost;
@@ -494,7 +500,8 @@ namespace GirlsDungeon.Core.Sim
                     throw new ArgumentException($"Stats for character {character.Kind} are invalid.");
                 WeaponFor(character.StartWeapon);
                 if (character.Skills.Count > 3) throw new ArgumentException($"Character {character.Kind} has more than three skill slots.");
-                if (character.RemoldMax < 0 || character.RemoldPerAction < 0 || character.RemoldPerHit < 0
+                if (character.RemoldMax < 0 || character.RemoldPerAction < 0 || character.RemoldPerHit < 0 || character.RemoldPerActionEnd < 0
+                    || character.ActionEndHealPercent < 0 || character.ActionEndLowHpHealPercent < 0 || character.LowHpPercent < 0 || character.LowHpPercent > 100
                     || character.GrenadeRemoldCost < 0 || character.PushRemoldCost < 0 || character.SonicRemoldCost < 0
                     || character.GrenadeRemoldCost > character.RemoldMax || character.PushRemoldCost > character.RemoldMax || character.SonicRemoldCost > character.RemoldMax
                     || character.SlowAfterMoveCells < 0 || character.SlowAmount < 0 || character.SlowTurns < 0)

@@ -640,6 +640,9 @@ namespace GirlsDungeon.Game
                     case ShopkeeperAngered _:
                         AddLog(Text.Get("ui.shop.log_angered"));
                         break;
+                    case TraitHealed traitHealed:
+                        AddLog(Text.Get("ui.remold.log_heal", traitHealed.Amount));
+                        break;
                     case UnitSlowed slowed:
                         AddLog(Text.Get("ui.remold.log_slowed", UnitName(slowed.Kind), slowed.Amount, slowed.Turns));
                         break;

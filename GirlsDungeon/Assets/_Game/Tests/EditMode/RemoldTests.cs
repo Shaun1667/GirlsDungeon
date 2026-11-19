@@ -55,9 +55,64 @@ namespace GirlsDungeon.Tests
             }
             Assert.That(world.PlayerRemold, Is.EqualTo(6), "capped at the maximum");
 
-            var (_, other, _, otherCombat) = StartCombat(CharacterKind.HeroB);
+            // 대원 C는 리몰딩이 없다 (B는 3-17a부터 있다 — 아래 HeroB 테스트).
+            var (_, other, _, otherCombat) = StartCombat(CharacterKind.HeroC);
             Assert.That(Remold.Max(other, otherCombat), Is.EqualTo(0));
             Assert.That(other.PlayerRemold, Is.EqualTo(0));
+        }
+
+        // ---------- 대원 B 특성 (3-17a, 결정 2026-11-19 사용자) ----------
+
+        /// <summary>대원 B로 전투를 시작하고 체력을 hp / 90으로 맞춘 뒤 차례를 끝낸다. 그 커맨드의 사건을 돌려준다.</summary>
+        private static (World world, List<GameEvent> events) HeroBEndsTurnAt(int hp)
+        {
+            var (simulation, world, _, combat) = StartCombat(CharacterKind.HeroB);
+            world.Player.MaxHp = 90;
+            world.Player.Hp = hp;
+            var events = new List<GameEvent>();
+            simulation.EventsPublished += published => events.AddRange(published);
+            Assert.That(simulation.Execute(new EndTurnCommand(combat)), Is.True);
+            return (world, events);
+        }
+
+        [Test]
+        public void HeroB_GainsTwoRemoldAtTurnEnd_NotAtStartOrOnHits()
+        {
+            var (_, start, _, combat) = StartCombat(CharacterKind.HeroB);
+            Assert.That(Remold.Max(start, combat), Is.EqualTo(6));
+            Assert.That(start.PlayerRemold, Is.EqualTo(0), "no remold at the start of a turn");
+
+            var (world, _) = HeroBEndsTurnAt(90);
+            Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
+            Assert.That(world.PlayerRemold, Is.EqualTo(2), "+2 when the turn ends, nothing for hits or the next turn start");
+        }
+
+        [Test]
+        public void HeroB_HealsFivePercentAtTurnEnd_TenPercentBelowHalf()
+        {
+            var (_, events) = HeroBEndsTurnAt(80);
+            Assert.That(events.OfType<TraitHealed>().Single().Amount, Is.EqualTo(5), "90 x 5% = 4.5 -> 5");
+            // 회복은 적 차례보다 먼저 (적 사격 사건보다 앞).
+            int healAt = events.FindIndex(e => e is TraitHealed);
+            int enemyTurnAt = events.FindIndex(e => e is TurnStarted started && started.Side == TurnSide.Enemies);
+            Assert.That(healAt, Is.LessThan(enemyTurnAt));
+
+            var (_, low) = HeroBEndsTurnAt(44);
+            Assert.That(low.OfType<TraitHealed>().Single().Amount, Is.EqualTo(9), "below 50%: 90 x 10% = 9");
+
+            var (_, full) = HeroBEndsTurnAt(90);
+            Assert.That(full.OfType<TraitHealed>(), Is.Empty, "no heal at full HP");
+        }
+
+        [Test]
+        public void ActionEndHeal_NeverGoesPastMaxHp_AndOthersDoNotHeal()
+        {
+            var combat = TestData.Combat();
+            var b = combat.TryCharacter(CharacterKind.HeroB);
+            Assert.That(Remold.ActionEndHeal(b, 89, 90), Is.EqualTo(1));
+            Assert.That(Remold.ActionEndHeal(b, 45, 90), Is.EqualTo(5), "exactly half is not below half");
+            Assert.That(Remold.ActionEndHeal(b, 44, 90), Is.EqualTo(9));
+            Assert.That(Remold.ActionEndHeal(combat.TryCharacter(CharacterKind.HeroA), 10, 110), Is.EqualTo(0));
         }
 
         [Test]

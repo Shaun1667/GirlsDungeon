@@ -158,6 +158,8 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>플레이어 차례 끝 → 적 차례 → (패배가 아니면) 다음 라운드 플레이어 차례.</summary>
         public static void EndPlayerTurn(World world, CombatSettings settings, List<GameEvent> events)
         {
+            // 행동 종료 시 특성 (대원 B — 리몰딩 · 회복, 3-17a).
+            Remold.OnPlayerTurnEnded(world, settings, events);
             world.Turn = TurnSide.Enemies;
             events.Add(new TurnStarted(TurnSide.Enemies, world.Round));
             EnemyTurn.Run(world, settings, events);

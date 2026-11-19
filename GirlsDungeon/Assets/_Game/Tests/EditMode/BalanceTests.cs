@@ -352,13 +352,16 @@ namespace GirlsDungeon.Tests
             Assert.That(new[] { a.RemoldMax, a.RemoldPerAction, a.RemoldPerHit, a.SonicRemoldCost, a.GrenadeRemoldCost, a.PushRemoldCost },
                 Is.EqualTo(new[] { 6, 1, 1, 1, 4, 0 }));
             Assert.That(new[] { a.SlowedDamagePercent, a.SlowAfterMoveCells, a.SlowAmount, a.SlowTurns }, Is.EqualTo(new[] { 20, 5, 2, 2 }));
-            foreach (var kind in new[] { GirlsDungeon.Core.Sim.CharacterKind.HeroB, GirlsDungeon.Core.Sim.CharacterKind.HeroC })
-                Assert.That(combat.TryCharacter(kind).RemoldMax, Is.EqualTo(0), kind.ToString());
+            // 대원 B (3-17a): 최대 6 · 행동 종료 +2 · 회복 5% (50% 미만 10%).
+            var b = combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroB);
+            Assert.That(new[] { b.RemoldMax, b.RemoldPerAction, b.RemoldPerHit, b.RemoldPerActionEnd, b.ActionEndHealPercent, b.ActionEndLowHpHealPercent, b.LowHpPercent },
+                Is.EqualTo(new[] { 6, 0, 0, 2, 5, 10, 50 }));
+            Assert.That(combat.TryCharacter(GirlsDungeon.Core.Sim.CharacterKind.HeroC).RemoldMax, Is.EqualTo(0));
             // 검산 (34): A 산탄총 14 → 방어 2, 이동 감소면 +20% → 12 → 15.
             Assert.That(GirlsDungeon.Core.Sim.CombatRules.Damage(14, 2, 100, 0, 1), Is.EqualTo(12));
             Assert.That(GirlsDungeon.Core.Sim.CombatRules.Damage(14, 2, 100, 0, 1, 100, 20), Is.EqualTo(15));
             var table = GirlsDungeon.Core.Localization.TextTable.Parse(System.IO.File.ReadAllText("Assets/_Game/Resources/Text/text_table.csv"));
-            foreach (var key in new[] { "ui.skill.cost_cooldown", "ui.skill.cost_remold", "ui.remold.gauge", "ui.remold.not_enough", "ui.remold.log_slowed" })
+            foreach (var key in new[] { "ui.skill.cost_cooldown", "ui.skill.cost_remold", "ui.remold.gauge", "ui.remold.not_enough", "ui.remold.log_slowed", "ui.remold.log_heal" })
                 Assert.That(table.Contains(key), Is.True, key);
         }
 

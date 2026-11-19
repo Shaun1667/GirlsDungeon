@@ -545,6 +545,8 @@ namespace GirlsDungeon.Tests
                 // 3-16z: B 스킬1 = 빙결 사격 (2 · 3번 칸은 B 스킬2 · 결전기가 생길 때까지 넉백 · 수류탄).
                 Skills = { SkillKind.Frost, SkillKind.Push, SkillKind.Grenade },
                 WorkshopOptionPercent = 70, WorkshopSetPercent = 50,
+                // BALANCE 34번 (3-17a): B 리몰딩 최대 6 · 행동 종료 +2 · 최대 체력 5% 회복 (50% 미만이면 10%).
+                RemoldMax = 6, RemoldPerActionEnd = 2, ActionEndHealPercent = 5, ActionEndLowHpHealPercent = 10, LowHpPercent = 50,
             });
             settings.Characters.Add(new CharacterStats
             {

@@ -88,6 +88,35 @@ namespace GirlsDungeon.Core.Sim
             if (trait != null) Gain(world, settings, trait.RemoldPerAction);
         }
 
+        /// <summary>
+        /// 플레이어 행동(차례)을 마칠 때 — 적 차례로 넘어가기 직전 (CombatFlow.EndPlayerTurn). 대원 B 특성 (3-17a, 결정 2026-11-19 사용자):
+        /// 리몰딩 RemoldPerActionEnd, 최대 체력 ActionEndHealPercent% 회복 (체력이 LowHpPercent% 미만이면 ActionEndLowHpHealPercent%, 반올림, 최대 체력을 넘지 않음).
+        /// </summary>
+        public static void OnPlayerTurnEnded(World world, CombatSettings settings, List<GameEvent> events)
+        {
+            var trait = Trait(world, settings);
+            var player = world.Player;
+            if (trait == null || player == null || player.Hp <= 0) return;
+            Gain(world, settings, trait.RemoldPerActionEnd);
+
+            int healed = ActionEndHeal(trait, player.Hp, player.MaxHp);
+            if (healed <= 0) return;
+            player.Hp += healed;
+            events.Add(new TraitHealed(player.Id, healed));
+            events.Add(new UnitStatsChanged(player.Id));
+        }
+
+        /// <summary>행동 종료 회복량: 체력이 낮은 % 미만이면 큰 쪽, 아니면 기본 % (최대 체력 기준 반올림, 남은 칸까지만).</summary>
+        public static int ActionEndHeal(CharacterStats trait, int hp, int maxHp)
+        {
+            if (trait == null || maxHp <= 0 || hp >= maxHp) return 0;
+            bool low = hp * 100 < maxHp * trait.LowHpPercent;
+            int percent = low ? trait.ActionEndLowHpHealPercent : trait.ActionEndHealPercent;
+            if (percent <= 0) return 0;
+            int amount = (maxHp * percent * 2 + 100) / 200;
+            return Math.Min(amount, maxHp - hp);
+        }
+
         /// <summary>피해를 준 뒤 (체력을 깎는 곳마다): 플레이어가 다른 유닛에게 1 이상 주었으면 1회로 센다.</summary>
         public static void OnDamageDealt(World world, CombatSettings settings, Unit attacker, Unit target, int dealt)
         {
@@ -190,6 +219,19 @@ namespace GirlsDungeon.Core.Sim
             if (max <= 0) return false;
             world.PlayerRemold = max;
             return true;
+        }
+    }
+
+    /// <summary>행동 종료 특성으로 체력을 회복했다 (대원 B, 3-17a).</summary>
+    public sealed class TraitHealed : GameEvent
+    {
+        public int UnitId { get; }
+        public int Amount { get; }
+
+        public TraitHealed(int unitId, int amount)
+        {
+            UnitId = unitId;
+            Amount = amount;
         }
     }
 }

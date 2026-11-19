@@ -77,6 +77,12 @@ namespace GirlsDungeon.Game
         public int remoldPerAction;
         [Tooltip("Remold gained each time the player deals damage.")]
         public int remoldPerHit;
+        [Tooltip("Remold gained when the player's turn ends.")]
+        public int remoldPerActionEnd;
+        [Tooltip("Heal (% of max HP) when the player's turn ends, and the larger heal below lowHpPercent % HP (0 = none).")]
+        public int actionEndHealPercent;
+        public int actionEndLowHpHealPercent;
+        public int lowHpPercent;
         [Tooltip("Remold cost of each skill (0 = the skill uses its cooldown instead).")]
         public int grenadeRemoldCost;
         public int pushRemoldCost;
@@ -317,6 +323,7 @@ namespace GirlsDungeon.Game
                 kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
                 maxHp = 90, maxStability = 10, visionRange = 10, defense = 3, moveRange = 6, startWeapon = WeaponKind.Smg,
                 skills = new[] { SkillKind.Frost, SkillKind.Push, SkillKind.Grenade },
+                remoldMax = 6, remoldPerActionEnd = 2, actionEndHealPercent = 5, actionEndLowHpHealPercent = 10, lowHpPercent = 50,
             },
             new CharacterEntry
             {
@@ -912,6 +919,10 @@ namespace GirlsDungeon.Game
                     RemoldMax = entry.remoldMax,
                     RemoldPerAction = entry.remoldPerAction,
                     RemoldPerHit = entry.remoldPerHit,
+                    RemoldPerActionEnd = entry.remoldPerActionEnd,
+                    ActionEndHealPercent = entry.actionEndHealPercent,
+                    ActionEndLowHpHealPercent = entry.actionEndLowHpHealPercent,
+                    LowHpPercent = entry.lowHpPercent,
                     GrenadeRemoldCost = entry.grenadeRemoldCost,
                     PushRemoldCost = entry.pushRemoldCost,
                     SonicRemoldCost = entry.sonicRemoldCost,
