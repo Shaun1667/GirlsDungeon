@@ -376,8 +376,8 @@ namespace GirlsDungeon.Tests
 
                 Assert.That(simulation.Execute(new DebugDefeatCommand(enemy.Id)), Is.True);
                 Assert.That(world.Mode, Is.EqualTo(WorldMode.Exploration));
-                // 열쇠(3-4d)는 따로 굴린다 — 여기서는 원래 보상만 센다 (DoorTests가 열쇠를 본다).
-                var drops = world.Items.Where(i => i.Kind != ItemKind.Key).ToList();
+                // 열쇠(3-4d) · 바닥 골드(3-16w)는 따로 굴린다 — 여기서는 원래 보상만 센다 (DoorTests · ShopTests가 본다).
+                var drops = world.Items.Where(i => i.Kind != ItemKind.Key && i.Kind != ItemKind.Gold).ToList();
                 if (drops.Count == 0) { nothing++; continue; }
                 var item = drops.Single();
                 Assert.That(item.Position, Is.EqualTo(new GridPos(5, 0)), $"seed {seed}: on the enemy's cell");
