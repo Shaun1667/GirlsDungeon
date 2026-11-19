@@ -535,7 +535,7 @@ namespace GirlsDungeon.Tests
             });
             settings.Characters.Add(new CharacterStats
             {
-                Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 5, VisionRange = 10, Defense = 3, MoveRange = 6, StartWeapon = WeaponKind.Smg,
+                Kind = CharacterKind.HeroB, MaxHp = 90, MaxStability = 10, VisionRange = 10, Defense = 3, MoveRange = 6, StartWeapon = WeaponKind.Smg,
                 Skills = { SkillKind.Grenade, SkillKind.Push, SkillKind.None },
                 WorkshopOptionPercent = 70, WorkshopSetPercent = 50,
             });

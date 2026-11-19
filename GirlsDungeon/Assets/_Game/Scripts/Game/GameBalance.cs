@@ -315,7 +315,7 @@ namespace GirlsDungeon.Game
             new CharacterEntry
             {
                 kind = CharacterKind.HeroB, nameKey = "character.hero_b.name", visualId = "hero_b",
-                maxHp = 90, maxStability = 5, visionRange = 10, defense = 3, moveRange = 6, startWeapon = WeaponKind.Smg,
+                maxHp = 90, maxStability = 10, visionRange = 10, defense = 3, moveRange = 6, startWeapon = WeaponKind.Smg,
             },
             new CharacterEntry
             {

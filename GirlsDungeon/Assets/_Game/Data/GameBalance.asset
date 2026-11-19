@@ -144,7 +144,7 @@ MonoBehaviour:
     nameKey: character.hero_b.name
     visualId: hero_b
     maxHp: 90
-    maxStability: 5
+    maxStability: 10
     visionRange: 10
     defense: 3
     moveRange: 6
