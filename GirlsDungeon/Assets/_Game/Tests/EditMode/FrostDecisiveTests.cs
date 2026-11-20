@@ -181,6 +181,9 @@ namespace GirlsDungeon.Tests
             world.PlayerRemold = 5;
             // 적 칸 바로 옆(빈 칸)에 쓴다 — 적은 사거리 안이라 움직이지 않고 쏜다.
             Assert.That(simulation.Execute(new FrostDecisiveCommand(new GridPos(7, 4), combat)), Is.True);
+            // 기관단총은 스킬 뒤에도 한 발이 남는다 (3-17f) — 차례를 끝내 적이 행동하게 한다.
+            Assert.That(world.PlayerShots, Is.EqualTo(1));
+            Assert.That(simulation.Execute(new EndTurnCommand(combat)), Is.True);
             Assert.That(world.Mode, Is.EqualTo(WorldMode.Combat));
             var after = world.FindUnit(enemy.Id);
             Assert.That(after, Is.Not.Null);

@@ -83,7 +83,11 @@ namespace GirlsDungeon.Tests
             simulation.EventsPublished += published => events.AddRange(published);
             Assert.That(simulation.Execute(new FrostGuardCommand(combat)), Is.True);
             Assert.That(events.OfType<FrostGuardUsed>().Single().Stacks, Is.EqualTo(1));
-            // 1 − 1, 차례를 마칠 때 특성 +2 (3-17a).
+            // 기관단총이라 스킬 뒤에도 한 발이 남아 차례가 이어진다 (3-17f): 1 − 1 = 0.
+            Assert.That(world.PlayerRemold, Is.EqualTo(0));
+            Assert.That(world.PlayerShots, Is.EqualTo(1));
+            // 차례를 마칠 때 특성 +2 (3-17a).
+            Assert.That(simulation.Execute(new EndTurnCommand(combat)), Is.True);
             Assert.That(world.PlayerRemold, Is.EqualTo(2));
         }
 
