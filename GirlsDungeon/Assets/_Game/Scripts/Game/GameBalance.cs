@@ -212,10 +212,10 @@ namespace GirlsDungeon.Game
         [SerializeField] private int fixedSeed;
 
         [Header("Map (BALANCE 1)")]
-        [SerializeField] private int mapWidth = 40;
-        [SerializeField] private int mapHeight = 40;
-        [SerializeField] private int minRooms = 9;
-        [SerializeField] private int maxRooms = 11;
+        [SerializeField] private int mapWidth = 50;
+        [SerializeField] private int mapHeight = 50;
+        [SerializeField] private int minRooms = 14;
+        [SerializeField] private int maxRooms = 17;
         [SerializeField] private int minRoomSize = 7;
         [SerializeField] private int maxRoomSize = 13;
         [SerializeField] private int roomMargin = 1;
