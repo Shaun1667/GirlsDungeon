@@ -13,8 +13,8 @@ MonoBehaviour:
   m_Name: GameBalance
   m_EditorClassIdentifier: GirlsDungeon.Game::GirlsDungeon.Game.GameBalance
   fixedSeed: 0
-  mapWidth: 50
-  mapHeight: 50
+  mapWidth: 56
+  mapHeight: 56
   minRooms: 14
   maxRooms: 17
   minRoomSize: 7
