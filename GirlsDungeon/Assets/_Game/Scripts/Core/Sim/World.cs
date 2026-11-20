@@ -221,6 +221,9 @@ namespace GirlsDungeon.Core.Sim
         public int BulwarkStacks { get; set; }
         public int BulwarkTurns { get; set; }
 
+        /// <summary>치명피해 상승Ⅰ 남은 차례 (3-17g, ActionSupport). 0 = 없음.</summary>
+        public int PlayerCritBoostTurns { get; set; }
+
         /// <summary>한 번이라도 본 칸 (인덱스 = x + y * Width). 지금 보이는 칸은 저장하지 않고 Vision으로 다시 계산한다.</summary>
         public bool[] Explored { get; set; }
 

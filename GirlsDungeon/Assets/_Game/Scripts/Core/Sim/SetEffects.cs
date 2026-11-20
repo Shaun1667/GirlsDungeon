@@ -55,6 +55,8 @@ namespace GirlsDungeon.Core.Sim
         Sonic = 4,
         /// <summary>빙결 사격 (단일, 스킬, 빙결 속성 — 3-16z).</summary>
         Frost = 5,
+        /// <summary>지원 공격 — 행동 지원 (단일, 턴 외, 물리 — 3-17g).</summary>
+        Support = 6,
     }
 
     /// <summary>피해 속성 (3-16e). 지금은 모든 피해가 물리 — 속성을 주는 무기 · 스킬이 생기면 ElementOf에서 고른다.</summary>
@@ -121,7 +123,7 @@ namespace GirlsDungeon.Core.Sim
             }
         }
 
-        private static readonly DamageSource[] AllSources = { DamageSource.Shot, DamageSource.Overwatch, DamageSource.Grenade, DamageSource.Push, DamageSource.Sonic, DamageSource.Frost };
+        private static readonly DamageSource[] AllSources = { DamageSource.Shot, DamageSource.Overwatch, DamageSource.Grenade, DamageSource.Push, DamageSource.Sonic, DamageSource.Frost, DamageSource.Support };
 
         /// <summary>지금 게임에서 이 세트의 조건이 생길 수 있는가 — 없으면 드롭 후보에서 뺀다.</summary>
         public static bool HasSource(PartSet set)
@@ -185,7 +187,7 @@ namespace GirlsDungeon.Core.Sim
         public static bool IsSkill(DamageSource source) => source == DamageSource.Grenade || source == DamageSource.Push || source == DamageSource.Sonic || source == DamageSource.Frost;
         public static bool IsArea(DamageSource source) => source == DamageSource.Grenade || source == DamageSource.Push;
         /// <summary>턴 외 피해 (지원 공격 · 매복 · 반격 · 패시브 — 지금은 감시 사격뿐).</summary>
-        public static bool IsOffTurn(DamageSource source) => source == DamageSource.Overwatch;
+        public static bool IsOffTurn(DamageSource source) => source == DamageSource.Overwatch || source == DamageSource.Support;
 
         /// <summary>그 피해를 낸 스킬 (스킬이 아니면 None).</summary>
         public static SkillKind SkillOf(DamageSource source)

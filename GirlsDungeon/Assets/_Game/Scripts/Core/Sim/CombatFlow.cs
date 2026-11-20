@@ -128,6 +128,7 @@ namespace GirlsDungeon.Core.Sim
             KeeperSkills.Reset(world);
             Remold.OnCombatEnded(world);
             FrostGuard.Clear(world);
+            ActionSupport.Clear(world, settings);
             player.Overwatching = false;
             if (player.Stability != player.MaxStability)
             {
@@ -188,6 +189,7 @@ namespace GirlsDungeon.Core.Sim
             Remold.OnPlayerTurnStarted(world, settings);
             // 서리 보호막 · 방위 지원 남은 차례 (3-17b).
             FrostGuard.OnPlayerTurnStarted(world, settings, events);
+            ActionSupport.OnPlayerTurnStarted(world, settings, events);
             // 화상 (상점 주인 화염탄, 3-15f): 차례를 시작할 때 피해.
             KeeperSkills.OnPlayerTurnStarted(world, settings, events);
         }

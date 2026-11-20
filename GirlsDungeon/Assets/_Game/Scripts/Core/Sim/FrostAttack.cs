@@ -116,6 +116,7 @@ namespace GirlsDungeon.Core.Sim
             if (!CombatFlow.CanUseSkill(world)) return false;
             if (!settings.HasSkill(world.PlayerCharacter, SkillKind.Frost)) return false;
             if (!FrostAttack.Resolve(world, settings, world.Player, world.FindUnit(targetId), events)) return false;
+            ActionSupport.Trigger(world, settings, targetId, events);
             SetEffects.OnSkillUsed(world, settings, SkillKind.Frost);
             CombatFlow.AfterSkill(world, settings, events);
             return true;

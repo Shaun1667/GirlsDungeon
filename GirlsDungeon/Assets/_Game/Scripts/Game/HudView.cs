@@ -670,6 +670,12 @@ namespace GirlsDungeon.Game
                     case ShopkeeperAngered _:
                         AddLog(Text.Get("ui.shop.log_angered"));
                         break;
+                    case ActionSupportTriggered _:
+                        AddLog(Text.Get("ui.support.log_triggered"));
+                        break;
+                    case CritBoosted boosted:
+                        AddLog(Text.Get("ui.support.log_crit_boost", boosted.Percent, boosted.Turns));
+                        break;
                     case FrostDecisiveUsed decisiveUsed:
                         AddLog(Text.Get("ui.decisive.log_used", decisiveUsed.Hits));
                         break;

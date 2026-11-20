@@ -108,6 +108,11 @@ namespace GirlsDungeon.Core.Sim
         public int FrostGuardRemoldCost;
         /// <summary>서리 결전 리몰딩 소모 (대원 B, 3-17c).</summary>
         public int FrostDecisiveRemoldCost;
+        /// <summary>행동 지원 (대원 B, 3-17g — ActionSupport): 지원 공격 배율 % (0 = 없음) · 안정 피해 · 치명피해 상승Ⅰ (+%p · 차례).</summary>
+        public int ActionSupportPercent;
+        public int ActionSupportStabilityDamage;
+        public int CritBoostPercent;
+        public int CritBoostTurns;
 
         /// <summary>이동 감소를 가진 적에게 주는 피해 (+%p, 0 = 없음).</summary>
         public int SlowedDamagePercent;
@@ -560,6 +565,7 @@ namespace GirlsDungeon.Core.Sim
                     || character.GrenadeRemoldCost > character.RemoldMax || character.PushRemoldCost > character.RemoldMax || character.SonicRemoldCost > character.RemoldMax
                     || character.FrostGuardRemoldCost < 0 || character.FrostGuardRemoldCost > character.RemoldMax
                     || character.FrostDecisiveRemoldCost < 0 || character.FrostDecisiveRemoldCost > character.RemoldMax
+                    || character.ActionSupportPercent < 0 || character.ActionSupportStabilityDamage < 0 || character.CritBoostPercent < 0 || character.CritBoostTurns < 0
                     || character.SlowAfterMoveCells < 0 || character.SlowAmount < 0 || character.SlowTurns < 0)
                     throw new ArgumentException($"Remold settings for character {character.Kind} are invalid.");
             }

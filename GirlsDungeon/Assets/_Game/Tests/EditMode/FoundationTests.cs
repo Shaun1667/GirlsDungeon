@@ -573,6 +573,8 @@ namespace GirlsDungeon.Tests
                 // 3-16z · 3-17b · 3-17c: B 스킬1 = 빙결 사격, 스킬2 = 서리 수호, 결전기 = 서리 결전.
                 Skills = { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.FrostDecisive },
                 FrostGuardRemoldCost = 1, FrostDecisiveRemoldCost = 5,
+                // BALANCE 34-9 (3-17g): 행동 지원 80% · 안정 3 · 치명피해 상승Ⅰ +10%p 2차례.
+                ActionSupportPercent = 80, ActionSupportStabilityDamage = 3, CritBoostPercent = 10, CritBoostTurns = 2,
                 WorkshopOptionPercent = 70, WorkshopSetPercent = 50,
                 // BALANCE 34번 (3-17a): B 리몰딩 최대 6 · 행동 종료 +2 · 최대 체력 5% 회복 (50% 미만이면 10%).
                 RemoldMax = 6, RemoldPerActionEnd = 2, ActionEndHealPercent = 5, ActionEndLowHpHealPercent = 10, LowHpPercent = 50,

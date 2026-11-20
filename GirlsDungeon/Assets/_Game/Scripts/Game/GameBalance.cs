@@ -89,6 +89,11 @@ namespace GirlsDungeon.Game
         public int sonicRemoldCost;
         public int frostGuardRemoldCost;
         public int frostDecisiveRemoldCost;
+        [Tooltip("Action support (0 = none): follow-up attack multiplier (%), its stability damage, and the crit damage boost it grants (+%, turns).")]
+        public int actionSupportPercent;
+        public int actionSupportStabilityDamage;
+        public int critBoostPercent;
+        public int critBoostTurns;
         [Tooltip("Bonus damage (%) against enemies with a movement debuff.")]
         public int slowedDamagePercent;
         [Tooltip("After walking at least this many cells this turn, attacks slow the target first (0 = never).")]
@@ -326,6 +331,7 @@ namespace GirlsDungeon.Game
                 maxHp = 90, maxStability = 10, visionRange = 10, defense = 8, moveRange = 6, startWeapon = WeaponKind.Smg,
                 skills = new[] { SkillKind.Frost, SkillKind.FrostGuard, SkillKind.FrostDecisive },
                 frostGuardRemoldCost = 1, frostDecisiveRemoldCost = 5,
+                actionSupportPercent = 80, actionSupportStabilityDamage = 3, critBoostPercent = 10, critBoostTurns = 2,
                 remoldMax = 6, remoldPerActionEnd = 2, actionEndHealPercent = 5, actionEndLowHpHealPercent = 10, lowHpPercent = 50,
             },
             new CharacterEntry
@@ -997,6 +1003,10 @@ namespace GirlsDungeon.Game
                     SonicRemoldCost = entry.sonicRemoldCost,
                     FrostGuardRemoldCost = entry.frostGuardRemoldCost,
                     FrostDecisiveRemoldCost = entry.frostDecisiveRemoldCost,
+                    ActionSupportPercent = entry.actionSupportPercent,
+                    ActionSupportStabilityDamage = entry.actionSupportStabilityDamage,
+                    CritBoostPercent = entry.critBoostPercent,
+                    CritBoostTurns = entry.critBoostTurns,
                     SlowedDamagePercent = entry.slowedDamagePercent,
                     SlowAfterMoveCells = entry.slowAfterMoveCells,
                     SlowAmount = entry.slowAmount,

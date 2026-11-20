@@ -22,7 +22,7 @@ namespace GirlsDungeon.Core.Sim
         /// 30: 상점 주인 스킬 상태 — 밑천 · 재사용 대기 · 기세 · 방벽 · 플레이어 화상 (2026-11-14, 3-15f).
         /// 33: 떠난 층 보관 StoredFloors (2026-11-18, 3-16u — 올라가는 계단 칸은 TileType 값만 추가).
         /// </summary>
-        public const int Version = 37;
+        public const int Version = 38;
 
         public static byte[] Encode(World world)
         {
@@ -82,6 +82,7 @@ namespace GirlsDungeon.Core.Sim
                 }
                 writer.Write(world.BulwarkStacks);
                 writer.Write(world.BulwarkTurns);
+                writer.Write(world.PlayerCritBoostTurns);
                 foreach (var part in world.PlayerParts) WritePart(writer, part);
                 writer.Write(world.PartAppliedMaxHp);
                 writer.Write(world.PartAppliedDefense);
@@ -192,6 +193,7 @@ namespace GirlsDungeon.Core.Sim
                     world.FrostFields.Add(new FrostField { Center = ReadCell(reader), Radius = reader.ReadInt32(), Turns = reader.ReadInt32() });
                 world.BulwarkStacks = reader.ReadInt32();
                 world.BulwarkTurns = reader.ReadInt32();
+                world.PlayerCritBoostTurns = reader.ReadInt32();
                 for (int slot = 0; slot < WeaponPart.SlotCount; slot++) world.PlayerParts[slot] = ReadPart(reader);
                 world.PartAppliedMaxHp = reader.ReadInt32();
                 world.PartAppliedDefense = reader.ReadInt32();

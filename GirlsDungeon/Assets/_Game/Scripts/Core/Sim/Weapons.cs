@@ -89,7 +89,8 @@ namespace GirlsDungeon.Core.Sim
             // 치명 확률은 100%까지, 넘는 만큼은 치명 피해(%p)로 1:1 전환 (3-16q, BALANCE 17-9).
             int critTotal = weapon.CritPercent + Parts.Sum(world, PartStat.CritPercent);
             player.CritPercent = System.Math.Max(0, System.Math.Min(100, critTotal));
-            player.CritMultiplierPercent = weapon.CritMultiplierPercent + Parts.Sum(world, PartStat.CritMultiplier) + CritOverflow(critTotal);
+            // 치명피해 상승Ⅰ (행동 지원, 3-17g)도 여기서 더한다.
+            player.CritMultiplierPercent = weapon.CritMultiplierPercent + Parts.Sum(world, PartStat.CritMultiplier) + CritOverflow(critTotal) + ActionSupport.CritBoost(world, settings);
 
             // 몸 능력치는 파츠 합이 바뀐 만큼만 더하고 뺀다 (캐릭터 · 유닛 표에서 정한 값은 그대로 두고). 최대 체력이 늘면 지금 체력도 같이 는다.
             // 퍼센트(3-16n)는 파츠를 빼고 본 기본값에 곱한다 — 모든 파츠의 %를 더한 뒤 한 번 반올림.

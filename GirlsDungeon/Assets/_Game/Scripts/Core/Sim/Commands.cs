@@ -112,7 +112,10 @@ namespace GirlsDungeon.Core.Sim
 
             var target = world.FindUnit(targetId);
             if (target == null || target.IsPlayer || !world.Combatants.Contains(target.Id)) return false;
+            // 행동 지원 (3-17g): 그 차례의 첫 사격만 — 기관단총의 두 번째 발 · 스킬 뒤 남은 한 발은 아니다.
+            bool firstShot = world.PlayerShots == 0;
             if (!CombatRules.Resolve(world, settings, world.Player, target, events)) return false;
+            if (firstShot) ActionSupport.Trigger(world, settings, targetId, events);
 
             world.PlayerActed = true;
             world.PlayerShots++;

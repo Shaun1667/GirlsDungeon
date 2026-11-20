@@ -74,6 +74,8 @@ namespace GirlsDungeon.Tests
 
             int hp = enemy.Hp;
             int stability = enemy.Stability;
+            // 빙결 사격만 본다 — 뒤따르는 행동 지원(3-17g)은 ActionSupportTests에서.
+            combat.TryCharacter(CharacterKind.HeroB).ActionSupportPercent = 0;
             Assert.That(simulation.Execute(new FrostAttackCommand(enemy.Id, combat)), Is.True);
             Assert.That(hp - enemy.Hp, Is.EqualTo(preview.Damage));
             Assert.That(enemy.Stability, Is.EqualTo(System.Math.Max(0, stability - 4)));

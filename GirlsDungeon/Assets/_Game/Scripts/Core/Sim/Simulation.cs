@@ -256,6 +256,7 @@ namespace GirlsDungeon.Core.Sim
             KeeperSkills.Reset(world);
             FrostGuard.Clear(world);
             Remold.OnCombatEnded(world);
+            ActionSupport.Clear(world, null);
         }
 
         /// <summary>그 칸이 비었으면 그 칸, 아니면 가장 가까운 빈 바닥.</summary>

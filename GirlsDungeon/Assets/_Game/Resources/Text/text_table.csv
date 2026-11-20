@@ -448,3 +448,5 @@ ui.remold.gauge,리몰딩 {0}/{1},Remold {0}/{1}
 ui.remold.not_enough,리몰딩이 모자람 (지금 {1} · 필요 {0}),Not enough Remold (have {1} · need {0})
 ui.remold.log_slowed,{0}에게 이동 감소Ⅱ (이동 −{1}칸 · {2}차례),{0} is slowed II (move −{1} · {2} turns)
 ui.remold.log_heal,차례 끝 회복: 체력 +{0},End of turn: HP +{0}
+ui.support.log_triggered,행동 지원: 한 번 더 공격,Action support: follow-up attack
+ui.support.log_crit_boost,치명피해 상승Ⅰ: 치명 피해 +{0}% ({1}차례),Crit damage up I: +{0}% ({1} turns)

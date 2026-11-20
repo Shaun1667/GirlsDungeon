@@ -178,6 +178,10 @@ MonoBehaviour:
     sonicRemoldCost: 0
     frostGuardRemoldCost: 1
     frostDecisiveRemoldCost: 5
+    actionSupportPercent: 80
+    actionSupportStabilityDamage: 3
+    critBoostPercent: 10
+    critBoostTurns: 2
     slowedDamagePercent: 0
     slowAfterMoveCells: 0
     slowAmount: 0
