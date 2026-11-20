@@ -436,14 +436,30 @@ namespace GirlsDungeon.Game
             var world = simulation.World;
             if (target == null || target.IsPlayer || settings == null) return;
             var elements = Weakness.Of(world, target);
-            if (elements.Count == 0) return;
             var names = new List<string>();
             foreach (var element in elements) names.Add(ElementName(element));
+            if (target.AmmoWeakness != AmmoKind.None) names.Add(AmmoName(target.AmmoWeakness));
+            if (names.Count == 0) return;
             string joined = string.Join(" · ", names);
-            bool hit = Weakness.Hits(world, settings, world.Player, target, source) > 0;
+            int hits = Weakness.Hits(world, settings, world.Player, target, source);
+            bool hit = hits > 0;
             previewLabel.text += "\n" + (hit
-                ? Text.Get("ui.combat.preview_weakness_hit", joined, settings.WeaknessDamagePercent, settings.WeaknessStabilityDamage)
+                ? Text.Get("ui.combat.preview_weakness_hit", joined, hits * settings.WeaknessDamagePercent, hits * settings.WeaknessStabilityDamage, hits)
                 : Text.Get("ui.combat.preview_weakness", joined));
+        }
+
+        /// <summary>탄 종류 이름 (키를 통째로, 3-17i).</summary>
+        internal static string AmmoName(AmmoKind ammo)
+        {
+            switch (ammo)
+            {
+                case AmmoKind.Light: return Text.Get("ammo.light.name");
+                case AmmoKind.Standard: return Text.Get("ammo.standard.name");
+                case AmmoKind.Heavy: return Text.Get("ammo.heavy.name");
+                case AmmoKind.Shell: return Text.Get("ammo.shell.name");
+                case AmmoKind.Melee: return Text.Get("ammo.melee.name");
+                default: return string.Empty;
+            }
         }
 
         /// <summary>속성 이름 (키를 통째로).</summary>
@@ -866,7 +882,9 @@ namespace GirlsDungeon.Game
                     ? Text.Get("ui.hud.stability_support", player.Stability, player.MaxStability, world.DefenseSupportStacks, world.DefenseSupportApplied)
                     : Text.Get("ui.hud.stability", player.Stability, player.MaxStability);
                 // 표시 값 = 실제 값: 무기 표가 아니라 유닛에 적용된 값(Loadout.Apply 결과)을 읽는다.
-                weaponLabel.text = Text.Get("ui.hud.weapon", WeaponName(world.PlayerWeapon), player.Attack, player.AttackRange);
+                // 탄 종류 = 무기속성 (3-17i).
+                weaponLabel.text = Text.Get("ui.hud.weapon_ammo", WeaponName(world.PlayerWeapon), player.Attack, player.AttackRange,
+                    AmmoName(settings?.TryWeapon(world.PlayerWeapon)?.Ammo ?? AmmoKind.None));
                 // 사르디스 골드 (3-15): 늘 보인다.
                 weaponLabel.text += "\n" + Text.Get("ui.hud.gold", world.Gold);
                 // 열쇠 (3-4d): 하나라도 있을 때만.

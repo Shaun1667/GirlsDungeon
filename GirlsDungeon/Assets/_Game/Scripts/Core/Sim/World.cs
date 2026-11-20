@@ -81,6 +81,9 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>약점 (3-17h, Weakness): DamageElement 비트. 0 = 없음.</summary>
         public int WeaknessMask { get; set; }
 
+        /// <summary>무기속성 약점 (3-17i, Weakness): 탄 종류 하나. None = 없음.</summary>
+        public AmmoKind AmmoWeakness { get; set; }
+
         public bool IsPlayer => Kind == UnitKind.Player;
 
         public Unit(int id, UnitKind kind, GridPos position)

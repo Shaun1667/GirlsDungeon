@@ -22,7 +22,7 @@ namespace GirlsDungeon.Core.Sim
         /// 30: 상점 주인 스킬 상태 — 밑천 · 재사용 대기 · 기세 · 방벽 · 플레이어 화상 (2026-11-14, 3-15f).
         /// 33: 떠난 층 보관 StoredFloors (2026-11-18, 3-16u — 올라가는 계단 칸은 TileType 값만 추가).
         /// </summary>
-        public const int Version = 39;
+        public const int Version = 40;
 
         public static byte[] Encode(World world)
         {
@@ -263,6 +263,7 @@ namespace GirlsDungeon.Core.Sim
             writer.Write(unit.CoagTurns);
             writer.Write(unit.CoagMove);
             writer.Write(unit.WeaknessMask);
+            writer.Write((byte)unit.AmmoWeakness);
         }
 
         private static Unit ReadUnit(BinaryReader reader)
@@ -295,6 +296,7 @@ namespace GirlsDungeon.Core.Sim
                 CoagTurns = reader.ReadInt32(),
                 CoagMove = reader.ReadInt32(),
                 WeaknessMask = reader.ReadInt32(),
+                AmmoWeakness = (AmmoKind)reader.ReadByte(),
             };
         }
 

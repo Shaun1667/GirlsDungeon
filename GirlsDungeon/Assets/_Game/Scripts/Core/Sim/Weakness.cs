@@ -11,6 +11,8 @@ namespace GirlsDungeon.Core.Sim
     /// - 플레이어 공격의 속성(SetEffects.ElementOf)이 약점과 맞으면 약점 1개당 피해 +WeaknessDamagePercent%p (SetEffects.DamagePercent가 더함 — 모든 피해 미리보기 공통)
     ///   · 안정 피해 +WeaknessStabilityDamage (공격마다 StabilityBonus를 더함). 고정 피해(서리 결전 · 부딪힘)는 바뀌지 않는다.
     /// 약점은 Unit.WeaknessMask (DamageElement 비트).
+    /// 무기속성 약점 (3-17i, 결정 2026-11-20 사용자): 속성 약점과 따로 하나 더 — 경량탄 · 표준탄 · 중량탄 · 산탄 · 근접 중 하나 (Unit.AmmoWeakness).
+    /// 무기로 쏘는 공격(기본 사격 · 감시 사격 · 행동 지원)과 빙결 사격은 든 무기의 탄 종류(WeaponStats.Ammo)를 가진다 — 맞으면 약점 1개 더.
     /// </summary>
     public static class Weakness
     {
@@ -20,6 +22,9 @@ namespace GirlsDungeon.Core.Sim
             DamageElement.Burn, DamageElement.Conduct, DamageElement.Torrent, DamageElement.Acid, DamageElement.Freeze, DamageElement.Physical,
         };
 
+        /// <summary>무기속성 약점 후보 (순서 고정).</summary>
+        public static readonly AmmoKind[] AmmoPool = { AmmoKind.Light, AmmoKind.Standard, AmmoKind.Heavy, AmmoKind.Shell, AmmoKind.Melee };
+
         public static int Bit(DamageElement element) => 1 << (int)element;
 
         public static bool Has(Unit unit, DamageElement element) => unit != null && (unit.WeaknessMask & Bit(element)) != 0;
@@ -28,18 +33,38 @@ namespace GirlsDungeon.Core.Sim
         public static void Assign(World world, Unit unit)
         {
             if (unit == null || unit.IsPlayer || unit.Kind == UnitKind.Shopkeeper) return;
-            var element = Pool[world.Random.Get(RandomPurpose.Weakness).Range(0, Pool.Length)];
+            var random = world.Random.Get(RandomPurpose.Weakness);
+            var element = Pool[random.Range(0, Pool.Length)];
             unit.WeaknessMask = Bit(element);
+            unit.AmmoWeakness = AmmoPool[random.Range(0, AmmoPool.Length)];
         }
 
-        /// <summary>이 공격이 맞히는 약점 수 (플레이어 공격만). 타고난 약점 + 서리밭 빙결 약점 — 같은 속성이면 하나로 센다.</summary>
+        /// <summary>그 공격의 무기속성 (탄 종류): 무기로 쏘는 공격과 빙결 사격은 든 무기의 탄, 나머지 스킬은 없음.</summary>
+        public static AmmoKind AmmoOf(World world, CombatSettings settings, DamageSource source)
+        {
+            if (settings == null) return AmmoKind.None;
+            switch (source)
+            {
+                case DamageSource.Shot:
+                case DamageSource.Overwatch:
+                case DamageSource.Support:
+                case DamageSource.Frost:
+                    return settings.TryWeapon(world.PlayerWeapon)?.Ammo ?? AmmoKind.None;
+                default:
+                    return AmmoKind.None;
+            }
+        }
+
+        /// <summary>이 공격이 맞히는 약점 수 (플레이어 공격만): 속성 약점(타고난 + 서리밭 빙결, 같은 속성이면 하나) + 무기속성 약점 — 0 ~ 2.</summary>
         public static int Hits(World world, CombatSettings settings, Unit attacker, Unit target, DamageSource source)
         {
             if (attacker == null || !attacker.IsPlayer || target == null || target.IsPlayer) return 0;
+            int hits = 0;
             var element = SetEffects.ElementOf(world, settings, source);
-            if (Has(target, element)) return 1;
-            if (element == DamageElement.Freeze && InFrostField(world, target)) return 1;
-            return 0;
+            if (Has(target, element) || (element == DamageElement.Freeze && InFrostField(world, target))) hits++;
+            var ammo = AmmoOf(world, settings, source);
+            if (ammo != AmmoKind.None && target.AmmoWeakness == ammo) hits++;
+            return hits;
         }
 
         /// <summary>서리밭 안에 서 있는가 (빙결 약점이 붙음).</summary>

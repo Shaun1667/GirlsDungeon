@@ -197,6 +197,8 @@ namespace GirlsDungeon.Game
         public bool melee;
         [Tooltip("Rule: ignores the target's cover.")]
         public bool ignoresCover;
+        [Tooltip("Ammo type = weapon attribute for enemy weaknesses (3-17i).")]
+        public AmmoKind ammo;
         [Tooltip("Text table keys for the four part slot names (slot 1 = muzzle or blade tip).")]
         public string[] partSlotKeys = { "part.slot.muzzle", "part.slot.sight", "part.slot.grip", "part.slot.handguard" };
     }
@@ -468,43 +470,43 @@ namespace GirlsDungeon.Game
         {
             new WeaponEntry
             {
-                kind = WeaponKind.AssaultRifle, nameKey = "weapon.assault_rifle.name", ruleKey = "weapon.assault_rifle.rule",
+                kind = WeaponKind.AssaultRifle, ammo = AmmoKind.Standard, nameKey = "weapon.assault_rifle.name", ruleKey = "weapon.assault_rifle.rule",
                 attack = 10, attackRange = 8, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150,
             },
             new WeaponEntry
             {
-                kind = WeaponKind.Pistol, nameKey = "weapon.pistol.name", ruleKey = "weapon.pistol.rule",
+                kind = WeaponKind.Pistol, ammo = AmmoKind.Light, nameKey = "weapon.pistol.name", ruleKey = "weapon.pistol.rule",
                 attack = 7, attackRange = 6, stabilityDamage = 1, critPercent = 15, critMultiplierPercent = 150, moveAfterShot = true,
                 partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.coupler", "part.slot.latch" },
             },
             new WeaponEntry
             {
-                kind = WeaponKind.Shotgun, nameKey = "weapon.shotgun.name", ruleKey = "weapon.shotgun.rule",
+                kind = WeaponKind.Shotgun, ammo = AmmoKind.Shell, nameKey = "weapon.shotgun.name", ruleKey = "weapon.shotgun.rule",
                 attack = 14, attackRange = 5, stabilityDamage = 3, critPercent = 15, critMultiplierPercent = 150,
                 closeRangePercent = 150, farRangePercent = 20, farRangeCells = 5,
                 partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.coupler", "part.slot.latch" },
             },
             new WeaponEntry
             {
-                kind = WeaponKind.Sniper, nameKey = "weapon.sniper.name", ruleKey = "weapon.sniper.rule",
+                kind = WeaponKind.Sniper, ammo = AmmoKind.Heavy, nameKey = "weapon.sniper.name", ruleKey = "weapon.sniper.rule",
                 attack = 13, attackRange = 12, stabilityDamage = 1, critPercent = 30, critMultiplierPercent = 150, noShotAfterMove = true,
                 partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.bipod", "part.slot.handguard" },
             },
             new WeaponEntry
             {
-                kind = WeaponKind.Smg, nameKey = "weapon.smg.name", ruleKey = "weapon.smg.rule",
+                kind = WeaponKind.Smg, ammo = AmmoKind.Light, nameKey = "weapon.smg.name", ruleKey = "weapon.smg.rule",
                 attack = 10, attackRange = 6, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150, extraShotsPerTurn = 1,
                 closeRangePercent = 150, farRangePercent = 90, farRangeCells = 6, moveRangeBonus = 2,
             },
             new WeaponEntry
             {
-                kind = WeaponKind.MachineGun, nameKey = "weapon.machine_gun.name", ruleKey = "weapon.machine_gun.rule",
+                kind = WeaponKind.MachineGun, ammo = AmmoKind.Heavy, nameKey = "weapon.machine_gun.name", ruleKey = "weapon.machine_gun.rule",
                 attack = 9, attackRange = 8, stabilityDamage = 4, critPercent = 15, critMultiplierPercent = 150, moveRangeBonus = -2,
                 partSlotKeys = new[] { "part.slot.muzzle", "part.slot.sight", "part.slot.bipod", "part.slot.handguard" },
             },
             new WeaponEntry
             {
-                kind = WeaponKind.Blade, nameKey = "weapon.blade.name", ruleKey = "weapon.blade.rule",
+                kind = WeaponKind.Blade, ammo = AmmoKind.Melee, nameKey = "weapon.blade.name", ruleKey = "weapon.blade.rule",
                 attack = 16, attackRange = 1, stabilityDamage = 3, critPercent = 20, critMultiplierPercent = 150, melee = true, ignoresCover = true,
                 partSlotKeys = new[] { "part.slot.blade_tip", "part.slot.tuning", "part.slot.coupler", "part.slot.latch" },
             },
@@ -956,6 +958,7 @@ namespace GirlsDungeon.Game
                     MoveRangeBonus = entry.moveRangeBonus,
                     Melee = entry.melee,
                     IgnoresCover = entry.ignoresCover,
+                    Ammo = entry.ammo,
                 });
             }
             foreach (var entry in units)

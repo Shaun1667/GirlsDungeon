@@ -499,37 +499,37 @@ namespace GirlsDungeon.Tests
             // BALANCE 12번 무기 표.
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.AssaultRifle, Attack = 10, AttackRange = 8, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = WeaponKind.AssaultRifle, Ammo = AmmoKind.Standard, Attack = 10, AttackRange = 8, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.Pistol, Attack = 7, AttackRange = 6, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = WeaponKind.Pistol, Ammo = AmmoKind.Light, Attack = 7, AttackRange = 6, StabilityDamage = 1, CritPercent = 15, CritMultiplierPercent = 150,
                 MoveAfterShot = true,
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.Shotgun, Attack = 14, AttackRange = 5, StabilityDamage = 3, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = WeaponKind.Shotgun, Ammo = AmmoKind.Shell, Attack = 14, AttackRange = 5, StabilityDamage = 3, CritPercent = 15, CritMultiplierPercent = 150,
                 // BALANCE 12-3 (2026-11-17 사용자): 1칸 150% → 5칸 20%.
                 CloseRangePercent = 150, FarRangePercent = 20, FarRangeCells = 5,
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.Sniper, Attack = 13, AttackRange = 12, StabilityDamage = 1, CritPercent = 30, CritMultiplierPercent = 150,
+                Kind = WeaponKind.Sniper, Ammo = AmmoKind.Heavy, Attack = 13, AttackRange = 12, StabilityDamage = 1, CritPercent = 30, CritMultiplierPercent = 150,
                 NoShotAfterMove = true,
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.Smg, Attack = 10, CloseRangePercent = 150, FarRangePercent = 90, FarRangeCells = 6, MoveRangeBonus = 2, AttackRange = 6, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = WeaponKind.Smg, Ammo = AmmoKind.Light, Attack = 10, CloseRangePercent = 150, FarRangePercent = 90, FarRangeCells = 6, MoveRangeBonus = 2, AttackRange = 6, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
                 ExtraShotsPerTurn = 1,
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.MachineGun, Attack = 9, AttackRange = 8, StabilityDamage = 4, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = WeaponKind.MachineGun, Ammo = AmmoKind.Heavy, Attack = 9, AttackRange = 8, StabilityDamage = 4, CritPercent = 15, CritMultiplierPercent = 150,
                 MoveRangeBonus = -2,
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.Blade, Attack = 16, AttackRange = 1, StabilityDamage = 3, CritPercent = 20, CritMultiplierPercent = 150,
+                Kind = WeaponKind.Blade, Ammo = AmmoKind.Melee, Attack = 16, AttackRange = 1, StabilityDamage = 3, CritPercent = 20, CritMultiplierPercent = 150,
                 Melee = true, IgnoresCover = true,
             });
             settings.Units.Add(new UnitStats

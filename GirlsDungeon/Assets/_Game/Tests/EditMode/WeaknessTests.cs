@@ -127,6 +127,70 @@ namespace GirlsDungeon.Tests
             Assert.That(Weakness.Hits(world, combat, enemy, world.Player, DamageSource.Shot), Is.EqualTo(0));
         }
 
+        // ---------- 무기속성 약점 (3-17i, 결정 2026-11-20 사용자) ----------
+
+        [Test]
+        public void SpawnedEnemies_AlsoGetOneAmmoWeakness_TheShopkeeperNone()
+        {
+            var seen = new HashSet<AmmoKind>();
+            for (int seed = 1; seed <= 20; seed++)
+            {
+                var world = TestData.NewRun(seed, 6);
+                foreach (var unit in world.Units.Where(u => !u.IsPlayer))
+                {
+                    if (unit.Kind == UnitKind.Shopkeeper) { Assert.That(unit.AmmoWeakness, Is.EqualTo(AmmoKind.None)); continue; }
+                    Assert.That(Weakness.AmmoPool, Does.Contain(unit.AmmoWeakness), $"seed {seed} unit {unit.Id}");
+                    seen.Add(unit.AmmoWeakness);
+                }
+            }
+            Assert.That(seen.Count, Is.GreaterThanOrEqualTo(4));
+        }
+
+        [Test]
+        public void WeaponAmmo_MatchesTheTable()
+        {
+            var combat = TestData.Combat();
+            Assert.That(combat.WeaponFor(WeaponKind.Pistol).Ammo, Is.EqualTo(AmmoKind.Light));
+            Assert.That(combat.WeaponFor(WeaponKind.Smg).Ammo, Is.EqualTo(AmmoKind.Light));
+            Assert.That(combat.WeaponFor(WeaponKind.AssaultRifle).Ammo, Is.EqualTo(AmmoKind.Standard));
+            Assert.That(combat.WeaponFor(WeaponKind.Sniper).Ammo, Is.EqualTo(AmmoKind.Heavy));
+            Assert.That(combat.WeaponFor(WeaponKind.MachineGun).Ammo, Is.EqualTo(AmmoKind.Heavy));
+            Assert.That(combat.WeaponFor(WeaponKind.Shotgun).Ammo, Is.EqualTo(AmmoKind.Shell));
+            Assert.That(combat.WeaponFor(WeaponKind.Blade).Ammo, Is.EqualTo(AmmoKind.Melee));
+        }
+
+        [Test]
+        public void ElementAndAmmoWeakness_StackToTwo_OnAShot()
+        {
+            var (world, enemy, combat) = Room();
+            var player = world.Player;
+            var plain = CombatRules.Preview(world, combat, player, player.Position, enemy);
+            enemy.WeaknessMask = Weakness.Bit(DamageElement.Physical);
+            enemy.AmmoWeakness = AmmoKind.Standard; // 처음 무기 돌격소총 = 표준탄
+            var both = CombatRules.Preview(world, combat, player, player.Position, enemy);
+            Assert.That(Weakness.Hits(world, combat, player, enemy, DamageSource.Shot), Is.EqualTo(2));
+            Assert.That(both.SetPercent, Is.EqualTo(plain.SetPercent + 20));
+            Assert.That(both.StabilityDamage, Is.EqualTo(plain.StabilityDamage + 4));
+
+            world.PlayerWeapon = WeaponKind.Smg; // 경량탄 — 무기속성은 안 맞음
+            Loadout.Apply(world, combat);
+            Assert.That(Weakness.Hits(world, combat, player, enemy, DamageSource.Shot), Is.EqualTo(1));
+        }
+
+        [Test]
+        public void FrostShotCarriesTheWeaponAmmo_SkillsDoNot()
+        {
+            var (world, enemy, combat) = Room();
+            world.PlayerCharacter = CharacterKind.HeroB;
+            world.PlayerWeapon = WeaponKind.Smg;
+            Loadout.Apply(world, combat);
+            enemy.AmmoWeakness = AmmoKind.Light;
+            Assert.That(Weakness.Hits(world, combat, world.Player, enemy, DamageSource.Frost), Is.EqualTo(1), "frost shot = SMG light ammo");
+            Assert.That(Weakness.Hits(world, combat, world.Player, enemy, DamageSource.Support), Is.EqualTo(1));
+            Assert.That(Weakness.Hits(world, combat, world.Player, enemy, DamageSource.Grenade), Is.EqualTo(0), "a grenade has no ammo");
+            Assert.That(Weakness.Hits(world, combat, world.Player, enemy, DamageSource.Sonic), Is.EqualTo(0));
+        }
+
         [Test]
         public void Snapshot_KeepsWeaknesses()
         {
@@ -135,6 +199,7 @@ namespace GirlsDungeon.Tests
             var copy = WorldSnapshot.Decode(bytes);
             Assert.That(WorldSnapshot.Encode(copy), Is.EqualTo(bytes));
             Assert.That(copy.Units.Select(u => u.WeaknessMask), Is.EqualTo(world.Units.Select(u => u.WeaknessMask)));
+            Assert.That(copy.Units.Select(u => u.AmmoWeakness), Is.EqualTo(world.Units.Select(u => u.AmmoWeakness)));
         }
     }
 }

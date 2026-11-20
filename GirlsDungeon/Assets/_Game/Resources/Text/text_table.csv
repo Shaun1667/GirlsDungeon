@@ -168,7 +168,13 @@ Frost damage {5} (frost {6} + fixed {7}) · {8} · Stability −{9}"
 ui.combat.preview_frost_not_ready,빙결 사격 재사용 대기 {0}라운드,Frost shot ready in {0} rounds
 ui.combat.preview_frost_not_visible,{0} · 보이지 않아 빙결 사격을 쓸 수 없음,{0} · Not visible for the frost shot
 ui.combat.preview_weakness,약점: {0},Weakness: {0}
-ui.combat.preview_weakness_hit,약점: {0} — 약점 공격 · 피해 +{1}% · 안정 +{2},Weakness: {0} — weakness hit · damage +{1}% · stability +{2}
+ui.combat.preview_weakness_hit,약점: {0} — 약점 {3}개 공격 · 피해 +{1}% · 안정 +{2},Weakness: {0} — hits {3} weakness(es) · damage +{1}% · stability +{2}
+ammo.light.name,경량탄,Light ammo
+ammo.standard.name,표준탄,Standard ammo
+ammo.heavy.name,중량탄,Heavy ammo
+ammo.shell.name,산탄,Shells
+ammo.melee.name,근접,Melee
+ui.hud.weapon_ammo,무기: {0} ({3}) · 공격 {1} · 사거리 {2},Weapon: {0} ({3}) · Attack {1} · Range {2}
 element.physical.name,물리,Physical
 element.burn.name,연소,Burn
 element.freeze.name,빙결,Freeze

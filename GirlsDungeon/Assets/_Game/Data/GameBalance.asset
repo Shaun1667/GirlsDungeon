@@ -338,6 +338,7 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    ammo: 2
     partSlotKeys:
     - part.slot.muzzle
     - part.slot.sight
@@ -362,6 +363,7 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    ammo: 1
     partSlotKeys:
     - part.slot.muzzle
     - part.slot.sight
@@ -386,6 +388,7 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    ammo: 4
     partSlotKeys:
     - part.slot.muzzle
     - part.slot.sight
@@ -410,6 +413,7 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 0
     ignoresCover: 0
+    ammo: 3
     partSlotKeys:
     - part.slot.muzzle
     - part.slot.sight
@@ -434,6 +438,7 @@ MonoBehaviour:
     moveRangeBonus: 2
     melee: 0
     ignoresCover: 0
+    ammo: 1
     partSlotKeys:
     - part.slot.muzzle
     - part.slot.sight
@@ -458,6 +463,7 @@ MonoBehaviour:
     moveRangeBonus: -2
     melee: 0
     ignoresCover: 0
+    ammo: 3
     partSlotKeys:
     - part.slot.muzzle
     - part.slot.sight
@@ -482,6 +488,7 @@ MonoBehaviour:
     moveRangeBonus: 0
     melee: 1
     ignoresCover: 1
+    ammo: 5
     partSlotKeys:
     - part.slot.blade_tip
     - part.slot.tuning

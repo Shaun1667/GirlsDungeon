@@ -25,9 +25,27 @@ namespace GirlsDungeon.Core.Sim
     /// 무기 하나의 능력치와 규칙 (표 한 줄, BALANCE 12번). 값은 GameBalance 에셋에서 받는다.
     /// 플레이어의 공격 · 사거리 · 안정 피해 · 치명은 든 무기의 값이다 (Loadout.Apply 한 곳에서 덮어쓴다).
     /// </summary>
+    /// <summary>무기의 탄 종류 = 무기속성 (3-17i — 적의 무기속성 약점이 이것을 본다). 끝에만 추가.</summary>
+    public enum AmmoKind : byte
+    {
+        None = 0,
+        /// <summary>경량탄 (권총 · 기관단총).</summary>
+        Light = 1,
+        /// <summary>표준탄 (돌격소총).</summary>
+        Standard = 2,
+        /// <summary>중량탄 (저격총 · 기관총).</summary>
+        Heavy = 3,
+        /// <summary>산탄 (산탄총).</summary>
+        Shell = 4,
+        /// <summary>근접 (도검).</summary>
+        Melee = 5,
+    }
+
     public sealed class WeaponStats
     {
         public WeaponKind Kind;
+        /// <summary>탄 종류 = 무기속성 (3-17i).</summary>
+        public AmmoKind Ammo;
         public int Attack;
         public int AttackRange;
         public int StabilityDamage;
