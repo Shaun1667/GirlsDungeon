@@ -516,7 +516,7 @@ namespace GirlsDungeon.Tests
             });
             settings.Weapons.Add(new WeaponStats
             {
-                Kind = WeaponKind.Smg, Attack = 10, AttackRange = 6, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
+                Kind = WeaponKind.Smg, Attack = 10, CloseRangePercent = 150, FarRangePercent = 90, FarRangeCells = 6, MoveRangeBonus = 2, AttackRange = 6, StabilityDamage = 2, CritPercent = 15, CritMultiplierPercent = 150,
                 ExtraShotsPerTurn = 1,
             });
             settings.Weapons.Add(new WeaponStats

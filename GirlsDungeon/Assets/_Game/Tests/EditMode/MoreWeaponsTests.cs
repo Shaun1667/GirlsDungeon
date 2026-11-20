@@ -36,6 +36,23 @@ namespace GirlsDungeon.Tests
         // ---------- 기관단총 ----------
 
         [Test]
+        public void Smg_IsStrongerUpClose_SlightlyWeakerFar_AndMovesTwoMore()
+        {
+            // 3-17e (2026-11-20 사용자): 1칸 150% → 6칸 90% (산탄총보다 덜 줄어듦), 이동 +2.
+            var combat = TestData.Combat();
+            var smg = combat.WeaponFor(WeaponKind.Smg);
+            var percents = new int[7];
+            for (int d = 1; d <= 6; d++) percents[d] = Loadout.DistancePercent(smg, d);
+            Assert.That(percents, Is.EqualTo(new[] { 0, 150, 138, 126, 114, 102, 90 }));
+            Assert.That(Loadout.DistancePercent(smg, 9), Is.EqualTo(90), "beyond 6 stays at 90");
+            Assert.That(Loadout.FalloffPercent(smg, new GridPos(0, 0), new GridPos(1, 0)), Is.EqualTo(-50), "+50% at 1 cell");
+            Assert.That(smg.MoveRangeBonus, Is.EqualTo(2));
+
+            var world = MakeCombat(WeaponKind.Smg, new GridPos(0, 0), new GridPos(4, 0), "..........");
+            Assert.That(world.Player.MoveRange, Is.EqualTo(combat.PlayerBaseMoveRange(world.PlayerCharacter) + 2));
+        }
+
+        [Test]
         public void Smg_ShootsTwice_ThenTheTurnEnds()
         {
             var combat = TestData.Combat();

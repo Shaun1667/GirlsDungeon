@@ -421,11 +421,11 @@ MonoBehaviour:
     noShotAfterMove: 0
     falloffStartCells: 0
     falloffPercentPerCell: 0
-    closeRangePercent: 0
-    farRangePercent: 0
-    farRangeCells: 0
+    closeRangePercent: 150
+    farRangePercent: 90
+    farRangeCells: 6
     extraShotsPerTurn: 1
-    moveRangeBonus: 0
+    moveRangeBonus: 2
     melee: 0
     ignoresCover: 0
     partSlotKeys:

@@ -92,7 +92,7 @@ weapon.shotgun.rule,가까울수록 강함 — 1칸 150% → 5칸 20%,Stronger u
 weapon.sniper.name,저격총,Sniper rifle
 weapon.sniper.rule,이동한 차례에는 쏠 수 없음,Cannot shoot in a turn after moving
 weapon.smg.name,기관단총,SMG
-weapon.smg.rule,한 차례에 두 번 쏨 (사이에 이동 가능),Shoots twice per turn (can move in between)
+weapon.smg.rule,"한 차례에 두 번 쏨 (사이에 이동 가능) · 이동 +2 · 가까울수록 강함 — 1칸 150% → 6칸 90%","Shoots twice per turn (can move in between) · Move +2 · Stronger up close — 150% at 1 cell → 90% at 6 cells"
 weapon.machine_gun.name,기관총,Machine gun
 weapon.machine_gun.rule,무거워 이동 −2,Heavy: move −2
 weapon.blade.name,도검,Blade

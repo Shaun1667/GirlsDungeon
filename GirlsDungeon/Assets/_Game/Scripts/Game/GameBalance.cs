@@ -483,6 +483,7 @@ namespace GirlsDungeon.Game
             {
                 kind = WeaponKind.Smg, nameKey = "weapon.smg.name", ruleKey = "weapon.smg.rule",
                 attack = 10, attackRange = 6, stabilityDamage = 2, critPercent = 15, critMultiplierPercent = 150, extraShotsPerTurn = 1,
+                closeRangePercent = 150, farRangePercent = 90, farRangeCells = 6, moveRangeBonus = 2,
             },
             new WeaponEntry
             {
