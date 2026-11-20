@@ -175,6 +175,9 @@ namespace GirlsDungeon.Core.Sim
             return weapon.MoveAfterShot || world.PlayerShots < weapon.ShotsPerTurn;
         }
 
+        /// <summary>스킬을 쓴 뒤에도 사격이 남는 무기인가 (한 차례에 여러 번 쏘는 무기 — 기관단총, 3-17f). 스킬이 첫 발 몫.</summary>
+        public static bool ShotAfterSkill(World world, CombatSettings settings) => ShotsPerTurn(world, settings) > 1;
+
         /// <summary>사격 뒤 차례가 이어지는지: 아직 더 쏠 수 있거나(기관단총), 권총이고 이동 칸이 남았을 때 (3-13).</summary>
         public static bool KeepsTurnAfterShot(World world, CombatSettings settings)
         {

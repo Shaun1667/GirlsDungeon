@@ -53,6 +53,39 @@ namespace GirlsDungeon.Tests
         }
 
         [Test]
+        public void Smg_SkillCountsAsTheFirstShot_OneShotLeft()
+        {
+            // 3-17f (결정 2026-11-20 사용자 "스킬 뒤 사격 1발"): 기관단총은 스킬을 써도 차례가 끝나지 않고 한 발을 더 쏠 수 있다.
+            var combat = TestData.Combat();
+            var world = MakeCombat(WeaponKind.Smg, new GridPos(0, 0), new GridPos(4, 0), "..........");
+            var simulation = new Simulation(world, combat);
+            var enemy = world.Units.First(unit => !unit.IsPlayer);
+
+            Assert.That(simulation.Execute(new AreaAttackCommand(enemy.Position, combat)), Is.True);
+            Assert.That(world.Round, Is.EqualTo(1), "the turn goes on");
+            Assert.That(world.Turn, Is.EqualTo(TurnSide.Player));
+            Assert.That(world.PlayerShots, Is.EqualTo(1), "the skill took the first shot");
+            Assert.That(Loadout.CanShoot(world, combat), Is.True);
+            Assert.That(CombatFlow.CanUseSkill(world), Is.False, "no second skill");
+            Assert.That(simulation.Execute(new PushCommand(new GridPos(1, 0), 0, combat)), Is.False);
+
+            Assert.That(simulation.Execute(new AttackCommand(enemy.Id, combat)), Is.True);
+            Assert.That(world.Round, Is.EqualTo(2), "the shot ends the turn");
+            Assert.That(world.PlayerShots, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void OneShotWeapon_SkillStillEndsTheTurn()
+        {
+            var combat = TestData.Combat();
+            var world = MakeCombat(WeaponKind.AssaultRifle, new GridPos(0, 0), new GridPos(4, 0), "..........");
+            var simulation = new Simulation(world, combat);
+            var enemy = world.Units.First(unit => !unit.IsPlayer);
+            Assert.That(simulation.Execute(new AreaAttackCommand(enemy.Position, combat)), Is.True);
+            Assert.That(world.Round, Is.EqualTo(2));
+        }
+
+        [Test]
         public void Smg_ShootsTwice_ThenTheTurnEnds()
         {
             var combat = TestData.Combat();

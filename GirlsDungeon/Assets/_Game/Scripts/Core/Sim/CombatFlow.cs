@@ -32,15 +32,23 @@ namespace GirlsDungeon.Core.Sim
         /// 스킬을 쓴 뒤 (스킬 커맨드가 부른다): 맞은 상점 주인이 적대하는지 보고, 보이는 적을 전투에 넣은 뒤
         /// 전투 중이면 그 스킬을 이번 차례 행동으로 치고 적 차례로 넘긴다. 탐험 중에 써서 적이 보이면 전투가 시작되고 그 스킬이 첫 행동이 된다(적이 먼저 움직인다).
         /// 탐험 중에 써서 전투가 시작되지 않았으면 재사용 대기를 비운다 (전투 밖의 재사용 대기는 의미가 없다 — 전투가 끝날 때와 같게).
+        /// 한 차례에 여러 번 쏘는 무기(기관단총)는 전투 중 내 차례에 쓴 스킬을 첫 발로 친다 — 차례가 끝나지 않고 남은 사격을 할 수 있다
+        /// (3-17f, 결정 2026-11-20 사용자 "스킬 뒤 사격 1발", Loadout.ShotAfterSkill).
         /// </summary>
         public static void AfterSkill(World world, CombatSettings settings, List<GameEvent> events)
         {
+            bool wasPlayerTurn = TurnFlow.IsPlayerTurn(world);
             Shop.CheckHostility(world, events);
             var visible = VisionSystem.Update(world, events);
             JoinVisibleEnemies(world, settings, visible, events);
             if (world.Mode == WorldMode.Combat)
             {
                 world.PlayerActed = true;
+                if (wasPlayerTurn && Loadout.ShotAfterSkill(world, settings))
+                {
+                    world.PlayerShots = Loadout.ShotsPerTurn(world, settings) - 1;
+                    return;
+                }
                 if (world.Combatants.Count > 0) TurnFlow.EndPlayerTurn(world, settings, events);
             }
             else if (world.Mode == WorldMode.Exploration)
