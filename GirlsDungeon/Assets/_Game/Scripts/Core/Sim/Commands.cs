@@ -211,7 +211,7 @@ namespace GirlsDungeon.Core.Sim
         public bool TryApply(World world, List<GameEvent> events)
         {
             if (kind == UnitKind.Player || !world.Map.IsWalkable(cell) || world.IsOccupied(cell)) return false;
-            world.AddUnit(settings.StatsFor(kind), cell);
+            Weakness.Assign(world, world.AddUnit(settings.StatsFor(kind), cell));
             return true;
         }
     }

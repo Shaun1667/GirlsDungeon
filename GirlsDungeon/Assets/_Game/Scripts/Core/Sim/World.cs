@@ -78,6 +78,9 @@ namespace GirlsDungeon.Core.Sim
         public int CoagTurns { get; set; }
         public int CoagMove { get; set; }
 
+        /// <summary>약점 (3-17h, Weakness): DamageElement 비트. 0 = 없음.</summary>
+        public int WeaknessMask { get; set; }
+
         public bool IsPlayer => Kind == UnitKind.Player;
 
         public Unit(int id, UnitKind kind, GridPos position)

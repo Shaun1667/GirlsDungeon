@@ -90,7 +90,8 @@ namespace GirlsDungeon.Core.Sim
             int critDamage = Damage(attacker.Attack, target.Defense, attacker.CritMultiplierPercent * power / 100, reduction, settings.MinDamage, 100 - falloff, setPercent);
             bool breaksCover = cover != CoverLevel.None
                 && CoverBreak.AnyBreaksOnNextHit(map, settings, CoverBreak.Facing(map, target.Position, from));
-            return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, attacker.StabilityDamage, breaksCover, falloff, setPercent);
+            int stabilityDamage = attacker.StabilityDamage + Weakness.StabilityBonus(world, settings, attacker, target, source);
+            return new AttackPreview(block, cover, guard, reduction, damage, critDamage, attacker.CritPercent, stabilityDamage, breaksCover, falloff, setPercent);
         }
 
         /// <summary>

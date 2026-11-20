@@ -438,6 +438,11 @@ namespace GirlsDungeon.Game
         [SerializeField] private int coagMovePerStack = 1;
         [SerializeField] private int coagFreezeTurns = 1;
 
+        [Header("Weakness (BALANCE 38)")]
+        [Tooltip("Per matching weakness: extra damage (%) and extra stability damage.")]
+        [SerializeField] private int weaknessDamagePercent = 10;
+        [SerializeField] private int weaknessStabilityDamage = 2;
+
         [Header("Shopkeeper skills (BALANCE 33)")]
         [SerializeField] private KeeperSkillsEntry keeperSkills = new KeeperSkillsEntry();
 
@@ -820,6 +825,8 @@ namespace GirlsDungeon.Game
                 CoagTurns = coagTurns,
                 CoagMovePerStack = coagMovePerStack,
                 CoagFreezeTurns = coagFreezeTurns,
+                WeaknessDamagePercent = weaknessDamagePercent,
+                WeaknessStabilityDamage = weaknessStabilityDamage,
                 Keeper = new KeeperSkillSettings
                 {
                     BasicPercent = keeperSkills.basicPercent,

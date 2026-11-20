@@ -366,6 +366,9 @@ namespace GirlsDungeon.Tests
                 CoagTurns = 2,
                 CoagMovePerStack = 1,
                 CoagFreezeTurns = 1,
+                // BALANCE 38번 (3-17h): 약점 1개당 피해 +10% · 안정 +2.
+                WeaknessDamagePercent = 10,
+                WeaknessStabilityDamage = 2,
                 Keeper = new KeeperSkillSettings
                 {
                     BasicPercent = 80,

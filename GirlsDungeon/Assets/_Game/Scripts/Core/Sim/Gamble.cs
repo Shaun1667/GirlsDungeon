@@ -117,6 +117,7 @@ namespace GirlsDungeon.Core.Sim
             {
                 var kind = kindRandom.Range(0, 100) < assaultPercent ? UnitKind.Assault : UnitKind.Rifleman;
                 var enemy = world.AddUnit(settings.StatsFor(kind), cells[n]);
+                Weakness.Assign(world, enemy);
                 enemy.Guarding = false;
                 if (statPercent != 100)
                 {

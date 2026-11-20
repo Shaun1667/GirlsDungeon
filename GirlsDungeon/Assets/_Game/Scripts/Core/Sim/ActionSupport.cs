@@ -47,7 +47,7 @@ namespace GirlsDungeon.Core.Sim
             int stabilityBefore = target.Stability;
             target.Hp -= dealt;
             Remold.OnDamageDealt(world, settings, player, target, dealt);
-            target.Stability = Math.Max(0, target.Stability - trait.ActionSupportStabilityDamage);
+            target.Stability = Math.Max(0, target.Stability - trait.ActionSupportStabilityDamage - Weakness.StabilityBonus(world, settings, player, target, DamageSource.Support));
             events.Add(new UnitAttacked(player, target, dealt, crit, preview.Cover, preview.StabilityGuard, stabilityBefore > 0 && target.Stability == 0));
             events.Add(new UnitStatsChanged(target.Id));
             if (preview.Cover != CoverLevel.None)

@@ -60,7 +60,7 @@ namespace GirlsDungeon.Core.Sim
 
             int setPercent = SetEffects.DamagePercent(world, settings, attacker, target, DamageSource.Sonic);
             int damage = CombatRules.Damage(attacker.Attack, target.Defense, settings.SkillDamagePercentFor(attacker.IsPlayer ? world.PlayerCharacter : CharacterKind.None, SkillKind.Sonic), 0, settings.MinDamage, 100, setPercent);
-            return new SonicPreview(block, target, damage, settings.SonicStabilityDamage);
+            return new SonicPreview(block, target, damage, settings.SonicStabilityDamage + Weakness.StabilityBonus(world, settings, attacker, target, DamageSource.Sonic));
         }
 
         /// <summary>음파 공격을 처리한다. 쓸 수 없으면 아무것도 바꾸지 않고 false.</summary>

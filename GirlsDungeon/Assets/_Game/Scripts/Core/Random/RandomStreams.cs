@@ -22,6 +22,8 @@ namespace GirlsDungeon.Core.Random
         Shop = 10,
         /// <summary>적을 쓰러뜨렸을 때 바닥 골드 굴림 (3-16w — 떨어질지 · 양).</summary>
         GoldDrop = 11,
+        /// <summary>적 약점 굴림 (3-17h — 적이 생길 때 Weakness.Assign).</summary>
+        Weakness = 12,
     }
 
     /// <summary>시드 하나에서 용도별 난수를 만든다. 상태는 세계 스냅샷에 저장된다.</summary>

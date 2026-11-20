@@ -33,6 +33,7 @@ namespace GirlsDungeon.Core.Sim
                     int pick = random.Range(0, cells.Count);
                     var kind = kindRandom.Range(0, 100) < assaultPercent ? UnitKind.Assault : UnitKind.Rifleman;
                     var enemy = world.AddUnit(settings.StatsFor(kind), cells[pick]);
+                    Weakness.Assign(world, enemy);
                     enemy.Guarding = false;
                     enemy.MaxHp = EnemySpawner.Scale(enemy.MaxHp, statPercent);
                     enemy.Hp = enemy.MaxHp;

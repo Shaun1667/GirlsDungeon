@@ -224,6 +224,12 @@ namespace GirlsDungeon.Core.Sim
         /// <summary>응고가 최대 스택이 되어 바뀌는 결빙의 행동 수.</summary>
         public int CoagFreezeTurns;
 
+        // 약점 (BALANCE 38번, 3-17h — Weakness)
+        /// <summary>약점 1개당 받는 피해 +%p.</summary>
+        public int WeaknessDamagePercent;
+        /// <summary>약점 1개당 안정 피해 +.</summary>
+        public int WeaknessStabilityDamage;
+
         /// <summary>상점 주인 스킬 (BALANCE 33번, 3-15f). null이면 스킬 없이 사격병처럼 싸운다.</summary>
         public KeeperSkillSettings Keeper;
 
@@ -527,6 +533,8 @@ namespace GirlsDungeon.Core.Sim
                 throw new ArgumentException("Push settings are invalid.");
             if (SonicRange < 1 || SonicDamagePercent < 0 || SonicStabilityDamage < 0 || SonicCooldownRounds < 0)
                 throw new ArgumentException("Sonic settings are invalid.");
+            if (WeaknessDamagePercent < 0 || WeaknessStabilityDamage < 0)
+                throw new ArgumentException("Weakness settings are invalid.");
             if (DecisiveRange < 0 || DecisiveRadius < 0 || DecisiveFixedDefensePercent < 0 || DecisiveAvalancheStacks < 0 || DecisiveStabilityRestore < 0
                 || DecisiveShieldPercent < 0 || DecisiveBuffTurns < 0 || DecisiveFieldTurns < 0 || BulwarkStacksPerUse < 0 || BulwarkMaxStacks < 0
                 || BulwarkDamagePercent < 0 || BulwarkDamagePercent > 100 || AvalancheBurstStacks < 0 || AvalancheStabilityDamage < 0

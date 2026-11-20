@@ -424,7 +424,41 @@ namespace GirlsDungeon.Game
                     preview.Damage, preview.CritPercent, preview.CritDamage, preview.StabilityDamage, cover);
                 if (preview.BreaksCover) previewLabel.text += "\n" + Text.Get("ui.combat.preview_breaks_cover");
             }
+            if (!alreadyActed) AppendWeakness(target, DamageSource.Shot);
             previewLabel.gameObject.SetActive(true);
+        }
+
+        /// <summary>
+        /// 적의 약점 줄 (3-17h): "약점: 연소", 이 공격이 약점을 맞히면 "약점 공격 · 피해 +10% · 안정 +2". 피해 숫자는 이미 약점을 더한 값 (규칙 Weakness).
+        /// </summary>
+        private void AppendWeakness(Unit target, DamageSource source)
+        {
+            var world = simulation.World;
+            if (target == null || target.IsPlayer || settings == null) return;
+            var elements = Weakness.Of(world, target);
+            if (elements.Count == 0) return;
+            var names = new List<string>();
+            foreach (var element in elements) names.Add(ElementName(element));
+            string joined = string.Join(" · ", names);
+            bool hit = Weakness.Hits(world, settings, world.Player, target, source) > 0;
+            previewLabel.text += "\n" + (hit
+                ? Text.Get("ui.combat.preview_weakness_hit", joined, settings.WeaknessDamagePercent, settings.WeaknessStabilityDamage)
+                : Text.Get("ui.combat.preview_weakness", joined));
+        }
+
+        /// <summary>속성 이름 (키를 통째로).</summary>
+        internal static string ElementName(DamageElement element)
+        {
+            switch (element)
+            {
+                case DamageElement.Burn: return Text.Get("element.burn.name");
+                case DamageElement.Freeze: return Text.Get("element.freeze.name");
+                case DamageElement.Acid: return Text.Get("element.acid.name");
+                case DamageElement.Conduct: return Text.Get("element.conduct.name");
+                case DamageElement.Torrent: return Text.Get("element.torrent.name");
+                case DamageElement.Phase: return Text.Get("element.phase.name");
+                default: return Text.Get("element.physical.name");
+            }
         }
 
         /// <summary>음파 공격 조준 중, 마우스가 적 위에 있지 않을 때.</summary>
@@ -453,6 +487,7 @@ namespace GirlsDungeon.Game
                 default:
                     previewLabel.text = Text.Get("ui.combat.preview_sonic", name, preview.Target.Hp, preview.Target.MaxHp,
                         preview.Target.Stability, preview.Target.MaxStability, preview.Damage, preview.StabilityDamage);
+                    AppendWeakness(preview.Target, DamageSource.Sonic);
                     break;
             }
             previewLabel.gameObject.SetActive(true);
@@ -514,6 +549,7 @@ namespace GirlsDungeon.Game
                 default:
                     previewLabel.text = Text.Get("ui.combat.preview_frost", name, preview.Target.Hp, preview.Target.MaxHp,
                         preview.Target.Stability, preview.Target.MaxStability, preview.Damage, preview.MainDamage, preview.FixedDamage, CoverName(preview.Cover), preview.StabilityDamage);
+                    AppendWeakness(preview.Target, DamageSource.Frost);
                     break;
             }
             previewLabel.gameObject.SetActive(true);

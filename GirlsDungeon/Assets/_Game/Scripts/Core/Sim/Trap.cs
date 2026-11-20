@@ -32,6 +32,7 @@ namespace GirlsDungeon.Core.Sim
                 {
                     int pick = random.Range(0, cells.Count);
                     var enemy = world.AddUnit(settings.StatsFor(UnitKind.Rifleman), cells[pick]);
+                    Weakness.Assign(world, enemy);
                     enemy.Guarding = false;
                     enemy.Overwatching = true;
                     if (statPercent != 100)

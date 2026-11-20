@@ -279,6 +279,8 @@ MonoBehaviour:
   coagTurns: 2
   coagMovePerStack: 1
   coagFreezeTurns: 1
+  weaknessDamagePercent: 10
+  weaknessStabilityDamage: 2
   keeperSkills:
     basicPercent: 80
     stackMax: 6

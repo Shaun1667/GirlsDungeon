@@ -65,7 +65,7 @@ namespace GirlsDungeon.Core.Sim
             int main = CombatRules.Damage(attacker.Attack, target.Defense, settings.SkillDamagePercentFor(attacker.IsPlayer ? world.PlayerCharacter : CharacterKind.None, SkillKind.Frost),
                 reduction, settings.MinDamage, 100, setPercent);
             int fixedDamage = FixedDamage(attacker.Defense, settings.FrostFixedDefensePercent);
-            return new FrostPreview(block, target, main, fixedDamage, settings.FrostStabilityDamage, cover, guard);
+            return new FrostPreview(block, target, main, fixedDamage, settings.FrostStabilityDamage + Weakness.StabilityBonus(world, settings, attacker, target, DamageSource.Frost), cover, guard);
         }
 
         /// <summary>방어력 × % (반올림, 0.5는 올림). 음수 방어는 0.</summary>

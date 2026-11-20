@@ -167,6 +167,15 @@ ui.combat.preview_frost,"{0} · 체력 {1}/{2} · 안정 {3}/{4}
 Frost damage {5} (frost {6} + fixed {7}) · {8} · Stability −{9}"
 ui.combat.preview_frost_not_ready,빙결 사격 재사용 대기 {0}라운드,Frost shot ready in {0} rounds
 ui.combat.preview_frost_not_visible,{0} · 보이지 않아 빙결 사격을 쓸 수 없음,{0} · Not visible for the frost shot
+ui.combat.preview_weakness,약점: {0},Weakness: {0}
+ui.combat.preview_weakness_hit,약점: {0} — 약점 공격 · 피해 +{1}% · 안정 +{2},Weakness: {0} — weakness hit · damage +{1}% · stability +{2}
+element.physical.name,물리,Physical
+element.burn.name,연소,Burn
+element.freeze.name,빙결,Freeze
+element.acid.name,산성,Acid
+element.conduct.name,전도,Conduct
+element.torrent.name,탁류,Torrent
+element.phase.name,위상,Phase
 ui.skill.frost_guard,서리 수호,Frost guard
 ui.skill.frost_guard_tip,"서리 수호 · 누른 뒤 확인 (자신에게)
 서리 보호막 = 기초 공격력 {0}% (지금 {1}) · {2}차례 · 깨뜨린 적은 결빙 {8}행동 (이동 불가)
